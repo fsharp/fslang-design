@@ -1,9 +1,8 @@
 
-# Staus of F# 4.0+ Approved Langauge/Library Items
+## Status of F# 4.0+ Approved Language/Library Items
 
-See https://fslang.uservoice.com/forums/245727-f-language/status/1225914 for list of approved language items
+See [F# Language user Voice](https://fslang.uservoice.com/forums/245727-f-language/status/1225914) for the list of approved language items, it should match the status list below.
 
-## L
 
 | Feature   | Area   | Assigned To      | Status     | Notes |
 |:-----------|:----------|:---------:|:---------:|:--------:|
