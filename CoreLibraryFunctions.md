@@ -1,5 +1,18 @@
 
-## Regular functional operators
+# F# 4.0+ Proposal for regularizing the functions defined for List, Array and Seq
+
+There is a [proposal](https://fslang.uservoice.com/forums/245727-f-language/suggestions/5663997-make-fsharp-core-collection-functions-for-list-ar) to make the functions defined in the List, Array and Seq modules in FSharp.Core.dll more regular.
+
+The F# 2.x and 3.x philosophy for these functions was somewhat irregular. The majority of functions (e.g. groupBy, averageBy) 
+for Seq, but some were not present on List and Array (e.g. groupBy).  This leads to awkward code where Seq-producing functions 
+are used when List is an input.
+
+Also, some functions were not defined on Seq, even though they exist in List or Array. 
+
+The proposal below is to complete the matrix for List, Array and Seq w.r.t. functional collection functions.
+
+
+## Regular functional functions
 
 | Function   | Comment   | List      | Array     | Seq      |   xxxxxxxxxxxxxxxxxxx       |    xxxxxxxxxxxxxxx      |
 |:-----------|:----------|:---------:|:---------:|:--------:|:--------:|:--------:|
