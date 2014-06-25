@@ -1,5 +1,5 @@
 
-| Function   | Comment   | List      | Array     | Seq      |          |          |
+| Function   | Comment   | List      | Array     | Seq      |   xxxxxxxxxxxxxxxxxxx       |    xxxxxxxxxxxxxxx      |
 |:-----------|:----------|:---------:|:---------:|:--------:|:--------:|:--------:|
 | append	 	 |           |     o     |    o      |    o     |          |          |
 | average	 	 |           |      o    |        o  |      o   |          |          |
