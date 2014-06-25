@@ -26,27 +26,27 @@
 | find	 	 	 |           |   o       |     o     |     o    |          |          |
 | findIndex	 |           |  o        |      o    |      o   |          |          |
 | fold	 	 	 |           |     o     |     o     |     o    |          |          |
-| fold2	 	 	 |           |           |           |          |          |          |
-| foldBack	 |           |           |           |          |          |          |
-| foldBack2	 |           |           |           |          |          |          |
-| forall	 	 |           |           |           |          |          |          |
-| forall2	 	 |           |           |           |          |          |          |
-| get	       | “get i” same as “nth (i + 1)” ?	 	 	 |           |           |           |          |          |          |
-| groupBy	 	 |           |           |           |          |          |          |
-| head	 	 	 |           |           |           |          |          |          |
-| init	 	 	 |           |           |           |          |          |          |
-| initInfinite |           |           |           |          |          |          |
-| isEmpty	 	 	 |           |           |           |          |          |          |
-| iter	 	 	 	 |           |           |           |          |          |          |
-| iter2	 	 	 	 |           |           |           |          |          |          |
-| iteri	 	 	 	 |           |           |           |          |          |          |
-| iteri2	 	 	 |           |           |           |          |          |          |
-| last	 	 	 	 |           |           |           |          |          |          |
-| length	 	 	 |           |           |           |          |          |          |
-| map	 	 	 	   |           |           |           |          |          |          |
-| map2	 	 	 	 |           |           |           |          |          |          |
-| map3	 	 	 	 |           |           |           |          |          |          |
-| mapi	 	 	 	 |           |           |           |          |          |          |
+| fold2	 	 	 |           |   o       |    o       |     ADD     |          |          |
+| foldBack	 |           |   o        |    o       |   ADD       |          |          |
+| foldBack2	 |           |   o        |   o        |    ADD      |          |          |
+| forall	 	 |           |   o        |  o         |     o     |          |          |
+| forall2	 	 |           |  o         |   o        |      o    |          |          |
+| get	       | “get i” same as “nth (i + 1)” ?	 	 	 |           |     o      |           |          |          |         
+| groupBy	 	 |           |    o       |       o    |    ADD      |          |          |
+| head	 	 	 |           |   o        |    ADD       |   o       |          |          |
+| init	 	 	 |           |   o        |    o       |     o     |          |          |
+| initInfinite |           |    n/a       |   n/a        |    o      |          |          |
+| isEmpty	 	 	 |           |    o       |     o      |      o    |          |          |
+| iter	 	 	 	 |           |   o        |      o     |     o     |          |          |
+| iter2	 	 	 	 |           |    o       |       o    |    o      |          |          |
+| iteri	 	 	 	 |           |    o       |       o    |    o      |          |          |
+| iteri2	 	 	 |           |   o        |      o     |   ADD       |          |          |
+| last	 	 	 	 |           |   ADD        |    ADD       |     o     |          |          |
+| length	 	 	 |           |   o        |    o       |     o     |          |          |
+| map	 	 	 	   |           |    o       |     o      |      o    |          |          |
+| map2	 	 	 	 |           |   o        |    o       |     o     |          |          |
+| map3	 	 	 	 |           |   o        |    ADD       |   ADD       |          |          |
+| mapi	 	 	 	 |           |   o        |    o       |     o     |          |          |
 | mapi2	 	 	 	 |           |           |           |          |          |          |
 | max	 	 	 	   |           |           |           |          |          |          |
 | maxBy	 	 	   |           |           |           |          |          |          |
