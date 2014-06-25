@@ -1,7 +1,12 @@
 
 # F# 4.0+ Proposal for regularizing the functions defined for List, Array and Seq
 
-There is a [proposal](https://fslang.uservoice.com/forums/245727-f-language/suggestions/5663997-make-fsharp-core-collection-functions-for-list-ar) to make the functions defined in the List, Array and Seq modules in FSharp.Core.dll more regular.
+There is an approved [proposal](https://fslang.uservoice.com/forums/245727-f-language/suggestions/5663997-make-fsharp-core-collection-functions-for-list-ar) to make the functions defined in the List, Array and Seq modules in FSharp.Core.dll more regular.
+
+If you would like to work on one or more of these function implementations, please submit a PR to this document
+adding an entry to column "assigned to" indicating you're willing to code, test and submit the the functions to 
+http://visualfsharp.codeplex.com branch "fsharp4".  If you have questions, please tweet @dsyme, or raise an issue in this
+forum, or discuss on fslang.uservoice.com.
 
 The F# 2.x and 3.x philosophy for these functions was somewhat irregular. The majority of functions (e.g. map, filter, groupBy, averageBy) 
 were defined for Seq, but some were not present on List and Array (e.g. groupBy).  This leads to awkward code where Seq-producing functions 
@@ -14,80 +19,80 @@ The proposal below is to complete the matrix for List, Array and Seq w.r.t. func
 
 ## Regular functional functions
 
-| Function   | Comment   | List      | Array     | Seq      |   xxxxxxxxxxxxxxxxxxx       |    xxxxxxxxxxxxxxx      |
+| Function   | Comment   | List      | Array     | Seq      |   Assigned To       |    Status      |
 |:-----------|:----------|:---------:|:---------:|:--------:|:--------:|:--------:|
-| append     |           |     o     |    o      |    o     |          |          |
-| average    |           |      o    |        o  |      o   |          |          |
-| averageBy  |           |    o      |      o    |    o     |          |          |
-| choose     |           |   o       |     o     |   o      |          |          |
-| collect    |           |  o        |      o    |      o   |          |          |
+| append     |           |     o     |    o      |    o     |   ---       |    ---      |
+| average    |           |      o    |        o  |      o   |   ---       |  ---        |
+| averageBy  |           |    o      |      o    |    o     |   ---       |  ---        |
+| choose     |           |   o       |     o     |   o      |   ---       |  ---        |
+| collect    |           |  o        |      o    |      o   |   ---       |  ---        |
 | compareWith|           |  ADD      |     ADD   |     o    |          |          |
-| concat     |           |     o     |       o   |     o    |          |          |
+| concat     |           |     o     |       o   |     o    |   ---       | ---         |
 | countBy    |           |  ADD      |     ADD   |      o   |          |          |
 | distinct   |           |   ADD     |     ADD   |     o    |          |          |
 | distinctBy |           |    ADD    |    ADD    |    o     |          |          |
-| empty      |           |    o      |    o      |      o   |          |          |
+| empty      |           |    o      |    o      |      o   |   ---       |   ---       |
 | exactlyOne |           |    ADD    |    ADD    |        o |          |          |
-| exists     |           |     o     |       o   |     o    |          |          |
-| exists2    |           |    o      |        o  |      o   |          |          |
-| filter     |           |   o       |     o     |     o    |          |          |
-| find       |           |   o       |     o     |     o    |          |          |
-| findIndex  |           |  o        |      o    |      o   |          |          |
-| fold       |           |     o     |     o     |     o    |          |          |
+| exists     |           |     o     |       o   |     o    |   ---       |   ---       |
+| exists2    |           |    o      |        o  |      o   |   ---       |   ---       |
+| filter     |           |   o       |     o     |     o    |   ---       |     ---     |
+| find       |           |   o       |     o     |     o    |   ---       |     ---     |
+| findIndex  |           |  o        |      o    |      o   | ---         |     ---     |
+| fold       |           |     o     |     o     |     o    | ---         |     ---     |
 | fold2      |           |   o       |    o      |     ADD  |          |          |
 | foldBack   |           |   o       |    o      |   ADD    |          |          |
 | foldBack2  |           |   o       |   o       |    ADD   |          |          |
-| forall     |           |   o       |  o        |     o    |          |          |
-| forall2    |           |  o        |   o       |      o   |          |          |
+| forall     |           |   o       |  o        |     o    |    ---      |   ---       |
+| forall2    |           |  o        |   o       |      o   |   ---       |     ---     |
 | groupBy    |           |    o      |       o   |    ADD   |          |          |
 | head       |           |   o       |    ADD    |   o      |          |          |
-| init       |           |   o       |    o      |     o    |          |          |
-| isEmpty    |           |    o      |     o     |      o   |          |          |
-| iter       |           |   o       |      o    |     o    |          |          |
-| iter2      |           |    o      |       o   |    o     |          |          |
-| iteri      |           |    o      |       o   |    o     |          |          |
+| init       |           |   o       |    o      |     o    |   ---       |   ---       |
+| isEmpty    |           |    o      |     o     |      o   |   ---       |     ---     |
+| iter       |           |   o       |      o    |     o    |   ---       |     ---     |
+| iter2      |           |    o      |       o   |    o     |   ---       |       ---   |
+| iteri      |           |    o      |       o   |    o     |   ---       |     ---     |
 | iteri2     |           |   o       |      o    |   ADD    |          |          |
 | last       |           |   ADD     |    ADD    |     o    |          |          |
-| length     |           |   o       |    o      |     o    |          |          |
-| map        |           |    o      |     o     |      o   |          |          |
-| map2       |           |   o       |    o      |     o    |          |          |
+| length     |           |   o       |    o      |     o    |   ---       |   ---       |
+| map        |           |    o      |     o     |      o   |   ---       |     ---     |
+| map2       |           |   o       |    o      |     o    |   ---       |     ---     |
 | map3       |           |   o       |    ADD    |   ADD    |          |          |
-| mapi       |           |   o       |    o      |     o    |          |          |
+| mapi       |           |   o       |    o      |     o    |   ---       |     ---     |
 | mapi2      |           |  o        |   o       |    ADD   |          |          |
-| max        |           |    o      | o         |  o       |          |          |
-| maxBy      |           |    o      | o         |    o     |          |          |
-| min        |           |  o        |         o |  o       |          |          |
-| minBy      |           |    o      |   o       |    o     |          |          |
+| max        |           |    o      | o         |  o       |   ---       |     ---     |
+| maxBy      |           |    o      | o         |    o     |   ---       |     ---     |
+| min        |           |  o        |         o |  o       |   ---       |     ---     |
+| minBy      |           |    o      |   o       |    o     |   ---       |     ---     |
 | nth        |           |      o    | ADD       |  o       |          |          |
 | pairwise   |           |     ADD   |    ADD    |     o    |          |          |
 | permute    |           |    o      |       o   |    ADD   |          |          |
-| pick       |           |     o     |        o  |     o    |          |          |
-| reduce     |           |     o     |        o  |     o    |          |          |
+| pick       |           |     o     |        o  |     o    |   ---       |     ---     |
+| reduce     |           |     o     |        o  |     o    |   ---       |     ---     |
 | reduceBack |           |    o      |         o |      ADD |          |          |
 | replicate  | cf. create |     o    |    ADD    |   ADD    |          |          |
 | rev        |           |    o      |   o       |    ADD   |          |          |
-| scan       |           |     o     |      o    |     o    |          |          |
+| scan       |           |     o     |      o    |     o    | ---         |   ---       |
 | scanBack   |           |     o     |    o      |   ADD    |          |          |
 | singleton  |           |    ADD    |     ADD   |    o     |          |          |
 | skip       |           |   ADD     |      ADD  |   o      |          |          |
 | skipWhile  |           |  ADD      |     ADD   |    o     |          |          |
-| sort       |           | o         |    o      |     o    |          |          |
-| sortBy     |           |   o       |      o    |     o    |          |          |
+| sort       |           | o         |    o      |     o    |    ---      |   ---       |
+| sortBy     |           |   o       |      o    |     o    |   ---       |   ---       |
 | sorthWith  |           |    o      |    o      |  ADD     |          |          |
-| sum        |           |    o      |   o       |   o      |          |          |
-| sumBy      |           |    o      |   o       |   o      |          |          |
+| sum        |           |    o      |   o       |   o      |   ---       |   ---       |
+| sumBy      |           |    o      |   o       |   o      |   ---       |    ---      |
 | tail       |           |    o      |  ADD      |  ADD     |          |          |  
 | take       |           |    ADD    |   ADD     |  o       |          |          |
 | takeWhile  |           |    ADD    |  ADD      | o        |          |          |
 | truncate   |           |    ADD    | ADD       |  o       |          |          |
-| tryFind    |           |    o      |  o        |  o       |          |          |
-| tryFindIndex |         |    o      | o         | o        |          |          |
-| tryPick    |           |    o      |  o        | o        |          |          |
+| tryFind    |           |    o      |  o        |  o       |   ---       | ---         |
+| tryFindIndex |         |    o      | o         | o        |   ---       | ---         |
+| tryPick    |           |    o      |  o        | o        |   ---       | ---         |
 | unfold     |           |    ADD    | ADD       |  o       |          |          |
 | where      | syn. filter |  ADD    |  ADD      |  o       |          |          |
 | windowed   |           |    ADD    |  ADD      |  o       |          |          |
-| zip        |           |    o      |  o        |  o       |          |          |
-| zip3       |           |    o      |  o        |  o       |          |          |
+| zip        |           |    o      |  o        |  o       |   ---       |   ---       |
+| zip3       |           |    o      |  o        |  o       |   ---       |   ---       |
 
 Note: In F# 3.0 Seq.where was defined as a synonym for Seq.filter, mainly due to the use of "where" in query expressions. Given
 it already  exists as a synonym (= decision made) it seems sensible to just complete the matrix and define List.where and Array.where as well.
