@@ -1,7 +1,9 @@
 
-# F# 4.0+ Proposal for regularizing the functions defined for List, Array and Seq
+# F# 4.0+ Proposal for regularizing the functions defined for List, Array and Seq and adding some new functions
 
 There is an approved [proposal](https://fslang.uservoice.com/forums/245727-f-language/suggestions/5663997-make-fsharp-core-collection-functions-for-list-ar) to make the functions defined in the List, Array and Seq modules in FSharp.Core.dll more regular.
+
+New functions added in this proposal: splitAt, contains, findIndex, findIndexBack, tryLast, tryHead, minWith, maxWith.
 
 If you would like to work on one or more of these function implementations, please [edit and submit a PR to this document](https://github.com/dsyme/FSLangDesignGists/edit/master/CoreLibraryFunctions.md) by
 adding an entry to column "assigned to" indicating you're willing to code, test and submit the the functions to 
