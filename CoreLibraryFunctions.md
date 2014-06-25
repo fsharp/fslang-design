@@ -24,6 +24,7 @@ The proposal below is to complete the matrix for List, Array and Seq w.r.t. func
 | append     |           |     o     |    o      |    o     |   ---       |    ---      |
 | average    |           |      o    |        o  |      o   |   ---       |  ---        |
 | averageBy  |           |    o      |      o    |    o     |   ---       |  ---        |
+| contains     |           |   ADD       |     ADD     |   ADD      |   ---       |  ---        |
 | choose     |           |   o       |     o     |   o      |   ---       |  ---        |
 | collect    |           |  o        |      o    |      o   |   ---       |  ---        |
 | compareWith|           |  ADD      |     ADD   |     o    |          |          |
@@ -37,7 +38,9 @@ The proposal below is to complete the matrix for List, Array and Seq w.r.t. func
 | exists2    |           |    o      |        o  |      o   |   ---       |   ---       |
 | filter     |           |   o       |     o     |     o    |   ---       |     ---     |
 | find       |           |   o       |     o     |     o    |   ---       |     ---     |
+| findBack       |    new       |   ADD       |     ADD     |     ADD    |   ---       |     ---     |
 | findIndex  |           |  o        |      o    |      o   | ---         |     ---     |
+| findIndexBack  |  new           |  ADD        |      ADD    |      ADD   | ---         |     ---     |
 | fold       |           |     o     |     o     |     o    | ---         |     ---     |
 | fold2      |           |   o       |    o      |     ADD  |          |          |
 | foldBack   |           |   o       |    o      |   ADD    |          |          |
@@ -61,8 +64,10 @@ The proposal below is to complete the matrix for List, Array and Seq w.r.t. func
 | mapi2      |           |  o        |   o       |    ADD   |          |          |
 | max        |           |    o      | o         |  o       |   ---       |     ---     |
 | maxBy      |           |    o      | o         |    o     |   ---       |     ---     |
+| maxWith      |  new, using comparer function         |    ADD      |   ADD       |    ADD     |   ---       |     ---     |
 | min        |           |  o        |         o |  o       |   ---       |     ---     |
 | minBy      |           |    o      |   o       |    o     |   ---       |     ---     |
+| minWith      |  new, using comparer function         |    ADD      |   ADD       |    ADD     |   ---       |     ---     |
 | nth        |           |      o    | ADD       |  o       |          |          |
 | pairwise   |           |     ADD   |    ADD    |     o    |          |          |
 | permute    |           |    o      |       o   |    ADD   |          |          |
@@ -78,7 +83,7 @@ The proposal below is to complete the matrix for List, Array and Seq w.r.t. func
 | skipWhile  |           |  ADD      |     ADD   |    o     |          |          |
 | sort       |           | o         |    o      |     o    |    ---      |   ---       |
 | sortBy     |           |   o       |      o    |     o    |   ---       |   ---       |
-| sorthWith  |           |    o      |    o      |  ADD     |          |          |
+| sortWith  |           |    o      |    o      |  ADD     |          |          |
 | sum        |           |    o      |   o       |   o      |   ---       |   ---       |
 | sumBy      |           |    o      |   o       |   o      |   ---       |    ---      |
 | tail       |           |    o      |  ADD      |  ADD     |          |          |  
@@ -87,6 +92,8 @@ The proposal below is to complete the matrix for List, Array and Seq w.r.t. func
 | truncate   |           |    ADD    | ADD       |  o       |          |          |
 | tryFind    |           |    o      |  o        |  o       |   ---       | ---         |
 | tryFindIndex |         |    o      | o         | o        |   ---       | ---         |
+| tryHead    |    new       |    ADD      |  ADD        |  ADD       |   ---       | ---         |
+| tryLast    |    new       |    ADD      |  ADD        |  ADD       |   ---       | ---         |
 | tryPick    |           |    o      |  o        | o        |   ---       | ---         |
 | unfold     |           |    ADD    | ADD       |  o       |          |          |
 | where      | syn. filter |  ADD    |  ADD      |  o       |          |          |
@@ -107,11 +114,12 @@ These operators are not defined for Seq.* for performance reasons because using 
 | Note it is arguable that if these are not defined, then Seq.tail, Seq.skip and Seq.skipWhile should also not be defined, since
 | they implicitly skip inputs and can be a performacne trap, especially when used recursively.
 
-| Function   | Comment   | List      | Array     | Seq      |   xxxxxxxxxxxxxxxxxxx       |    xxxxxxxxxxxxxxx      |
+| Function   | Comment   | List      | Array     | Seq      |   Assigned To       |    Status      |
 |:-----------|:----------|:---------:|:---------:|:--------:|:--------:|:--------:|
-| partition  |           |    o      |       o   |    n/a    |          |          |
-| unzip      |           |    o      |   o       | n/a       |          |          |
-| unzip3     |           |    o      |  o        | n/a       |          |          |
+| partition  |           |    o      |       o   |    n/a    |  ---        |   ---       |
+| splitAt  |      new, taking index     |    ADD      |    ADD      |  n/a     |          |          |
+| unzip      |           |    o      |   o       | n/a       |  ---        |  ---        |
+| unzip3     |           |    o      |  o        | n/a       |  ---        |  ---        |
 
 ## Mutation-related operators
 
