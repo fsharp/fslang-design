@@ -5,7 +5,7 @@ There is an approved [proposal](https://fslang.uservoice.com/forums/245727-f-lan
 
 The overall status of F# Future Language Design Items [can be found here](https://github.com/fsharp/FSharpLangDesign/blob/master/Status.md).
 
-New functions added in this proposal: splitAt, contains, findIndex, findIndexBack, tryLast, tryHead.
+New functions added in this proposal: splitAt, contains, findIndex, findIndexBack, indexed, mapFold, mapFoldBack, tryLast, tryHead.
 
 If you would like to work on one or more of these function implementations, please [edit and submit a PR to this document](https://github.com/dsyme/FSLangDesignGists/edit/master/CoreLibraryFunctions.md) by
 adding an entry to column "assigned to" indicating you're willing to code, test and submit the the functions to 
@@ -53,6 +53,7 @@ The proposal below is to complete the matrix for List, Array and Seq w.r.t. func
 | forall2    |           |  o        |   o       |      o   |   ---       |     ---     |
 | groupBy    |           |    o      |       o   |    ADD   |          |          |
 | head       |           |   o       |    ADD    |   o      |          |          |
+| indexed       |   new, C<T> -> C<int*T>        |   o       |    o      |     o    |   ---       |   ---       |
 | init       |           |   o       |    o      |     o    |   ---       |   ---       |
 | isEmpty    |           |    o      |     o     |      o   |   ---       |     ---     |
 | iter       |           |   o       |      o    |     o    |   ---       |     ---     |
@@ -66,6 +67,8 @@ The proposal below is to complete the matrix for List, Array and Seq w.r.t. func
 | map3       |           |   o       |    ADD    |   ADD    |          |          |
 | mapi       |           |   o       |    o      |     o    |   ---       |     ---     |
 | mapi2      |           |  o        |   o       |    ADD   |          |          |
+| mapFold       | map + fold, with signature ```val mapFold : ('State -> 'T -> 'U * 'State) -> 'State -> 'T list -> 'U list * 'State``` e.g. [see here](https://github.com/fsharp/fsharp/blob/8c82d57a6e8cc131740316b00f199d9d48072346/src/absil/illib.fs#L77)          |   o       |    o      |     o    |   ---       |     ---     |
+| mapFoldBack       | map + fold, with signature ```val mapFoldBack : ('T -> 'State -> 'U * 'State) -> 'T list -> 'State -> 'U list * 'State```
 | max        |           |    o      | o         |  o       |   ---       |     ---     |
 | maxBy      |           |    o      | o         |    o     |   ---       |     ---     |
 | min        |           |  o        |         o |  o       |   ---       |     ---     |
