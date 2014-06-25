@@ -1,4 +1,4 @@
-FSLangDesignGists
+F# Language Design Active Notes and Documents
 =================
 
-Random gists and docs related to fslang.uservoice.com discussions
+Gists and docs related to the F# langauge design process, see http://fslang.uservoice.com discussions
