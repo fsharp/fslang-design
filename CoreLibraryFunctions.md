@@ -5,7 +5,7 @@ There is an approved [proposal](https://fslang.uservoice.com/forums/245727-f-lan
 
 The overall status of F# Future Language Design Items [can be found here](https://github.com/fsharp/FSharpLangDesign/blob/master/Status.md).
 
-New functions added in this proposal: splitAt, contains, findIndex, findIndexBack, indexed, mapFold, mapFoldBack, tryLast, tryHead.
+New functions added in this proposal: splitAt, contains, findIndex, findIndexBack, item, tryItem, indexed, mapFold, mapFoldBack, tryLast, tryHead.
 
 If you would like to work on one or more of these function implementations, please [edit and submit a PR to this document](https://github.com/dsyme/FSLangDesignGists/edit/master/CoreLibraryFunctions.md) by
 adding an entry to column "assigned to" indicating you're willing to code, test and submit the the functions to 
