@@ -3,10 +3,10 @@
 
 There is an approved [proposal](https://fslang.uservoice.com/forums/245727-f-language/suggestions/5663997-make-fsharp-core-collection-functions-for-list-ar) to make the functions defined in the List, Array and Seq modules in FSharp.Core.dll more regular.
 
-If you would like to work on one or more of these function implementations, please submit a PR to this document
+If you would like to work on one or more of these function implementations, please [edit and submit a PR to this document](https://github.com/dsyme/FSLangDesignGists/edit/master/CoreLibraryFunctions.md) by
 adding an entry to column "assigned to" indicating you're willing to code, test and submit the the functions to 
-http://visualfsharp.codeplex.com branch "fsharp4".  If you have questions, please tweet @dsyme, or raise an issue in this
-forum, or discuss on fslang.uservoice.com.
+[Visual F# CodePlex Open Git Repo branch "fsharp4"](http://visualfsharp.codeplex.com).  If you have questions, please tweet @dsyme, or raise an issue in this
+forum, or discuss on fslang.uservoice.com, link above.
 
 The F# 2.x and 3.x philosophy for these functions was somewhat irregular. The majority of functions (e.g. map, filter, groupBy, averageBy) 
 were defined for Seq, but some were not present on List and Array (e.g. groupBy).  This leads to awkward code where Seq-producing functions 
