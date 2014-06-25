@@ -74,7 +74,7 @@ The proposal below is to complete the matrix for List, Array and Seq w.r.t. func
 | maxBy      |           |    o      | o         |    o     |   ---       |     ---     |
 | min        |           |  o        |         o |  o       |   ---       |     ---     |
 | minBy      |           |    o      |   o       |    o     |   ---       |     ---     |
-| nth        |           |      long-term deprecate    | long-term deprecate       |  long-term deprecate   |          |          |
+| nth        |  see note         |      long-term deprecate, see note    | long-term deprecate, see note       |  long-term deprecate, see note   |          |          |
 | pairwise   |           |     ADD   |    ADD    |     o    |          |          |
 | permute    |           |    o      |       o   |    ADD   |          |          |
 | pick       |           |     o     |        o  |     o    |   ---       |     ---     |
