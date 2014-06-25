@@ -3,9 +3,9 @@
 
 There is a [proposal](https://fslang.uservoice.com/forums/245727-f-language/suggestions/5663997-make-fsharp-core-collection-functions-for-list-ar) to make the functions defined in the List, Array and Seq modules in FSharp.Core.dll more regular.
 
-The F# 2.x and 3.x philosophy for these functions was somewhat irregular. The majority of functions (e.g. groupBy, averageBy) 
-for Seq, but some were not present on List and Array (e.g. groupBy).  This leads to awkward code where Seq-producing functions 
-are used when List is an input.
+The F# 2.x and 3.x philosophy for these functions was somewhat irregular. The majority of functions (e.g. map, filter, groupBy, averageBy) 
+were defined for Seq, but some were not present on List and Array (e.g. groupBy).  This leads to awkward code where Seq-producing functions 
+are used even when List is an input. Seq.groupBy is a particular example.
 
 Also, some functions were not defined on Seq, even though they exist in List or Array. 
 
@@ -39,7 +39,6 @@ The proposal below is to complete the matrix for List, Array and Seq w.r.t. func
 | foldBack2  |           |   o       |   o       |    ADD   |          |          |
 | forall     |           |   o       |  o        |     o    |          |          |
 | forall2    |           |  o        |   o       |      o   |          |          |
-| get        |  = nth    |    ADD    |     o     |  ADD     |          |          |
 | groupBy    |           |    o      |       o   |    ADD   |          |          |
 | head       |           |   o       |    ADD    |   o      |          |          |
 | init       |           |   o       |    o      |     o    |          |          |
@@ -90,6 +89,12 @@ The proposal below is to complete the matrix for List, Array and Seq w.r.t. func
 | zip        |           |    o      |  o        |  o       |          |          |
 | zip3       |           |    o      |  o        |  o       |          |          |
 
+Note: In F# 3.0 Seq.where was defined as a synonym for Seq.filter, mainly due to the use of "where" in query expressions. Given
+it already  exists as a synonym (= decision made) it seems sensible to just complete the matrix and define List.where and Array.where as well.
+
+
+
+
 ## Regular functional operators producing two or more output collections 
 
 These operators are not defined for Seq.* for performance reasons because using them would require iterating the input sequence twice.
@@ -111,6 +116,7 @@ These operators are not defined for Seq.* for performance reasons because using 
 | copy       |           |   n/a     |     o     |     n/a  |          |          |
 | create     |           |   n/a     |      o    |    n/a   |          |          |
 | fill       |           |   n/a     |     o     |     n/a  |          |          |
+| get        |           |    n/a    |     o     |  n/a     |          |          |
 | set        |           |    n/a    |   o       |    n/a   |          |          |
 | sortInPlace  |         |    n/a    |    o      |   n/a    |          |          |
 | sortInPlaceBy  |       |    n/a    |   o       |   n/a    |          |          |
