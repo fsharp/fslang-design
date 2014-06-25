@@ -53,9 +53,10 @@ The proposal below is to complete the matrix for List, Array and Seq w.r.t. func
 | forall2    |           |  o        |   o       |      o   |   ---       |     ---     |
 | groupBy    |           |    o      |       o   |    ADD   |          |          |
 | head       |           |   o       |    ADD    |   o      |          |          |
-| indexed       |   new, C<T> -> C<int*T>        |   o       |    o      |     o    |   ---       |   ---       |
+| indexed       |   new, signature ``indexed: C<T> -> C<int*T>``        |   o       |    o      |     o    |   ---       |   ---       |
 | init       |           |   o       |    o      |     o    |   ---       |   ---       |
 | isEmpty    |           |    o      |     o     |      o   |   ---       |     ---     |
+| item    |   See note. SIgnature ``int -> C<'T> -> 'T``        |      ADD    | ADD       |  ADD       |          |          |
 | iter       |           |   o       |      o    |     o    |   ---       |     ---     |
 | iter2      |           |    o      |       o   |    o     |   ---       |       ---   |
 | iteri      |           |    o      |       o   |    o     |   ---       |     ---     |
@@ -67,13 +68,13 @@ The proposal below is to complete the matrix for List, Array and Seq w.r.t. func
 | map3       |           |   o       |    ADD    |   ADD    |          |          |
 | mapi       |           |   o       |    o      |     o    |   ---       |     ---     |
 | mapi2      |           |  o        |   o       |    ADD   |          |          |
-| mapFold       | map + fold, with signature ```val mapFold : ('State -> 'T -> 'U * 'State) -> 'State -> 'T list -> 'U list * 'State``` e.g. [see here](https://github.com/fsharp/fsharp/blob/8c82d57a6e8cc131740316b00f199d9d48072346/src/absil/illib.fs#L77)          |   o       |    o      |     o    |   ---       |     ---     |
-| mapFoldBack       | map + fold, with signature ```val mapFoldBack : ('T -> 'State -> 'U * 'State) -> 'T list -> 'State -> 'U list * 'State```
+| mapFold       | new map + fold, with signature ```mapFold : ('State -> 'T -> 'U * 'State) -> 'State -> C<'T> -> C<'U> * 'State``` e.g. [see here](https://github.com/fsharp/fsharp/blob/8c82d57a6e8cc131740316b00f199d9d48072346/src/absil/illib.fs#L77)          |   o       |    o      |     o    |   ---       |     ---     |
+| mapFoldBack       | new map + fold, with signature ```mapFoldBack : ('T -> 'State -> 'U * 'State) -> C<'T> -> 'State -> C<'U> * 'State```
 | max        |           |    o      | o         |  o       |   ---       |     ---     |
 | maxBy      |           |    o      | o         |    o     |   ---       |     ---     |
 | min        |           |  o        |         o |  o       |   ---       |     ---     |
 | minBy      |           |    o      |   o       |    o     |   ---       |     ---     |
-| nth        |           |      o    | ADD       |  o       |          |          |
+| nth        |           |      DEPRECATE    | DEPRECATE       |  DEPRECATE       |          |          |
 | pairwise   |           |     ADD   |    ADD    |     o    |          |          |
 | permute    |           |    o      |       o   |    ADD   |          |          |
 | pick       |           |     o     |        o  |     o    |   ---       |     ---     |
@@ -98,6 +99,7 @@ The proposal below is to complete the matrix for List, Array and Seq w.r.t. func
 | tryFind    |           |    o      |  o        |  o       |   ---       | ---         |
 | tryFindIndex |         |    o      | o         | o        |   ---       | ---         |
 | tryHead    |    new       |    ADD      |  ADD        |  ADD       |   ---       | ---         |
+| tryItem    |   new         |      ADD    | ADD       |  ADD       |          |          |
 | tryLast    |    new       |    ADD      |  ADD        |  ADD       |   ---       | ---         |
 | tryPick    |           |    o      |  o        | o        |   ---       | ---         |
 | unfold     |           |    ADD    | ADD       |  o       |          |          |
@@ -109,6 +111,8 @@ The proposal below is to complete the matrix for List, Array and Seq w.r.t. func
 Note: In F# 3.0 Seq.where was defined as a synonym for Seq.filter, mainly due to the use of "where" in query expressions. Given
 it already  exists as a synonym (= decision made) it seems sensible to just complete the matrix and define List.where and Array.where as well.
 
+Note: In F# 3.x, ``nth`` is defined with inconsistent signatures for Array and List.  The proposal above deprecates ``nth`` and
+replaces it with ``item`` and a corresponding ``tryItem``.  These would take the integer index as the first parameter.
 
 
 
