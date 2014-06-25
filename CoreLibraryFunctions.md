@@ -74,7 +74,7 @@ The proposal below is to complete the matrix for List, Array and Seq w.r.t. func
 | maxBy      |           |    o      | o         |    o     |   ---       |     ---     |
 | min        |           |  o        |         o |  o       |   ---       |     ---     |
 | minBy      |           |    o      |   o       |    o     |   ---       |     ---     |
-| nth        |           |      DEPRECATE    | DEPRECATE       |  DEPRECATE       |          |          |
+| nth        |           |      long-term deprecate    | long-term deprecate       |  long-term deprecate   |          |          |
 | pairwise   |           |     ADD   |    ADD    |     o    |          |          |
 | permute    |           |    o      |       o   |    ADD   |          |          |
 | pick       |           |     o     |        o  |     o    |   ---       |     ---     |
@@ -111,8 +111,8 @@ The proposal below is to complete the matrix for List, Array and Seq w.r.t. func
 Note: In F# 3.0 Seq.where was defined as a synonym for Seq.filter, mainly due to the use of "where" in query expressions. Given
 it already  exists as a synonym (= decision made) it seems sensible to just complete the matrix and define List.where and Array.where as well.
 
-Note: In F# 3.x, ``nth`` is defined with inconsistent signatures for Array and List.  The proposal above deprecates ``nth`` and
-replaces it with ``item`` and a corresponding ``tryItem``.  These would take the integer index as the first parameter.
+Note: In F# 3.x, ``nth`` is defined with inconsistent signatures for Array and List.  The proposal above replaces ``nth`` by
+``item`` and would eventually deprecate ``nth`` (with a message to say 'please use Seq.item'. It also adds a corresponding ``tryItem``.  Both ``item`` and ``tryItem``  would take the integer index as the first parameter.
 
 
 
