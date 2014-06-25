@@ -1,31 +1,31 @@
 
 | Function   | Comment   | List      | Array     | Seq      | Map         | Set         |
 |:-----------|:----------|:---------:|:---------:|:--------:|:--------:|:--------:|
-| append	 	 |           |           |           |          |          |          |
-| average	 	 |           |           |           |          |          |          |
-| averageBy	 |           |           |           |          |          |          |
-| blit	 	 	 |           |           |           |          |          |          |
-| cache	 	 	 |           |           |           |          |          |          |
-| cast	 	 	 |           |           |           |          |          |          |
-| choose	 	 |           |           |           |          |          |          |
-| collect	 	 |           |           |           |          |          |          |
-| compareWith|           |           |           |          |          |          |
-| concat	 	 |           |           |           |          |          |          |
-| copy	 	 	 |           |           |           |          |          |          |
-| countBy	 	 |           |           |           |          |          |          |
-| create	 	 |           |           |           |          |          |          |
-| delay	 	 	 |           |           |           |          |          |          |
-| distinct	 |           |           |           |          |          |          |
-| distinctBy |           |           |           |          |          |          |
-| empty	 	 	 |           |           |           |          |          |          |
-| exactlyOne |           |           |           |          |          |          |
-| exists	 	 |           |           |           |          |          |          |
-| exists2	 	 |           |           |           |          |          |          |
-| fill	 	 	 |           |           |           |          |          |          |
-| filter	 	 |           |           |           |          |          |          |
-| find	 	 	 |           |           |           |          |          |          |
-| findIndex	 |           |           |           |          |          |          |
-| fold	 	 	 |           |           |           |          |          |          |
+| append	 	 |           |     o     |    o      |    o     |          |          |
+| average	 	 |           |      o    |        o  |      o   |          |          |
+| averageBy	 |           |    o      |      o    |    o     |          |          |
+| blit	 	 	 |           |     n/a   |   o   |   n/a    |          |          |
+| cache	 	 	 |           |    n/a    |    n/a    |   o      |          |          |
+| cast	 	 	 |           |   n/a     |   n/a     |   o      |          |          |
+| choose	 	 |           |   o       |     o     |   o      |          |          |
+| collect	 	 |           |  o        |      o    |      o   |          |          |
+| compareWith|           |  ADD     |     ADD   |     o    |          |          |
+| concat	 	 |           |     o     |       o   |     o    |          |          |
+| copy	 	 	 |           |   n/a     |     o   |     n/a  |          |          |
+| countBy	 	 |           |  ADD     |     ADD  |      o   |          |          |
+| create	 	 |           |   ADD    |      o    |    ADD   |          |          |
+| delay	 	 	 |           |    n/a    |    n/a    |    o   |          |          |
+| distinct	 |           |   ADD     |     ADD   |     o    |          |          |
+| distinctBy |           |    ADD    |    ADD    |    o     |          |          |
+| empty	 	 	 |           |    o      |    o      |      o   |          |          |
+| exactlyOne |           |    ADD    |    ADD    |        o |          |          |
+| exists	 	 |           |     o     |       o   |     o    |          |          |
+| exists2	 	 |           |    o      |        o  |      o   |          |          |
+| fill	 	 	 |           |   n/a     |     o     |     n/a  |          |          |
+| filter	 	 |           |   o       |     o     |     o    |          |          |
+| find	 	 	 |           |   o       |     o     |     o    |          |          |
+| findIndex	 |           |  o        |      o    |      o   |          |          |
+| fold	 	 	 |           |     o     |     o     |     o    |          |          |
 | fold2	 	 	 |           |           |           |          |          |          |
 | foldBack	 |           |           |           |          |          |          |
 | foldBack2	 |           |           |           |          |          |          |
