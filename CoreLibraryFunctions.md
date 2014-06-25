@@ -68,10 +68,8 @@ The proposal below is to complete the matrix for List, Array and Seq w.r.t. func
 | mapi2      |           |  o        |   o       |    ADD   |          |          |
 | max        |           |    o      | o         |  o       |   ---       |     ---     |
 | maxBy      |           |    o      | o         |    o     |   ---       |     ---     |
-| maxWith      |  new, using comparer function         |    ADD      |   ADD       |    ADD     |   ---       |     ---     |
 | min        |           |  o        |         o |  o       |   ---       |     ---     |
 | minBy      |           |    o      |   o       |    o     |   ---       |     ---     |
-| minWith      |  new, using comparer function         |    ADD      |   ADD       |    ADD     |   ---       |     ---     |
 | nth        |           |      o    | ADD       |  o       |          |          |
 | pairwise   |           |     ADD   |    ADD    |     o    |          |          |
 | permute    |           |    o      |       o   |    ADD   |          |          |
