@@ -13,7 +13,7 @@
 | concat	 	 |           |     o     |       o   |     o    |          |          |
 | copy	 	 	 |           |   n/a     |     o     |     n/a  |          |          |
 | countBy	 	 |           |  ADD      |     ADD   |      o   |          |          |
-| create	 	 |           |   ADD     |      o    |    ADD   |          |          |
+| create	 	 |           |   n/a     |      o    |    n/a   |          |          |
 | delay	 	 	 |           |    n/a    |    n/a    |    o     |          |          |
 | distinct	 |           |   ADD     |     ADD   |     o    |          |          |
 | distinctBy |           |    ADD    |    ADD    |    o     |          |          |
@@ -47,54 +47,54 @@
 | map2	 	 	 |           |   o       |    o      |     o    |          |          |
 | map3	 	 	 |           |   o       |    ADD    |   ADD    |          |          |
 | mapi	 	 	 |           |   o       |    o      |     o    |          |          |
-| mapi2	 	 	 |           |           |           |          |          |          |
-| max	 	 	   |           |           |           |          |          |          |
-| maxBy	 	   |           |           |           |          |          |          |
-| min	 	 	   |           |           |           |          |          |          |
-| minBy	 	 	 |           |           |           |          |          |          |
-| nth	 	 	   |           |           |           |          |          |          |
-| ofArray	 	 |           |           |           |          |          |          |
-| ofList	 	 |           |           |           |          |          |          |
-| ofSeq	 	 	 |           |           |           |          |          |          |
-| pairwise	 |           |           |           |          |          |          |
-| partition	 |           |           |           |          |          |          |
-| permute	 	 |           |           |           |          |          |          |
-| pick	 	 	 |           |           |           |          |          |          |
-| readonly	 |           |           |           |          |          |          |
-| reduce	 	 |           |           |           |          |          |          |
-| reduceBack |           |           |           |          |          |          |
-| replicate	 | Similar to ‘copy’  |           |           |           |          |          |
-| rev	 	 	 	 |           |           |           |          |          |          |
-| scan	 	 	 |           |           |           |          |          |          |
-| scanBack	 |           |           |           |          |          |          |
-| set	 	 	 	 |           |           |           |          |          |          |
-| singleton	 |           |           |           |          |          |          |
-| skip	 	 	 |           |           |           |          |          |          |
-| skipWhile	 |           |           |           |          |          |          |
-| sort	 	 	 |           |           |           |          |          |          |
-| sortBy	 	 |           |           |           |          |          |          |
-| sortInPlace      |           |           |           |          |          |          |
-| sortInPlaceBy	   |           |           |           |          |          |          |
-| sortInPlaceWith	 |           |           |           |          |          |          |
-| sorthWith	 	 	 	 |           |           |           |          |          |          |
-| sub	 	 	 	   |           |           |           |          |          |          |
-| sum	 	 	 	   |           |           |           |          |          |          |
-| sumBy	 	 	 	 |           |           |           |          |          |          |
-| tail	       | ‘tail’ usually indicates a list, but I’ve seen this called ‘rest’ in other languages, a dedicated version of “skip 1”	 	 	  |           |           |           |          |  
-| take	 	 	 	 |           |           |           |          |          |          |
-| takeWhile	 	 |           |           |           |          |          |          |
-| toArray	     |           |           |           |          |          |          |
-| toList	     |           |           |           |          |          |          |	 	 	         
-| toSeq	 	 	   |           |           |           |          |          |          |
-| truncate	 	 |           |           |           |          |          |          |
-| tryFind	 	 	 |           |           |           |          |          |          |
-| tryFindIndex |           |           |           |          |          |          |
-| tryPick	 	 	 |           |           |           |          |          |          |
-| unfold	 	 	 |           |           |           |          |          |          |
-| unzip	 	 	 	 |           |           |           |          |          |          |
-| unzip3	 	 	 |           |           |           |          |          |          |
-| where	       | Same as ‘filter’	|           |          |          |          |          |
-| windowed	 	 |           |           |           |          |          |          |
-| zeroCreate	 |           |           |           |          |          |          |
-| zip	 	 	 	   |           |           |           |          |          |          |
-| zip3	 	 	 	 |           |           |           |          |          |          |
+| mapi2	 	 	 |           |  o        |   o        |    ADD      |          |          |
+| max	 	 	   |           |    o      | o          |  o        |          |          |
+| maxBy	 	   |           |    o      | o          |    o      |          |          |
+| min	 	 	   |           |  o        |         o  |  o        |          |          |
+| minBy	 	 	 |           |    o       |   o        |    o      |          |          |
+| nth	 	 	   |           |      o     | ADD          |  o        |          |          |
+| ofArray	 	 |           |      o     | n/a          |    o      |          |          |
+| ofList	 	 |           |   n/a        |    o       |   o       |          |          |
+| ofSeq	 	 	 |           |      o     |       o    |    n/a      |          |          |
+| pairwise	 |           |     ADD      |    ADD       |     o     |          |          |
+| partition	 |           |    o       |       o    |    n/a      |          |          |
+| permute	 	 |           |    o       |       o    |      n/a    |          |          |
+| pick	 	 	 |           |     o      |        o   |     o     |          |          |
+| readonly	 |           |     n/a      |      n/a     |   o       |          |          |
+| reduce	 	 |           |     o      |        o   |     o     |          |          |
+| reduceBack |           |    o       |         o  |      ADD    |          |          |
+| replicate	 | Similar to ‘create’  |     o      |    ADD       |   ADD        |          |          |
+| rev	 	 	 	 |           |    o       |   o        |    ADD      |          |          |
+| scan	 	 	 |           |     o      |      o     |     o     |          |          |
+| scanBack	 |           |     o      |    o       |   ADD       |          |          |
+| set	 	 	 	 |           |    n/a     |   o        |    n/a      |          |          |
+| singleton	 |           |    ADD    |     ADD      |    o      |          |          |
+| skip	 	 	 |           |   ADD        |      ADD     |   o       |          |          |
+| skipWhile	 |           |  ADD         |     ADD      |    o      |          |          |
+| sort	 	 	 |           | o          |    o       |     o     |          |          |
+| sortBy	 	 |           |   o        |      o     |     o     |          |          |
+| sortInPlace  |         |    n/a     |           |          |          |          |
+| sortInPlaceBy  |       |           |           |          |          |          |
+| sortInPlaceWith	 |     |           |           |          |          |          |
+| sorthWith	 	 	 	 |     |           |           |          |          |          |
+| sub	 	 	 	 |           |           |           |          |          |          |
+| sum	 	 	 	 |           |           |           |          |          |          |
+| sumBy	 	 	 |           |           |           |          |          |          |
+| tail	     | ‘tail’ usually indicates a list, but I’ve seen this called ‘rest’ in other languages, a dedicated version of “skip 1”	 	 	  |           |           |           |          |  
+| take	 	 	 |           |           |           |          |          |          |
+| takeWhile	 |           |           |           |          |          |          |
+| toArray	   |           |           |           |          |          |          |
+| toList	   |           |           |           |          |          |          |	 	 	         
+| toSeq	 	 	 |           |           |           |          |          |          |
+| truncate	 |           |           |           |          |          |          |
+| tryFind	 	 |           |           |           |          |          |          |
+| tryFindIndex |         |           |           |          |          |          |
+| tryPick	 	 |           |           |           |          |          |          |
+| unfold	 	 |           |           |           |          |          |          |
+| unzip	 	 	 |           |           |           |          |          |          |
+| unzip3	 	 |           |           |           |          |          |          |
+| where	     | Same as ‘filter’	|           |          |          |          |          |
+| windowed	 |           |           |           |          |          |          |
+| zeroCreate |           |           |           |          |          |          |
+| zip	 	 	 	 |           |           |           |          |          |          |
+| zip3	 	 	 |           |           |           |          |          |          |
