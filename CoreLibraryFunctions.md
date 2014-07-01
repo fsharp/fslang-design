@@ -81,7 +81,7 @@ The proposal below is to complete the matrix for List, Array and Seq w.r.t. func
 | pick       |           |     o     |        o  |     o    |   ---       |     ---     |
 | reduce     |           |     o     |        o  |     o    |   ---       |     ---     |
 | reduceBack |           |    o      |         o |      ADD |          |          |
-| replicate  |           |     o    |    ADD    |   ADD    |          |          |
+| replicate  |   see note        |     o    |    ADD    |   ADD    |          |          |
 | rev        |           |    o      |   o       |    ADD   |          |          |
 | scan       |           |     o     |      o    |     o    | ---         |   ---       |
 | scanBack   |           |     o     |    o      |   ADD    |          |          |
