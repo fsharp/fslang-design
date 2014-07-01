@@ -34,6 +34,7 @@ The proposal below is to complete the matrix for List, Array and Seq w.r.t. func
 | compareWith|           |  ADD      |     ADD   |     o    |          |          |
 | concat     |           |     o     |       o   |     o    |   ---       | ---         |
 | countBy    |           |  ADD      |     ADD   |      o   |          |          |
+| create     | See note          |   ADD     |      o    |    ADD   |          |          |
 | distinct   |           |   ADD     |     ADD   |     o    |          |          |
 | distinctBy |           |    ADD    |    ADD    |    o     |          |          |
 | empty      |           |    o      |    o      |      o   |   ---       |   ---       |
@@ -108,6 +109,9 @@ The proposal below is to complete the matrix for List, Array and Seq w.r.t. func
 | zip        |           |    o      |  o        |  o       |   ---       |   ---       |
 | zip3       |           |    o      |  o        |  o       |   ---       |   ---       |
 
+Note: ``Array.create`` and ``List.replicate`` have the same signature and serve the same purpose.  Given that
+both already exist, it seems sensible to complete the matrix and implement both ``create`` and ``replicate`` for all collection types.
+
 Note: In F# 3.0 Seq.where was defined as a synonym for Seq.filter, mainly due to the use of "where" in query expressions. Given
 it already  exists as a synonym (= decision made) it seems sensible to just complete the matrix and define List.where and Array.where as well.
 
@@ -136,7 +140,6 @@ These operators are not defined for Seq.* for performance reasons because using 
 |:-----------|:----------|:---------:|:---------:|:--------:|:--------:|:--------:|
 | blit       |           |     n/a   |   o       |   n/a    |          |          |
 | copy       |           |   n/a     |     o     |     n/a  |          |          |
-| create     |           |   n/a     |      o    |    n/a   |          |          |
 | fill       |           |   n/a     |     o     |     n/a  |          |          |
 | get        |           |    n/a    |     o     |  n/a     |          |          |
 | set        |           |    n/a    |   o       |    n/a   |          |          |
