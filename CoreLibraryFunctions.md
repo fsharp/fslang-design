@@ -28,16 +28,16 @@ The proposal below is to complete the matrix for List, Array and Seq w.r.t. func
 | append     |           |     o     |    o      |    o     |   ---       |    ---      |
 | average    |           |      o    |        o  |      o   |   ---       |  ---        |
 | averageBy  |           |    o      |      o    |    o     |   ---       |  ---        |
-| contains     |           |   ADD       |     ADD     |   ADD      |   ---       |  ---        |
+| contains   |   new     |   ADD       |     ADD     |   ADD      |   [@max_malook](https://twitter.com/max_malook)    | [PR submitted](https://visualfsharp.codeplex.com/SourceControl/network/forks/mexx24/visualfsharp/contribution/7030)  |
 | choose     |           |   o       |     o     |   o      |   ---       |  ---        |
 | collect    |           |  o        |      o    |      o   |   ---       |  ---        |
-| compareWith|           |  ADD      |     ADD   |     o    |          |          |
+| compareWith|           |  ADD      |     ADD   |     o    |   [@sforkmann](https://twitter.com/sforkmann)       |  [PR submitted](https://visualfsharp.codeplex.com/SourceControl/network/forks/forki/fsharp/contribution/7040)        |
 | concat     |           |     o     |       o   |     o    |   ---       | ---         |
-| countBy    |           |  ADD      |     ADD   |      o   |          |          |
-| distinct   |           |   ADD     |     ADD   |     o    |          |          |
-| distinctBy |           |    ADD    |    ADD    |    o     |          |          |
+| countBy    |           |  ADD      |     ADD   |      o   |    [@sforkmann](https://twitter.com/sforkmann)      |  [PR submitted](https://visualfsharp.codeplex.com/SourceControl/network/forks/forki/fsharp/contribution/7068)        |
+| distinct   |           |   ADD     |     ADD   |     o    |   [@sforkmann](https://twitter.com/sforkmann)       |   [PR submitted](https://visualfsharp.codeplex.com/SourceControl/network/forks/forki/fsharp/contribution/7047)       |
+| distinctBy |           |    ADD    |    ADD    |    o     |   [@sforkmann](https://twitter.com/sforkmann)       |   [PR submitted](https://visualfsharp.codeplex.com/SourceControl/network/forks/forki/fsharp/contribution/7048)       |
 | empty      |           |    o      |    o      |      o   |   ---       |   ---       |
-| exactlyOne |           |    ADD    |    ADD    |        o |          |          |
+| exactlyOne |           |    ADD    |    ADD    |        o |   [@sforkmann](https://twitter.com/sforkmann)       |   [PR submitted](https://visualfsharp.codeplex.com/SourceControl/network/forks/forki/fsharp/contribution/7038)       |
 | exists     |           |     o     |       o   |     o    |   ---       |   ---       |
 | exists2    |           |    o      |        o  |      o   |   ---       |   ---       |
 | filter     |           |   o       |     o     |     o    |   ---       |     ---     |
@@ -52,39 +52,39 @@ The proposal below is to complete the matrix for List, Array and Seq w.r.t. func
 | forall     |           |   o       |  o        |     o    |    ---      |   ---       |
 | forall2    |           |  o        |   o       |      o   |   ---       |     ---     |
 | groupBy    |           |    o      |       o   |    ADD   |          |          |
-| head       |           |   o       |    ADD    |   o      |          |          |
+| head       |           |   o       |    ADD    |   o      |   [@sforkmann](https://twitter.com/sforkmann)       |   [PR submitted](https://visualfsharp.codeplex.com/SourceControl/network/forks/forki/fsharp/contribution/7069)       |
 | indexed       |   new, signature ``indexed: C<T> -> C<int*T>``        |   o       |    o      |     o    |   ---       |   ---       |
 | init       |           |   o       |    o      |     o    |   ---       |   ---       |
 | isEmpty    |           |    o      |     o     |      o   |   ---       |     ---     |
-| item    |   See note. SIgnature ``int -> C<'T> -> 'T``        |      ADD    | ADD       |  ADD       |          |          |
+| item    |   New, see note. SIgnature ``int -> C<'T> -> 'T``        |      ADD    | ADD       |  ADD       |          |          |
 | iter       |           |   o       |      o    |     o    |   ---       |     ---     |
 | iter2      |           |    o      |       o   |    o     |   ---       |       ---   |
 | iteri      |           |    o      |       o   |    o     |   ---       |     ---     |
 | iteri2     |           |   o       |      o    |   ADD    |          |          |
-| last       |           |   ADD     |    ADD    |     o    |          |          |
+| last       |           |   ADD     |    ADD    |     o    |   [@sforkmann](https://twitter.com/sforkmann)       |    [PR submitted](https://visualfsharp.codeplex.com/SourceControl/network/forks/forki/fsharp/contribution/7046)      |
 | length     |           |   o       |    o      |     o    |   ---       |   ---       |
 | map        |           |    o      |     o     |      o   |   ---       |     ---     |
 | map2       |           |   o       |    o      |     o    |   ---       |     ---     |
 | map3       |           |   o       |    ADD    |   ADD    |          |          |
 | mapi       |           |   o       |    o      |     o    |   ---       |     ---     |
 | mapi2      |           |  o        |   o       |    ADD   |          |          |
-| mapFold       | new map + fold, with signature ```mapFold : ('State -> 'T -> 'U * 'State) -> 'State -> C<'T> -> C<'U> * 'State``` e.g. [see here](https://github.com/fsharp/fsharp/blob/8c82d57a6e8cc131740316b00f199d9d48072346/src/absil/illib.fs#L77)          |   o       |    o      |     o    |   ---       |     ---     |
-| mapFoldBack       | new map + fold, with signature ```mapFoldBack : ('T -> 'State -> 'U * 'State) -> C<'T> -> 'State -> C<'U> * 'State```
+| mapFold       | New, map + fold, with signature ```mapFold : ('State -> 'T -> 'U * 'State) -> 'State -> C<'T> -> C<'U> * 'State``` e.g. [see here](https://github.com/fsharp/fsharp/blob/8c82d57a6e8cc131740316b00f199d9d48072346/src/absil/illib.fs#L77)          |   o       |    o      |     o    |   ---       |     ---     |
+| mapFoldBack       | New, map + fold, with signature ```mapFoldBack : ('T -> 'State -> 'U * 'State) -> C<'T> -> 'State -> C<'U> * 'State```
 | max        |           |    o      | o         |  o       |   ---       |     ---     |
 | maxBy      |           |    o      | o         |    o     |   ---       |     ---     |
 | min        |           |  o        |         o |  o       |   ---       |     ---     |
 | minBy      |           |    o      |   o       |    o     |   ---       |     ---     |
 | nth        |  see note         |      long-term deprecate, see note    | long-term deprecate, see note       |  long-term deprecate, see note   |          |          |
-| pairwise   |           |     ADD   |    ADD    |     o    |          |          |
+| pairwise   |           |     ADD   |    ADD    |     o    |  [@sforkmann](https://twitter.com/sforkmann)        |   [PR submitted](https://visualfsharp.codeplex.com/SourceControl/network/forks/forki/fsharp/contribution/7045)       |
 | permute    |           |    o      |       o   |    ADD   |          |          |
 | pick       |           |     o     |        o  |     o    |   ---       |     ---     |
 | reduce     |           |     o     |        o  |     o    |   ---       |     ---     |
 | reduceBack |           |    o      |         o |      ADD |          |          |
-| replicate  |           |     o    |    ADD    |   ADD    |          |          |
+| replicate  |           |     o    |    ADD    |   ADD    |    [@sforkmann](https://twitter.com/sforkmann)      |    [PR submitted](https://visualfsharp.codeplex.com/SourceControl/network/forks/forki/fsharp/contribution/7060)      |
 | rev        |           |    o      |   o       |    ADD   |          |          |
 | scan       |           |     o     |      o    |     o    | ---         |   ---       |
 | scanBack   |           |     o     |    o      |   ADD    |          |          |
-| singleton  |           |    ADD    |     ADD   |    o     |          |          |
+| singleton  |           |    ADD    |     ADD   |    o     |   [@sforkmann](https://twitter.com/sforkmann)       |    [PR submitted](https://visualfsharp.codeplex.com/SourceControl/network/forks/forki/fsharp/contribution/7041)      |
 | skip       |           |   ADD     |      ADD  |   o      |          |          |
 | skipWhile  |           |  ADD      |     ADD   |    o     |          |          |
 | sort       |           | o         |    o      |     o    |    ---      |   ---       |
@@ -93,17 +93,17 @@ The proposal below is to complete the matrix for List, Array and Seq w.r.t. func
 | sum        |           |    o      |   o       |   o      |   ---       |   ---       |
 | sumBy      |           |    o      |   o       |   o      |   ---       |    ---      |
 | tail       |           |    o      |  ADD      |  ADD     |          |          |  
-| take       |           |    ADD    |   ADD     |  o       |          |          |
-| takeWhile  |           |    ADD    |  ADD      | o        |          |          |
+| take       |           |    ADD    |   ADD     |  o       |  [@sforkmann](https://twitter.com/sforkmann)        |   [PR submitted](https://visualfsharp.codeplex.com/SourceControl/network/forks/forki/fsharp/contribution/7049)       |
+| takeWhile  |           |    ADD    |  ADD      | o        |   [@sforkmann](https://twitter.com/sforkmann)       |   [PR submitted](https://visualfsharp.codeplex.com/SourceControl/network/forks/forki/fsharp/contribution/7050)       |
 | truncate   |           |    ADD    | ADD       |  o       |          |          |
 | tryFind    |           |    o      |  o        |  o       |   ---       | ---         |
 | tryFindIndex |         |    o      | o         | o        |   ---       | ---         |
-| tryHead    |    new       |    ADD      |  ADD        |  ADD       |   ---       | ---         |
+| tryHead    |    new       |    ADD      |  ADD        |  ADD       |   [@rodrigovidal](https://twitter.com/rodrigovidal)      | [PR submitted](https://visualfsharp.codeplex.com/SourceControl/network/forks/rodrigovidal/visualfsharp/contribution/7057)     |
 | tryItem    |   new         |      ADD    | ADD       |  ADD       |          |          |
 | tryLast    |    new       |    ADD      |  ADD        |  ADD       |   ---       | ---         |
 | tryPick    |           |    o      |  o        | o        |   ---       | ---         |
 | unfold     |           |    ADD    | ADD       |  o       |          |          |
-| where      | syn. filter |  ADD    |  ADD      |  o       |          |          |
+| where      | syn. filter |  ADD    |  ADD      |  o       |  [@sforkmann](https://twitter.com/sforkmann)  |  [PR submitted](https://visualfsharp.codeplex.com/SourceControl/network/forks/forki/fsharp/contribution/7037)        |
 | windowed   |           |    ADD    |  ADD      |  o       |          |          |
 | zip        |           |    o      |  o        |  o       |   ---       |   ---       |
 | zip3       |           |    o      |  o        |  o       |   ---       |   ---       |
@@ -121,12 +121,12 @@ Note: In F# 3.x, ``nth`` is defined with inconsistent signatures for Array and L
 These operators are not defined for Seq.* for performance reasons because using them would require iterating the input sequence twice.
 
 | Note it is arguable that if these are not defined, then Seq.tail, Seq.skip and Seq.skipWhile should also not be defined, since
-| they implicitly skip inputs and can be a performacne trap, especially when used recursively.
+| they implicitly skip inputs and can be a performance trap, especially when used recursively.
 
 | Function   | Comment   | List      | Array     | Seq      |   Assigned To       |    Status      |
 |:-----------|:----------|:---------:|:---------:|:--------:|:--------:|:--------:|
 | partition  |           |    o      |       o   |    n/a    |  ---        |   ---       |
-| splitAt  |      new, taking index     |    ADD      |    ADD      |  n/a     |          |          |
+| splitAt  |      new, taking index     |    ADD      |    ADD      |  n/a     |   [@sforkmann](https://twitter.com/sforkmann)       |   [PR submitted](https://visualfsharp.codeplex.com/SourceControl/network/forks/forki/fsharp/contribution/7052)      |
 | unzip      |           |    o      |   o       | n/a       |  ---        |  ---        |
 | unzip3     |           |    o      |  o        | n/a       |  ---        |  ---        |
 
