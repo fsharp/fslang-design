@@ -46,7 +46,7 @@ The proposal below is to complete the matrix for List, Array and Seq w.r.t. func
 | findIndex  |           |  o        |      o    |      o   | ---         |     ---     |
 | findIndexBack  |  new           |  ADD        |      ADD    |      ADD   | ---         |     ---     |
 | fold       |           |     o     |     o     |     o    | ---         |     ---     |
-| fold2      |           |   o       |    o      |     ADD  |          |          |
+| fold2      |           |   o       |    o      |     ADD  |   [@sforkmann](https://twitter.com/sforkmann)       |   [PR submitted](https://visualfsharp.codeplex.com/SourceControl/network/forks/forki/fsharp/contribution/7075)       |
 | foldBack   |           |   o       |    o      |   ADD    |          |          |
 | foldBack2  |           |   o       |   o       |    ADD   |          |          |
 | forall     |           |   o       |  o        |     o    |    ---      |   ---       |
