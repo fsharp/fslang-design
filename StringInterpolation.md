@@ -2,6 +2,8 @@
 # F# 4.0+ Proposal: steal nice println syntax from Swift
 There is an approved [proposal] [1] to extend existing printf functionality with [string interpolation][2].
 
+[Design discussion thread][7].
+
 Proposed syntax: 
 > "%(**embedded expression**)"
 
@@ -33,3 +35,4 @@ Should we always prefer one way of printing things (and if yes - which one) or p
 [4]:http://msdn.microsoft.com/en-us/library/system.string.concat(v=vs.110).aspx
 [5]:http://msdn.microsoft.com/en-us/library/system.object.tostring(v=vs.110).aspx
 [6]:http://msdn.microsoft.com/en-us/library/ee370560.aspx
+[7]:https://github.com/fsharp/FSharpLangDesign/issues/6
