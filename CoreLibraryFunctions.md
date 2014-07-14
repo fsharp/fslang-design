@@ -65,7 +65,7 @@ The proposal below is to complete the matrix for List, Array and Seq w.r.t. func
 | length     |           |   o       |    o      |     o    |   done       |   done       |
 | map        |           |    o      |     o     |      o   |   done       |     done     |
 | map2       |           |   o       |    o      |     o    |   done       |     done     |
-| map3       |           |   o       |    ADD    |   ADD    |          |          |
+| map3       |           |   o       |    ADD    |   ADD    |   [@AndWeAccelerate](https://twitter.com/AndWeAccelerate)       |    [PR submitted](https://visualfsharp.codeplex.com/SourceControl/network/forks/andrew_khmylov/fsharp/contribution/7115)      |
 | mapi       |           |   o       |    o      |     o    |   done       |     done     |
 | mapi2      |           |  o        |   o       |    ADD   |          |          |
 | mapFold       | New, map + fold, with signature ```mapFold : ('State -> 'T -> 'U * 'State) -> 'State -> C<'T> -> C<'U> * 'State``` e.g. [see here](https://github.com/fsharp/fsharp/blob/8c82d57a6e8cc131740316b00f199d9d48072346/src/absil/illib.fs#L77)          |   o       |    o      |     o    |   done       |     done     |
