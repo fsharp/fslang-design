@@ -60,7 +60,7 @@ The proposal below is to complete the matrix for List, Array and Seq w.r.t. func
 | iter       |           |   o       |      o    |     o    |   done       |     done     |
 | iter2      |           |    o      |       o   |    o     |   done       |       done   |
 | iteri      |           |    o      |       o   |    o     |   done       |     done     |
-| iteri2     |           |   o       |      o    |   ADD    |          |          |
+| iteri2     |           |   o       |      o    |   ADD    |   [@paddymcdonald](https://twitter.com/paddymcdonald)       |          |
 | last       |           |   ADD     |    ADD    |     o    |   [@sforkmann](https://twitter.com/sforkmann)       |    [PR submitted](https://visualfsharp.codeplex.com/SourceControl/network/forks/forki/fsharp/contribution/7046)      |
 | length     |           |   o       |    o      |     o    |   done       |   done       |
 | map        |           |    o      |     o     |      o   |   done       |     done     |
