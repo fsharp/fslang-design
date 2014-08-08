@@ -102,7 +102,7 @@ The proposal below is to complete the matrix for List, Array and Seq w.r.t. func
 | tryFindIndex |         |    o      | o         | o        |   done       | done         |
 | tryHead    |    new       |    ADD      |  ADD        |  ADD       |   [@rodrigovidal](https://twitter.com/rodrigovidal)      | [PR submitted](https://visualfsharp.codeplex.com/SourceControl/network/forks/rodrigovidal/visualfsharp/contribution/7057)     |
 | tryItem    |   new         |      ADD    | ADD       |  ADD       |   [@max_malook](https://twitter.com/max_malook)    | [PR submitted](https://visualfsharp.codeplex.com/SourceControl/network/forks/mexx24/visualfsharp/contribution/7113)     |
-| tryLast    |    new       |    ADD      |  ADD        |  ADD       |          |          |
+| tryLast    |    new       |    ADD      |  ADD        |  ADD       |     [@simonhdickson](https://twitter.com/simonhdickson)     |          |
 | tryPick    |           |    o      |  o        | o        |   done       | done         |
 | unfold     |           |    ADD    | ADD       |  o       |          |          |
 | where      | syn. filter |  ADD    |  ADD      |  o       |  [@sforkmann](https://twitter.com/sforkmann)  |  [PR submitted](https://visualfsharp.codeplex.com/SourceControl/network/forks/forki/fsharp/contribution/7037)        |
