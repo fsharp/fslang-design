@@ -86,7 +86,7 @@ The proposal below is to complete the matrix for List, Array and Seq w.r.t. func
 | scanBack   |           |     o     |    o      |   ADD    |          |          |
 | singleton  |           |    ADD    |     ADD   |    o     |   [@sforkmann](https://twitter.com/sforkmann)       |    [PR submitted](https://visualfsharp.codeplex.com/SourceControl/network/forks/forki/fsharp/contribution/7041)      |
 | skip       |           |   ADD     |      ADD  |   o      |          |          |
-| skipWhile  |           |  ADD      |     ADD   |    o     |          |          |
+| skipWhile  |           |  ADD      |     ADD   |    o     |   [@paddymcdonald](https://twitter.com/paddymcdonald)       |    [PR submitted](https://visualfsharp.codeplex.com/SourceControl/network/forks/PatrickMcDonald/visualfsharp/contribution/7282)      |
 | sort       |           | o         |    o      |     o    |    done      |   done       |
 | sortBy     |           |   o       |      o    |     o    |   done       |   done       |
 | sortWith  |           |    o      |    o      |  ADD     |          |          |
