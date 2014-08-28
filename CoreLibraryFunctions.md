@@ -8,15 +8,15 @@ The overall status of F# Future Language Design Items [can be found here](https:
 New functions added in this proposal: splitAt, contains, findBack, findIndexBack, item, tryItem, indexed, mapFold, mapFoldBack, tryLast, tryHead.
 
 If you would like to work on one or more of these function implementations, please [edit and submit a PR to this document](https://github.com/dsyme/FSLangDesignGists/edit/master/CoreLibraryFunctions.md) by
-adding an entry to column "assigned to" indicating you're willing to code, test and submit the the functions to 
+adding an entry to column "assigned to" indicating you're willing to code, test and submit the the functions to
 [Visual F# CodePlex Open Git Repo branch "fsharp4"](http://visualfsharp.codeplex.com).  If you have questions, please tweet @dsyme, or raise an issue in this
 forum, or discuss on fslang.uservoice.com, link above.  General guidelines and best practices to keep in mind when developing and testing these functions can be found [here](https://visualfsharp.codeplex.com/wikipage?title=Implementing%20FSharp.Core%20collection-processing%20functions).
 
-The F# 2.x and 3.x philosophy for these functions was somewhat irregular. The majority of functions (e.g. map, filter, groupBy, averageBy) 
-were defined for Seq, but some were not present on List and Array (e.g. groupBy).  This leads to awkward code where Seq-producing functions 
+The F# 2.x and 3.x philosophy for these functions was somewhat irregular. The majority of functions (e.g. map, filter, groupBy, averageBy)
+were defined for Seq, but some were not present on List and Array (e.g. groupBy).  This leads to awkward code where Seq-producing functions
 are used even when List is an input. Seq.groupBy is a particular example.
 
-Also, some functions were not defined on Seq, even though they exist in List or Array. 
+Also, some functions were not defined on Seq, even though they exist in List or Array.
 
 The proposal below is to complete the matrix for List, Array and Seq w.r.t. functional collection functions.
 
@@ -85,7 +85,7 @@ The proposal below is to complete the matrix for List, Array and Seq w.r.t. func
 | scan       |           |     o     |      o    |     o    | done         |   done       |
 | scanBack   |           |     o     |    o      |   ADD    |          |          |
 | singleton  |           |    ADD    |     ADD   |    o     |   [@sforkmann](https://twitter.com/sforkmann)       |    [PR submitted](https://visualfsharp.codeplex.com/SourceControl/network/forks/forki/fsharp/contribution/7041)      |
-| skip       |           |   ADD     |      ADD  |   o      |          |          |
+| skip       |           |   ADD     |      ADD  |   o      |   [@paddymcdonald](https://twitter.com/paddymcdonald)       |     [PR submitted](https://visualfsharp.codeplex.com/SourceControl/network/forks/PatrickMcDonald/visualfsharp/contribution/7258)     |
 | skipWhile  |           |  ADD      |     ADD   |    o     |   [@paddymcdonald](https://twitter.com/paddymcdonald)       |    [PR submitted](https://visualfsharp.codeplex.com/SourceControl/network/forks/PatrickMcDonald/visualfsharp/contribution/7282)      |
 | sort       |           | o         |    o      |     o    |    done      |   done       |
 | sortBy     |           |   o       |      o    |     o    |   done       |   done       |
@@ -94,7 +94,7 @@ The proposal below is to complete the matrix for List, Array and Seq w.r.t. func
 | sortDescendingBy  |           |    o      |    o      |  ADD     |    https://fslang.uservoice.com/forums/245727-f-language/suggestions/6237671-add-sortdescending-to-seq-list-and-array      |          |
 | sum        |           |    o      |   o       |   o      |   done       |   done       |
 | sumBy      |           |    o      |   o       |   o      |   done       |    done      |
-| tail       |           |    o      |  ADD      |  ADD     |          |          |  
+| tail       |           |    o      |  ADD      |  ADD     |          |          |
 | take       |           |    ADD    |   ADD     |  o       |  [@sforkmann](https://twitter.com/sforkmann)        |   [PR submitted](https://visualfsharp.codeplex.com/SourceControl/network/forks/forki/fsharp/contribution/7049)       |
 | takeWhile  |           |    ADD    |  ADD      | o        |   [@sforkmann](https://twitter.com/sforkmann)       |   [PR submitted](https://visualfsharp.codeplex.com/SourceControl/network/forks/forki/fsharp/contribution/7050)       |
 | truncate   |           |    ADD    | ADD       |  o       |          |          |
@@ -118,7 +118,7 @@ Note: In F# 3.x, ``nth`` is defined with inconsistent signatures for Array and L
 
 
 
-## Regular functional operators producing two or more output collections 
+## Regular functional operators producing two or more output collections
 
 These operators are not defined for Seq.* for performance reasons because using them would require iterating the input sequence twice.
 
@@ -155,7 +155,7 @@ These operators are not defined for Seq.* for performance reasons because using 
 | ofList     |           |   n/a     |    o      |   o      |          |          |
 | ofArray    |           |      o    | n/a       |    o     |          |          |
 | ofSeq      |           |      o    |       o   |    n/a   |          |          |
-| toList     |           |    n/a    |  o        | o        |          |          |              
+| toList     |           |    n/a    |  o        | o        |          |          |
 | toArray    |           |    o      |  n/a      |  o       |          |          |
 | toSeq      |           |    o      | o         | n/a      |          |          |
 
