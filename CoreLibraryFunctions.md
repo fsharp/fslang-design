@@ -76,7 +76,7 @@ The proposal below is to complete the matrix for List, Array and Seq w.r.t. func
 | minBy      |           |    o      |   o       |    o     |   done       |     done     |
 | nth        |  see note         |      long-term deprecate, see note    | long-term deprecate, see note       |  long-term deprecate, see note   |   [@max_malook](https://twitter.com/max_malook)    | [PR submitted](https://visualfsharp.codeplex.com/SourceControl/network/forks/mexx24/visualfsharp/contribution/7097)  |
 | pairwise   |           |     ADD   |    ADD    |     o    |  [@sforkmann](https://twitter.com/sforkmann)        |   [PR submitted](https://visualfsharp.codeplex.com/SourceControl/network/forks/forki/fsharp/contribution/7045)       |
-| permute    |           |    o      |       o   |    ADD   |          |          |
+| permute    |           |    o      |       o   |    ADD   |   [@paddymcdonald](https://twitter.com/paddymcdonald)       |     [PR Submitted](https://visualfsharp.codeplex.com/SourceControl/network/forks/PatrickMcDonald/visualfsharp/contribution/7341)     |
 | pick       |           |     o     |        o  |     o    |   done       |     done     |
 | reduce     |           |     o     |        o  |     o    |   done       |     done     |
 | reduceBack |           |    o      |         o |      ADD |          |          |
