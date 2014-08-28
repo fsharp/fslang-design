@@ -81,7 +81,7 @@ The proposal below is to complete the matrix for List, Array and Seq w.r.t. func
 | reduce     |           |     o     |        o  |     o    |   done       |     done     |
 | reduceBack |           |    o      |         o |      ADD |          |          |
 | replicate  |           |     o    |    ADD    |   ADD    |    [@sforkmann](https://twitter.com/sforkmann)      |    [PR submitted](https://visualfsharp.codeplex.com/SourceControl/network/forks/forki/fsharp/contribution/7060)      |
-| rev        |           |    o      |   o       |    ADD   |          |          |
+| rev        |           |    o      |   o       |    ADD   |   [@paddymcdonald](https://twitter.com/paddymcdonald)       |    [PR submitted](https://visualfsharp.codeplex.com/SourceControl/network/forks/PatrickMcDonald/visualfsharp/contribution/7340)      |
 | scan       |           |     o     |      o    |     o    | done         |   done       |
 | scanBack   |           |     o     |    o      |   ADD    |          |          |
 | singleton  |           |    ADD    |     ADD   |    o     |   [@sforkmann](https://twitter.com/sforkmann)       |    [PR submitted](https://visualfsharp.codeplex.com/SourceControl/network/forks/forki/fsharp/contribution/7041)      |
