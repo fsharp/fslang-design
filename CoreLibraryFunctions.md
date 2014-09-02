@@ -42,9 +42,9 @@ The proposal below is to complete the matrix for List, Array and Seq w.r.t. func
 | exists2    |           |    o      |        o  |      o   |   done       |   done       |
 | filter     |           |   o       |     o     |     o    |   done       |     done     |
 | find       |           |   o       |     o     |     o    |   done       |     done     |
-| findBack       |    new       |   ADD       |     ADD     |     ADD    |          |          |
+| findBack       |    new       |   ADD       |     ADD     |     ADD    |    [@paddymcdonald](https://twitter.com/paddymcdonald)      |    [PR submitted](https://visualfsharp.codeplex.com/SourceControl/network/forks/PatrickMcDonald/visualfsharp/contribution/7369)      |
 | findIndex  |           |  o        |      o    |      o   | done         |     done     |
-| findIndexBack  |  new           |  ADD        |      ADD    |      ADD   |           |          |
+| findIndexBack  |  new           |  ADD        |      ADD    |      ADD   |  [@paddymcdonald](https://twitter.com/paddymcdonald)         |   [PR submitted](https://visualfsharp.codeplex.com/SourceControl/network/forks/PatrickMcDonald/visualfsharp/contribution/7369)       |
 | fold       |           |     o     |     o     |     o    | done         |     done     |
 | fold2      |           |   o       |    o      |     ADD  |   [@sforkmann](https://twitter.com/sforkmann)       |   [PR submitted](https://visualfsharp.codeplex.com/SourceControl/network/forks/forki/fsharp/contribution/7075)       |
 | foldBack   |           |   o       |    o      |   ADD    |          |          |
@@ -99,9 +99,9 @@ The proposal below is to complete the matrix for List, Array and Seq w.r.t. func
 | takeWhile  |           |    ADD    |  ADD      | o        |   [@sforkmann](https://twitter.com/sforkmann)       |   [PR submitted](https://visualfsharp.codeplex.com/SourceControl/network/forks/forki/fsharp/contribution/7050)       |
 | truncate   |           |    ADD    | ADD       |  o       |          |          |
 | tryFind    |           |    o      |  o        |  o       |   done       | done         |
-| tryFindBack       |    new       |   ADD       |     ADD     |     ADD    |          |          |
+| tryFindBack       |    new       |   ADD       |     ADD     |     ADD    |   [@paddymcdonald](https://twitter.com/paddymcdonald)       |   [PR submitted](https://visualfsharp.codeplex.com/SourceControl/network/forks/PatrickMcDonald/visualfsharp/contribution/7369)       |
 | tryFindIndex |         |    o      | o         | o        |   done       | done         |
-| tryFindIndexBack       |    new       |   ADD       |     ADD     |     ADD    |          |          |
+| tryFindIndexBack       |    new       |   ADD       |     ADD     |     ADD    |  [@paddymcdonald](https://twitter.com/paddymcdonald)        |   [PR submitted](https://visualfsharp.codeplex.com/SourceControl/network/forks/PatrickMcDonald/visualfsharp/contribution/7369)       |
 | tryHead    |    new       |    ADD      |  ADD        |  ADD       |   [@rodrigovidal](https://twitter.com/rodrigovidal)      | [PR submitted](https://visualfsharp.codeplex.com/SourceControl/network/forks/rodrigovidal/visualfsharp/contribution/7057)     |
 | tryItem    |   new         |      ADD    | ADD       |  ADD       |   [@max_malook](https://twitter.com/max_malook)    | [PR submitted](https://visualfsharp.codeplex.com/SourceControl/network/forks/mexx24/visualfsharp/contribution/7113)     |
 | tryLast    |    new       |    ADD      |  ADD        |  ADD       |     [@simonhdickson](https://twitter.com/simonhdickson)     |    [PR submitted](https://visualfsharp.codeplex.com/SourceControl/network/forks/simonhdickson/visualfsharp/contribution/7263)      |
