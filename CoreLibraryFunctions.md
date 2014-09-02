@@ -5,7 +5,7 @@ There is an approved [proposal](https://fslang.uservoice.com/forums/245727-f-lan
 
 The overall status of F# Future Language Design Items [can be found here](https://github.com/fsharp/FSharpLangDesign/blob/master/Status.md).
 
-New functions added in this proposal: splitAt, contains, findBack, findIndexBack, item, tryItem, indexed, mapFold, mapFoldBack, tryLast, tryHead.
+New functions added in this proposal: splitAt, contains, findBack, tryFindBack, findIndexBack, tryFindIndexBack, item, tryItem, indexed, mapFold, mapFoldBack, tryLast, tryHead.
 
 If you would like to work on one or more of these function implementations, please [edit and submit a PR to this document](https://github.com/dsyme/FSLangDesignGists/edit/master/CoreLibraryFunctions.md) by
 adding an entry to column "assigned to" indicating you're willing to code, test and submit the the functions to
@@ -99,7 +99,9 @@ The proposal below is to complete the matrix for List, Array and Seq w.r.t. func
 | takeWhile  |           |    ADD    |  ADD      | o        |   [@sforkmann](https://twitter.com/sforkmann)       |   [PR submitted](https://visualfsharp.codeplex.com/SourceControl/network/forks/forki/fsharp/contribution/7050)       |
 | truncate   |           |    ADD    | ADD       |  o       |          |          |
 | tryFind    |           |    o      |  o        |  o       |   done       | done         |
+| tryFindBack       |    new       |   ADD       |     ADD     |     ADD    |          |          |
 | tryFindIndex |         |    o      | o         | o        |   done       | done         |
+| tryFindIndexBack       |    new       |   ADD       |     ADD     |     ADD    |          |          |
 | tryHead    |    new       |    ADD      |  ADD        |  ADD       |   [@rodrigovidal](https://twitter.com/rodrigovidal)      | [PR submitted](https://visualfsharp.codeplex.com/SourceControl/network/forks/rodrigovidal/visualfsharp/contribution/7057)     |
 | tryItem    |   new         |      ADD    | ADD       |  ADD       |   [@max_malook](https://twitter.com/max_malook)    | [PR submitted](https://visualfsharp.codeplex.com/SourceControl/network/forks/mexx24/visualfsharp/contribution/7113)     |
 | tryLast    |    new       |    ADD      |  ADD        |  ADD       |     [@simonhdickson](https://twitter.com/simonhdickson)     |    [PR submitted](https://visualfsharp.codeplex.com/SourceControl/network/forks/simonhdickson/visualfsharp/contribution/7263)      |
