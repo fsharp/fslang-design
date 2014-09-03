@@ -68,8 +68,8 @@ The proposal below is to complete the matrix for List, Array and Seq w.r.t. func
 | map3       |           |   o       |    ADD    |   ADD    |   [@AndWeAccelerate](https://twitter.com/AndWeAccelerate)       |    [PR submitted](https://visualfsharp.codeplex.com/SourceControl/network/forks/andrew_khmylov/fsharp/contribution/7115)      |
 | mapi       |           |   o       |    o      |     o    |   done       |     done     |
 | mapi2      |           |  o        |   o       |    ADD   |   [@paddymcdonald](https://twitter.com/paddymcdonald)       |     [PR submitted](https://visualfsharp.codeplex.com/SourceControl/network/forks/PatrickMcDonald/visualfsharp/contribution/7247)     |
-| mapFold       | New, map + fold, with signature ```mapFold : ('State -> 'T -> 'U * 'State) -> 'State -> C<'T> -> C<'U> * 'State``` e.g. [see here](https://github.com/fsharp/fsharp/blob/8c82d57a6e8cc131740316b00f199d9d48072346/src/absil/illib.fs#L77)          |   o       |    o      |     o    |   done       |     done     |
-| mapFoldBack       | New, map + fold, with signature ```mapFoldBack : ('T -> 'State -> 'U * 'State) -> C<'T> -> 'State -> C<'U> * 'State```
+| mapFold       | New, map + fold, with signature ```mapFold : ('State -> 'T -> 'U * 'State) -> 'State -> C<'T> -> C<'U> * 'State``` e.g. [see here](https://github.com/fsharp/fsharp/blob/8c82d57a6e8cc131740316b00f199d9d48072346/src/absil/illib.fs#L77)          |   ADD       |    ADD      |     ADD    |          |           |
+| mapFoldBack       | New, map + fold, with signature ```mapFoldBack : ('T -> 'State -> 'U * 'State) -> C<'T> -> 'State -> C<'U> * 'State``` |   ADD       |    ADD      |     ADD    |          |           |
 | max        |           |    o      | o         |  o       |   done       |     done     |
 | maxBy      |           |    o      | o         |    o     |   done       |     done     |
 | min        |           |  o        |         o |  o       |   done       |     done     |
