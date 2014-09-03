@@ -53,7 +53,7 @@ The proposal below is to complete the matrix for List, Array and Seq w.r.t. func
 | forall2    |           |  o        |   o       |      o   |   done       |     done     |
 | groupBy    |           |    o      |       o   |    ADD   |          |          |
 | head       |           |   o       |    ADD    |   o      |   [@sforkmann](https://twitter.com/sforkmann)       |   [PR submitted](https://visualfsharp.codeplex.com/SourceControl/network/forks/forki/fsharp/contribution/7069)       |
-| indexed       |   new, signature ``indexed: C<T> -> C<int*T>``        |   o       |    o      |     o    |   ---       |   ---       |
+| indexed       |   new, signature ``indexed: C<T> -> C<int*T>``        |   ADD       |    ADD      |     ADD    |          |          |
 | init       |           |   o       |    o      |     o    |   done       |   done       |
 | isEmpty    |           |    o      |     o     |      o   |   done       |     done     |
 | item    |   New, see note. SIgnature ``int -> C<'T> -> 'T``        |      ADD    | ADD       |  ADD       |   [@max_malook](https://twitter.com/max_malook)    | [PR submitted](https://visualfsharp.codeplex.com/SourceControl/network/forks/mexx24/visualfsharp/contribution/7097)  |
