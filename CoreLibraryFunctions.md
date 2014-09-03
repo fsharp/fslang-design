@@ -47,7 +47,7 @@ The proposal below is to complete the matrix for List, Array and Seq w.r.t. func
 | findIndexBack  |  new           |  ADD        |      ADD    |      ADD   |  [@paddymcdonald](https://twitter.com/paddymcdonald)         |   [PR submitted](https://visualfsharp.codeplex.com/SourceControl/network/forks/PatrickMcDonald/visualfsharp/contribution/7369)       |
 | fold       |           |     o     |     o     |     o    | done         |     done     |
 | fold2      |           |   o       |    o      |     ADD  |   [@sforkmann](https://twitter.com/sforkmann)       |   [PR submitted](https://visualfsharp.codeplex.com/SourceControl/network/forks/forki/fsharp/contribution/7075)       |
-| foldBack   |           |   o       |    o      |   ADD    |          |          |
+| foldBack   |           |   o       |    o      |   ADD    |   [@paddymcdonald](https://twitter.com/paddymcdonald)       |   [PR submitted](https://visualfsharp.codeplex.com/SourceControl/network/forks/PatrickMcDonald/visualfsharp/contribution/7293)       |
 | foldBack2  |           |   o       |   o       |    ADD   |          |          |
 | forall     |           |   o       |  o        |     o    |    done      |   done       |
 | forall2    |           |  o        |   o       |      o   |   done       |     done     |
@@ -79,7 +79,7 @@ The proposal below is to complete the matrix for List, Array and Seq w.r.t. func
 | permute    |           |    o      |       o   |    ADD   |   [@paddymcdonald](https://twitter.com/paddymcdonald)       |     [PR Submitted](https://visualfsharp.codeplex.com/SourceControl/network/forks/PatrickMcDonald/visualfsharp/contribution/7341)     |
 | pick       |           |     o     |        o  |     o    |   done       |     done     |
 | reduce     |           |     o     |        o  |     o    |   done       |     done     |
-| reduceBack |           |    o      |         o |      ADD |          |          |
+| reduceBack |           |    o      |         o |      ADD |   [@paddymcdonald](https://twitter.com/paddymcdonald)       |    [PR submitted](https://visualfsharp.codeplex.com/SourceControl/network/forks/PatrickMcDonald/visualfsharp/contribution/7293)      |
 | replicate  |           |     o    |    ADD    |   ADD    |    [@sforkmann](https://twitter.com/sforkmann)      |    [PR submitted](https://visualfsharp.codeplex.com/SourceControl/network/forks/forki/fsharp/contribution/7060)      |
 | rev        |           |    o      |   o       |    ADD   |   [@paddymcdonald](https://twitter.com/paddymcdonald)       |    [PR submitted](https://visualfsharp.codeplex.com/SourceControl/network/forks/PatrickMcDonald/visualfsharp/contribution/7340)      |
 | scan       |           |     o     |      o    |     o    | done         |   done       |
