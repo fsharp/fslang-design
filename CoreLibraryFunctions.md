@@ -90,8 +90,8 @@ The proposal below is to complete the matrix for List, Array and Seq w.r.t. func
 | sort       |           | o         |    o      |     o    |    done      |   done       |
 | sortBy     |           |   o       |      o    |     o    |   done       |   done       |
 | sortWith  |           |    o      |    o      |  ADD     |          |          |
-| sortDescending  |           |    o      |    o      |  ADD     |  https://fslang.uservoice.com/forums/245727-f-language/suggestions/6237671-add-sortdescending-to-seq-list-and-array        |          |
-| sortDescendingBy  |           |    o      |    o      |  ADD     |    https://fslang.uservoice.com/forums/245727-f-language/suggestions/6237671-add-sortdescending-to-seq-list-and-array      |          |
+| sortDescending  |           |    o      |    o      |  ADD     |          |   [UserVoice](https://fslang.uservoice.com/forums/245727-f-language/suggestions/6237671-add-sortdescending-to-seq-list-and-array)       |
+| sortDescendingBy  |           |    o      |    o      |  ADD     |          |   [UserVoice](https://fslang.uservoice.com/forums/245727-f-language/suggestions/6237671-add-sortdescending-to-seq-list-and-array)       |
 | sum        |           |    o      |   o       |   o      |   done       |   done       |
 | sumBy      |           |    o      |   o       |   o      |   done       |    done      |
 | tail       |           |    o      |  ADD      |  ADD     |          |          |
