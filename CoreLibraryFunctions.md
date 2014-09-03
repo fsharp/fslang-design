@@ -1,5 +1,5 @@
 
-# F# 4.0+ Proposal for regularizing and extending the  List, Array and Seq modules
+# F# 4.0+ design for regularizing and extending the  List, Array and Seq modules
 
 There is an approved [proposal](https://fslang.uservoice.com/forums/245727-f-language/suggestions/5663997-make-fsharp-core-collection-functions-for-list-ar) to make the functions defined in the List, Array and Seq modules in FSharp.Core.dll more regular.
 
