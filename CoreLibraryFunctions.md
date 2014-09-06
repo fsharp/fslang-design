@@ -1,16 +1,19 @@
 
 # F# 4.0+ design for regularizing and extending the  List, Array and Seq modules
 
-There is an approved [proposal](https://fslang.uservoice.com/forums/245727-f-language/suggestions/5663997-make-fsharp-core-collection-functions-for-list-ar) to make the functions defined in the List, Array and Seq modules in FSharp.Core.dll more regular.
-
+There is an approved [proposal](https://fslang.uservoice.com/forums/245727-f-language/suggestions/5663997-make-fsharp-core-collection-functions-for-list-ar) to make the functions defined in the List, Array and Seq modules in FSharp.Core.dll more regular and to add some new functions.
 The overall status of F# Future Language Design Items [can be found here](https://github.com/fsharp/FSharpLangDesign/blob/master/Status.md).
 
 New functions added in this proposal: splitAt, contains, findBack, tryFindBack, findIndexBack, tryFindIndexBack, item, tryItem, indexed, mapFold, mapFoldBack, tryLast, tryHead.
+
+### Participating
 
 If you would like to work on one or more of these function implementations, please [edit and submit a PR to this document](https://github.com/dsyme/FSLangDesignGists/edit/master/CoreLibraryFunctions.md) by
 adding an entry to column "assigned to" indicating you're willing to code, test and submit the the functions to
 [Visual F# CodePlex Open Git Repo branch "fsharp4"](http://visualfsharp.codeplex.com).  If you have questions, please tweet @dsyme, or raise an issue in this
 forum, or discuss on fslang.uservoice.com, link above.  General guidelines and best practices to keep in mind when developing and testing these functions can be found [here](https://visualfsharp.codeplex.com/wikipage?title=Implementing%20FSharp.Core%20collection-processing%20functions).
+
+### Background
 
 The F# 2.x and 3.x philosophy for these functions was somewhat irregular. The majority of functions (e.g. map, filter, groupBy, averageBy)
 were defined for Seq, but some were not present on List and Array (e.g. groupBy).  This leads to awkward code where Seq-producing functions
@@ -20,7 +23,7 @@ Also, some functions were not defined on Seq, even though they exist in List or 
 
 The proposal below is to complete the matrix for List, Array and Seq w.r.t. functional collection functions.
 
-### Completion
+### Review and Completion
 
 This work is only completed when all rows have a status of ":)".  The library updates will only be done when all PRs are ready (or features are dropped).
 
