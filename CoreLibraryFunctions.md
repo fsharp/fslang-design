@@ -76,7 +76,7 @@ If an item is marked "low-pri" it doesn't need to be completed in order for the 
 | iter2      |           |    o      |       o   |    o     |   done       |       :)   |
 | iteri      |           |    o      |       o   |    o     |   done       |     :)     |
 | iteri2     |           |   o       |      o    |   ADD    |   [PR](https://visualfsharp.codeplex.com/SourceControl/network/forks/PatrickMcDonald/visualfsharp/contribution/7243)     | :) |
-| last       |           |   ADD     |    ADD    |     o    |   [PR](https://visualfsharp.codeplex.com/SourceControl/network/forks/forki/fsharp/contribution/7046)      |  |
+| last       |           |   ADD     |    ADD    |     o    |   [PR](https://visualfsharp.codeplex.com/SourceControl/network/forks/forki/fsharp/contribution/7046)      | :) |
 | length     |           |   o       |    o      |     o    |   done       |   :)       |
 | map        |           |    o      |     o     |      o   |   done       |     :)     |
 | map2       |           |   o       |    o      |     o    |   done       |     done     |
