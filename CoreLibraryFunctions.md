@@ -80,9 +80,9 @@ If an item is marked "low-pri" it doesn't need to be completed in order for the 
 | length     |           |   o       |    o      |     o    |   done       |   :)       |
 | map        |           |    o      |     o     |      o   |   done       |     :)     |
 | map2       |           |   o       |    o      |     o    |   done       |     done     |
-| map3       |           |   o       |    ADD    |   ADD    |       [PR](https://visualfsharp.codeplex.com/SourceControl/network/forks/andrew_khmylov/fsharp/contribution/7115)      |  |
+| map3       |           |   o       |    ADD    |   ADD    |       [PR](https://visualfsharp.codeplex.com/SourceControl/network/forks/andrew_khmylov/fsharp/contribution/7115)      | :/ (needs work)  |
 | mapi       |           |   o       |    o      |     o    |   done       |     :)     |
-| mapi2      |           |  o        |   o       |    ADD   |   [PR](https://visualfsharp.codeplex.com/SourceControl/network/forks/PatrickMcDonald/visualfsharp/contribution/7247)     |  |
+| mapi2      |           |  o        |   o       |    ADD   |   [PR](https://visualfsharp.codeplex.com/SourceControl/network/forks/PatrickMcDonald/visualfsharp/contribution/7247)     | :)  |
 | mapFold       | New, map + fold, with signature ```mapFold : ('State -> 'T -> 'U * 'State) -> 'State -> C<'T> -> C<'U> * 'State``` e.g. [see here](https://github.com/fsharp/fsharp/blob/8c82d57a6e8cc131740316b00f199d9d48072346/src/absil/illib.fs#L77)          |   ADD       |    ADD      |     ADD    |          |           |
 | mapFoldBack       | New, map + fold, with signature ```mapFoldBack : ('T -> 'State -> 'U * 'State) -> C<'T> -> 'State -> C<'U> * 'State``` |   ADD       |    ADD      |     ADD    |          |           |
 | max        |           |    o      | o         |  o       |   done       |     :)     |
