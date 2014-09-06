@@ -94,7 +94,7 @@ The proposal below is to complete the matrix for List, Array and Seq w.r.t. func
 | sortByDescending  |           |    ADD      |    ADD      |  ADD     | [@richardadalton](https://twitter.com/richardadalton) |   [UserVoice](https://fslang.uservoice.com/forums/245727-f-language/suggestions/6237671-add-sortdescending-to-seq-list-and-array)       |
 | sum        |           |    o      |   o       |   o      |   done       |   done       |
 | sumBy      |           |    o      |   o       |   o      |   done       |    done      |
-| tail       |           |    o      |  ADD      |  ADD     |          |          |
+| tail       |           |    o      |  ADD      |  ADD     |   [@bogdangaliceanu](https://twitter.com/bogdangaliceanu)       |    [PR submitted](https://visualfsharp.codeplex.com/SourceControl/network/forks/bogdangaliceanu/fsharp/contribution/7389)      |
 | take       |           |    ADD    |   ADD     |  o       |  [@sforkmann](https://twitter.com/sforkmann)        |   [PR submitted](https://visualfsharp.codeplex.com/SourceControl/network/forks/forki/fsharp/contribution/7049)       |
 | takeWhile  |           |    ADD    |  ADD      | o        |   [@sforkmann](https://twitter.com/sforkmann)       |   [PR submitted](https://visualfsharp.codeplex.com/SourceControl/network/forks/forki/fsharp/contribution/7050)       |
 | truncate   |           |    ADD    | ADD       |  o       |          |          |
