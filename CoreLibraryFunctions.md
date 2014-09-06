@@ -95,7 +95,7 @@ If an item is marked "low-pri" it doesn't need to be completed in order for the 
 | pick       |           |     o     |        o  |     o    |   done       |     :)     |
 | reduce     |           |     o     |        o  |     o    |   done       |     :)     |
 | reduceBack |           |    o      |         o |      ADD |     [PR](https://visualfsharp.codeplex.com/SourceControl/network/forks/PatrickMcDonald/visualfsharp/contribution/7293)        |  :) |
-| replicate  |           |     o    |    ADD    |   ADD    |        [PR](https://visualfsharp.codeplex.com/SourceControl/network/forks/forki/fsharp/contribution/7060)      |   |
+| replicate  |           |     o    |    ADD    |   ADD    |        [PR](https://visualfsharp.codeplex.com/SourceControl/network/forks/forki/fsharp/contribution/7060)      | :)  |
 | rev        |           |    o      |   o       |    ADD   |   [PR](https://visualfsharp.codeplex.com/SourceControl/network/forks/PatrickMcDonald/visualfsharp/contribution/7340)      |  |
 | scan       |           |     o     |      o    |     o    | done         |   :)       |
 | scanBack   |           |     o     |    o      |   ADD    |          |          |
