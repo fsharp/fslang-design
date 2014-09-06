@@ -68,7 +68,7 @@ If an item is marked "low-pri" it doesn't need to be completed in order for the 
 | indexed       |   new, signature ``indexed: C<T> -> C<int*T>``        |   ADD       |    ADD      |     ADD    |          |          |
 | init       |           |   o       |    o      |     o    |   done       |   :)       |
 | isEmpty    |           |    o      |     o     |      o   |   done       |     :)     |
-| item    |   New, see note. SIgnature ``int -> C<'T> -> 'T``        |      ADD    | ADD       |  ADD       |   [PR](https://visualfsharp.codeplex.com/SourceControl/network/forks/mexx24/visualfsharp/contribution/7097)  |     |
+| item    |   New, see note. SIgnature ``int -> C<'T> -> 'T``        |      ADD    | ADD       |  ADD       |   [PR](https://visualfsharp.codeplex.com/SourceControl/network/forks/mexx24/visualfsharp/contribution/7097)  |  :)   |
 | iter       |           |   o       |      o    |     o    |   done       |     :)     |
 | iter2      |           |    o      |       o   |    o     |   done       |       :)   |
 | iteri      |           |    o      |       o   |    o     |   done       |     :)     |
