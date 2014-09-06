@@ -23,36 +23,36 @@ The proposal below is to complete the matrix for List, Array and Seq w.r.t. func
 
 ## Regular functional functions
 
-| Function   | Comment   | List      | Array     | Seq      |   Assigned To       |    Status      |
+| Function   | Comment   | List      | Array     | Seq      |   PR |    Status      |
 |:-----------|:----------|:---------:|:---------:|:--------:|:--------:|:--------:|
-| append     |           |     o     |    o      |    o     |   done       |    done      |
-| average    |           |      o    |        o  |      o   |   done       |  done        |
-| averageBy  |           |    o      |      o    |    o     |   done       |  done        |
-| contains   |   new     |   ADD       |     ADD     |   ADD      |   [@max_malook](https://twitter.com/max_malook)    | [PR submitted](https://visualfsharp.codeplex.com/SourceControl/network/forks/mexx24/visualfsharp/contribution/7030)  |
-| choose     |           |   o       |     o     |   o      |   done       |  done        |
-| collect    |           |  o        |      o    |      o   |   done       |  done        |
-| compareWith|           |  ADD      |     ADD   |     o    |   [@sforkmann](https://twitter.com/sforkmann)       |  [PR submitted](https://visualfsharp.codeplex.com/SourceControl/network/forks/forki/fsharp/contribution/7040)        |
-| concat     |           |     o     |       o   |     o    |   done       | done         |
-| countBy    |           |  ADD      |     ADD   |      o   |    [@sforkmann](https://twitter.com/sforkmann)      |  [PR submitted](https://visualfsharp.codeplex.com/SourceControl/network/forks/forki/fsharp/contribution/7068)        |
-| distinct   |           |   ADD     |     ADD   |     o    |   [@sforkmann](https://twitter.com/sforkmann)       |   [PR submitted](https://visualfsharp.codeplex.com/SourceControl/network/forks/forki/fsharp/contribution/7047)       |
-| distinctBy |           |    ADD    |    ADD    |    o     |   [@sforkmann](https://twitter.com/sforkmann)       |   [PR submitted](https://visualfsharp.codeplex.com/SourceControl/network/forks/forki/fsharp/contribution/7048)       |
-| empty      |           |    o      |    o      |      o   |   done       |   done       |
-| exactlyOne |           |    ADD    |    ADD    |        o |   [@sforkmann](https://twitter.com/sforkmann)       |   [PR submitted](https://visualfsharp.codeplex.com/SourceControl/network/forks/forki/fsharp/contribution/7038)       |
-| exists     |           |     o     |       o   |     o    |   done       |   done       |
-| exists2    |           |    o      |        o  |      o   |   done       |   done       |
-| filter     |           |   o       |     o     |     o    |   done       |     done     |
-| find       |           |   o       |     o     |     o    |   done       |     done     |
-| findBack       |    new       |   ADD       |     ADD     |     ADD    |    [@paddymcdonald](https://twitter.com/paddymcdonald)      |    [PR submitted](https://visualfsharp.codeplex.com/SourceControl/network/forks/PatrickMcDonald/visualfsharp/contribution/7369)  :/    |
-| findIndex  |           |  o        |      o    |      o   | done         |     done     |
-| findIndexBack  |  new           |  ADD        |      ADD    |      ADD   |  [@paddymcdonald](https://twitter.com/paddymcdonald)         |   [PR submitted](https://visualfsharp.codeplex.com/SourceControl/network/forks/PatrickMcDonald/visualfsharp/contribution/7369)  :/     |
-| fold       |           |     o     |     o     |     o    | done         |     done     |
-| fold2      |           |   o       |    o      |     ADD  |   [@sforkmann](https://twitter.com/sforkmann)       |   [PR submitted](https://visualfsharp.codeplex.com/SourceControl/network/forks/forki/fsharp/contribution/7075)       |
-| foldBack   |           |   o       |    o      |   ADD    |    [@paddymcdonald](https://twitter.com/paddymcdonald)      |  [PR submitted](https://visualfsharp.codeplex.com/SourceControl/network/forks/PatrickMcDonald/visualfsharp/contribution/7293)        |
+| append     |           |     o     |    o      |    o     |   done       |    :)      |
+| average    |           |      o    |        o  |      o   |   done       |  :)        |
+| averageBy  |           |    o      |      o    |    o     |   done       |  :)        |
+| contains   |   new     |   ADD       |     ADD     |   ADD      |    [PR](https://visualfsharp.codeplex.com/SourceControl/network/forks/mexx24/visualfsharp/contribution/7030)  |   |
+| choose     |           |   o       |     o     |   o      |   done       |  :)        |
+| collect    |           |  o        |      o    |      o   |   done       |  :)        |
+| compareWith|           |  ADD      |     ADD   |     o    |   [PR](https://visualfsharp.codeplex.com/SourceControl/network/forks/forki/fsharp/contribution/7040)        |   |
+| concat     |           |     o     |       o   |     o    |   done       | :)         |
+| countBy    |           |  ADD      |     ADD   |      o   |    [PR](https://visualfsharp.codeplex.com/SourceControl/network/forks/forki/fsharp/contribution/7068)        |  |
+| distinct   |           |   ADD     |     ADD   |     o    |     [PR](https://visualfsharp.codeplex.com/SourceControl/network/forks/forki/fsharp/contribution/7047)       |  |
+| distinctBy |           |    ADD    |    ADD    |    o     |    [PR](https://visualfsharp.codeplex.com/SourceControl/network/forks/forki/fsharp/contribution/7048)       |  |
+| empty      |           |    o      |    o      |      o   |   done       |   :)       |
+| exactlyOne |           |    ADD    |    ADD    |        o |   [PR](https://visualfsharp.codeplex.com/SourceControl/network/forks/forki/fsharp/contribution/7038)       |  |
+| exists     |           |     o     |       o   |     o    |   done       |   :)       |
+| exists2    |           |    o      |        o  |      o   |   done       |   :)       |
+| filter     |           |   o       |     o     |     o    |   done       |     :)     |
+| find       |           |   o       |     o     |     o    |   done       |     :)     |
+| findBack       |    new       |   ADD       |     ADD     |     ADD    |    [PR](https://visualfsharp.codeplex.com/SourceControl/network/forks/PatrickMcDonald/visualfsharp/contribution/7369)  | :/    |
+| findIndex  |           |  o        |      o    |      o   | done         |     :)     |
+| findIndexBack  |  new           |  ADD        |      ADD    |      ADD   |   [PR](https://visualfsharp.codeplex.com/SourceControl/network/forks/PatrickMcDonald/visualfsharp/contribution/7369)  | :/     |
+| fold       |           |     o     |     o     |     o    | done         |     :)     |
+| fold2      |           |   o       |    o      |     ADD  |   [PR](https://visualfsharp.codeplex.com/SourceControl/network/forks/forki/fsharp/contribution/7075)       |  |
+| foldBack   |           |   o       |    o      |   ADD    |   [PR](https://visualfsharp.codeplex.com/SourceControl/network/forks/PatrickMcDonald/visualfsharp/contribution/7293)        | |
 | foldBack2  |           |   o       |   o       |    ADD   |          |          |
-| forall     |           |   o       |  o        |     o    |    done      |   done       |
-| forall2    |           |  o        |   o       |      o   |   done       |     done     |
-| groupBy    |           |    o      |       o   |    ADD   |  OkayX6         |   [PR submitted](https://github.com/fsharp/FSharpLangDesign/edit/master/CoreLibraryFunctions.md)       |
-| head       |           |   o       |    ADD    |   o      |   [@sforkmann](https://twitter.com/sforkmann)       |   [PR submitted](https://visualfsharp.codeplex.com/SourceControl/network/forks/forki/fsharp/contribution/7069)       |
+| forall     |           |   o       |  o        |     o    |    done      |   :)       |
+| forall2    |           |  o        |   o       |      o   |   done       |     :)     |
+| groupBy    |           |    o      |       o   |    ADD   |  [PR](https://github.com/fsharp/FSharpLangDesign/edit/master/CoreLibraryFunctions.md)       |  |
+| head       |           |   o       |    ADD    |   o      |  [PR](https://visualfsharp.codeplex.com/SourceControl/network/forks/forki/fsharp/contribution/7069)       |  |
 | indexed       |   new, signature ``indexed: C<T> -> C<int*T>``        |   ADD       |    ADD      |     ADD    |          |          |
 | init       |           |   o       |    o      |     o    |   done       |   done       |
 | isEmpty    |           |    o      |     o     |      o   |   done       |     done     |
