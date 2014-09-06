@@ -30,6 +30,9 @@ Status column -
 * :/  - reviewed but changes needed
 * (empty) - no PR or not reviewed
 
+
+If an item is marked "low-pri" it doesn't need to be completed in order for the library update to happen.
+
 ## Regular functional functions
 
 | Function   | Comment   | List      | Array     | Seq      |   PR |    Status      |
@@ -57,7 +60,7 @@ Status column -
 | fold       |           |     o     |     o     |     o    | done         |     :)     |
 | fold2      |           |   o       |    o      |     ADD  |   [PR](https://visualfsharp.codeplex.com/SourceControl/network/forks/forki/fsharp/contribution/7075)       | :) |
 | foldBack   |           |   o       |    o      |   ADD    |   [PR](https://visualfsharp.codeplex.com/SourceControl/network/forks/PatrickMcDonald/visualfsharp/contribution/7293)        | :) |
-| foldBack2  |           |   o       |   o       |    ADD   |          |          |
+| foldBack2  |           |   o       |   o       |    ADD   |  low-pri         | low-pri          |
 | forall     |           |   o       |  o        |     o    |    done      |   :)       |
 | forall2    |           |  o        |   o       |      o   |   done       |     :)     |
 | groupBy    |           |    o      |       o   |    ADD   |  [PR](https://visualfsharp.codeplex.com/SourceControl/network/forks/OkayX6/visualfsharptools/contribution/7287)       |  :)  |
