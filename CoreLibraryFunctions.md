@@ -46,7 +46,7 @@ Status column -
 | distinct   |           |   ADD     |     ADD   |     o    |     [PR](https://visualfsharp.codeplex.com/SourceControl/network/forks/forki/fsharp/contribution/7047)       |  :) |
 | distinctBy |           |    ADD    |    ADD    |    o     |    [PR](https://visualfsharp.codeplex.com/SourceControl/network/forks/forki/fsharp/contribution/7048)       |  :) |
 | empty      |           |    o      |    o      |      o   |   done       |   :)       |
-| exactlyOne |           |    ADD    |    ADD    |        o |   [PR](https://visualfsharp.codeplex.com/SourceControl/network/forks/forki/fsharp/contribution/7038)       |  |
+| exactlyOne |           |    ADD    |    ADD    |        o |   [PR](https://visualfsharp.codeplex.com/SourceControl/network/forks/forki/fsharp/contribution/7038)       |  :) |
 | exists     |           |     o     |       o   |     o    |   done       |   :)       |
 | exists2    |           |    o      |        o  |      o   |   done       |   :)       |
 | filter     |           |   o       |     o     |     o    |   done       |     :)     |
