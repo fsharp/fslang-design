@@ -37,7 +37,7 @@ Status column -
 | append     |           |     o     |    o      |    o     |   done       |    :)      |
 | average    |           |      o    |        o  |      o   |   done       |  :)        |
 | averageBy  |           |    o      |      o    |    o     |   done       |  :)        |
-| contains   |   new     |   ADD       |     ADD     |   ADD      |    [PR](https://visualfsharp.codeplex.com/SourceControl/network/forks/mexx24/visualfsharp/contribution/7030)  | :/  |
+| contains   |   new     |   ADD       |     ADD     |   ADD      |    [PR](https://visualfsharp.codeplex.com/SourceControl/network/forks/mexx24/visualfsharp/contribution/7030)  | :/ (needs work)  |
 | choose     |           |   o       |     o     |   o      |   done       |  :)        |
 | collect    |           |  o        |      o    |      o   |   done       |  :)        |
 | compareWith|           |  ADD      |     ADD   |     o    |   [PR](https://visualfsharp.codeplex.com/SourceControl/network/forks/forki/fsharp/contribution/7040)        | :)  |
@@ -51,9 +51,9 @@ Status column -
 | exists2    |           |    o      |        o  |      o   |   done       |   :)       |
 | filter     |           |   o       |     o     |     o    |   done       |     :)     |
 | find       |           |   o       |     o     |     o    |   done       |     :)     |
-| findBack       |    new       |   ADD       |     ADD     |     ADD    |    [PR](https://visualfsharp.codeplex.com/SourceControl/network/forks/PatrickMcDonald/visualfsharp/contribution/7369)  | :/    |
+| findBack       |    new       |   ADD       |     ADD     |     ADD    |    [PR](https://visualfsharp.codeplex.com/SourceControl/network/forks/PatrickMcDonald/visualfsharp/contribution/7369)  | :/ (needs work)    |
 | findIndex  |           |  o        |      o    |      o   | done         |     :)     |
-| findIndexBack  |  new           |  ADD        |      ADD    |      ADD   |   [PR](https://visualfsharp.codeplex.com/SourceControl/network/forks/PatrickMcDonald/visualfsharp/contribution/7369)  | :/     |
+| findIndexBack  |  new           |  ADD        |      ADD    |      ADD   |   [PR](https://visualfsharp.codeplex.com/SourceControl/network/forks/PatrickMcDonald/visualfsharp/contribution/7369)  | :/ (needs work)     |
 | fold       |           |     o     |     o     |     o    | done         |     :)     |
 | fold2      |           |   o       |    o      |     ADD  |   [PR](https://visualfsharp.codeplex.com/SourceControl/network/forks/forki/fsharp/contribution/7075)       |  |
 | foldBack   |           |   o       |    o      |   ADD    |   [PR](https://visualfsharp.codeplex.com/SourceControl/network/forks/PatrickMcDonald/visualfsharp/contribution/7293)        | |
@@ -108,9 +108,9 @@ Status column -
 | takeWhile  |           |    ADD    |  ADD      | o        |   [PR](https://visualfsharp.codeplex.com/SourceControl/network/forks/forki/fsharp/contribution/7050)       |  |
 | truncate   |           |    ADD    | ADD       |  o       |          |          |
 | tryFind    |           |    o      |  o        |  o       |   done       | :)         |
-| tryFindBack       |    new       |   ADD       |     ADD     |     ADD    |   [PR](https://visualfsharp.codeplex.com/SourceControl/network/forks/PatrickMcDonald/visualfsharp/contribution/7369)  |  :/   | 
+| tryFindBack       |    new       |   ADD       |     ADD     |     ADD    |   [PR](https://visualfsharp.codeplex.com/SourceControl/network/forks/PatrickMcDonald/visualfsharp/contribution/7369)  |  :/ (needs work)   | 
 | tryFindIndex |         |    o      | o         | o        |   done       | :)         |
-| tryFindIndexBack       |    new       |   ADD       |     ADD     |     ADD    |   [PR](https://visualfsharp.codeplex.com/SourceControl/network/forks/PatrickMcDonald/visualfsharp/contribution/7369) |   :/    |
+| tryFindIndexBack       |    new       |   ADD       |     ADD     |     ADD    |   [PR](https://visualfsharp.codeplex.com/SourceControl/network/forks/PatrickMcDonald/visualfsharp/contribution/7369) |   :/ (needs work)    |
 | tryHead    |    new       |    ADD      |  ADD        |  ADD       |    [PR](https://visualfsharp.codeplex.com/SourceControl/network/forks/rodrigovidal/visualfsharp/contribution/7057)     |  |
 | tryItem    |   new         |      ADD    | ADD       |  ADD       |    [PR](https://visualfsharp.codeplex.com/SourceControl/network/forks/mexx24/visualfsharp/contribution/7113)     |  |
 | tryLast    |    new       |    ADD      |  ADD        |  ADD       |         [PR](https://visualfsharp.codeplex.com/SourceControl/network/forks/simonhdickson/visualfsharp/contribution/7263)      |  |
