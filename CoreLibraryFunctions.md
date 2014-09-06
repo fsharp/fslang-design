@@ -43,8 +43,8 @@ Status column -
 | compareWith|           |  ADD      |     ADD   |     o    |   [PR](https://visualfsharp.codeplex.com/SourceControl/network/forks/forki/fsharp/contribution/7040)        | :)  |
 | concat     |           |     o     |       o   |     o    |   done       | :)         |
 | countBy    |           |  ADD      |     ADD   |      o   |    [PR](https://visualfsharp.codeplex.com/SourceControl/network/forks/forki/fsharp/contribution/7079)        | :)  |
-| distinct   |           |   ADD     |     ADD   |     o    |     [PR](https://visualfsharp.codeplex.com/SourceControl/network/forks/forki/fsharp/contribution/7047)       |  :)|
-| distinctBy |           |    ADD    |    ADD    |    o     |    [PR](https://visualfsharp.codeplex.com/SourceControl/network/forks/forki/fsharp/contribution/7048)       |  |
+| distinct   |           |   ADD     |     ADD   |     o    |     [PR](https://visualfsharp.codeplex.com/SourceControl/network/forks/forki/fsharp/contribution/7047)       |  :) |
+| distinctBy |           |    ADD    |    ADD    |    o     |    [PR](https://visualfsharp.codeplex.com/SourceControl/network/forks/forki/fsharp/contribution/7048)       |  :) |
 | empty      |           |    o      |    o      |      o   |   done       |   :)       |
 | exactlyOne |           |    ADD    |    ADD    |        o |   [PR](https://visualfsharp.codeplex.com/SourceControl/network/forks/forki/fsharp/contribution/7038)       |  |
 | exists     |           |     o     |       o   |     o    |   done       |   :)       |
