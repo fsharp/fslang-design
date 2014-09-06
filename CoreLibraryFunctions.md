@@ -54,63 +54,63 @@ The proposal below is to complete the matrix for List, Array and Seq w.r.t. func
 | groupBy    |           |    o      |       o   |    ADD   |  [PR](https://github.com/fsharp/FSharpLangDesign/edit/master/CoreLibraryFunctions.md)       |  |
 | head       |           |   o       |    ADD    |   o      |  [PR](https://visualfsharp.codeplex.com/SourceControl/network/forks/forki/fsharp/contribution/7069)       |  |
 | indexed       |   new, signature ``indexed: C<T> -> C<int*T>``        |   ADD       |    ADD      |     ADD    |          |          |
-| init       |           |   o       |    o      |     o    |   done       |   done       |
-| isEmpty    |           |    o      |     o     |      o   |   done       |     done     |
-| item    |   New, see note. SIgnature ``int -> C<'T> -> 'T``        |      ADD    | ADD       |  ADD       |   [@max_malook](https://twitter.com/max_malook)    | [PR submitted](https://visualfsharp.codeplex.com/SourceControl/network/forks/mexx24/visualfsharp/contribution/7097)  |
-| iter       |           |   o       |      o    |     o    |   done       |     done     |
-| iter2      |           |    o      |       o   |    o     |   done       |       done   |
-| iteri      |           |    o      |       o   |    o     |   done       |     done     |
-| iteri2     |           |   o       |      o    |   ADD    |   [@paddymcdonald](https://twitter.com/paddymcdonald)       |     [PR Submitted](https://visualfsharp.codeplex.com/SourceControl/network/forks/PatrickMcDonald/visualfsharp/contribution/7243)     |
-| last       |           |   ADD     |    ADD    |     o    |   [@sforkmann](https://twitter.com/sforkmann)       |    [PR submitted](https://visualfsharp.codeplex.com/SourceControl/network/forks/forki/fsharp/contribution/7046)      |
-| length     |           |   o       |    o      |     o    |   done       |   done       |
-| map        |           |    o      |     o     |      o   |   done       |     done     |
+| init       |           |   o       |    o      |     o    |   done       |   :)       |
+| isEmpty    |           |    o      |     o     |      o   |   done       |     :)     |
+| item    |   New, see note. SIgnature ``int -> C<'T> -> 'T``        |      ADD    | ADD       |  ADD       |   [PR](https://visualfsharp.codeplex.com/SourceControl/network/forks/mexx24/visualfsharp/contribution/7097)  |     |
+| iter       |           |   o       |      o    |     o    |   done       |     :)     |
+| iter2      |           |    o      |       o   |    o     |   done       |       :)   |
+| iteri      |           |    o      |       o   |    o     |   done       |     :)     |
+| iteri2     |           |   o       |      o    |   ADD    |   [PR](https://visualfsharp.codeplex.com/SourceControl/network/forks/PatrickMcDonald/visualfsharp/contribution/7243)     |  |
+| last       |           |   ADD     |    ADD    |     o    |   [PR](https://visualfsharp.codeplex.com/SourceControl/network/forks/forki/fsharp/contribution/7046)      |  |
+| length     |           |   o       |    o      |     o    |   done       |   :)       |
+| map        |           |    o      |     o     |      o   |   done       |     :)     |
 | map2       |           |   o       |    o      |     o    |   done       |     done     |
-| map3       |           |   o       |    ADD    |   ADD    |   [@AndWeAccelerate](https://twitter.com/AndWeAccelerate)       |    [PR submitted](https://visualfsharp.codeplex.com/SourceControl/network/forks/andrew_khmylov/fsharp/contribution/7115)      |
-| mapi       |           |   o       |    o      |     o    |   done       |     done     |
-| mapi2      |           |  o        |   o       |    ADD   |   [@paddymcdonald](https://twitter.com/paddymcdonald)       |     [PR submitted](https://visualfsharp.codeplex.com/SourceControl/network/forks/PatrickMcDonald/visualfsharp/contribution/7247)     |
+| map3       |           |   o       |    ADD    |   ADD    |       [PR](https://visualfsharp.codeplex.com/SourceControl/network/forks/andrew_khmylov/fsharp/contribution/7115)      |  |
+| mapi       |           |   o       |    o      |     o    |   done       |     :)     |
+| mapi2      |           |  o        |   o       |    ADD   |   [PR](https://visualfsharp.codeplex.com/SourceControl/network/forks/PatrickMcDonald/visualfsharp/contribution/7247)     |  |
 | mapFold       | New, map + fold, with signature ```mapFold : ('State -> 'T -> 'U * 'State) -> 'State -> C<'T> -> C<'U> * 'State``` e.g. [see here](https://github.com/fsharp/fsharp/blob/8c82d57a6e8cc131740316b00f199d9d48072346/src/absil/illib.fs#L77)          |   ADD       |    ADD      |     ADD    |          |           |
 | mapFoldBack       | New, map + fold, with signature ```mapFoldBack : ('T -> 'State -> 'U * 'State) -> C<'T> -> 'State -> C<'U> * 'State``` |   ADD       |    ADD      |     ADD    |          |           |
-| max        |           |    o      | o         |  o       |   done       |     done     |
-| maxBy      |           |    o      | o         |    o     |   done       |     done     |
-| min        |           |  o        |         o |  o       |   done       |     done     |
-| minBy      |           |    o      |   o       |    o     |   done       |     done     |
-| nth        |  see note         |      long-term deprecate, see note    | long-term deprecate, see note       |  long-term deprecate, see note   |   [@max_malook](https://twitter.com/max_malook)    | [PR submitted](https://visualfsharp.codeplex.com/SourceControl/network/forks/mexx24/visualfsharp/contribution/7097)  |
-| pairwise   |           |     ADD   |    ADD    |     o    |  [@sforkmann](https://twitter.com/sforkmann)        |   [PR submitted](https://visualfsharp.codeplex.com/SourceControl/network/forks/forki/fsharp/contribution/7045)       |
-| permute    |           |    o      |       o   |    ADD   |   [@paddymcdonald](https://twitter.com/paddymcdonald)       |     [PR Submitted](https://visualfsharp.codeplex.com/SourceControl/network/forks/PatrickMcDonald/visualfsharp/contribution/7341)    :) |
-| pick       |           |     o     |        o  |     o    |   done       |     done     |
-| reduce     |           |     o     |        o  |     o    |   done       |     done     |
-| reduceBack |           |    o      |         o |      ADD |    [@paddymcdonald](https://twitter.com/paddymcdonald)      |  [PR submitted](https://visualfsharp.codeplex.com/SourceControl/network/forks/PatrickMcDonald/visualfsharp/contribution/7293)        |
-| replicate  |           |     o    |    ADD    |   ADD    |    [@sforkmann](https://twitter.com/sforkmann)      |    [PR submitted](https://visualfsharp.codeplex.com/SourceControl/network/forks/forki/fsharp/contribution/7060)      |
-| rev        |           |    o      |   o       |    ADD   |   [@paddymcdonald](https://twitter.com/paddymcdonald)       |    [PR submitted](https://visualfsharp.codeplex.com/SourceControl/network/forks/PatrickMcDonald/visualfsharp/contribution/7340)      |
-| scan       |           |     o     |      o    |     o    | done         |   done       |
+| max        |           |    o      | o         |  o       |   done       |     :)     |
+| maxBy      |           |    o      | o         |    o     |   done       |     :)     |
+| min        |           |  o        |         o |  o       |   done       |     :)     |
+| minBy      |           |    o      |   o       |    o     |   done       |     :)     |
+| nth        |  see note         |      long-term deprecate, see note    | long-term deprecate, see note       |  long-term deprecate, see note   |    [PR](https://visualfsharp.codeplex.com/SourceControl/network/forks/mexx24/visualfsharp/contribution/7097)  |  |
+| pairwise   |           |     ADD   |    ADD    |     o    |     [PR](https://visualfsharp.codeplex.com/SourceControl/network/forks/forki/fsharp/contribution/7045)       |    |
+| permute    |           |    o      |       o   |    ADD   |    [PR](https://visualfsharp.codeplex.com/SourceControl/network/forks/PatrickMcDonald/visualfsharp/contribution/7341)   | :) | 
+| pick       |           |     o     |        o  |     o    |   done       |     :)     |
+| reduce     |           |     o     |        o  |     o    |   done       |     :)     |
+| reduceBack |           |    o      |         o |      ADD |     [PR](https://visualfsharp.codeplex.com/SourceControl/network/forks/PatrickMcDonald/visualfsharp/contribution/7293)        |  |
+| replicate  |           |     o    |    ADD    |   ADD    |        [PR](https://visualfsharp.codeplex.com/SourceControl/network/forks/forki/fsharp/contribution/7060)      |   |
+| rev        |           |    o      |   o       |    ADD   |   [PR](https://visualfsharp.codeplex.com/SourceControl/network/forks/PatrickMcDonald/visualfsharp/contribution/7340)      |  |
+| scan       |           |     o     |      o    |     o    | done         |   :)       |
 | scanBack   |           |     o     |    o      |   ADD    |          |          |
-| singleton  |           |    ADD    |     ADD   |    o     |   [@sforkmann](https://twitter.com/sforkmann)       |    [PR submitted](https://visualfsharp.codeplex.com/SourceControl/network/forks/forki/fsharp/contribution/7041)      |
-| skip       |           |   ADD   |      ADD     |   [@paddymcdonald](https://twitter.com/paddymcdonald)       |     [PR submitted](https://visualfsharp.codeplex.com/SourceControl/network/forks/PatrickMcDonald/visualfsharp/contribution/7258)  :)   |
-| skipWhile  |           |  ADD      |     ADD   |    o     |   [@paddymcdonald](https://twitter.com/paddymcdonald)       |    [PR submitted](https://visualfsharp.codeplex.com/SourceControl/network/forks/PatrickMcDonald/visualfsharp/contribution/7282)      |
-| sort       |           | o         |    o      |     o    |    done      |   done       |
-| sortBy     |           |   o       |      o    |     o    |   done       |   done       |
+| singleton  |           |    ADD    |     ADD   |    o     |   [PR](https://visualfsharp.codeplex.com/SourceControl/network/forks/forki/fsharp/contribution/7041)      |  |
+| skip       |           |   ADD   |      ADD     |       [PR](https://visualfsharp.codeplex.com/SourceControl/network/forks/PatrickMcDonald/visualfsharp/contribution/7258)  |   :)   |
+| skipWhile  |           |  ADD      |     ADD   |    o     |   [PR](https://visualfsharp.codeplex.com/SourceControl/network/forks/PatrickMcDonald/visualfsharp/contribution/7282)      |  |
+| sort       |           | o         |    o      |     o    |    done      |   :)       |
+| sortBy     |           |   o       |      o    |     o    |   done       |   :)       |
 | sortWith  |           |    o      |    o      |  ADD     |          |          |
-| sortDescending  |           |    ADD      |    ADD      |  ADD     | [@richardadalton](https://twitter.com/richardadalton) |   [UserVoice](https://fslang.uservoice.com/forums/245727-f-language/suggestions/6237671-add-sortdescending-to-seq-list-and-array)       |
-| sortByDescending  |           |    ADD      |    ADD      |  ADD     | [@richardadalton](https://twitter.com/richardadalton) |   [UserVoice](https://fslang.uservoice.com/forums/245727-f-language/suggestions/6237671-add-sortdescending-to-seq-list-and-array)       |
-| sum        |           |    o      |   o       |   o      |   done       |   done       |
-| sumBy      |           |    o      |   o       |   o      |   done       |    done      |
+| sortDescending  |           |    ADD      |    ADD      |  ADD     |  [@richardadalton](https://twitter.com/richardadalton) [UserVoice](https://fslang.uservoice.com/forums/245727-f-language/suggestions/6237671-add-sortdescending-to-seq-list-and-array)       |  |
+| sortByDescending  |           |    ADD      |    ADD      |  ADD     | [@richardadalton](https://twitter.com/richardadalton)   [UserVoice](https://fslang.uservoice.com/forums/245727-f-language/suggestions/6237671-add-sortdescending-to-seq-list-and-array)       |  |
+| sum        |           |    o      |   o       |   o      |   done       |   :)       |
+| sumBy      |           |    o      |   o       |   o      |   done       |    :)      |
 | tail       |           |    o      |  ADD      |  ADD     |          |          |
-| take       |           |    ADD    |   ADD     |  o       |  [@sforkmann](https://twitter.com/sforkmann)        |   [PR submitted](https://visualfsharp.codeplex.com/SourceControl/network/forks/forki/fsharp/contribution/7049)       |
-| takeWhile  |           |    ADD    |  ADD      | o        |   [@sforkmann](https://twitter.com/sforkmann)       |   [PR submitted](https://visualfsharp.codeplex.com/SourceControl/network/forks/forki/fsharp/contribution/7050)       |
+| take       |           |    ADD    |   ADD     |  o       |  [PR](https://visualfsharp.codeplex.com/SourceControl/network/forks/forki/fsharp/contribution/7049)       |  |
+| takeWhile  |           |    ADD    |  ADD      | o        |   [PR](https://visualfsharp.codeplex.com/SourceControl/network/forks/forki/fsharp/contribution/7050)       |  |
 | truncate   |           |    ADD    | ADD       |  o       |          |          |
-| tryFind    |           |    o      |  o        |  o       |   done       | done         |
-| tryFindBack       |    new       |   ADD       |     ADD     |     ADD    |   [@paddymcdonald](https://twitter.com/paddymcdonald)       |   [PR submitted](https://visualfsharp.codeplex.com/SourceControl/network/forks/PatrickMcDonald/visualfsharp/contribution/7369)    :/   |
-| tryFindIndex |         |    o      | o         | o        |   done       | done         |
-| tryFindIndexBack       |    new       |   ADD       |     ADD     |     ADD    |  [@paddymcdonald](https://twitter.com/paddymcdonald)        |   [PR submitted](https://visualfsharp.codeplex.com/SourceControl/network/forks/PatrickMcDonald/visualfsharp/contribution/7369)   :/    |
-| tryHead    |    new       |    ADD      |  ADD        |  ADD       |   [@rodrigovidal](https://twitter.com/rodrigovidal)      | [PR submitted](https://visualfsharp.codeplex.com/SourceControl/network/forks/rodrigovidal/visualfsharp/contribution/7057)     |
-| tryItem    |   new         |      ADD    | ADD       |  ADD       |   [@max_malook](https://twitter.com/max_malook)    | [PR submitted](https://visualfsharp.codeplex.com/SourceControl/network/forks/mexx24/visualfsharp/contribution/7113)     |
-| tryLast    |    new       |    ADD      |  ADD        |  ADD       |     [@simonhdickson](https://twitter.com/simonhdickson)     |    [PR submitted](https://visualfsharp.codeplex.com/SourceControl/network/forks/simonhdickson/visualfsharp/contribution/7263)      |
-| tryPick    |           |    o      |  o        | o        |   done       | done         |
+| tryFind    |           |    o      |  o        |  o       |   done       | :)         |
+| tryFindBack       |    new       |   ADD       |     ADD     |     ADD    |   [PR](https://visualfsharp.codeplex.com/SourceControl/network/forks/PatrickMcDonald/visualfsharp/contribution/7369)  |  :/   | 
+| tryFindIndex |         |    o      | o         | o        |   done       | :)         |
+| tryFindIndexBack       |    new       |   ADD       |     ADD     |     ADD    |   [PR](https://visualfsharp.codeplex.com/SourceControl/network/forks/PatrickMcDonald/visualfsharp/contribution/7369) |   :/    |
+| tryHead    |    new       |    ADD      |  ADD        |  ADD       |    [PR](https://visualfsharp.codeplex.com/SourceControl/network/forks/rodrigovidal/visualfsharp/contribution/7057)     |  |
+| tryItem    |   new         |      ADD    | ADD       |  ADD       |    [PR](https://visualfsharp.codeplex.com/SourceControl/network/forks/mexx24/visualfsharp/contribution/7113)     |  |
+| tryLast    |    new       |    ADD      |  ADD        |  ADD       |         [PR](https://visualfsharp.codeplex.com/SourceControl/network/forks/simonhdickson/visualfsharp/contribution/7263)      |  |
+| tryPick    |           |    o      |  o        | o        |   done       | :)         |
 | unfold     |           |    ADD    | ADD       |  o       |          |          |
-| where      | syn. filter |  ADD    |  ADD      |  o       |  [@sforkmann](https://twitter.com/sforkmann)  |  [PR submitted](https://visualfsharp.codeplex.com/SourceControl/network/forks/forki/fsharp/contribution/7037)        |
+| where      | syn. filter |  ADD    |  ADD      |  o       |  [PR](https://visualfsharp.codeplex.com/SourceControl/network/forks/forki/fsharp/contribution/7037)        |  |
 | windowed   |           |    ADD    |  ADD      |  o       |          |          |
-| zip        |           |    o      |  o        |  o       |   done       |   done       |
-| zip3       |           |    o      |  o        |  o       |   done       |   done       |
+| zip        |           |    o      |  o        |  o       |   done       |   :)       |
+| zip3       |           |    o      |  o        |  o       |   done       |   :)       |
 
 Note: In F# 3.0 Seq.where was defined as a synonym for Seq.filter, mainly due to the use of "where" in query expressions. Given
 it already  exists as a synonym (= decision made) it seems sensible to just complete the matrix and define List.where and Array.where as well.
@@ -127,12 +127,12 @@ These operators are not defined for Seq.* for performance reasons because using 
 | Note it is arguable that if these are not defined, then Seq.tail, Seq.skip and Seq.skipWhile should also not be defined, since
 | they implicitly skip inputs and can be a performance trap, especially when used recursively.
 
-| Function   | Comment   | List      | Array     | Seq      |   Assigned To       |    Status      |
+| Function   | Comment   | List      | Array     | Seq      |   PR       |    Status      |
 |:-----------|:----------|:---------:|:---------:|:--------:|:--------:|:--------:|
-| partition  |           |    o      |       o   |    n/a    |  ---        |   ---       |
-| splitAt  |      new, taking index     |    ADD      |    ADD      |  n/a     |   [@sforkmann](https://twitter.com/sforkmann)       |   [PR submitted](https://visualfsharp.codeplex.com/SourceControl/network/forks/forki/fsharp/contribution/7052)      |
-| unzip      |           |    o      |   o       | n/a       |  ---        |  ---        |
-| unzip3     |           |    o      |  o        | n/a       |  ---        |  ---        |
+| partition  |           |    o      |       o   |    n/a    |  ---        |   :)       |
+| splitAt  |      new, taking index     |    ADD      |    ADD      |  n/a   | [PR](https://visualfsharp.codeplex.com/SourceControl/network/forks/forki/fsharp/contribution/7052)      |  |
+| unzip      |           |    o      |   o       | n/a       |  ---        |  :)        |
+| unzip3     |           |    o      |  o        | n/a       |  ---        |  :)        |
 
 ## Mutation-related operators
 
