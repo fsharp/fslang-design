@@ -37,7 +37,7 @@ Status column -
 | append     |           |     o     |    o      |    o     |   done       |    :)      |
 | average    |           |      o    |        o  |      o   |   done       |  :)        |
 | averageBy  |           |    o      |      o    |    o     |   done       |  :)        |
-| contains   |   new     |   ADD       |     ADD     |   ADD      |    [PR](https://visualfsharp.codeplex.com/SourceControl/network/forks/mexx24/visualfsharp/contribution/7030)  |   |
+| contains   |   new     |   ADD       |     ADD     |   ADD      |    [PR](https://visualfsharp.codeplex.com/SourceControl/network/forks/mexx24/visualfsharp/contribution/7030)  | :/  |
 | choose     |           |   o       |     o     |   o      |   done       |  :)        |
 | collect    |           |  o        |      o    |      o   |   done       |  :)        |
 | compareWith|           |  ADD      |     ADD   |     o    |   [PR](https://visualfsharp.codeplex.com/SourceControl/network/forks/forki/fsharp/contribution/7040)        | :)  |
