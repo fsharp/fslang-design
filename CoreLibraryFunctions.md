@@ -60,7 +60,7 @@ Status column -
 | foldBack2  |           |   o       |   o       |    ADD   |          |          |
 | forall     |           |   o       |  o        |     o    |    done      |   :)       |
 | forall2    |           |  o        |   o       |      o   |   done       |     :)     |
-| groupBy    |           |    o      |       o   |    ADD   |  [PR](https://github.com/fsharp/FSharpLangDesign/edit/master/CoreLibraryFunctions.md)       |  |
+| groupBy    |           |    o      |       o   |    ADD   |  [PR](https://visualfsharp.codeplex.com/SourceControl/network/forks/OkayX6/visualfsharptools/contribution/7287)       |  |
 | head       |           |   o       |    ADD    |   o      |  [PR](https://visualfsharp.codeplex.com/SourceControl/network/forks/forki/fsharp/contribution/7069)       |  |
 | indexed       |   new, signature ``indexed: C<T> -> C<int*T>``        |   ADD       |    ADD      |     ADD    |          |          |
 | init       |           |   o       |    o      |     o    |   done       |   :)       |
