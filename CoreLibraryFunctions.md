@@ -20,6 +20,15 @@ Also, some functions were not defined on Seq, even though they exist in List or 
 
 The proposal below is to complete the matrix for List, Array and Seq w.r.t. functional collection functions.
 
+### Completion
+
+This work is only completed when all rows have a status of ":)".  The library updates will only be done when all PRs are ready (or features are dropped).
+
+Status column - 
+
+* :)  - reviewed and ready to be pulled
+* :/  - reviewed but changes needed
+* (empty) - no PR or not reviewed
 
 ## Regular functional functions
 
