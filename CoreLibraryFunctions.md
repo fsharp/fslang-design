@@ -20,6 +20,7 @@ Also, some functions were not defined on Seq, even though they exist in List or 
 
 The proposal below is to complete the matrix for List, Array and Seq w.r.t. functional collection functions.
 
+If a ✓ symbol is present it indicates the code proposal has been reviewed and appears ready to  pull
 
 ## Regular functional functions
 
@@ -85,7 +86,7 @@ The proposal below is to complete the matrix for List, Array and Seq w.r.t. func
 | scan       |           |     o     |      o    |     o    | done         |   done       |
 | scanBack   |           |     o     |    o      |   ADD    |          |          |
 | singleton  |           |    ADD    |     ADD   |    o     |   [@sforkmann](https://twitter.com/sforkmann)       |    [PR submitted](https://visualfsharp.codeplex.com/SourceControl/network/forks/forki/fsharp/contribution/7041)      |
-| skip       |           |   ADD     |      ADD  |   o      |   [@paddymcdonald](https://twitter.com/paddymcdonald)       |     [PR submitted](https://visualfsharp.codeplex.com/SourceControl/network/forks/PatrickMcDonald/visualfsharp/contribution/7258)     |
+| skip       |           |   ADD ✓     |      ADD ✓  o      |   [@paddymcdonald](https://twitter.com/paddymcdonald)       |     [PR submitted](https://visualfsharp.codeplex.com/SourceControl/network/forks/PatrickMcDonald/visualfsharp/contribution/7258)     |
 | skipWhile  |           |  ADD      |     ADD   |    o     |   [@paddymcdonald](https://twitter.com/paddymcdonald)       |    [PR submitted](https://visualfsharp.codeplex.com/SourceControl/network/forks/PatrickMcDonald/visualfsharp/contribution/7282)      |
 | sort       |           | o         |    o      |     o    |    done      |   done       |
 | sortBy     |           |   o       |      o    |     o    |   done       |   done       |
