@@ -99,7 +99,7 @@ If an item is marked "low-pri" it doesn't need to be completed in order for the 
 | rev        |           |    o      |   o       |    ADD   |   [PR](https://visualfsharp.codeplex.com/SourceControl/network/forks/PatrickMcDonald/visualfsharp/contribution/7340)      |  :) |
 | scan       |           |     o     |      o    |     o    | done         |   :)       |
 | scanBack   |           |     o     |    o      |   ADD    |          |          |
-| singleton  |           |    ADD    |     ADD   |    o     |   [PR](https://visualfsharp.codeplex.com/SourceControl/network/forks/forki/fsharp/contribution/7041)      |  |
+| singleton  |           |    ADD    |     ADD   |    o     |   [PR](https://visualfsharp.codeplex.com/SourceControl/network/forks/forki/fsharp/contribution/7041)      |  :) |
 | skip       |           |   ADD   |      ADD     |       [PR](https://visualfsharp.codeplex.com/SourceControl/network/forks/PatrickMcDonald/visualfsharp/contribution/7258)  |   :)   |
 | skipWhile  |           |  ADD      |     ADD   |    o     |   [PR](https://visualfsharp.codeplex.com/SourceControl/network/forks/PatrickMcDonald/visualfsharp/contribution/7282)      |  |
 | sort       |           | o         |    o      |     o    |    done      |   :)       |
