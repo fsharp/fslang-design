@@ -90,7 +90,7 @@ If an item is marked "low-pri" it doesn't need to be completed in order for the 
 | min        |           |  o        |         o |  o       |   done       |     :)     |
 | minBy      |           |    o      |   o       |    o     |   done       |     :)     |
 | nth        |  see note         |      long-term deprecate, see note    | long-term deprecate, see note       |  long-term deprecate, see note   |    [PR](https://visualfsharp.codeplex.com/SourceControl/network/forks/mexx24/visualfsharp/contribution/7097)  |  |
-| pairwise   |           |     ADD   |    ADD    |     o    |     [PR](https://visualfsharp.codeplex.com/SourceControl/network/forks/forki/fsharp/contribution/7045)       |    |
+| pairwise   |           |     ADD   |    ADD    |     o    |     [PR](https://visualfsharp.codeplex.com/SourceControl/network/forks/forki/fsharp/contribution/7045)       |  :)  |
 | permute    |           |    o      |       o   |    ADD   |    [PR](https://visualfsharp.codeplex.com/SourceControl/network/forks/PatrickMcDonald/visualfsharp/contribution/7341)   | :) | 
 | pick       |           |     o     |        o  |     o    |   done       |     :)     |
 | reduce     |           |     o     |        o  |     o    |   done       |     :)     |
