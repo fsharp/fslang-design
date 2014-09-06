@@ -51,7 +51,7 @@ The proposal below is to complete the matrix for List, Array and Seq w.r.t. func
 | foldBack2  |           |   o       |   o       |    ADD   |          |          |
 | forall     |           |   o       |  o        |     o    |    done      |   done       |
 | forall2    |           |  o        |   o       |      o   |   done       |     done     |
-| groupBy    |           |    o      |       o   |    ADD   |          |          |
+| groupBy    |           |    o      |       o   |    ADD   |  OkayX6         |   [PR submitted](https://github.com/fsharp/FSharpLangDesign/edit/master/CoreLibraryFunctions.md)       |
 | head       |           |   o       |    ADD    |   o      |   [@sforkmann](https://twitter.com/sforkmann)       |   [PR submitted](https://visualfsharp.codeplex.com/SourceControl/network/forks/forki/fsharp/contribution/7069)       |
 | indexed       |   new, signature ``indexed: C<T> -> C<int*T>``        |   ADD       |    ADD      |     ADD    |          |          |
 | init       |           |   o       |    o      |     o    |   done       |   done       |
