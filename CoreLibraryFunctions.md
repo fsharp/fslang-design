@@ -20,7 +20,6 @@ Also, some functions were not defined on Seq, even though they exist in List or 
 
 The proposal below is to complete the matrix for List, Array and Seq w.r.t. functional collection functions.
 
-If a ✓ symbol is present it indicates the code proposal has been reviewed and appears ready to  pull
 
 ## Regular functional functions
 
@@ -43,9 +42,9 @@ If a ✓ symbol is present it indicates the code proposal has been reviewed and 
 | exists2    |           |    o      |        o  |      o   |   done       |   done       |
 | filter     |           |   o       |     o     |     o    |   done       |     done     |
 | find       |           |   o       |     o     |     o    |   done       |     done     |
-| findBack       |    new       |   ADD       |     ADD     |     ADD    |    [@paddymcdonald](https://twitter.com/paddymcdonald)      |    [PR submitted](https://visualfsharp.codeplex.com/SourceControl/network/forks/PatrickMcDonald/visualfsharp/contribution/7369)      |
+| findBack       |    new       |   ADD       |     ADD     |     ADD    |    [@paddymcdonald](https://twitter.com/paddymcdonald)      |    [PR submitted](https://visualfsharp.codeplex.com/SourceControl/network/forks/PatrickMcDonald/visualfsharp/contribution/7369)  :/    |
 | findIndex  |           |  o        |      o    |      o   | done         |     done     |
-| findIndexBack  |  new           |  ADD        |      ADD    |      ADD   |  [@paddymcdonald](https://twitter.com/paddymcdonald)         |   [PR submitted](https://visualfsharp.codeplex.com/SourceControl/network/forks/PatrickMcDonald/visualfsharp/contribution/7369)       |
+| findIndexBack  |  new           |  ADD        |      ADD    |      ADD   |  [@paddymcdonald](https://twitter.com/paddymcdonald)         |   [PR submitted](https://visualfsharp.codeplex.com/SourceControl/network/forks/PatrickMcDonald/visualfsharp/contribution/7369)  :/     |
 | fold       |           |     o     |     o     |     o    | done         |     done     |
 | fold2      |           |   o       |    o      |     ADD  |   [@sforkmann](https://twitter.com/sforkmann)       |   [PR submitted](https://visualfsharp.codeplex.com/SourceControl/network/forks/forki/fsharp/contribution/7075)       |
 | foldBack   |           |   o       |    o      |   ADD    |    [@paddymcdonald](https://twitter.com/paddymcdonald)      |  [PR submitted](https://visualfsharp.codeplex.com/SourceControl/network/forks/PatrickMcDonald/visualfsharp/contribution/7293)        |
@@ -77,7 +76,7 @@ If a ✓ symbol is present it indicates the code proposal has been reviewed and 
 | minBy      |           |    o      |   o       |    o     |   done       |     done     |
 | nth        |  see note         |      long-term deprecate, see note    | long-term deprecate, see note       |  long-term deprecate, see note   |   [@max_malook](https://twitter.com/max_malook)    | [PR submitted](https://visualfsharp.codeplex.com/SourceControl/network/forks/mexx24/visualfsharp/contribution/7097)  |
 | pairwise   |           |     ADD   |    ADD    |     o    |  [@sforkmann](https://twitter.com/sforkmann)        |   [PR submitted](https://visualfsharp.codeplex.com/SourceControl/network/forks/forki/fsharp/contribution/7045)       |
-| permute    |           |    o      |       o   |    ADD   |   [@paddymcdonald](https://twitter.com/paddymcdonald)       |     [PR Submitted](https://visualfsharp.codeplex.com/SourceControl/network/forks/PatrickMcDonald/visualfsharp/contribution/7341)     |
+| permute    |           |    o      |       o   |    ADD   |   [@paddymcdonald](https://twitter.com/paddymcdonald)       |     [PR Submitted](https://visualfsharp.codeplex.com/SourceControl/network/forks/PatrickMcDonald/visualfsharp/contribution/7341)    :) |
 | pick       |           |     o     |        o  |     o    |   done       |     done     |
 | reduce     |           |     o     |        o  |     o    |   done       |     done     |
 | reduceBack |           |    o      |         o |      ADD |    [@paddymcdonald](https://twitter.com/paddymcdonald)      |  [PR submitted](https://visualfsharp.codeplex.com/SourceControl/network/forks/PatrickMcDonald/visualfsharp/contribution/7293)        |
@@ -86,7 +85,7 @@ If a ✓ symbol is present it indicates the code proposal has been reviewed and 
 | scan       |           |     o     |      o    |     o    | done         |   done       |
 | scanBack   |           |     o     |    o      |   ADD    |          |          |
 | singleton  |           |    ADD    |     ADD   |    o     |   [@sforkmann](https://twitter.com/sforkmann)       |    [PR submitted](https://visualfsharp.codeplex.com/SourceControl/network/forks/forki/fsharp/contribution/7041)      |
-| skip       |           |   ADD ✓     |      ADD ✓  o      |   [@paddymcdonald](https://twitter.com/paddymcdonald)       |     [PR submitted](https://visualfsharp.codeplex.com/SourceControl/network/forks/PatrickMcDonald/visualfsharp/contribution/7258)     |
+| skip       |           |   ADD   |      ADD     |   [@paddymcdonald](https://twitter.com/paddymcdonald)       |     [PR submitted](https://visualfsharp.codeplex.com/SourceControl/network/forks/PatrickMcDonald/visualfsharp/contribution/7258)  :)   |
 | skipWhile  |           |  ADD      |     ADD   |    o     |   [@paddymcdonald](https://twitter.com/paddymcdonald)       |    [PR submitted](https://visualfsharp.codeplex.com/SourceControl/network/forks/PatrickMcDonald/visualfsharp/contribution/7282)      |
 | sort       |           | o         |    o      |     o    |    done      |   done       |
 | sortBy     |           |   o       |      o    |     o    |   done       |   done       |
@@ -100,9 +99,9 @@ If a ✓ symbol is present it indicates the code proposal has been reviewed and 
 | takeWhile  |           |    ADD    |  ADD      | o        |   [@sforkmann](https://twitter.com/sforkmann)       |   [PR submitted](https://visualfsharp.codeplex.com/SourceControl/network/forks/forki/fsharp/contribution/7050)       |
 | truncate   |           |    ADD    | ADD       |  o       |          |          |
 | tryFind    |           |    o      |  o        |  o       |   done       | done         |
-| tryFindBack       |    new       |   ADD       |     ADD     |     ADD    |   [@paddymcdonald](https://twitter.com/paddymcdonald)       |   [PR submitted](https://visualfsharp.codeplex.com/SourceControl/network/forks/PatrickMcDonald/visualfsharp/contribution/7369)       |
+| tryFindBack       |    new       |   ADD       |     ADD     |     ADD    |   [@paddymcdonald](https://twitter.com/paddymcdonald)       |   [PR submitted](https://visualfsharp.codeplex.com/SourceControl/network/forks/PatrickMcDonald/visualfsharp/contribution/7369)    :/   |
 | tryFindIndex |         |    o      | o         | o        |   done       | done         |
-| tryFindIndexBack       |    new       |   ADD       |     ADD     |     ADD    |  [@paddymcdonald](https://twitter.com/paddymcdonald)        |   [PR submitted](https://visualfsharp.codeplex.com/SourceControl/network/forks/PatrickMcDonald/visualfsharp/contribution/7369)       |
+| tryFindIndexBack       |    new       |   ADD       |     ADD     |     ADD    |  [@paddymcdonald](https://twitter.com/paddymcdonald)        |   [PR submitted](https://visualfsharp.codeplex.com/SourceControl/network/forks/PatrickMcDonald/visualfsharp/contribution/7369)   :/    |
 | tryHead    |    new       |    ADD      |  ADD        |  ADD       |   [@rodrigovidal](https://twitter.com/rodrigovidal)      | [PR submitted](https://visualfsharp.codeplex.com/SourceControl/network/forks/rodrigovidal/visualfsharp/contribution/7057)     |
 | tryItem    |   new         |      ADD    | ADD       |  ADD       |   [@max_malook](https://twitter.com/max_malook)    | [PR submitted](https://visualfsharp.codeplex.com/SourceControl/network/forks/mexx24/visualfsharp/contribution/7113)     |
 | tryLast    |    new       |    ADD      |  ADD        |  ADD       |     [@simonhdickson](https://twitter.com/simonhdickson)     |    [PR submitted](https://visualfsharp.codeplex.com/SourceControl/network/forks/simonhdickson/visualfsharp/contribution/7263)      |
