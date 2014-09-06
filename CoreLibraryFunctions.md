@@ -56,7 +56,7 @@ Status column -
 | findIndexBack  |  new           |  ADD        |      ADD    |      ADD   |   [PR](https://visualfsharp.codeplex.com/SourceControl/network/forks/PatrickMcDonald/visualfsharp/contribution/7369)  | :/ (needs work)     |
 | fold       |           |     o     |     o     |     o    | done         |     :)     |
 | fold2      |           |   o       |    o      |     ADD  |   [PR](https://visualfsharp.codeplex.com/SourceControl/network/forks/forki/fsharp/contribution/7075)       | :) |
-| foldBack   |           |   o       |    o      |   ADD    |   [PR](https://visualfsharp.codeplex.com/SourceControl/network/forks/PatrickMcDonald/visualfsharp/contribution/7293)        | |
+| foldBack   |           |   o       |    o      |   ADD    |   [PR](https://visualfsharp.codeplex.com/SourceControl/network/forks/PatrickMcDonald/visualfsharp/contribution/7293)        | :) |
 | foldBack2  |           |   o       |   o       |    ADD   |          |          |
 | forall     |           |   o       |  o        |     o    |    done      |   :)       |
 | forall2    |           |  o        |   o       |      o   |   done       |     :)     |
