@@ -103,7 +103,7 @@ Status column -
 | sortByDescending  |           |    ADD      |    ADD      |  ADD     | [@richardadalton](https://twitter.com/richardadalton)   [UserVoice](https://fslang.uservoice.com/forums/245727-f-language/suggestions/6237671-add-sortdescending-to-seq-list-and-array)       |  |
 | sum        |           |    o      |   o       |   o      |   done       |   :)       |
 | sumBy      |           |    o      |   o       |   o      |   done       |    :)      |
-| tail       |           |    o      |  ADD      |  ADD     |          |          |
+| tail       |           |    o      |  ADD      |  ADD     | [PR](https://visualfsharp.codeplex.com/SourceControl/network/forks/bogdangaliceanu/fsharp/contribution/7389)      |          |
 | take       |           |    ADD    |   ADD     |  o       |  [PR](https://visualfsharp.codeplex.com/SourceControl/network/forks/forki/fsharp/contribution/7049)       |  |
 | takeWhile  |           |    ADD    |  ADD      | o        |   [PR](https://visualfsharp.codeplex.com/SourceControl/network/forks/forki/fsharp/contribution/7050)       |  |
 | truncate   |           |    ADD    | ADD       |  o       |          |          |
