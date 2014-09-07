@@ -57,9 +57,9 @@ If an item is marked "low-pri" it doesn't need to be completed in order for the 
 | exists2    |           |    o      |        o  |      o   |   done       |   :)       |
 | filter     |           |   o       |     o     |     o    |   done       |     :)     |
 | find       |           |   o       |     o     |     o    |   done       |     :)     |
-| findBack       |    new       |   ADD       |     ADD     |     ADD    |    [PR](https://visualfsharp.codeplex.com/SourceControl/network/forks/PatrickMcDonald/visualfsharp/contribution/7369)  | :/ (needs work)    |
+| findBack       |    new       |   ADD       |     ADD     |     ADD    |    [PR](https://visualfsharp.codeplex.com/SourceControl/network/forks/PatrickMcDonald/visualfsharp/contribution/7369)  | needs work    |
 | findIndex  |           |  o        |      o    |      o   | done         |     :)     |
-| findIndexBack  |  new           |  ADD        |      ADD    |      ADD   |   [PR](https://visualfsharp.codeplex.com/SourceControl/network/forks/PatrickMcDonald/visualfsharp/contribution/7369)  | :/ (needs work)     |
+| findIndexBack  |  new           |  ADD        |      ADD    |      ADD   |   [PR](https://visualfsharp.codeplex.com/SourceControl/network/forks/PatrickMcDonald/visualfsharp/contribution/7369)  | needs work     |
 | fold       |           |     o     |     o     |     o    | done         |     :)     |
 | fold2      |           |   o       |    o      |     ADD  |   [PR](https://visualfsharp.codeplex.com/SourceControl/network/forks/forki/fsharp/contribution/7075)       | :) |
 | foldBack   |           |   o       |    o      |   ADD    |   [PR](https://visualfsharp.codeplex.com/SourceControl/network/forks/PatrickMcDonald/visualfsharp/contribution/7293)        | :) |
@@ -80,7 +80,7 @@ If an item is marked "low-pri" it doesn't need to be completed in order for the 
 | length     |           |   o       |    o      |     o    |   done       |   :)       |
 | map        |           |    o      |     o     |      o   |   done       |     :)     |
 | map2       |           |   o       |    o      |     o    |   done       |     done     |
-| map3       |           |   o       |    ADD    |   ADD    |       [PR](https://visualfsharp.codeplex.com/SourceControl/network/forks/andrew_khmylov/fsharp/contribution/7115)      | :/ (needs work)  |
+| map3       |           |   o       |    ADD    |   ADD    |       [PR](https://visualfsharp.codeplex.com/SourceControl/network/forks/andrew_khmylov/fsharp/contribution/7115)      | needs work  |
 | mapi       |           |   o       |    o      |     o    |   done       |     :)     |
 | mapi2      |           |  o        |   o       |    ADD   |   [PR](https://visualfsharp.codeplex.com/SourceControl/network/forks/PatrickMcDonald/visualfsharp/contribution/7247)     | :)  |
 | mapFold       | New, map + fold, with signature ```mapFold : ('State -> 'T -> 'U * 'State) -> 'State -> C<'T> -> C<'U> * 'State``` e.g. [see here](https://github.com/fsharp/fsharp/blob/8c82d57a6e8cc131740316b00f199d9d48072346/src/absil/illib.fs#L77)          |   ADD       |    ADD      |     ADD    |          |           |
@@ -104,7 +104,7 @@ If an item is marked "low-pri" it doesn't need to be completed in order for the 
 | skipWhile  |           |  ADD      |     ADD   |    o     |   [PR](https://visualfsharp.codeplex.com/SourceControl/network/forks/PatrickMcDonald/visualfsharp/contribution/7282)      |  |
 | sort       |           | o         |    o      |     o    |    done      |   :)       |
 | sortBy     |           |   o       |      o    |     o    |   done       |   :)       |
-| sortWith  |           |    o      |    o      |  ADD     |          |          |
+| sortWith  |           |    o      |    o      |  ADD     |    [PR](https://visualfsharp.codeplex.com/SourceControl/network/forks/OkayX6/visualfsharptools/contribution/7334)      |  needs work         |
 | sortDescending  |           |    ADD      |    ADD      |  ADD     |  [@richardadalton](https://twitter.com/richardadalton) [UserVoice](https://fslang.uservoice.com/forums/245727-f-language/suggestions/6237671-add-sortdescending-to-seq-list-and-array)       |  |
 | sortByDescending  |           |    ADD      |    ADD      |  ADD     | [@richardadalton](https://twitter.com/richardadalton)   [UserVoice](https://fslang.uservoice.com/forums/245727-f-language/suggestions/6237671-add-sortdescending-to-seq-list-and-array)       |  |
 | sum        |           |    o      |   o       |   o      |   done       |   :)       |
@@ -114,9 +114,9 @@ If an item is marked "low-pri" it doesn't need to be completed in order for the 
 | takeWhile  |           |    ADD    |  ADD      | o        |   [PR](https://visualfsharp.codeplex.com/SourceControl/network/forks/forki/fsharp/contribution/7050)       |  :) |
 | truncate   |           |    ADD    | ADD       |  o       |          |          |
 | tryFind    |           |    o      |  o        |  o       |   done       | :)         |
-| tryFindBack       |    new       |   ADD       |     ADD     |     ADD    |   [PR](https://visualfsharp.codeplex.com/SourceControl/network/forks/PatrickMcDonald/visualfsharp/contribution/7369)  |  :/ (needs work)   | 
+| tryFindBack       |    new       |   ADD       |     ADD     |     ADD    |   [PR](https://visualfsharp.codeplex.com/SourceControl/network/forks/PatrickMcDonald/visualfsharp/contribution/7369)  | needs work   | 
 | tryFindIndex |         |    o      | o         | o        |   done       | :)         |
-| tryFindIndexBack       |    new       |   ADD       |     ADD     |     ADD    |   [PR](https://visualfsharp.codeplex.com/SourceControl/network/forks/PatrickMcDonald/visualfsharp/contribution/7369) |   :/ (needs work)    |
+| tryFindIndexBack       |    new       |   ADD       |     ADD     |     ADD    |   [PR](https://visualfsharp.codeplex.com/SourceControl/network/forks/PatrickMcDonald/visualfsharp/contribution/7369) |  needs work    |
 | tryHead    |    new       |    ADD      |  ADD        |  ADD       |    [PR](https://visualfsharp.codeplex.com/SourceControl/network/forks/rodrigovidal/visualfsharp/contribution/7057)     |  :) |
 | tryItem    |   new         |      ADD    | ADD       |  ADD       |    [PR](https://visualfsharp.codeplex.com/SourceControl/network/forks/mexx24/visualfsharp/contribution/7113)     |  :) |
 | tryLast    |    new       |    ADD      |  ADD        |  ADD       |         [PR](https://visualfsharp.codeplex.com/SourceControl/network/forks/simonhdickson/visualfsharp/contribution/7263)      | :)  |
