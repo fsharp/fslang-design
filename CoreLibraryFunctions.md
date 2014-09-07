@@ -145,7 +145,7 @@ These operators are not defined for Seq.* for performance reasons because using 
 | Function   | Comment   | List      | Array     | Seq      |   PR       |    Status      |
 |:-----------|:----------|:---------:|:---------:|:--------:|:--------:|:--------:|
 | partition  |           |    o      |       o   |    n/a    |  ---        |   :)       |
-| splitAt  |      new, taking index     |    ADD      |    ADD      |  n/a   | [PR](https://visualfsharp.codeplex.com/SourceControl/network/forks/forki/fsharp/contribution/7052)      |  |
+| splitAt  |      new, taking index     |    ADD      |    ADD      |  n/a   | [PR](https://visualfsharp.codeplex.com/SourceControl/network/forks/forki/fsharp/contribution/7052)      |  :) |
 | unzip      |           |    o      |   o       | n/a       |  ---        |  :)        |
 | unzip3     |           |    o      |  o        | n/a       |  ---        |  :)        |
 
