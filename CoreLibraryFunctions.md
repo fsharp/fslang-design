@@ -111,7 +111,7 @@ If an item is marked "low-pri" it doesn't need to be completed in order for the 
 | sumBy      |           |    o      |   o       |   o      |   done       |    :)      |
 | tail       |           |    o      |  ADD      |  ADD     | [PR](https://visualfsharp.codeplex.com/SourceControl/network/forks/bogdangaliceanu/fsharp/contribution/7389)      |     minor work needed     |
 | take       |           |    ADD    |   ADD     |  o       |  [PR](https://visualfsharp.codeplex.com/SourceControl/network/forks/forki/fsharp/contribution/7049)       | :) |
-| takeWhile  |           |    ADD    |  ADD      | o        |   [PR](https://visualfsharp.codeplex.com/SourceControl/network/forks/forki/fsharp/contribution/7050)       |  |
+| takeWhile  |           |    ADD    |  ADD      | o        |   [PR](https://visualfsharp.codeplex.com/SourceControl/network/forks/forki/fsharp/contribution/7050)       |  :) |
 | truncate   |           |    ADD    | ADD       |  o       |          |          |
 | tryFind    |           |    o      |  o        |  o       |   done       | :)         |
 | tryFindBack       |    new       |   ADD       |     ADD     |     ADD    |   [PR](https://visualfsharp.codeplex.com/SourceControl/network/forks/PatrickMcDonald/visualfsharp/contribution/7369)  |  :/ (needs work)   | 
