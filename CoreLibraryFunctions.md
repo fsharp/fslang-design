@@ -68,7 +68,7 @@ If an item is marked "low-pri" it doesn't need to be completed in order for the 
 | forall2    |           |  o        |   o       |      o   |   done       |     :)     |
 | groupBy    |           |    o      |       o   |    ADD   |  [PR](https://visualfsharp.codeplex.com/SourceControl/network/forks/OkayX6/visualfsharptools/contribution/7287)       |  :)  |
 | head       |           |   o       |    ADD    |   o      |  [PR](https://visualfsharp.codeplex.com/SourceControl/network/forks/forki/fsharp/contribution/7069)       | :) |
-| indexed       |   new, signature ``indexed: C<T> -> C<int*T>``        |   ADD       |    ADD      |     ADD    |          |          |
+| indexed       |   new, signature ``indexed: C<T> -> C<int*T>``        |   ADD       |    ADD      |     ADD    |    [@paddymcdonald](https://twitter.com/paddymcdonald)      |          |
 | init       |           |   o       |    o      |     o    |   done       |   :)       |
 | isEmpty    |           |    o      |     o     |      o   |   done       |     :)     |
 | item    |   New, see note. SIgnature ``int -> C<'T> -> 'T``        |      ADD    | ADD       |  ADD       |   [PR](https://visualfsharp.codeplex.com/SourceControl/network/forks/mexx24/visualfsharp/contribution/7097)  |  :)   |
