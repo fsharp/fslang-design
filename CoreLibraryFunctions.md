@@ -122,7 +122,7 @@ If an item is marked "low-pri" it doesn't need to be completed in order for the 
 | tryLast    |    new       |    ADD      |  ADD        |  ADD       |         [PR](https://visualfsharp.codeplex.com/SourceControl/network/forks/simonhdickson/visualfsharp/contribution/7263)      | :)  |
 | tryPick    |           |    o      |  o        | o        |   done       | :)         |
 | unfold     |           |    ADD    | ADD       |  o       |          |          |
-| where      | syn. filter |  ADD    |  ADD      |  o       |  [PR](https://visualfsharp.codeplex.com/SourceControl/network/forks/forki/fsharp/contribution/7037)        |  |
+| where      | syn. filter |  ADD    |  ADD      |  o       |  [PR](https://visualfsharp.codeplex.com/SourceControl/network/forks/forki/fsharp/contribution/7037)        | :) |
 | windowed   |           |    ADD    |  ADD      |  o       |          |          |
 | zip        |           |    o      |  o        |  o       |   done       |   :)       |
 | zip3       |           |    o      |  o        |  o       |   done       |   :)       |
