@@ -57,9 +57,9 @@ If an item is marked "low-pri" it doesn't need to be completed in order for the 
 | exists2    |           |    o      |        o  |      o   |   done       |   :)       |
 | filter     |           |   o       |     o     |     o    |   done       |     :)     |
 | find       |           |   o       |     o     |     o    |   done       |     :)     |
-| findBack       |    new       |   ADD       |     ADD     |     ADD    |    [PR](https://visualfsharp.codeplex.com/SourceControl/network/forks/PatrickMcDonald/visualfsharp/contribution/7369)  | needs work    |
+| findBack       |    new       |   ADD       |     ADD     |     ADD    |    [PR](https://visualfsharp.codeplex.com/SourceControl/network/forks/PatrickMcDonald/visualfsharp/contribution/7369)  | :)    |
 | findIndex  |           |  o        |      o    |      o   | done         |     :)     |
-| findIndexBack  |  new           |  ADD        |      ADD    |      ADD   |   [PR](https://visualfsharp.codeplex.com/SourceControl/network/forks/PatrickMcDonald/visualfsharp/contribution/7369)  | needs work     |
+| findIndexBack  |  new           |  ADD        |      ADD    |      ADD   |   [PR](https://visualfsharp.codeplex.com/SourceControl/network/forks/PatrickMcDonald/visualfsharp/contribution/7369)  | :)    |
 | fold       |           |     o     |     o     |     o    | done         |     :)     |
 | fold2      |           |   o       |    o      |     ADD  |   [PR](https://visualfsharp.codeplex.com/SourceControl/network/forks/forki/fsharp/contribution/7075)       | :) |
 | foldBack   |           |   o       |    o      |   ADD    |   [PR](https://visualfsharp.codeplex.com/SourceControl/network/forks/PatrickMcDonald/visualfsharp/contribution/7293)        | :) |
@@ -114,9 +114,9 @@ If an item is marked "low-pri" it doesn't need to be completed in order for the 
 | takeWhile  |           |    ADD    |  ADD      | o        |   [PR](https://visualfsharp.codeplex.com/SourceControl/network/forks/forki/fsharp/contribution/7050)       |  :) |
 | truncate   |           |    ADD    | ADD       |  o       |   [PR](https://visualfsharp.codeplex.com/SourceControl/network/forks/PatrickMcDonald/visualfsharp/contribution/7406)       |          |
 | tryFind    |           |    o      |  o        |  o       |   done       | :)         |
-| tryFindBack       |    new       |   ADD       |     ADD     |     ADD    |   [PR](https://visualfsharp.codeplex.com/SourceControl/network/forks/PatrickMcDonald/visualfsharp/contribution/7369)  | needs work   | 
+| tryFindBack       |    new       |   ADD       |     ADD     |     ADD    |   [PR](https://visualfsharp.codeplex.com/SourceControl/network/forks/PatrickMcDonald/visualfsharp/contribution/7369)  | :) | 
 | tryFindIndex |         |    o      | o         | o        |   done       | :)         |
-| tryFindIndexBack       |    new       |   ADD       |     ADD     |     ADD    |   [PR](https://visualfsharp.codeplex.com/SourceControl/network/forks/PatrickMcDonald/visualfsharp/contribution/7369) |  needs work    |
+| tryFindIndexBack       |    new       |   ADD       |     ADD     |     ADD    |   [PR](https://visualfsharp.codeplex.com/SourceControl/network/forks/PatrickMcDonald/visualfsharp/contribution/7369) |  :)   |
 | tryHead    |    new       |    ADD      |  ADD        |  ADD       |    [PR](https://visualfsharp.codeplex.com/SourceControl/network/forks/rodrigovidal/visualfsharp/contribution/7057)     |  :) |
 | tryItem    |   new         |      ADD    | ADD       |  ADD       |    [PR](https://visualfsharp.codeplex.com/SourceControl/network/forks/mexx24/visualfsharp/contribution/7113)     |  :) |
 | tryLast    |    new       |    ADD      |  ADD        |  ADD       |         [PR](https://visualfsharp.codeplex.com/SourceControl/network/forks/simonhdickson/visualfsharp/contribution/7263)      | :)  |
