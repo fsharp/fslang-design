@@ -79,7 +79,7 @@ If an item is marked "low-pri" it doesn't need to be completed in order for the 
 | last       |           |   ADD     |    ADD    |     o    |   [PR](https://visualfsharp.codeplex.com/SourceControl/network/forks/forki/fsharp/contribution/7046)      | :) |
 | length     |           |   o       |    o      |     o    |   done       |   :)       |
 | map        |           |    o      |     o     |      o   |   done       |     :)     |
-| map2       |           |   o       |    o      |     o    |   done       |     done     |
+| map2       |           |   o       |    o      |     o    |   done       |     :)     |
 | map3       |           |   o       |    ADD    |   ADD    |       [PR](https://visualfsharp.codeplex.com/SourceControl/network/forks/andrew_khmylov/fsharp/contribution/7115)      | needs work  |
 | mapi       |           |   o       |    o      |     o    |   done       |     :)     |
 | mapi2      |           |  o        |   o       |    ADD   |   [PR](https://visualfsharp.codeplex.com/SourceControl/network/forks/PatrickMcDonald/visualfsharp/contribution/7247)     | :)  |
