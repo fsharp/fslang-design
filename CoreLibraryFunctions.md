@@ -98,7 +98,7 @@ If an item is marked "low-pri" it doesn't need to be completed in order for the 
 | replicate  |           |     o    |    ADD    |   ADD    |        [PR](https://visualfsharp.codeplex.com/SourceControl/network/forks/forki/fsharp/contribution/7060)      | :)  |
 | rev        |           |    o      |   o       |    ADD   |   [PR](https://visualfsharp.codeplex.com/SourceControl/network/forks/PatrickMcDonald/visualfsharp/contribution/7340)      |  :) |
 | scan       |           |     o     |      o    |     o    | done         |   :)       |
-| scanBack   |           |     o     |    o      |   ADD    |   [PR](https://visualfsharp.codeplex.com/SourceControl/network/forks/PatrickMcDonald/visualfsharp/contribution/7404)       |          |
+| scanBack   |           |     o     |    o      |   ADD    |   [PR](https://visualfsharp.codeplex.com/SourceControl/network/forks/PatrickMcDonald/visualfsharp/contribution/7404)       | :) (minor work needed)          |
 | singleton  |           |    ADD    |     ADD   |    o     |   [PR](https://visualfsharp.codeplex.com/SourceControl/network/forks/forki/fsharp/contribution/7041)      |  :) |
 | skip       |           |   ADD   |      ADD     |   o |    [PR](https://visualfsharp.codeplex.com/SourceControl/network/forks/PatrickMcDonald/visualfsharp/contribution/7258) |     :)   |
 | skipWhile  |           |  ADD      |     ADD   |    o     |   [PR](https://visualfsharp.codeplex.com/SourceControl/network/forks/PatrickMcDonald/visualfsharp/contribution/7282)      |  |
