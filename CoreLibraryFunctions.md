@@ -105,8 +105,8 @@ If an item is marked "low-pri" it doesn't need to be completed in order for the 
 | sort       |           | o         |    o      |     o    |    done      |   :)       |
 | sortBy     |           |   o       |      o    |     o    |   done       |   :)       |
 | sortWith  |           |    o      |    o      |  ADD     |    [PR](https://visualfsharp.codeplex.com/SourceControl/network/forks/OkayX6/visualfsharptools/contribution/7334)      |  needs work         |
-| sortDescending  |           |    ADD      |    ADD      |  ADD     |  [@richardadalton](https://twitter.com/richardadalton) [UserVoice](https://fslang.uservoice.com/forums/245727-f-language/suggestions/6237671-add-sortdescending-to-seq-list-and-array)       |  |
-| sortByDescending  |           |    ADD      |    ADD      |  ADD     | [@richardadalton](https://twitter.com/richardadalton)   [UserVoice](https://fslang.uservoice.com/forums/245727-f-language/suggestions/6237671-add-sortdescending-to-seq-list-and-array)       |  |
+| sortDescending  |           |    ADD      |    ADD      |  ADD     | [@richardadalton](https://twitter.com/richardadalton) |   [PR submitted](https://visualfsharp.codeplex.com/SourceControl/network/forks/richardadalton/SortDescending/contribution/7469)       |
+| sortByDescending  |           |    ADD      |    ADD      |  ADD     | [@richardadalton](https://twitter.com/richardadalton) |   [PR submitted](https://visualfsharp.codeplex.com/SourceControl/network/forks/richardadalton/SortDescending/contribution/7469)       |
 | sum        |           |    o      |   o       |   o      |   done       |   :)       |
 | sumBy      |           |    o      |   o       |   o      |   done       |    :)      |
 | tail       |           |    o      |  ADD      |  ADD     | [PR](https://visualfsharp.codeplex.com/SourceControl/network/forks/bogdangaliceanu/fsharp/contribution/7389)      |     :)    |
