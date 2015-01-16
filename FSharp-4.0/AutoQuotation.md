@@ -1,14 +1,15 @@
 F# 4.0 Speclets related to Quotation Values
 
-# Contents
+### Contents
 
 - Speclet: Auto-Quotation of Arguments at Method Calls 
 
 - Speclet: ValueWithName quotation nodes
 
 
-# F# 4.0 Speclet: Auto-Quotation of Arguments at Method Calls ([Pull Request](https://visualfsharp.codeplex.com/SourceControl/network/forks/dsyme/cleanup/contribution/7638), [F# Language User Voice](https://fslang.uservoice.com/forums/245727-f-language/suggestions/5975797-allow-implicit-quotation-of-expressions-used-as-a)) 
+## F# 4.0 Speclet: Auto-Quotation of Arguments at Method Calls 
 
+[Pull Request](https://visualfsharp.codeplex.com/SourceControl/network/forks/dsyme/cleanup/contribution/7638), [F# Language User Voice](https://fslang.uservoice.com/forums/245727-f-language/suggestions/5975797-allow-implicit-quotation-of-expressions-used-as-a)) 
 
 ### Aims
 
@@ -48,7 +49,7 @@ Additionally, the method can declare that it wants both the quotation and the ev
 
     static member Plot([<ReflectedDefinition(true)>] values:Expr<X>) = (...)
 
-Sofor
+So for
 
     Chart.Plot(f x + f y)
 
@@ -117,7 +118,7 @@ when called with
 
 
 
-#	F# 4.0 Speclet: ValueWithName quotation nodes
+##	F# 4.0 Speclet: ValueWithName quotation nodes
 
 ### Aims
 
