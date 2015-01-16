@@ -2,11 +2,9 @@
 
 ## F# 4.0 speclet: Extension Property Initializers
 
-[F# Language User Voice Entry](http://fslang.uservoice.com/forums/245727-f-language/suggestions/6200089-allow-extension-properties-setters-in-initializers)
+[F# Language User Voice Entry](http://fslang.uservoice.com/forums/245727-f-language/suggestions/6200089-allow-extension-properties-setters-in-initializers), [Pull Request](https://github.com/Microsoft/visualfsharp/pull/17), [Commit](https://github.com/Microsoft/visualfsharp/commit/d9348ec64eec7b6b9907cca8deb6d02c6cdb9af9)
 
-[Pull Request](https://github.com/Microsoft/visualfsharp/pull/17)
-
-[Committed](https://github.com/Microsoft/visualfsharp/commit/d9348ec64eec7b6b9907cca8deb6d02c6cdb9af9)
+Thanks to [Edward Paul (@xepaul)](https://github.com/Microsoft/visualfsharp/commits/fsharp4?author=xepaul) for suggesting and contributing the implementation for this feature.
 
 ### Aim
 
