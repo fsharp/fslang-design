@@ -1,10 +1,9 @@
-F# 4.0 Speclets related to Quotation Values
 
 ### Contents
 
-- Speclet: Auto-Quotation of Arguments at Method Calls 
+- F# 4.0 Speclet: Auto-Quotation of Arguments at Method Calls 
 
-- Speclet: ValueWithName quotation nodes
+- F# 4.0 Speclet: ValueWithName quotation nodes
 
 
 ## F# 4.0 Speclet: Auto-Quotation of Arguments at Method Calls 
