@@ -15,6 +15,14 @@ F# 4.0 Speclets related to Quotation Values
 
 Add a facility to allow auto-quotation of arguments at method calls, in a way that is consistent with the existing “Auto-Lifting-To-LINQ-Expressions” facility of F# 3.0
 
+### Scenarios
+
+- Future F#-only APIs covering the space of usage of existing LINQ APIs utilizing auto-expressions at arguments
+
+- Charting and plotting APIs that accept formulae expressed as quotations
+
+- Other variations on quotation-based DSLs that benefit from auto-quotation
+
 ## Background
 
 F# 3.0 allows an F# TAST  LINQ Expression tree conversion for lambda method call arguments, similarly to C#. As in C# this is instigated by giving a method argument a type
