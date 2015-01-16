@@ -1,6 +1,8 @@
-## F# 4.0+ design for regularizing and extending the List, Array and Seq modules
+## F# 4.0 Speclet: Regularizing and extending the List, Array and Seq modules
 
-There is an approved proposal to make the functions defined in the `List`, `Array`, and `Seq` modules in FSharp.Core.dll more regular and to add some new functions. See also the overall status of F# 4.0+ Language Design Items.
+[User Voice](https://fslang.uservoice.com/forums/245727-f-language/suggestions/5663997-make-fsharp-core-collection-functions-for-list-ar)
+
+There is an approved proposal to make the functions defined in the `List`, `Array`, and `Seq` modules in FSharp.Core.dll more regular and to add some new functions. 
 
 New functions added in this proposal: `splitAt`, `contains`, `findBack`, `tryFindBack`, `findIndexBack`, `tryFindIndexBack`, `item`, `tryItem`, `indexed`, `mapFold`, `mapFoldBack`, `tryLast`, `tryHead`.
 
