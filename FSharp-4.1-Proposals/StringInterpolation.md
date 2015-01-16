@@ -1,5 +1,5 @@
 
-# F# 4.0+ Proposal: steal nice println syntax from Swift
+# F# 4.1+ Proposal: steal nice println syntax from Swift
 There is an approved [proposal] [1] to extend existing printf functionality with [string interpolation][2].
 
 [Design discussion thread][7].
