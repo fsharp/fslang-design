@@ -1,7 +1,7 @@
 
 ## F# 4.0 Speclet: Make “Microsoft” prefix optional when using core FSharp.Core namespaces, types and modules
 
-[User Voice](https://fslang.uservoice.com/forums/245727-f-language/suggestions/6107641-make-microsoft-prefix-optional-when-using-core-f)
+[User Voice](https://fslang.uservoice.com/forums/245727-f-language/suggestions/6107641-make-microsoft-prefix-optional-when-using-core-f), 
 [Pull Request](https://visualfsharp.codeplex.com/SourceControl/network/forks/dsyme/cleanup/contribution/7456), 
 [Commit](https://github.com/Microsoft/visualfsharp/commit/51d7b62c820e8212d470bb35bd74b6d4bbb37fa6)
 
