@@ -1,7 +1,7 @@
 
 # F# 4.0 Speclet - Class Names as Functions
 
-[Pull Request](https://visualfsharp.codeplex.com/SourceControl/network/forks/dsyme/cleanup/contribution/7104), [Commit](https://github.com/Microsoft/visualfsharp/commit/e3e46c49858ee39ddbb61ef1134089626e19e6fb)
+[User Voice Request](https://fslang.uservoice.com/forums/245727-f-language/suggestions/5663317-allow-to-use-class-constructors-as-functions), [Pull Request](https://visualfsharp.codeplex.com/SourceControl/network/forks/dsyme/cleanup/contribution/7104), [Commit](https://github.com/Microsoft/visualfsharp/commit/e3e46c49858ee39ddbb61ef1134089626e19e6fb)
 
 ### Aim
 
