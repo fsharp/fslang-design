@@ -43,6 +43,7 @@ Function | Comment | List | Array | Seq | PR | Status
 `distinctBy` |   | ADD | ADD | o | PR | [committed](https://github.com/Microsoft/visualfsharp/commit/bd6ac78c1378d5f565b86691f1e54f99e7339b4b)
 `empty` |   | o | o | o | --- | n/a
 `exactlyOne` |   | ADD | ADD | o | PR | [committed](https://github.com/Microsoft/visualfsharp/commit/cc2834df2244bf973d9c60eb1977809f141ac621)
+`except` |   | ADD | ADD | ADD | [PR](https://github.com/Microsoft/visualfsharp/pull/253) | [committed](https://github.com/Microsoft/visualfsharp/commit/0676493a20937884e0228a41dd0d29204a79577c)
 `exists` |   | o | o | o | --- | n/a
 `exists2` |   | o | o | o | --- | n/a
 `filter` |   | o | o | o | --- | n/a
