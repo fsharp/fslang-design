@@ -35,12 +35,14 @@ Function | Comment | List | Array | Seq | PR | Status
 `averageBy`|   | o | o | o | --- | n/a
 `contains` | new | ADD | ADD | ADD | PR | [committed](https://github.com/Microsoft/visualfsharp/commit/e8ac90ab9f0aba2ce235c75e6327830577c6d95b)
 `choose` |   | o | o | o | --- | n/a
+`chunkBySize` (name not finalized) |   | ADD | ADD | ADD | [PR](https://github.com/Microsoft/visualfsharp/pull/261) | Under review
 `collect` |   | o | o | o | --- | n/a
 `compareWith` |   | ADD | ADD | o | PR | [committed](https://github.com/Microsoft/visualfsharp/commit/befea5b6c8182ba054831a6155a101df97e70c27)
 `concat` |   | o | o | o | --- | n/a
 `countBy` |   | ADD | ADD | o | PR | [committed](https://github.com/Microsoft/visualfsharp/commit/321dcde0fd686491d07d03f96d770d07a57f40cf)
 `distinct` |   | ADD | ADD | o | PR | [committed](https://github.com/Microsoft/visualfsharp/commit/bd6ac78c1378d5f565b86691f1e54f99e7339b4b)
 `distinctBy` |   | ADD | ADD | o | PR | [committed](https://github.com/Microsoft/visualfsharp/commit/bd6ac78c1378d5f565b86691f1e54f99e7339b4b)
+`divideInto` (name not finalized) |   | ADD | ADD | ADD | [PR](https://github.com/Microsoft/visualfsharp/pull/261) | Under review
 `empty` |   | o | o | o | --- | n/a
 `exactlyOne` |   | ADD | ADD | o | PR | [committed](https://github.com/Microsoft/visualfsharp/commit/cc2834df2244bf973d9c60eb1977809f141ac621)
 `except` |   | ADD | ADD | ADD | [PR](https://github.com/Microsoft/visualfsharp/pull/253) | [committed](https://github.com/Microsoft/visualfsharp/commit/0676493a20937884e0228a41dd0d29204a79577c)
