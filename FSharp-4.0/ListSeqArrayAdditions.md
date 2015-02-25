@@ -35,7 +35,7 @@ Function | Comment | List | Array | Seq | PR | Status
 `averageBy`|   | o | o | o | --- | n/a
 `contains` | new | ADD | ADD | ADD | PR | [committed](https://github.com/Microsoft/visualfsharp/commit/e8ac90ab9f0aba2ce235c75e6327830577c6d95b)
 `choose` |   | o | o | o | --- | n/a
-`chunkBy` (name not finalized) |   | ADD | ADD | ADD | [PR](https://github.com/Microsoft/visualfsharp/pull/261) | Under review
+`chunkBySize` (name not finalized) |   | ADD | ADD | ADD | [PR](https://github.com/Microsoft/visualfsharp/pull/261) | Under review
 `collect` |   | o | o | o | --- | n/a
 `compareWith` |   | ADD | ADD | o | PR | [committed](https://github.com/Microsoft/visualfsharp/commit/befea5b6c8182ba054831a6155a101df97e70c27)
 `concat` |   | o | o | o | --- | n/a
