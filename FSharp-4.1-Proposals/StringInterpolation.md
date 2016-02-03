@@ -31,7 +31,7 @@ Should we always prefer one way of printing things (and if yes - which one) or p
 
 [1]:http://fslang.uservoice.com/forums/245727-f-language/suggestions/6002107-steal-nice-println-syntax-from-swift
 [2]:http://en.wikipedia.org/wiki/String_interpolation
-[3]:http://visualfsharp.codeplex.com/SourceControl/network/forks/vladima/primary/contribution/7063
+[3]:https://github.com/Microsoft/visualfsharp/pull/921
 [4]:http://msdn.microsoft.com/en-us/library/system.string.concat(v=vs.110).aspx
 [5]:http://msdn.microsoft.com/en-us/library/system.object.tostring(v=vs.110).aspx
 [6]:http://msdn.microsoft.com/en-us/library/ee370560.aspx
