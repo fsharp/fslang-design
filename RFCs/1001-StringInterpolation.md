@@ -3,7 +3,15 @@
 
 There is an approved-in-principle [proposal] [1] to extend existing printf functionality with [string interpolation][2].
 
-[Design discussion thread][7].
+To discuss this design please us [Design discussion thread][7].
+
+### Background
+
+* UserVoice: https://fslang.uservoice.com/forums/245727-f-language/suggestions/6002107-add-string-interpolation-to-println-syntax-from-s
+* C# string interpolation docs: https://msdn.microsoft.com/en-us/library/dn961160.aspx
+* Swift string interpolation: https://developer.apple.com/library/ios/documentation/Swift/Conceptual/Swift_Programming_Language/StringsAndCharacters.html
+
+### Proposal
 
 Proposed syntax: 
 > "%(**embedded expression**)"
@@ -20,7 +28,7 @@ After splitting:
 Final result
 > String.Concat([| "%d"; box foo; "%d"; box (bar.baz) |])
 
-Open questions:
+### Open questions:
 
 * Is general idea of implementing this feature entirely on semantic level is acceptable?
 * Should embedded expressions be restricted to just identifiers\dotted names or we should allow full set of F# expressions?
