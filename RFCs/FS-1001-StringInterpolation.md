@@ -1,13 +1,12 @@
 
 # F# RFC FS-1001 - String Interpolation
 
-There is an approved-in-principle [proposal] [1] to extend existing printf functionality with [string interpolation][2]. To discuss this design please us [Design discussion thread][7].
+There is an approved-in-principle [proposal](http://fslang.uservoice.com/forums/245727-f-language/suggestions/6002107-steal-nice-println-syntax-from-swift) to extend existing printf functionality with [string interpolation][2]. To discuss this design please us [Design discussion thread][7].
 
-### Background
+### Introduction
 
-* UserVoice: https://fslang.uservoice.com/forums/245727-f-language/suggestions/6002107-add-string-interpolation-to-println-syntax-from-s
-* C# string interpolation docs: https://msdn.microsoft.com/en-us/library/dn961160.aspx
-* Swift string interpolation: https://developer.apple.com/library/ios/documentation/Swift/Conceptual/Swift_Programming_Language/StringsAndCharacters.html
+* [C# string interpolation docs](https://msdn.microsoft.com/en-us/library/dn961160.aspx)
+* [Swift string interpolation](https://developer.apple.com/library/ios/documentation/Swift/Conceptual/Swift_Programming_Language/StringsAndCharacters.html)
 
 ### Proposal
 
@@ -36,7 +35,6 @@ Should we always prefer one way of printing things (and if yes - which one) or p
 * Should we provide ways to specify width\precision\alignment similar to what [printf][6] is doing today? If yes - what modification should be made to the proposed syntax?
  
 
-[1]:http://fslang.uservoice.com/forums/245727-f-language/suggestions/6002107-steal-nice-println-syntax-from-swift
 [2]:http://en.wikipedia.org/wiki/String_interpolation
 [3]:https://github.com/Microsoft/visualfsharp/pull/921
 [4]:http://msdn.microsoft.com/en-us/library/system.string.concat(v=vs.110).aspx
