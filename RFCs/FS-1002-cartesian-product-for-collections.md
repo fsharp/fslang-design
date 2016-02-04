@@ -6,7 +6,9 @@ This RFC covers the detailed proposal for this suggestion.
 
 [Discussion thread](https://github.com/fsharp/FSharpLangDesign/issues/47)
 
-Status: Approved in principle, details under discussion, awaiting implementation
+[x] Approved in principle
+[ ] Details under discussion
+[ ] Awaiting implementation
 
 ### Introduction
 
