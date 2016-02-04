@@ -4,6 +4,8 @@
 The design suggestion [nameof operator](http://fslang.uservoice.com/forums/245727-f-language/suggestions/5900625-add-nameof-operator-to-follow-c-vb-update) has been marked "approved in principle".
 This RFC covers the detailed proposal for this suggestion.
 
+[Discussion thread](https://github.com/fsharp/FSharpLangDesign/issues/48)
+
 * [x] Approved in principle
 * [ ] Details: under discussion
 * [ ] Implementation: In progress in https://github.com/Microsoft/visualfsharp/pull/908
@@ -40,7 +42,7 @@ This substitution should be done at compile time, no performance impact expected
 
 The standard range of testing  considerations for F# library functions apply.
 
-Additional condiderations:
+Additional considerations:
 
 - handle cases where `nameof` already resolves to something user-defined, to avoid being a breaking change
 - when used like a function, `let f = nameof ;; f x`
