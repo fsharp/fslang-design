@@ -1,5 +1,5 @@
 
-# F# RFC 1001 - String Interpolation
+# F# RFC FS-1001 - String Interpolation
 
 There is an approved-in-principle [proposal] [1] to extend existing printf functionality with [string interpolation][2]. To discuss this design please us [Design discussion thread][7].
 
