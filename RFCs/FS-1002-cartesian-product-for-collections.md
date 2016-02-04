@@ -4,7 +4,7 @@
 The design suggestion [cartesian product for collections in FSharp.Core](http://fslang.uservoice.com/forums/245727-f-language/suggestions/7184398-cartesian-product-function-for-collections) has been marked "approved in principle".  
 This RFC covers the detailed proposal for this suggestion.
 
-Status: 
+[Discussion thread](https://github.com/fsharp/FSharpLangDesign/issues/47)
 
 ### Introduction
 
