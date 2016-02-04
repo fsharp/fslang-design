@@ -6,9 +6,9 @@ This RFC covers the detailed proposal for this suggestion.
 
 [Discussion thread](https://github.com/fsharp/FSharpLangDesign/issues/47)
 
-[x] Approved in principle
-[ ] Details under discussion
-[ ] Awaiting implementation
+* [x] Approved in principle
+* [ ] Details: under discussion
+* [ ] Implementation: not yet submitted
 
 ### Introduction
 
