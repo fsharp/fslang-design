@@ -6,6 +6,8 @@ This RFC covers the detailed proposal for this suggestion.
 
 [Discussion thread](https://github.com/fsharp/FSharpLangDesign/issues/47)
 
+Status: Approved in principle, details under discussion, awaiting implementation
+
 ### Introduction
 
 It's often useful to compute the Cartesian product (cross join) of two collections. Today users up writing something like this:
