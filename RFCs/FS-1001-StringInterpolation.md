@@ -1,7 +1,7 @@
 
 # F# RFC FS-1001 - String Interpolation
 
-There is an approved-in-principle [proposal](http://fslang.uservoice.com/forums/245727-f-language/suggestions/6002107-steal-nice-println-syntax-from-swift) to extend existing printf functionality with [string interpolation][2]. To discuss this design please us [Design discussion thread][7].
+There is an approved-in-principle [proposal](http://fslang.uservoice.com/forums/245727-f-language/suggestions/6002107-steal-nice-println-syntax-from-swift) to extend existing printf functionality with [string interpolation][2]. To discuss this design please us [design discussion thread][7].
 
 ### Introduction
 
