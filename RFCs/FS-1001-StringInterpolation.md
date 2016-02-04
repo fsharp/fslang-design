@@ -1,7 +1,7 @@
 
 # F# RFC FS-1001 - String Interpolation
 
-There is an approved-in-principle [proposal](http://fslang.uservoice.com/forums/245727-f-language/suggestions/6002107-steal-nice-println-syntax-from-swift) to extend existing printf functionality with [string interpolation][2]. To discuss this design please us [design discussion thread][7].
+There is an approved-in-principle [proposal](http://fslang.uservoice.com/forums/245727-f-language/suggestions/6002107-steal-nice-println-syntax-from-swift) to extend the existing printf functionality in the F# language design with [string interpolation][2]. To discuss this design please us [design discussion thread][7].
 
 ### Introduction
 
@@ -34,6 +34,10 @@ This option is definitely not the best one for F# types like records\discriminat
 Should we always prefer one way of printing things (and if yes - which one) or printing strategy should vary from type to type.
 * Should we provide ways to specify width\precision\alignment similar to what [printf][6] is doing today? If yes - what modification should be made to the proposed syntax?
  
+
+### Detailed Changes to Language Specification
+
+TBD
 
 [2]:http://en.wikipedia.org/wiki/String_interpolation
 [3]:https://github.com/Microsoft/visualfsharp/pull/921
