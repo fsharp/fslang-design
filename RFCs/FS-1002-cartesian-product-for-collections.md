@@ -8,7 +8,7 @@ This RFC covers the detailed proposal for this suggestion.
 
 * [x] Approved in principle
 * [ ] Details: under discussion
-* [ ] Implementation: not yet submitted
+* [x] Implementation: [prototype submitted](https://github.com/Microsoft/visualfsharp/pull/989)
 
 ### Introduction
 
