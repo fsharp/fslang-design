@@ -184,7 +184,7 @@ promotes the goals of interoperability.
 
 ### Alternative: Always use struct tuples
 
-An alternative is to adjut F# tuples to always use structs, or some other variation.  This option has been discarded since
+An alternative is to adjust the F# compiler and specification so that F# tuples are always compiled as  structs, or some other variation on this.  This option has been discarded since
 it would be a breaking change to the binary compatibility of F# code.
 
 
