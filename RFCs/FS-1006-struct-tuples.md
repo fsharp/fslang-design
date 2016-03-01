@@ -145,34 +145,51 @@ Named tuple data is
 The F# compiler applies optimizations to expressions involving the existing F# tuple. These optimizations must be carefully assessed and considered for
 
 
-### Quotations
+### Feature Interaction: Quotations
 
 The F# quotation nodes ``Expr.NewTuple`` and ``Expr.TupleGet`` assume reference type tuples. 
 
 TBD: determine the quotation form of struct tuples.
 
+### Feature Interaction: Reflection
 
-### Provided Expressions
+The following F# reflection functions in FSHarp.Core assume reference tuples:
 
-Provided expressions (provided by type providers) can be quotation 
+* ``FSharpValue.MakeTuple``
+* ``FSharpValue.GetTupleField``
+* ``FSharpValue.GetTupleFields``
+* ``FSharpValue.GetTupleFields``
+* ``FSharpValue.PreComputeTupleReader``
+* ``FSharpValue.PreComputeTuplePropertyInfo``
+* ``FSharpValue.PreComputeTupleConstructor``
+* ``FSharpValue.PreComputeTupleConstructorInfo``
+* ``FSharpType.MakeTupleType``
+* ``FSharpType.IsTuple``
+
+TBD: determine what these do on struct tuples and if necessary add new methods.
+
+
+### Feature Interaction: Provided Types and Expressions
+
+Provided expressions (i.e. expressions provided by type providers) can be quotation 
 nodes ``Expr.NewTuple`` and ``Expr.TupleGet``. These currently assume reference type tuples (see above).
 
 TBD: determine whether struct tuples can appear in provided expressions.
 
-### Library changes
+### Feature Interaction: FSharp.Core Library changes
 
 It is expected that the .NET standard libraries will add types ``System.StructTuple<...>``.  In the absence of these types we expect that either the F# core library or
 a new component will define these types.  Without these types in some standard referenced component, the feature is not really implementable inn a satisfactory way that
 promotes the goals of interoperability.
 
-### Interaction with ``equality`` and ``comparison`` constraints
+### Feature Interaction: Interaction with ``equality`` and ``comparison`` constraints
 
 The F# special constraints ``equality`` and ``comparison`` have specific rules for tuples: a tuple type
 supports ``equality`` if its element types support ``equality``, and likewise ``comparison``.
 
 TBD: We must decide if this will also apply to struct tuples.
 
-### Interaction with implicit flexibility on use of function-typed values
+### Feature Interaction: Implicit flexibility on use of function-typed values
 
 F# has a special rule that adds subtype-flexibility when a function value is used, e.g.
 
@@ -192,7 +209,7 @@ becomes
 
 TBD: We must decide if this will also apply to functions taking struct tuples, and whether this would be consistently applied to members taking struct tuples too.
 
-### Interaction with generalization
+### Feature Interaction: Generalization of tuples 
 
 In F#, like most other ML langauges, some simple values can be generalized.
 This means these values are given generic type rather than hitting the value-restriction error. e.g.
