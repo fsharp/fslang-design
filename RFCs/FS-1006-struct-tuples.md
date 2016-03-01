@@ -182,7 +182,13 @@ promotes the goals of interoperability.
 * The inference of structness where ``let (x0,y0) = origin`` allows a tuple pattern to be matched to a struct tuple is optional.  
   We could require that structness be noted at all pattern and expression positions in the code, e.g. ``let (struct (x0,y0)) = origin``.
 
-### Resolved Syntax Questions
+### Alternative: Always use struct tuples
+
+An alternative is to adjut F# tuples to always use structs, or some other variation.  This option has been discarded since
+it would be a breaking change to the binary compatibility of F# code.
+
+
+### Alternative: Resolved Syntax Questions
 
 The syntax above assumes that parentheses are needed:
 
