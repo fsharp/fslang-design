@@ -33,25 +33,6 @@ val map2: ('a -> 'b -> 'c) -> 'a option -> 'b option -> 'c option
 val map3: ('a -> 'b -> 'c -> 'd) -> 'a option -> 'b option -> 'c option -> 'd option
 ```
 
-#### Conversion to and from null
-
-```fsharp
-val ofNull : 'a -> 'a option
-```
-
-```fsharp
-val toNull : 'a option -> 'a
-```
-
-#### Conversion to and from `System.Nullable`
-
-```fsharp
-val ofNullable : System.Nullable<'T> -> 'T option
-```
-
-```fsharp
-val toNullable : 'T option -> System.Nullable<'T>
-```
 
 ### Under discussion:
 
