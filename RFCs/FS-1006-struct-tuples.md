@@ -165,25 +165,6 @@ It is expected that the .NET standard libraries will add types ``System.StructTu
 a new component will define these types.  Without these types in some standard referenced component, the feature is not really implementable inn a satisfactory way that
 promotes the goals of interoperability.
 
-
-# Drawbacks
-[drawbacks]: #drawbacks
-
-* Using struct types implicitly can lead to negative feature interactions, for example, on the 64-bit JIT, for value types > 64-bit in size there is 
-  a potential performance minefield when interacting with the "tail" IL instruction.
-
-* The feature requires the definition of ``StructTuple`` types in the standard library.  It is unclear if/when these types will become available, and what 
-  dependencies would arise in F# library code.
-
-* The feature is sensitive to the details of the design of C# tuples, which are still being finalized.
-
-* The F# compiler includes many code paths that use reference tuples as a utility representation, for example in argument descriptions for multi-argument methods and 
-  in the results of optimizations.  These code paths must be very carefully adjusted to either apply to struct tuples, or not.
-
-* The F# core library has dependencies on reference tuples and includes specialized optimization code for hashing and comparing reference tuples.
-  This code must be very carefully adjusted to either apply only to reference tuples or to both kinds of tuples.  Ideally, ``FSharp.Core.dll`` will not 
-  pick up a dependency on the ``System.StructTuple<...>`` types until these are available in the minimal .NET versions that ``FSharp.Core`` refers to.
-
 ### Interaction with ``equality`` and ``comparison`` constraints
 
 The F# special constraints ``equality`` and ``comparison`` have specific rules for tuples: a tuple type
@@ -230,6 +211,25 @@ This extends to tuples of these values:
 TBD: decide if this extends to struct tuples.
 
     let x = struct ([], [])
+
+
+# Drawbacks
+[drawbacks]: #drawbacks
+
+* Using struct types implicitly can lead to negative feature interactions, for example, on the 64-bit JIT, for value types > 64-bit in size there is 
+  a potential performance minefield when interacting with the "tail" IL instruction.
+
+* The feature requires the definition of ``StructTuple`` types in the standard library.  It is unclear if/when these types will become available, and what 
+  dependencies would arise in F# library code.
+
+* The feature is sensitive to the details of the design of C# tuples, which are still being finalized.
+
+* The F# compiler includes many code paths that use reference tuples as a utility representation, for example in argument descriptions for multi-argument methods and 
+  in the results of optimizations.  These code paths must be very carefully adjusted to either apply to struct tuples, or not.
+
+* The F# core library has dependencies on reference tuples and includes specialized optimization code for hashing and comparing reference tuples.
+  This code must be very carefully adjusted to either apply only to reference tuples or to both kinds of tuples.  Ideally, ``FSharp.Core.dll`` will not 
+  pick up a dependency on the ``System.StructTuple<...>`` types until these are available in the minimal .NET versions that ``FSharp.Core`` refers to.
 
 # Alternatives
 [alternatives]: #alternatives
