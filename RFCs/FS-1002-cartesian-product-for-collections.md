@@ -14,7 +14,9 @@ This RFC covers the detailed proposal for this suggestion.
 
 It's often useful to compute the Cartesian product (cross join) of two collections. Today users up writing something like this:
 
-    let cross xs ys = seq { for x in xs do for y in ys -> x, y  }
+```fsharp
+let cross xs ys = seq { for x in xs do for y in ys -> x, y  }
+```
 
 It would be useful to have this in the FSharp.Core standard collection modules.  It would be added to 
 the Seq, List and Array modules in FSharp.Core.

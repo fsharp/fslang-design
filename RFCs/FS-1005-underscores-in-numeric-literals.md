@@ -28,7 +28,6 @@ This is a popular feature in other languages. Some other languages with a simila
 
 just to name a few...
 
-
 # Detailed design
 [design]: #detailed-design
 
@@ -41,34 +40,38 @@ You can place underscores only between digits. You cannot place underscores in t
 
 Taken from the Java documentation, the following examples demonstrate valid examples:
 
-    let creditCardNumber = 1234_5678_9012_3456L
-    let socialSecurityNumber = 999_99_9999L
-    let pi = 	3.14_15F
-    let hexBytes = 0xFF_EC_DE_5E
-    let hexWords = 0xCAFE_BABE
-    let maxLong = 0x7fff_ffff_ffff_ffffL
-    let nybbles = 0b0010_0101
-    let bytes = 0b11010010_01101001_10010100_10010010
+```fsharp
+let creditCardNumber = 1234_5678_9012_3456L
+let socialSecurityNumber = 999_99_9999L
+let pi = 	3.14_15F
+let hexBytes = 0xFF_EC_DE_5E
+let hexWords = 0xCAFE_BABE
+let maxLong = 0x7fff_ffff_ffff_ffffL
+let nybbles = 0b0010_0101
+let bytes = 0b11010010_01101001_10010100_10010010
+```
 
 Taken from the Java documentation, the following examples demonstrate valid and invalid underscore placements (which are highlighted) in numeric literals:
 
-    let pi1 = 3_.1415F      // Invalid cannot put underscores adjacent to a decimal point
-    let pi2 = 3._1415F      // Invalid cannot put underscores adjacent to a decimal point
-    let socialSecurityNumber1 = 999_99_9999_L         // Invalid cannot put underscores prior to an L suffix
+```fsharp
+let pi1 = 3_.1415F      // Invalid cannot put underscores adjacent to a decimal point
+let pi2 = 3._1415F      // Invalid cannot put underscores adjacent to a decimal point
+let socialSecurityNumber1 = 999_99_9999_L         // Invalid cannot put underscores prior to an L suffix
 
-    let x1 = _52              // This is an identifier, not a numeric literal
-    let x2 = 5_2              // OK (decimal literal)
-    let x3 = 52_              // Invalid cannot put underscores at the end of a literal
-    let x4 = 5_______2        // OK (decimal literal)
+let x1 = _52              // This is an identifier, not a numeric literal
+let x2 = 5_2              // OK (decimal literal)
+let x3 = 52_              // Invalid cannot put underscores at the end of a literal
+let x4 = 5_______2        // OK (decimal literal)
 
-    let x5 = 0_x52            // Invalid cannot put underscores in the 0x radix prefix
-    let x6 = 0x_52            // Invalid cannot put underscores at the beginning of a number
-    let x7 = 0x5_2            // OK (hexadecimal literal)
-    let x8 = 0x52_            // Invalid cannot put underscores at the end of a number
+let x5 = 0_x52            // Invalid cannot put underscores in the 0x radix prefix
+let x6 = 0x_52            // Invalid cannot put underscores at the beginning of a number
+let x7 = 0x5_2            // OK (hexadecimal literal)
+let x8 = 0x52_            // Invalid cannot put underscores at the end of a number
 
-    let x9 = 0_52             // OK (octal literal)
-    let x10 = 05_2            // OK (octal literal)
-    let x11 = 052_            // Invalid cannot put underscores at the end of a number
+let x9 = 0_52             // OK (octal literal)
+let x10 = 05_2            // OK (octal literal)
+let x11 = 052_            // Invalid cannot put underscores at the end of a number
+```
 
 For QZRNG literals, the string passed to the library routine has underscores removed.
 
