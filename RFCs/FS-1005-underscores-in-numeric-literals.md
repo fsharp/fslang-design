@@ -1,11 +1,11 @@
 # F# RFC FS-0005 - Underscore Literals
 
-The design suggestion [Accept integer literals like 12_345](https://fslang.uservoice.com/forums/245727-f-language/suggestions/6628026-accept-integer-literals-like-12-345-for-readabilit) has been marked "approved in principle".
+The design suggestion [Underscores in Numeric Literals](https://fslang.uservoice.com/forums/245727-f-language/suggestions/6628026-accept-integer-literals-like-12-345-for-readabilit) has been marked "approved in principle".
 This RFC covers the detailed proposal for this suggestion.
 
 * [x] [Approved in principle](https://fslang.uservoice.com/forums/245727-f-language/suggestions/6628026-accept-integer-literals-like-12-345-for-readabilit)
-* [ ] Details: [under discussion](https://github.com/fsharp/FSharpLangDesign/issues/FILL-ME-IN)
-* [ ] Implementation: [In progress](https://github.com/Microsoft/visualfsharp/pull/FILL-ME-IN)
+* [ ] Details: [under discussion](https://github.com/fsharp/FSharpLangDesign/issues/52)
+* [ ] Implementation: not yet started
 
 
 # Summary
