@@ -128,33 +128,6 @@ e.g.
 
 Two tuple types are only equivalent if they have the same structness (and named argument metadata if that feature is supported)
 
-### Interaction with ``equality`` and ``comparison`` constraints
-
-The F# special constraints ``equality`` and ``comparison`` have specific rules for tuples: a tuple type
-supports ``equality`` if its element types support ``equality``, and likewise ``comparison``.
-
-TBD: We must decide if this will also apply to struct tuples.
-
-### Interaction with implicit flexibility on use of function-typed values
-
-F# has a special rule that adds subtype-flexibility when a function value is used, e.g.
-
-    let f (x: IComparable) = ...
-    
-can be called using any value that supports IComparable, because each use of ``f`` is implicitly replaced by a coercing expression:
-
-    (fun (x: #IComparable) -> f (x :> IComparable))
-
-This also applies to tupled arguments, e.g.
-
-    let f (x1: IComparable, x2: IComparable) = ...
-
-becomes 
-
-    (fun (x1: #IComparable, x2: #IComparable) -> f (x1 :> IComparable, x2 :> IComparable))
-
-TBD: We must decide if this will also apply to functions taking struct tuples, and whether this would be consistently applied to members taking struct tuples too.
-
 
 ### Compiled form
 
@@ -208,6 +181,53 @@ promotes the goals of interoperability.
 * The F# core library has dependencies on reference tuples and includes specialized optimization code for hashing and comparing reference tuples.
   This code must be very carefully adjusted to either apply only to reference tuples or to both kinds of tuples.  Ideally, ``FSharp.Core.dll`` will not 
   pick up a dependency on the ``System.StructTuple<...>`` types until these are available in the minimal .NET versions that ``FSharp.Core`` refers to.
+
+### Interaction with ``equality`` and ``comparison`` constraints
+
+The F# special constraints ``equality`` and ``comparison`` have specific rules for tuples: a tuple type
+supports ``equality`` if its element types support ``equality``, and likewise ``comparison``.
+
+TBD: We must decide if this will also apply to struct tuples.
+
+### Interaction with implicit flexibility on use of function-typed values
+
+F# has a special rule that adds subtype-flexibility when a function value is used, e.g.
+
+    let f (x: IComparable) = ...
+    
+can be called using any value that supports IComparable, because each use of ``f`` is implicitly replaced by a coercing expression:
+
+    (fun (x: #IComparable) -> f (x :> IComparable))
+
+This also applies to tupled arguments, e.g.
+
+    let f (x1: IComparable, x2: IComparable) = ...
+
+becomes 
+
+    (fun (x1: #IComparable, x2: #IComparable) -> f (x1 :> IComparable, x2 :> IComparable))
+
+TBD: We must decide if this will also apply to functions taking struct tuples, and whether this would be consistently applied to members taking struct tuples too.
+
+### Interaction with generalization
+
+In F#, like most other ML langauges, some simple values can be generalized.
+This means these values are given generic type rather than hitting the value-restriction error. e.g.
+
+    let x = null
+    val x : 'a when 'a : null
+    
+    let x = []
+    val x : 'a list
+
+This extends to tuples of these values:
+
+    let x = ([], [])
+    val x : 'a list * 'b list
+    
+TBD: decide if this extends to struct tuples.
+
+    let x = struct ([], [])
 
 # Alternatives
 [alternatives]: #alternatives
