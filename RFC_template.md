@@ -26,6 +26,12 @@ This is the bulk of the RFC. Explain the design in enough detail for somebody fa
 with the language to understand, and for somebody familiar with the compiler to implement.
 This should get into specifics and corner-cases, and include examples of how the feature is used.
 
+Example code:
+
+```fsharp
+let add x y = x + y
+```
+
 # Drawbacks
 [drawbacks]: #drawbacks
 
