@@ -1,4 +1,4 @@
-# F# RFC FS-0006 - Struct Tuples
+# F# RFC FS-0006 - Struct Tuples and Compat with C# 7.0 Tuples
 
 The design suggestion [Add Support for Struct Tuples](https://fslang.uservoice.com/forums/245727-f-language/suggestions/6148669-add-support-for-structtuple) has been marked "approved in principle".
 This RFC covers the detailed proposal for this suggestion.
