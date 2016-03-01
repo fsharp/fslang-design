@@ -126,7 +126,14 @@ e.g.
 
 ### Type equivalence
 
-Two tuple types are only equivalent if they have the same structness and named argument metadata.
+Two tuple types are only equivalent if they have the same structness (and named argument metadata if that feature is supported)
+
+### Interaction with ``equality`` and ``comparison`` constraints
+
+The F# special constraints ``equality`` and ``comparison`` have specific rules for tuples: a tuple type
+supports ``equality`` if its element types support ``equality``, and likewise ``comparison``.
+
+TBD: We must decide if this will also apply to struct tuples.
 
 ### Compiled form
 
