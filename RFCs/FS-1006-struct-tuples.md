@@ -269,6 +269,115 @@ TBD: decide if this extends to struct tuples.
 let x = struct ([], [])
 ```
 
+# Performance and Generated Code
+
+Care must be taken to generate the correct code for pattern matching. The expected generated code for
+
+```fsharp
+let f2 (struct (x,y)) = x + y
+```
+
+is
+
+```
+.method public static int32  f1(valuetype [FSharp.Core]System.StructTuple`2<int32,int32> s) cil managed
+{
+  // Code size       16 (0x10)
+  .maxstack  8
+  IL_0000:  ldarga.s   s
+  IL_0002:  call       instance !0 valuetype [FSharp.Core]System.StructTuple`2<int32,int32>::get_Item1()
+  IL_0007:  ldarga.s   s
+  IL_0009:  call       instance !1 valuetype [FSharp.Core]System.StructTuple`2<int32,int32>::get_Item2()
+  IL_000e:  add
+  IL_000f:  ret
+} // end of method A::f1
+
+```
+
+# Examples and Error Messages
+[exampes]: #examples
+
+The prototype currently has this (it could be improved)
+
+```fsharp
+>  let f (x: struct (int * int)) : (int * int) = x;;
+
+   let f (x: struct (int * int)) : (int * int) = x;;
+  -----------------------------------------------^
+
+stdin(2,48): error FS0001: One tuple type is a struct tuple, the other is a reference tuple
+```
+
+Some more examples:
+
+```fsharp
+> let f (struct (a,b)) = (a,b);;
+
+val f : struct ('a * 'b) -> 'a * 'b
+
+> let f (struct (a,b)) = struct (a,b);;
+
+val f : struct ('a * 'b) -> struct ('a * 'b)
+
+> let f (struct (a,b) as x) = x;;
+
+val f : struct ('a * 'b) -> struct ('a * 'b)
+
+> let f (struct (a,struct (c,d)) as x) = x;;
+
+val f : struct ('a * struct ('b * 'c)) -> struct ('a * struct ('b * 'c))
+
+> let f (struct (a,struct (c,d)) as x) = (a,b,c);;
+
+  let f (struct (a,struct (c,d)) as x) = (a,b,c);;
+  ------------------------------------------^
+
+stdin(7,43): error FS0039: The value or constructor 'b' is not defined
+> let f (struct (a,struct (c,d)) as x) = (a,c,d);;
+
+val f : struct ('a * struct ('b * 'c)) -> 'a * 'b * 'c
+
+> let f (struct (a,struct (c,d)) as x) = struct (a,c,d);;
+
+val f : struct ('a * struct ('b * 'c)) -> struct ('a * 'b * 'c)
+
+>
+```
+
+And comparison/equality:
+```fsharp
+> struct (1,2) = struct (1,2);;
+val it : bool = true
+> struct (1,2) = struct (1,3);;
+val it : bool = false
+> struct (1,2) < struct (1,3);;
+val it : bool = true
+> struct (1,2) < struct (1,1);;
+val it : bool = false
+
+> struct (1,2) = struct (1,3,4);;
+
+  struct (1,2) = struct (1,3,4);;
+  -----------------------^^^^^
+
+stdin(3,24): error FS0001: Type mismatch. Expecting a
+    struct (int * int)
+but given a
+    struct (int * int * 'a)
+The tuples have differing lengths of 2 and 3
+```
+
+# Tooling Considerations
+[tooling]: #tooling-considerations
+
+The F# Compiler Service tests should be updated to include specific new tests that autocomplete and symbol information is returned for struct types, expressions and patterns, including incomplete textual versions of these.
+
+# Testing Considerations
+[testing]: #testing-considerations
+
+TBD 
+
+
 # Drawbacks
 [drawbacks]: #drawbacks
 
@@ -318,91 +427,6 @@ struct 3,4
 ```
 
 This seems reasonable.
-
-# Performance and Generated Code
-
-Care must be taken to generate the correct code for pattern matching. The expected generated code for
-
-```fsharp
-let f2 (struct (x,y)) = x + y
-```
-
-is
-
-```
-.method public static int32  f1(valuetype [FSharp.Core]System.StructTuple`2<int32,int32> s) cil managed
-{
-  // Code size       16 (0x10)
-  .maxstack  8
-  IL_0000:  ldarga.s   s
-  IL_0002:  call       instance !0 valuetype [FSharp.Core]System.StructTuple`2<int32,int32>::get_Item1()
-  IL_0007:  ldarga.s   s
-  IL_0009:  call       instance !1 valuetype [FSharp.Core]System.StructTuple`2<int32,int32>::get_Item2()
-  IL_000e:  add
-  IL_000f:  ret
-} // end of method A::f1
-
-```
-
-# Error Messages
-[errors]: #error-messages
-
-The prototype currently has this (it could be improved)
-
-```fsharp
->  let f (x: struct (int * int)) : (int * int) = x;;
-
-   let f (x: struct (int * int)) : (int * int) = x;;
-  -----------------------------------------------^
-
-stdin(2,48): error FS0001: One tuple type is a struct tuple, the other is a reference tuple
-```
-
-Some more examples:
-
-```fsharp
-> let f (struct (a,b)) = (a,b);;
-
-val f : struct ('a * 'b) -> 'a * 'b
-
-> let f (struct (a,b)) = struct (a,b);;
-
-val f : struct ('a * 'b) -> struct ('a * 'b)
-
-> let f (struct (a,b) as x) = x;;
-
-val f : struct ('a * 'b) -> struct ('a * 'b)
-
-> let f (struct (a,struct (c,d)) as x) = x;;
-
-val f : struct ('a * struct ('b * 'c)) -> struct ('a * struct ('b * 'c))
-
-> let f (struct (a,struct (c,d)) as x) = (a,b,c);;
-
-  let f (struct (a,struct (c,d)) as x) = (a,b,c);;
-  ------------------------------------------^
-
-stdin(7,43): error FS0039: The value or constructor 'b' is not defined
-> let f (struct (a,struct (c,d)) as x) = (a,c,d);;
-
-val f : struct ('a * struct ('b * 'c)) -> 'a * 'b * 'c
-
-> let f (struct (a,struct (c,d)) as x) = struct (a,c,d);;
-
-val f : struct ('a * struct ('b * 'c)) -> struct ('a * 'b * 'c)
-
->
-```
-
-# Testing Considerations
-[testing]: #testing-considerations
-
-TBD 
-
-# Tooling Considerations
-[tooling]: #tooling-considerations
-
-The F# Compiler Service tests should be updated to include specific new tests that autocomplete and symbol information is returned for struct types, expressions and patterns, including incomplete textual versions of these.
 
 
 # Unresolved questions
