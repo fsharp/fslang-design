@@ -4,7 +4,7 @@ The design suggestion [Add Support for Struct Tuples](https://fslang.uservoice.c
 This RFC covers the detailed proposal for this suggestion.
 
 * [x] [Approved in principle](https://fslang.uservoice.com/forums/245727-f-language/suggestions/6148669-add-support-for-structtuple)
-* [ ] Details: [under discussion](https://github.com/fsharp/FSharpLangDesign/issues/FILL-ME-IN)
+* [ ] Details: [under discussion](https://github.com/fsharp/FSharpLangDesign/issues/53)
 * [ ] Implementation: initial experiments underway
 
 
