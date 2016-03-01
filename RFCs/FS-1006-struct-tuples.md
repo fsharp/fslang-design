@@ -5,7 +5,7 @@ This RFC covers the detailed proposal for this suggestion.
 
 * [x] [Approved in principle](https://fslang.uservoice.com/forums/245727-f-language/suggestions/6148669-add-support-for-structtuple)
 * [ ] Details: [under discussion](https://github.com/fsharp/FSharpLangDesign/issues/53)
-* [ ] Implementation: initial experiments underway
+* [ ] Implementation: [initial experimental spike underway](https://github.com/Microsoft/visualfsharp/compare/master...dsyme:tuple-spike)
 
 
 # Summary
