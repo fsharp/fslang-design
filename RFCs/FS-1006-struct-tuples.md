@@ -182,6 +182,20 @@ promotes the goals of interoperability.
 * The inference of structness where ``let (x0,y0) = origin`` allows a tuple pattern to be matched to a struct tuple is optional.  
   We could require that structness be noted at all pattern and expression positions in the code, e.g. ``let (struct (x0,y0)) = origin``.
 
+### Resolved Syntax Questions
+
+The syntax above assumes that parentheses are needed:
+
+    struct (int * int)
+    struct (3,4)
+
+rather than
+
+    struct int * int
+    struct 3,4
+
+This seems reasonable.
+
 # Unresolved questions
 [unresolved]: #unresolved-questions
 
@@ -190,7 +204,12 @@ promotes the goals of interoperability.
 * The feature is sensitive to the design of C# tuples, which is still being developed.
 
 
-### Possible Syntax Ambiguities
+### Question: Hashing/Equality/Comparison
+
+Do struct tuple types admit hashing, equality and comparison in the same way as existing reference tuple types?  How
+efficiently is this implemented?
+
+### Question: Possible Syntax Ambiguities
 
 The syntax chosen may induce ambiguities, e.g.
 
@@ -198,9 +217,11 @@ The syntax chosen may induce ambiguities, e.g.
    
 v.s. a type abbreviation:
 
-    type X = struct int * int
+    type X = struct (int * int)
 
-This may be particularly problematic w.r.t. whitespace indentation rules, where ``end`` is meant to balance the ``struct`` token.
+This may be particularly problematic w.r.t. whitespace indentation rules, where ``end`` is meant to balance the ``struct`` token.  
+However it should be possible to lookahead one token after the "struct" and avoid the use of the relevant offside processing
+rule when the next token is a ``(``.
 
 TBD: the viability of the proposed syntax.
 
