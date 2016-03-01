@@ -67,16 +67,13 @@ e.g.
     let f (struct (x,y)) = x+y
 ```
 
-The "structness" of tuple types would be propagated through 
-the F# type inference process through unification of structness annotations. So, for example
+The "structness" of tuple types would be propagated through the F# type inference process. So, for example
 
 ```fsharp
 let origin2 = origin
 ```
 
-would infer that ``origin2`` has type ``struct (int * int)``.
-
-Otherwise, wherever possible, the existing design of F# tuples applies.
+would infer that ``origin2`` has type ``struct (int * int)``. Otherwise, wherever possible, the existing design of F# tuples applies.
 
 No code would be generic over structness, so 
 
@@ -85,6 +82,8 @@ let f (x,y) = x+y
 ```
 
 would apply only to reference tuples.
+
+There are no implitict conversions from struct tuples to reference tuples or vice-versa in this basic design.
 
 ### Possible Extension: structness inference
 
