@@ -14,23 +14,32 @@ There is an approved-in-principle [proposal](http://fslang.uservoice.com/forums/
 
 ### Proposal
 
-Proposed syntax: 
-    "%(**embedded expression**)"
+Proposed syntax:
+
+```fsharp
+"%(**embedded expression**)"
+```
 
 Initial implementation prototype has been [submitted][3]. Prototype accepts arbitrary F# expression as **embedded expression**. 
 In prototype source string literal is split into chunks containing text and embedded expressions. Then chunks are joined using [String.Concat][4].
 
 Initial string literal:
 
-    "%d%(foo)%d%(bar.bar)"
+```fsharp
+"%d%(foo)%d%(bar.bar)"
+```
 
 After splitting:
 
-    Text("%d"); Expression(foo); Text(%d); Expression(bar.bar)
+```fsharp
+Text("%d"); Expression(foo); Text(%d); Expression(bar.bar)
+```
 
 Final result
 
-    String.Concat([| "%d"; box foo; "%d"; box (bar.baz) |])
+```fsharp
+String.Concat([| "%d"; box foo; "%d"; box (bar.baz) |])
+```
 
 ### Open questions:
 
