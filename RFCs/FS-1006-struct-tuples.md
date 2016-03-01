@@ -437,6 +437,11 @@ This may be particularly problematic w.r.t. whitespace indentation rules, where 
 However it should be possible to lookahead one token after the "struct" and avoid the use of the relevant offside processing
 rule when the next token is a ``(``.
 
-TBD: the viability of the proposed syntax.
+In the current prototype you can disambiguate with parentheses:
+
+```fsharp
+type X = (struct (int * int))
+```
+
 
 
