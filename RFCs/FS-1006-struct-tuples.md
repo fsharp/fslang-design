@@ -259,6 +259,17 @@ rather than
 
 This seems reasonable.
 
+# Testing Considerations
+[testing]: #testing-considerations
+
+TBD 
+
+# Tooling Considerations
+[tooling]: #tooling-considerations
+
+The F# Compiler Service tests should be updated to include specific new tests that autocomplete and symbol information is returned for struct types, expressions and patterns, including incomplete textual versions of these.
+
+
 # Unresolved questions
 [unresolved]: #unresolved-questions
 
