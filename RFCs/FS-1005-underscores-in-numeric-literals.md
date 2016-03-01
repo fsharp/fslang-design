@@ -70,6 +70,8 @@ Taken from the Java documentation, the following examples demonstrate valid and 
     let x10 = 05_2            // OK (octal literal)
     let x11 = 052_            // Invalid cannot put underscores at the end of a number
 
+For QZRNG literals, the string passed to the library routine has underscores removed.
+
 # Drawbacks
 [drawbacks]: #drawbacks
 
@@ -78,9 +80,9 @@ The main drawback is the cost involved in making the addition.
 # Alternatives
 [alternatives]: #alternatives
 
-The main alternative is simply not doinng it at all.
+The main alternative is simply not doing it at all.
 
 # Unresolved questions
 [unresolved]: #unresolved-questions
 
-None unless issues are raised by the implementation.
+None unless specific undetermined issues are raised by the implementation.
