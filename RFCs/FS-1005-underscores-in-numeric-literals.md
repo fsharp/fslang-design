@@ -13,10 +13,13 @@ This RFC covers the detailed proposal for this suggestion.
 
 Allow underscores between any digits in numeric literals. This feature enables you, for example, to separate groups of digits in numeric literals, which can improve the readability of your code.
 
+
 For instance, if your code contains numbers with many digits, you can use an underscore character to separate digits in groups of three, similar to how you would use a punctuation mark like a comma, or a space, as a separator.
 
+# Motivation
+[motivation]: #motivation
 
-Other languages with a similar feature:
+This is a popular feature in other languages. Some other languages with a similar feature:
 
 * [Perl](http://perldoc.perl.org/perldata.html#Scalar-value-constructors)
 * [Ruby](http://www.ruby-doc.org/core-2.1.3/doc/syntax/literals_rdoc.html#label-Numbers)
@@ -25,11 +28,6 @@ Other languages with a similar feature:
 
 just to name a few...
 
-
-# Motivation
-[motivation]: #motivation
-
-See above
 
 # Detailed design
 [design]: #detailed-design
