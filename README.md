@@ -1,13 +1,13 @@
 F# Language Design RFCs 
 =================
 
-Gists and docs related to the F# langauge design process
+RFCs and docs related to the F# langauge design process.
 
 Process:
 
-1. Use [F# Language User Voice](http://fslang.uservoice.com) for ideas
+1. Use [F# Language User Voice](http://fslang.uservoice.com) to submit ideas, vote on them and discuss them.
 
-2. Ideas which get "approved in principle"  get an [RFC entry](https://github.com/fsharp/FSharpLangDesign/tree/master/RFCs) based on the [template](https://github.com/fsharp/FSharpLangDesign/blob/master/RFC_template.md), and a corresponding [RFC discussion thread](https://github.com/fsharp/FSharpLangDesign/issues)
+2. Ideas which get "approved in principle" get an [RFC entry](https://github.com/fsharp/FSharpLangDesign/tree/master/RFCs) based on the [template](https://github.com/fsharp/FSharpLangDesign/blob/master/RFC_template.md), and a corresponding [RFC discussion thread](https://github.com/fsharp/FSharpLangDesign/issues)
 
    There is currently a backlog of approved ideas. If an idea has been approved and you'd 
    like to accelerate the creation of an RFC,  send a PR creating the RFC document for any approved-in-principle issue.  
