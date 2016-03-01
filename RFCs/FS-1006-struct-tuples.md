@@ -84,7 +84,7 @@ No code would be generic over structness, so
 let f (x,y) = x+y
 ```
 
-would apply only to reference tuples, unless "f" has been applied to a struct tuple somewhere in the code. Multiple copies of tuple-related functions may be needed.
+would apply only to reference tuples.
 
 ### Possible Extension: structness inference
 
@@ -119,8 +119,7 @@ These defaults would be applied at the end of type inference like other defaults
 
 Structness would always be inferred statically for all locations throughout all F# programs. 
 
-Structness inference is not essential but may ease interoperabillity.  On the other hand it adds considerable complexity to the implementation
-and may potentially confuse some users who prefer a high degree of type/expression form separation.
+Structness inference is not essential but may ease interoperabillity.  On the other hand it adds considerable complexity to the implementation and may potentially confuse some users who prefer a high degree of type/expression form separation.
 
 
 ### Possible Extension: Tuple Field Metadata
