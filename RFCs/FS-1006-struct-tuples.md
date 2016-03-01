@@ -179,7 +179,7 @@ TBD: determine the quotation form of struct tuples.
 
 ### Feature Interaction: Reflection
 
-The following F# reflection functions in FSHarp.Core assume reference tuples:
+The following F# reflection functions in FSHarp.Core work reference tuples:
 
 * ``FSharpValue.MakeTuple``
 * ``FSharpValue.GetTupleField``
@@ -192,7 +192,8 @@ The following F# reflection functions in FSHarp.Core assume reference tuples:
 * ``FSharpType.MakeTupleType``
 * ``FSharpType.IsTuple``
 
-TBD: determine what these do on struct tuples and if necessary add new methods.
+The proposal is that all these work implicitly on struct tuple,  with the exception of ``FSharpType.MakeTupleType``, and ``FSharpType.MakeStructTupleType`` is added.  The System.Type for a struct tuple type can be distinguished from a
+reference tuple type using ``typ.IsValueType``.
 
 
 ### Feature Interaction: Provided Types and Expressions
