@@ -135,6 +135,27 @@ supports ``equality`` if its element types support ``equality``, and likewise ``
 
 TBD: We must decide if this will also apply to struct tuples.
 
+### Interaction with implicit flexibility on use of function-typed values
+
+F# has a special rule that adds subtype-flexibility when a function value is used, e.g.
+
+    let f (x: IComparable) = ...
+    
+can be called using any value that supports IComparable, because each use of ``f`` is implicitly replaced by a coercing expression:
+
+    (fun (x: #IComparable) -> f (x :> IComparable))
+
+This also applies to tupled arguments, e.g.
+
+    let f (x1: IComparable, x2: IComparable) = ...
+
+becomes 
+
+    (fun (x1: #IComparable, x2: #IComparable) -> f (x1 :> IComparable, x2 :> IComparable))
+
+TBD: We must decide if this will also apply to functions taking struct tuples, and whether this would be consistently applied to members taking struct tuples too.
+
+
 ### Compiled form
 
 Struct tuples would compile to a family of types ``System.StructTuple<...>`` in the same way that existing tuples compile to types ``System.Tuple<...>``.
