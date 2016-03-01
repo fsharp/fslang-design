@@ -149,6 +149,20 @@ The F# quotation nodes ``Expr.NewTuple`` and ``Expr.TupleGet`` assume reference 
 TBD: determine the quotation form of struct tuples.
 
 
+### Ambiguities
+
+The syntax chosen may induce ambiguities, e.g.
+
+   type X = struct val X : int end
+   
+v.s. a type abbreviation:
+
+   type X = struct int * int
+
+This may be particularly problematic w.r.t. whitespace indentation rules, where ``end`` is meant to balance the ``struct`` token.
+
+TBD: the viability of the proposed syntax.
+
 ### Library changes
 
 It is expected that the .NET standard libraries will add types ``System.StructTuple<...>``.  In the absence of these types we expect that either the F# core library or
