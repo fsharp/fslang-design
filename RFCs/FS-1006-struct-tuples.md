@@ -27,15 +27,17 @@ A possible extension is to add "named field metadata" to both reference and stru
 # Motivation
 [motivation]: #motivation
 
-For F# 1.0-4.0, tuples always commpile to reference types.  In many circumstances there are very large performance gains to be had
-by using struct (unboxed) representations for tuple types. 
+For F# 1.0-4.0, F# tuples are boxed reference types.  In many circumstances there are very large performance gains to be had
+by using struct (unboxed) representations for tuple types. There can also be downsides, due to extra data copying.
 
-Further, in C# 7.0 it is likely that a tuple feature of some kind will be added.  The design details have yet to be finalized,
-but it seems likely that at least smaller tuples will use unboxed representations.  
+Further, in C# 7.0 it is likely that a tuple feature of some kind will be added (see [this issue](https://github.com/dotnet/roslyn/issues/347)).  The design details have yet to be finalized,
+but it seems possible that at least smaller tuples may use unboxed representations.  Irrespective of that, 
+unboxed tuple representations are an independently useful addition to F#.
 
-Further, the proposal for C# 7.0 tuples is likely to carry additional compile-time only metadata giving field names.  This information is
-lost in reflection, and is only available via attributes on parameter, return and field declaration locations.  We need
-to consider whether F# will import and/or produce and/or propagate this metadata.
+Further, the proposal for C# 7.0 tuples is likely to carry additional compile-time only metadata giving field names.  
+In the current C# design notes, this information is
+lost in reflection, and is  available via custom attributes on parameter, return and field declaration locations.  We need
+to consider whether F# will import, produce and/or propagate this metadata.
 
 
 # Detailed design
