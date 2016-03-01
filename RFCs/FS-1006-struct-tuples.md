@@ -11,7 +11,7 @@ This RFC covers the detailed proposal for this suggestion.
 # Summary
 [summary]: #summary
 
-The proposal is to add a new "struct" annotation to tuple types, expressions and patterns.
+The proposal is to add a new "struct" annotation to tuple types, expressions and patterns. This is based partly on the assumption that the proposed C# 7.0 tuples will use struct representations for at least some small tuple types.
 
 The intention is that the feature would be used primarily in interop and performance-tuning.
 
