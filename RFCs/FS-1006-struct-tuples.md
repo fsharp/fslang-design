@@ -149,6 +149,13 @@ The F# quotation nodes ``Expr.NewTuple`` and ``Expr.TupleGet`` assume reference 
 TBD: determine the quotation form of struct tuples.
 
 
+### Provided Expressions
+
+Provided expressions (provided by type providers) can be quotation 
+nodes ``Expr.NewTuple`` and ``Expr.TupleGet``. These currently assume reference type tuples (see above).
+
+TBD: determine whether struct tuples can appear in provided expressions.
+
 ### Library changes
 
 It is expected that the .NET standard libraries will add types ``System.StructTuple<...>``.  In the absence of these types we expect that either the F# core library or
