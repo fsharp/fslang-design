@@ -194,11 +194,11 @@ promotes the goals of interoperability.
 
 The syntax chosen may induce ambiguities, e.g.
 
-   type X = struct val X : int end
+    type X = struct val X : int end
    
 v.s. a type abbreviation:
 
-   type X = struct int * int
+    type X = struct int * int
 
 This may be particularly problematic w.r.t. whitespace indentation rules, where ``end`` is meant to balance the ``struct`` token.
 
