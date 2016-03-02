@@ -23,6 +23,7 @@ Gets the value associated with the option or the supplied default value
 val getOrDefault : 'a -> 'a option -> 'a
 val defaultIfNone : 'a -> 'a option -> 'a
 val orDefault : 'a -> 'a option -> 'a
+val fill : 'a -> 'a option -> 'a // ExtCore.Option.fill
 ```
 
 #### Option.map overload
