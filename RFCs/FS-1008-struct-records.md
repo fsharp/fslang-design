@@ -5,7 +5,7 @@ This RFC covers the detailed proposal for this suggestion.
 
 * [x] [Approved in principle](https://fslang.uservoice.com/forums/245727-f-language/suggestions/6547517-record-types-can-be-marked-with-the-struct-attribu)
 * [x] Details: [under discussion](https://github.com/Microsoft/visualfsharp/pull/620)
-* [x] Implementation: [Almost compelte](https://github.com/Microsoft/visualfsharp/pull/620)
+* [x] Implementation: [Almost complete](https://github.com/Microsoft/visualfsharp/pull/620)
 
 
 # Summary
