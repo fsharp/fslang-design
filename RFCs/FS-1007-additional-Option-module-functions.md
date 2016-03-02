@@ -21,6 +21,7 @@ Gets the value associated with the option or the supplied default value
 
 ```fsharp
 val getOrDefault : 'a -> 'a option -> 'a
+val defaultIfNone : 'a -> 'a option -> 'a
 ```
 
 #### Option.map overload
