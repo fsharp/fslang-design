@@ -16,7 +16,7 @@ Record types should be able to be marked as a struct, effectively making the rec
 # Motivation
 [motivation]: #motivation
 
-Performance.
+Enable better performance in some situations via a simple attribute addition.
 
 # Detailed design
 [design]: #detailed-design
@@ -40,9 +40,14 @@ Key differences in struct records:
 # Drawbacks
 [drawbacks]: #drawbacks
 
-Few if any.
+* People may not understand when to use the attribute, and, like ``inline``, use it inappropriately, giving worse performance.
+* People may "fiddle around" applying the attribute when performance is OK or performance gainns are more likely to come via other routes
+* It's one more trick for F# programmers to learn
 
 # Alternatives, Unresolved questions
 [unresolved]: #unresolved-questions
 
-See https://github.com/Microsoft/visualfsharp/pull/620 for remaining issues.
+Remaining issues:
+
+* [Downlevel Access](https://github.com/Microsoft/visualfsharp/pull/620#issuecomment-190580488)
+
