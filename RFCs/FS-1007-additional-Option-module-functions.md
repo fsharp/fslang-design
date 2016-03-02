@@ -22,6 +22,7 @@ Gets the value associated with the option or the supplied default value
 ```fsharp
 val getOrDefault : 'a -> 'a option -> 'a
 val defaultIfNone : 'a -> 'a option -> 'a
+val orDefault : 'a -> 'a option -> 'a
 ```
 
 #### Option.map overload
@@ -39,6 +40,7 @@ val map3: ('a -> 'b -> 'c -> 'd) -> 'a option -> 'b option -> 'c option -> 'd op
 
 - `inline` modifier
 - exact additions
+  - study adopting `ExtCore.Option` module declared in https://github.com/jack-pappas/ExtCore/blob/5221f4e67a93cffdb85203f3ae403a6052bcfbc0/ExtCore/Pervasive.fs#L810
 
 ### Naming 
 
