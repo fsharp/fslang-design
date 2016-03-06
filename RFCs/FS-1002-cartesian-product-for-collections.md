@@ -23,7 +23,7 @@ the Seq, List and Array modules in FSharp.Core.
 
 ### Naming 
 
-The name of the funciton has not been finalized.  Some of the suggestions are
+The name of the function has not been finalized.  Some of the suggestions are
 
 * ``cross``
 * ``product``
