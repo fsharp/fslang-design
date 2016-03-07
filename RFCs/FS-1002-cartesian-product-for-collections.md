@@ -21,6 +21,19 @@ let cross xs ys = seq { for x in xs do for y in ys -> x, y  }
 It would be useful to have this in the FSharp.Core standard collection modules.  It would be added to 
 the Seq, List and Array modules in FSharp.Core.
 
+#### Order
+
+The implementation guarantees the order of the results to follow the following scheme:
+
+```fsharp
+let xs = [x1 .. xN]
+let ys = [y1 .. yM]
+cross xs ys =
+    [x1, y1; x1, y.; x1, yM;
+     x., y1; x., y.; x., yM;
+     xN, yM; xN, y.; xN, yM]
+```
+
 ### Naming 
 
 The name of the function has not been finalized.  Some of the suggestions are
