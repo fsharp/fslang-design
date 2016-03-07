@@ -40,29 +40,35 @@ module Z = ... refer to X and Y ...
 
 Other possibilities are mentioned below.
 
+Note that this proposal doesn't do a number of things that you might think:
+* it doesn't change the requirement to have a file order in F# compilation
+* it doesn't allow mutually-referential scopes across more than specific scopes within single implementation files
+* it doesn't make declarations independent of ordering - type inference is still order-specific when resolving members
+
+
 # Motivation
 [motivation]: #motivation
 
-In F# mutual reference is relatively de-emphasized and scoped, but not banned. In F# 1.0-4.0 the situation is as follows:
+In the F# language design, mutual reference between declarations is relatively
+de-emphasized, but not banned. In F# 1.0-4.0 the situation is as follows:
 
-* A group of types can be mutually referential using "type X = ... and Y = ... "
 * A group of functions and values can be mutually referential using "let rec f x = ... and g x = ..."
+* A group of types can be mutually referential using "type X = ... and Y = ... "
 
-This works well for the majority of purposes and sets the defaults in the right way, resulting
-in [code that has low circularity and generally avoiding "spaghetti code"](http://fsharpforfunandprofit.com/posts/cycles-and-modularity-in-the-wild/).
-However, it places an artificial restriction on the kinds of mutual recursion permitted:
+This works well for the majority of purposes and sets the defaults "the right way", resulting
+in code that has low circularity and
+[generally avoiding "spaghetti code"](http://fsharpforfunandprofit.com/posts/cycles-and-modularity-in-the-wild/).
+However, it places some artificial restriction on the kinds of mutual recursion permitted which can be frustrating
+and lead to difficult corners in F# programming:
 
-* types and modules can't currently be mutually referential, even when the modules only contain function definitions that support the functionality
-  available on the type's members.  This leads to the artificial use of extra type to hold static functions and
-  values, and can discourage the use of module-bound code. This can be worse than awkward on the occasions
-  that mutual reference is used.
+* types and modules can't currently be mutually referential at all, even when the modules only contain 
+  function definitions that support the functionality
+  available on the type's members.  This leads to the artificial use of extra types to hold static methods and
+  static values, and this can discourage the use of module-bound code.
 
 * ``exception`` declarations can't currently be mutually referential with anything.
 
-Note that this proposal doesn't lift the requirement to have a file order and doesn't extend mutually-referential scopes
-across more than one closed scope within one file.
-
-There is some syntactic awkwardness when mutually refential types have attributes, e.g.
+* There is also some syntactic awkwardness when mutually refential types have attributes, e.g.
 
 ```fsharp
 [<Struct>]
@@ -151,8 +157,10 @@ process remains much as before, but the code now works with a more sophisticated
 
 #### Interaction with ``open`` and type/module realization 
 
-There is an open question as to whether ``open`` declarations should be available in mutually referential groups.
+There is an open question as to whether ``open`` declarations should be available in mutually referential groups. Consider
+for example:
 
+```fsharp
 #beginrec
 
 open M
@@ -162,11 +170,12 @@ type C() = ...
 module M = ...
 
 #endrec
+```
 
-While logically speaking possible to implement,
-allowing ``open`` needs care: progressively more contents of a module or namespace
-become available at each stage of realization.  Prior to this suggestion type realization did not need to
-process ``open`` declarations.
+While logically speaking possible to implement, allowing ``open`` needs care and can result in code that is really
+non-trivial to understand. At the technical level, progressively more contents of a module or namespace
+become available at each stage of realization (prior to this suggestion type realization did not need to
+process ``open`` declarations).
 
 One example where a specific interaction may exist is the way
 that ``open`` makes both F# and C# extension methods available.  So cases such as
@@ -207,10 +216,36 @@ Were a proposal along these lines to be implemented, F# will continue to de-emph
 [alternatives]: #alternatives
 
 Many options have been considered, though discussion is welcome:
-1. Not do anything.
-2. Allow full mutual recursion across all files in an assembly.
-3. Variations on the syntax used to declare mutual referentiality. e.g. Use ``module rec M = ...`` and ``namespace rec N = ...``.  (these options would mediate all recursion via a module or namsespace name)
-4. Require a forward signature on a module
+
+### Alternative: Not do anything.
+
+This is of course the default assumption :)
+
+###  Alternative: Allow full mutual recursion across all files in an assembly.
+
+This is the assumption that C# and Java users have when coming to a new language.  It brings enormous challenges
+for type inference and for implementing efficient "safe" static initialization.
+
+### Alternative: Recursive modules
+
+One option commonly explored in ML language designs is to declare mutual referentiality on modules.
+e.g. Use ``module rec M = ...`` and ``namespace rec N = ...``.  These options mediate all mutual reference
+via a module or namsespace name.
+
+This is a distinct possibility for F#.  However there is no intrinsic reason why mutual reference needs to be dealt
+with at the ``module`` scope - it is often useful to make selected delimited groups of declarations mutually referential.
+
+### Alternative: Require a forward signature on a module
+
+Proposals for mutually recursive modules often require a module signature be given to mediate type inference
+for mutually recursive modules, e.g. ``module rec M : MSig = ...``
+
+The problem with this approach is that it doesn't solve the actual problem to hand (the lack of mutual referentiality
+between types and modules in practical F# coding), while imposing large costs in requiring the addition of
+named signatures and requiring the user to write signatures.  Relatively few F# users use explicit module signatures.
+
+Another variation on this approach is to only allow mutual reference when a signature file has been given for a module.
+This has similar drawbacks.
 
 # Unresolved questions
 [unresolved]: #unresolved-questions
