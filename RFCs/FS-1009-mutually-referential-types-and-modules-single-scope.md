@@ -15,8 +15,6 @@ The exact mechanism used to declare the scope of mutual reference is TBD, but on
 to use a delimited section as follows:
 
 ```fsharp
-namespace Foo
-
 #beginrec
 
 type X = ... refer to Y and Z...
@@ -31,8 +29,6 @@ module Z = ... refer to X and Y ...
 or just
 
 ```fsharp
-namespace Foo
-
 #rec
 
 type X = ... refer to Y and Z...
@@ -42,7 +38,7 @@ type Y = .... refer to X and Z...
 module Z = ... refer to X and Y ...
 ```
 
-
+Other possibilities are mentioned below.
 
 # Motivation
 [motivation]: #motivation
