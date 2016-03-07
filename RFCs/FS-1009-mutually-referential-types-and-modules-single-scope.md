@@ -46,6 +46,10 @@ Note that this proposal doesn't do a number of things that you might think:
 * it doesn't make declarations independent of ordering - type inference is still order-specific when resolving members
 
 
+The proposed change is non-breaking, it is an optional extension to the language.  Because of the slightly ungainly syntax
+it is not expected that this would be the norm for F# development.
+
+
 # Motivation
 [motivation]: #motivation
 
@@ -86,7 +90,6 @@ type X = ...
 [<Struct>] 
 type Y = ...
 ```
-
 
 
 
@@ -200,8 +203,16 @@ module M =
 TBD
 
 
+#### Interaction with signatures
+
+Currently, signatures can only be mutually recursive in a similar way to implementations, notably ``type X ... and Y ...``.
+
+The natural thing would be to allow ``#rec`` in signatures just as in implementations.
+
 # Drawbacks
 [drawbacks]: #drawbacks
+
+### It encourages the use of mutually referential code more than today
 
 There is understandably some resistance to making writing mutually referential code easier in F#: see
 for example the original comment [here](https://fslang.uservoice.com/forums/245727-f-language/suggestions/11723964-allow-types-and-modules-to-be-mutually-referential).
@@ -211,6 +222,8 @@ is part of the F# language design: the intent has never been to adopt an extreme
 The current design is awkwardly limiting in the way that only types can be mutually referential.
 
 Were a proposal along these lines to be implemented, F# will continue to de-emphasize mutual references by default. The question, as always, is finding the right balance.
+
+One risk of the proposal is that the feature will get over-used by beginners or those looking to do top-down development (e.g. putting ``main`` first).  The somewhat ungainly nature of the ``#rec`` syntax may prevent this.
 
 # Alternatives
 [alternatives]: #alternatives
