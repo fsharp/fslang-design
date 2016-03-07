@@ -1,4 +1,4 @@
-# F# RFC FS-1009 - Allow mutually referential types and modules within a closed scope in a single file
+# F# RFC FS-1009 - Allow mutually referential types and modules in a closed scope 
 
 The design suggestion [FILL ME IN](https://fslang.uservoice.com/forums/245727-f-language/suggestions/fill-me-in) has been marked "under review". This RFC covers more detailed information about this suggestion.
 
