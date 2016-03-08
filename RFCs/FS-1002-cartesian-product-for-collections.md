@@ -6,16 +6,16 @@ This RFC covers the detailed proposal for this suggestion.
 
 [Discussion thread](https://github.com/fsharp/FSharpLangDesign/issues/47)
 
-* [x] Approved in principle
-* [ ] Details: [under discussion](https://github.com/fsharp/FSharpLangDesign/issues/47)
-* [x] Implementation: [prototype submitted](https://github.com/Microsoft/visualfsharp/pull/989)
+* [x] Completed
+* [x] Details: [finalized](https://github.com/fsharp/FSharpLangDesign/issues/47)
+* [x] Implementation: [submitted](https://github.com/Microsoft/visualfsharp/pull/989)
 
 ### Introduction
 
 It's often useful to compute the Cartesian product (cross join) of two collections. Today users up writing something like this:
 
 ```fsharp
-let cross xs ys = seq { for x in xs do for y in ys -> x, y  }
+let allPairs xs ys = seq { for x in xs do for y in ys -> x, y  }
 ```
 
 It would be useful to have this in the FSharp.Core standard collection modules.  It would be added to 
@@ -36,12 +36,13 @@ cross xs ys =
 
 ### Naming 
 
-The name of the function has not been finalized.  Some of the suggestions are
+The final name is ``allPairs``.  Some of the suggestions are
 
 * ``cross``
 * ``product``
 * ``crossProduct``
 * ``allPairs``
+
 
 ### Performance considerations
 
