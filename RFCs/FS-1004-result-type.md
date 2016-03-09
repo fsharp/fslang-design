@@ -32,6 +32,7 @@ The name of the type and union cases has not been finalized. Some of the suggest
 | Result    | Success       | Failure      |
 | Result    | Success       | Error        |
 | Result    | OK            | Error        |
+| Result    | OK            | Err          |
 | Result    | OK            | Bad          |
 
 ### Testing considerations
