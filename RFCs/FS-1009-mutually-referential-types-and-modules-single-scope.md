@@ -4,7 +4,7 @@ The design suggestion [Allow mutually referential types and modules in a closed 
 
 * [x] Under review
 * [ ] Details: Under review
-* [ ] Implementation: Prototyping
+* [ ] Implementation: [Prototyping](https://github.com/Microsoft/visualfsharp/compare/master...dsyme:mutrec)
 
 
 # Summary
