@@ -34,6 +34,9 @@ The name of the type and union cases has not been finalized. Some of the suggest
 | Result    | OK            | Error        |
 | Result    | OK            | Err          |
 | Result    | OK            | Bad          |
+| Result    | Ok            | Error        |
+| Result    | Ok            | Err          |
+| Result    | Ok            | Bad          |
 
 ### Testing considerations
 
