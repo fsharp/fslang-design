@@ -25,7 +25,14 @@ The type should be added in `FSharp.Core` library
 
 ### Naming 
 
-The name of the operator is `Result`
+The name of the type and union cases has not been finalized. Some of the suggestions are
+
+| Type name | Success case  | Failure case |
+| --------- | ------------- | ------------ |
+| Result    | Success       | Failure      |
+| Result    | Success       | Error        |
+| Result    | OK            | Error        |
+| Result    | OK            | Bad          |
 
 ### Testing considerations
 
