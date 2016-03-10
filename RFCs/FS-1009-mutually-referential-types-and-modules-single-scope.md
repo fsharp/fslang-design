@@ -31,8 +31,7 @@ Note that this proposal doesn't do a number of things that you might think:
 * it doesn't allow mutually-referential scopes across multiple files
 * it doesn't make declarations independent of ordering: both type inference and initialization are still order-specific 
 
-The proposed change is non-breaking, it is an optional extension to the language.  
-It is not expected that this would be the norm for F# development.
+The proposed change is non-breaking, it is an optional extension to the language. It is not expected that this would be the norm for F# development.
 
 
 # Motivation
