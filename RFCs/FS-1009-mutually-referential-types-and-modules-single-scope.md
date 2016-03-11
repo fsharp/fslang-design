@@ -11,8 +11,8 @@ The design suggestion [Allow mutually referential types and modules in a closed 
 [summary]: #summary
 
 Allow a collection of both types and modules within a single scope in a single file to be mutually referential.
-The exact mechanism used to declare the scope of mutual reference is TBD, but one possibility is
-to use a ``rec`` declaration on a namespace and/or module as follows:
+The exact mechanism used to declare the scope of mutual reference is TBD, but the current proposal is to 
+use a ``rec`` declaration on a namespace and/or module as follows:
 
 ```fsharp
 namespace rec MyFramework
