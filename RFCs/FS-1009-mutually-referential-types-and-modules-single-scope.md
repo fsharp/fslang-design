@@ -129,12 +129,9 @@ The ``rec`` is allowed on ``namespace rec ... `` and ``module rec ...`` declarat
 ### Allowed declarations in mutually referential declaration groups
 
 
-In the current investigations, types, modules, ``exception`` and ``let`` bindings can be mutually referential.
+In the current investigations, types, modules, ``exception``, ``let`` and ``open`` bindings can be mutually referential.
 
-``open`` declarations can't currently be included in mutually referential groups, see below.
-
-
-Namespace implementation fragments can't yet be included in mutually referential groups, e.g. in the following N2 can
+Multiple namespace implementation fragments can't yet be included in mutually referential groups, e.g. in the following N2 can
 see N1 but not vice-versa.
 
 ```fsharp
@@ -169,8 +166,7 @@ process remains much as before, but the code now works with a more sophisticated
 
 #### Interaction with ``open`` and type/module realization 
 
-There is an open question as to whether ``open`` declarations should be available in mutually referential groups,
-and if they are whether they can refer to modules being defined. Consider
+ ``open`` declarations are allowed in mutually referential groups, and can refer to modules being defined. Consider
 for example:
 
 ```fsharp
@@ -185,18 +181,19 @@ module M = ...
 #endrec
 ```
 
-While logically speaking possible to implement, allowing ``open`` on modules being defined 
-needs care and can result in code that is really
-non-trivial to understand. At the technical level, progressively more contents of a module or namespace
-become available at each stage of realization (prior to this suggestion type realization did not need to
-process ``open`` declarations).
+There can be use-cases for this, e.g. when the module ``M`` defines optional or private extension members related to ``C``
+which are used in the implementation of ``C``.
+Allowing ``open`` on modules within the scope obviously needs care in the implementation and
+should be used carefully by the programmer as well: it can clearly result in code that is hard
+to understand. (At the technical level, care is needed because progressively more contents of a module or namespace
+become available at each stage of type/module realization - prior to this suggestion type realization did not need to
+process ``open`` declarations.)
 
 The current prototype restricts ``open`` declarations to only be at the top of mutually-referential 
-module and namespace declaration groups, and ``open`` declarations may not refer to modules being
-defined.  However this will likely be changed to allow references to modules being defined.
+module and namespace declaration groups.
 
 One example where a specific interaction may exist is the way
-that ``open`` makes both F# and C# extension methods available.  So cases such as
+that ``open`` makes both F# and C# extension methods available.  So cases such as this need careful testing:
 
 ```fsharp
 
@@ -272,7 +269,7 @@ a namespace N inside the definition of N.
 
 #### Interaction with ``[<AutoOpen>]``
 
-Given the interaction with ``open``, it's also important to clarify the behaviour w.r.t. ``[<AutoOpen>]``.  
+Given the interaction with ``open``, it's also important to clarify and test the behaviour w.r.t. ``[<AutoOpen>]``.  
 
 
 #### Interaction with ``#`` declarations
