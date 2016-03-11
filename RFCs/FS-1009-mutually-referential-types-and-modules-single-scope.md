@@ -1,6 +1,6 @@
-# F# RFC FS-1009 - Allow mutually referential types and modules in a closed scope 
+# F# RFC FS-1009 - Allow mutually referential types and modules over larger scopes within files
 
-The design suggestion [Allow mutually referential types and modules in a closed scope in a single file](https://fslang.uservoice.com/forums/245727-f-language/suggestions/11723964-allow-types-and-modules-to-be-mutually-referential) has been marked "under review". This RFC covers more detailed information about this suggestion. Please [discuss this RFC using the corresponding issue](https://github.com/fsharp/FSharpLangDesign/issues/76).
+The design suggestion [Allow mutually referential types and modules over larger scopes within single files](https://fslang.uservoice.com/forums/245727-f-language/suggestions/11723964-allow-types-and-modules-to-be-mutually-referential) has been marked "under review". This RFC covers more detailed information about this suggestion. Please [discuss this RFC using the corresponding issue](https://github.com/fsharp/FSharpLangDesign/issues/76).
 
 * [x] Under review
 * [ ] Details: [Under discussion](https://github.com/fsharp/FSharpLangDesign/issues/76)
@@ -25,6 +25,8 @@ module Z = ... refer to X and Y ...
 
 ```
 
+The scope is always given by using ``rec`` on a module or namespace declaration group.  The scope of mutual reference
+can be as large as a single file, or as small as a single module.  
 
 Note that this proposal doesn't do a number of things that you might think:
 * it doesn't change the requirement to have a file order in F# compilation
@@ -43,7 +45,9 @@ de-emphasized, but not banned. In F# 1.0-4.0 the situation is as follows:
 * A group of functions and values can be mutually referential using "let rec f x = ... and g x = ..."
 * A group of types can be mutually referential using "type X = ... and Y = ... "
 
-This works well for the majority of purposes and sets the defaults "the right way", resulting
+The ability to choose the scope of mutual recursion and control it is significant in the F# language design
+and one source of its low dependency metrics.
+The current "small recursive scopes" work well for the majority of purposes and set the defaults "the right way", resulting
 in code that has low circularity and
 [generally avoiding "spaghetti code"](http://fsharpforfunandprofit.com/posts/cycles-and-modularity-in-the-wild/).
 However, it places some artificial restriction on the kinds of mutual recursion permitted which can be frustrating
@@ -99,6 +103,7 @@ type Y = ...
 
 # Detailed design
 [design]: #detailed-design
+
 
 ### Basic design suggestion
 
@@ -359,6 +364,38 @@ named signatures and requiring the user to write signatures.  Relatively few F# 
 
 Another variation on this approach is to only allow mutual reference when a signature file has been given for a module.
 This has similar drawbacks.
+
+### Alternative: Optionally allow complete mutual recursion across all files in an assembly
+
+One option for F# is to optionally allow complete mutual reference throughout an assembly.
+For example, one could imagine a variation on this proposal that used either a command-line switch to turn
+on mutual reference across all files in an assembly, or required an explicit declaration on each and every file in
+an assembly that indicated the contents of each file were recursive in an "open" way:
+
+```fsharp
+namespace open rec MyNamespace
+
+type X = ...
+
+type Y = ...
+```
+
+There are advantages to this approach, namely simplicity and familiarity for the majority of programmers today.
+Most programmers now grow up with the expectation that all declarations within
+a C# assembly or Java package can be mutually referential.  Anecdotal
+evidence supports the claim that some C# and Java developers reject F# because it requires
+declaration ordering, though many who perservere come to love that feature.
+
+However, there are reasons why full-assembly-recursion, by itself, would a problematic addition for F#, even if optional:
+* If implemented in isolation, it would be seem to change a key characteristic of F# coding (the avoidance of spaghetti frameworks). 
+* It would be used too often when not needed. As mentioned above, the ability to minimize and control recursive scopes and to encourage a sound declaration order is regarded a a quality of the language, and by itself the "max" option would seem to offer no useful intermediate points. Specifically, people may be forced to turn on "the big recursion switch" when faced with some of the quite reasonable coding situations outlined at the start of this RFC.
+* It is technically difficult to implement. It certainly minimally requires solving all the problems  solved by this RFC.  Further, the question of how the feature interacts with signature files would need to be addressed (and that is a non-trivial thing to solve).
+* For a type-inferred, Hindley-Milner-style language, it is technically essentially impossible to provide incremental 
+  checking for single files within an assembly where all files are mutually referential. This means that visualIDE tooling performance
+  would be worse when editing large assemblies when this switch is enabled.
+
+These reasons together lead to the conclusion that a "full recursion across assemblies" option is in a different category to this RFC
+and should be considered and discussed separately.
 
 # Unresolved questions
 [unresolved]: #unresolved-questions
