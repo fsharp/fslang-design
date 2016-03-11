@@ -265,6 +265,11 @@ effectively an implicit ``open`` immediately after the ``rec`` and on all nested
 with F#'s de-emphasis of modules-as-algebraic-values, and fits with F#'s existing rule that implicitly opens
 a namespace N inside the definition of N.
 
+#### Interaction with ``[<AutoOpen>]``
+
+Given the interaction with ``open``, it's also important to clarify the behaviour w.r.t. ``[<AutoOpen>]``.  
+
+
 #### Interaction with ``#`` declarations
 
 ``#`` declarations (e.g. ``#nowarn`` declarations) can't currently be included in mutually referential groups, see below.
