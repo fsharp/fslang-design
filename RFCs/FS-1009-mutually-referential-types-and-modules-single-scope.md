@@ -368,8 +368,12 @@ This has similar drawbacks.
 ### Alternative: Optionally allow complete mutual recursion across all files in an assembly
 
 One option for F# is to optionally allow complete mutual reference throughout an assembly.
-For example, one could imagine a variation on this proposal that used either a command-line switch to turn
-on mutual reference across all files in an assembly, or required an explicit declaration on each and every file in
+For example, one could imagine a variation on this proposal that used a command-line switch to turn
+on mutual reference across all files in an assembly:
+
+    fsc.exe /mutrec:on ....
+
+Alternatively (or together with this), you could imagine requiring an explicit declaration on each and every file in
 an assembly that indicated the contents of each file were recursive in an "open" way:
 
 ```fsharp
@@ -379,6 +383,7 @@ type X = ...
 
 type Y = ...
 ```
+
 
 There are advantages to this approach, namely simplicity and familiarity for the majority of programmers today.
 Most programmers now grow up with the expectation that all declarations within
