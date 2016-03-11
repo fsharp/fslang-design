@@ -1,9 +1,9 @@
 # F# RFC FS-1009 - Allow mutually referential types and modules in a closed scope 
 
-The design suggestion [Allow mutually referential types and modules in a closed scope in a single file](https://fslang.uservoice.com/forums/245727-f-language/suggestions/11723964-allow-types-and-modules-to-be-mutually-referential) has been marked "under review". This RFC covers more detailed information about this suggestion.
+The design suggestion [Allow mutually referential types and modules in a closed scope in a single file](https://fslang.uservoice.com/forums/245727-f-language/suggestions/11723964-allow-types-and-modules-to-be-mutually-referential) has been marked "under review". This RFC covers more detailed information about this suggestion. Please [discuss this RFC using the corresponding issue](https://github.com/fsharp/FSharpLangDesign/issues/76).
 
 * [x] Under review
-* [ ] Details: Under review
+* [ ] Details: [Under discussion](https://github.com/fsharp/FSharpLangDesign/issues/76)
 * [ ] Implementation: [Prototyping](https://github.com/Microsoft/visualfsharp/compare/master...dsyme:mutrec)
 
 
