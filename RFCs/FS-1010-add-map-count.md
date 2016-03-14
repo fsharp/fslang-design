@@ -3,14 +3,14 @@
 The design suggestion [Add Map.count](https://fslang.uservoice.com/forums/245727-f-language/suggestions/12880398-add-map-count) has been marked "approved in principle".
 This RFC covers the detailed proposal for this suggestion.
 
-* [ ] Details: [under discussion](https://github.com/fsharp/FSharpLangDesign/issues/FILL-ME-IN)
+* [ ] Details: [under discussion](https://github.com/fsharp/FSharpLangDesign/issues/78)
 * [ ] Implementation: [In progress](https://github.com/Microsoft/visualfsharp/pull/1007)
 
 
 # Summary
 [summary]: #summary
 
-Add ``Map.count``.  The instance property ``.Count`` is already available.
+Add ``Map.count``.  
 
 # Motivation
 [motivation]: #motivation
@@ -25,7 +25,7 @@ Very simple design, no need to go into detail here.
 # Drawbacks
 [drawbacks]: #drawbacks
 
-The main drawback is that it gives two ways to do the same thing.
+Note that the instance property ``.Count`` is already available.  The main drawback is that it gives two ways to do the same thing.
 
 # Alternatives
 [alternatives]: #alternatives
