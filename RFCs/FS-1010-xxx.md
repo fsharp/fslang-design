@@ -1,43 +1,38 @@
-# F# RFC FS-NNNN - (Fill me in with a feature name)
+# F# RFC FS-1010 - Add Map.count
 
-The design suggestion [FILL ME IN](https://fslang.uservoice.com/forums/245727-f-language/suggestions/fill-me-in) has been marked "approved in principle".
+The design suggestion [Add Map.count](https://fslang.uservoice.com/forums/245727-f-language/suggestions/12880398-add-map-count) has been marked "approved in principle".
 This RFC covers the detailed proposal for this suggestion.
 
-* [x] Approved in principle
-* [ ] [User Voice Request](https://fslang.uservoice.com/FILL-ME-IN)
 * [ ] Details: [under discussion](https://github.com/fsharp/FSharpLangDesign/issues/FILL-ME-IN)
-* [ ] Implementation: [In progress](https://github.com/Microsoft/visualfsharp/pull/FILL-ME-IN)
+* [ ] Implementation: [In progress](https://github.com/Microsoft/visualfsharp/pull/1007)
 
 
 # Summary
 [summary]: #summary
 
-One para explanation of the feature.
+Add ``Map.count``.  The instance property ``.Count`` is already available.
 
 # Motivation
 [motivation]: #motivation
 
-Why are we doing this? What use cases does it support? What is the expected outcome?
+TBD
 
 # Detailed design
 [design]: #detailed-design
 
-This is the bulk of the RFC. Explain the design in enough detail for somebody familiar
-with the language to understand, and for somebody familiar with the compiler to implement.
-This should get into specifics and corner-cases, and include examples of how the feature is used.
+Very simple design, no need to go into detail here.
 
 # Drawbacks
 [drawbacks]: #drawbacks
 
-Why should we *not* do this?
+The main drawback is that it gives two ways to do the same thing.
 
 # Alternatives
 [alternatives]: #alternatives
 
-What other designs have been considered? What is the impact of not doing this?
+The alternative is to keep things as they are.
 
 # Unresolved questions
 [unresolved]: #unresolved-questions
 
-What parts of the design are still TBD?
-
+None
