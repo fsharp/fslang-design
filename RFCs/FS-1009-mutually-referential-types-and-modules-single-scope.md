@@ -271,6 +271,31 @@ a namespace N inside the definition of N.
 
 Given the interaction with ``open``, it's also important to clarify and test the behaviour w.r.t. ``[<AutoOpen>]``.  
 
+#### Interaction with module abbreviations
+
+In F#, module abbreviations ``module M = A.B.C`` are simple aliases for modules, in scope in the current environment.
+They do not actually declare a new module and, unlike type abbreviations, are not exported as part of the signature of
+a module.
+
+For mutually recursive groups, the proposal is that module abbreviations always come immediately after the ``open`` declarations
+(which, as stated above, come first within each sub-module).  This means that ``open`` declarations are processed first,
+followed by module abbreviations.
+
+#### Interaction with attribute declarations
+
+F# files can include assembly attribute declarations:
+
+```fsharp
+namespace N
+
+[< assembly: SomeAttribute("...") >]
+do ()
+```
+
+The proposal is that these be allowed in a set of mutually recursive declarations
+
+
+
 
 #### Interaction with ``#`` declarations
 
@@ -280,13 +305,49 @@ Given the interaction with ``open``, it's also important to clarify and test the
 
 Currently, signatures can only be mutually recursive in a similar way to implementations, notably ``type X ... and Y ...``.
 
-The natural thing would be to allow ``#rec`` in signatures just as in implementations.
+The proposal is that  ``rec`` is allowed on ``namespace`` and ``module`` in signatures just as in implementations.
 
+```fsharp
+
+namespace rec MyNamespace
+
+open System
+
+type C = 
+    new : unit -> C
+    member D : D
+    member P : int
+
+type D = 
+    new : unit -> D
+    member C : C
+    member P : int
+```
+
+
+#### Interaction with ``.fsx`` scripting files
+
+For ``.fsx`` files, the default is for declarations not to be part of a mutually referential group. Individual
+modules can be declared mutually referential, e.g.
+
+```fsharp
+
+printfn "a script"
+
+module rec Silly = 
+    let f x = g (x + 1)
+    let g x = if x = 10 then "TEN" else f (x + 1)
+
+printfn "more of a script"
+```
+
+There is no way to declare that the whole script is mutually referential short of using one big module to contain all the
+contents of a script.
 
 # Drawbacks
 [drawbacks]: #drawbacks
 
-### It encourages the use of mutually referential code more than today
+### Concerns that it encourages the over-use of mutually referential code 
 
 There is understandably some resistance to making writing mutually referential code easier in F#: see
 for example the original comment [here](https://fslang.uservoice.com/forums/245727-f-language/suggestions/11723964-allow-types-and-modules-to-be-mutually-referential).
