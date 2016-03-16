@@ -170,18 +170,19 @@ process remains much as before, but the code now works with a more sophisticated
 for example:
 
 ```fsharp
-#beginrec
+module rec SomeComponents = 
 
-open M
+    open M
 
-type C() = ...
+    type C() = 
+        member c.P = f()  // refers to M.f() 
 
-module M = ...
+    module M = 
+        let f() = ...
 
-#endrec
 ```
 
-There can be use-cases for this, e.g. when the module ``M`` defines optional or private extension members related to ``C``
+There are use-cases for this, e.g. when the module ``M`` defines optional or private extension members related to ``C``
 which are used in the implementation of ``C``.
 Allowing ``open`` on modules within the scope obviously needs care in the implementation and
 should be used carefully by the programmer as well: it can clearly result in code that is hard
