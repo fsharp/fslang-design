@@ -3,8 +3,8 @@
 The design suggestion [Allow mutually referential types and modules over larger scopes within single files](https://fslang.uservoice.com/forums/245727-f-language/suggestions/11723964-allow-types-and-modules-to-be-mutually-referential) has been marked "approved in principle". This RFC covers more detailed information about this suggestion. Please [discuss this RFC using the corresponding issue](https://github.com/fsharp/FSharpLangDesign/issues/76).
 
 * [x] Status: Approved in principle
-* [ ] Details: [Under discussion](https://github.com/fsharp/FSharpLangDesign/issues/76)
-* [ ] Implementation: [Prototyping](https://github.com/Microsoft/visualfsharp/compare/master...dsyme:mutrec)
+* [x] Details: [Under discussion](https://github.com/fsharp/FSharpLangDesign/issues/76)
+* [x] Implementation: [Prototyping](https://github.com/Microsoft/visualfsharp/compare/master...dsyme:mutrec)
 
 
 # Summary
