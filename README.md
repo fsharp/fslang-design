@@ -5,8 +5,8 @@ RFCs and docs related to the F# langauge design process.
 
 Open RFCs
 
-* [F# RFC FS-1001 String Interpolation](https://github.com/fsharp/FSharpLangDesign/blob/master/RFCs/FS-1001-StringInterpolation.md)
-* [F# RFC FS-1003 - nameof Operator](https://github.com/fsharp/FSharpLangDesign/blob/master/RFCs/FS-1003-nameof-operator.md)
+* [F# RFC FS-1001 - String interpolation](https://github.com/fsharp/FSharpLangDesign/blob/master/RFCs/FS-1001-StringInterpolation.md)
+* [F# RFC FS-1003 - Add nameof Operator](https://github.com/fsharp/FSharpLangDesign/blob/master/RFCs/FS-1003-nameof-operator.md)
 * [F# RFC FS-1004 - Result type](https://github.com/fsharp/FSharpLangDesign/blob/master/RFCs/FS-1004-result-type.md)
 * [F# RFC FS-0005 - Underscore Literals](https://github.com/fsharp/FSharpLangDesign/blob/master/RFCs/FS-1005-underscores-in-numeric-literals.md)
 * [F# RFC FS-0006 - Struct Tuples and Interop with C# 7.0 Tuples](https://github.com/fsharp/FSharpLangDesign/blob/master/RFCs/FS-1006-struct-tuples.md)
