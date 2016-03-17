@@ -3,6 +3,22 @@ F# Language Design RFCs
 
 RFCs and docs related to the F# langauge design process.
 
+Open RFCs
+
+* [F# RFC FS-1001 String Interpolation](https://github.com/fsharp/FSharpLangDesign/blob/master/RFCs/FS-1001-StringInterpolation.md)
+* [F# RFC FS-1003 - nameof Operator](https://github.com/fsharp/FSharpLangDesign/blob/master/RFCs/FS-1003-nameof-operator.md)
+* [F# RFC FS-1004 - Result type](https://github.com/fsharp/FSharpLangDesign/blob/master/RFCs/FS-1004-result-type.md)
+* [F# RFC FS-0005 - Underscore Literals](https://github.com/fsharp/FSharpLangDesign/blob/master/RFCs/FS-1005-underscores-in-numeric-literals.md)
+* [F# RFC FS-0006 - Struct Tuples and Interop with C# 7.0 Tuples](https://github.com/fsharp/FSharpLangDesign/blob/master/RFCs/FS-1006-struct-tuples.md)
+* [F# RFC FS-1007 - Additional Option module functions](https://github.com/fsharp/FSharpLangDesign/blob/master/RFCs/FS-1007-additional-Option-module-functions.md)
+* [F# RFC FS-0008 - Struct Records](https://github.com/fsharp/FSharpLangDesign/blob/master/RFCs/FS-1008-struct-records.md)
+* [F# RFC FS-1009 - Allow mutually referential types and modules over larger scopes](https://github.com/fsharp/FSharpLangDesign/blob/master/RFCs/FS-1009-mutually-referential-types-and-modules-single-scope.md)
+* [F# RFC FS-1010 - Add Map.count](https://github.com/fsharp/FSharpLangDesign/blob/master/RFCs/FS-1010-add-map-count.md)
+
+Completed RFCs
+
+* [RFC FS-1002 Cartesian product function for collections](https://github.com/fsharp/FSharpLangDesign/blob/master/RFCs/FS-1002-cartesian-product-for-collections.md)
+
 Process:
 
 1. Use [F# Language User Voice](http://fslang.uservoice.com) to submit ideas, vote on them and discuss them.
