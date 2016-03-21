@@ -41,7 +41,7 @@ Key differences in struct records:
 [drawbacks]: #drawbacks
 
 * People may not understand when to use the attribute, and, like ``inline``, use it inappropriately, giving worse performance.
-* People may "fiddle around" applying the attribute when performance is OK or performance gainns are more likely to come via other routes
+* People may "fiddle around" applying the attribute when performance is OK or performance gains are more likely to come via other routes
 * It's one more trick for F# programmers to learn
 
 # Alternatives, Unresolved questions
