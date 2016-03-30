@@ -68,9 +68,16 @@ let x6 = 0x_52            // Invalid cannot put underscores at the beginning of 
 let x7 = 0x5_2            // OK (hexadecimal literal)
 let x8 = 0x52_            // Invalid cannot put underscores at the end of a number
 
-let x9 = 0_52             // OK (octal literal)
-let x10 = 05_2            // OK (octal literal)
+// In contrast to Java, literals with leading zeros are decimal in F#.
+let x9 = 0_52             // OK (decimal literal)
+let x10 = 05_2            // OK (decimal literal)
 let x11 = 052_            // Invalid cannot put underscores at the end of a number
+
+// To create an octal literal, prefix it with '0o' similar to hexadezimal literals. The same rules apply:
+let x12 = 0_o52            // Invalid cannot put underscores in the 0o radix prefix
+let x13 = 0o_52            // Invalid cannot put underscores at the beginning of a number
+let x14 = 0o5_2            // OK (octal literal)
+let x15 = 0o52_            // Invalid cannot put underscores at the end of a number
 ```
 
 For QZRNG literals, the string passed to the library routine has underscores removed.
