@@ -51,39 +51,21 @@ The standard range of testing considerations for F# library types apply.
 
 ### Proposal for additional functions
 
-Minimal:
+Uncontentious:
 
 ```fsharp
-bind : ('TSuccess -> Result<'T, 'TError>) -> Result<'TSuccess, 'TError> -> Result<'T, 'TError>
-map : ('TSuccess -> 'T) -> Result<'TSuccess, 'TError> -> Result<'T, 'TError>
+bind : ('T -> Result<'U, 'TError>) -> Result<'T, 'TError> -> Result<'U, 'TError>
+map : ('T -> 'U) -> Result<'T, 'TError> -> Result<'U, 'TError>
+mapError : ('TError -> 'U) -> Result<'T, 'TError> -> Result<'T, 'U>
 ```
 
-Nice-to-have:
+A result builder should be a separate RFC which covers adding builders for both `Option` and `Result`.
+
+Suggested:
 
 ```fsharp
-fold : ('TSuccess -> 'T) -> ('TError -> 'T) -> Result<'TSuccess, 'TError> -> 'T
-mapError : ('TError -> 'T) -> Result<'TSuccess, 'TError> -> Result<'TSuccess, 'T>
-bimap : ('TSuccess -> 'T) -> ('TError -> 'U) -> Result<'TSuccess, 'TError> -> Result<'T, 'U>
-// `bimap` or `mapBoth`?
+attempt : (unit -> 'a) -> Result<'a,exn>
 ```
 
-Low priority -- should we consider the following to get some parity with the `Option` module?
-
-```fsharp
-iter : ('TSuccess -> unit) -> Result<'TSuccess, 'TError> -> unit
-toArray : Result<'TSuccess, 'TError> -> 'TSuccess []
-toList : Result<'TSuccess, 'TError> -> 'TSuccess list
-get : Result<'TSuccess, 'TError> -> 'TSuccess option
-getError : Result<'TSuccess, 'TError> -> TError option
-```
-
-Builder (possibly as a separate RFC to add an `Option` and `Result` builder?):
-
-```fsharp
-type ResultBuilder() =
-    member x.Return a = Success a
-    member x.Bind(result, f) = Result.bind f result
-    member x.ReturnFrom result = result
-```
 
 
