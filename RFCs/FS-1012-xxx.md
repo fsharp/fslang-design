@@ -1,43 +1,52 @@
-# F# RFC FS-NNNN - (Fill me in with a feature name)
+# F# RFC FS-1012 - Support for caller info argument attributes (CallerLineNumber, CallerFileName, CallerMemberName)
 
-The design suggestion [FILL ME IN](https://fslang.uservoice.com/forums/245727-f-language/suggestions/fill-me-in) has been marked "approved in principle".
+The design suggestion [F# compiler should support CallerLineNumber, CallerFilePath etc](https://fslang.uservoice.com/forums/245727-f-language/suggestions/8899330-f-compiler-should-support-callerlinenumber-calle) has been marked "planned".
 This RFC covers the detailed proposal for this suggestion.
 
 * [x] Approved in principle
-* [ ] [User Voice Request](https://fslang.uservoice.com/FILL-ME-IN)
-* [ ] Details: [under discussion](https://github.com/fsharp/FSharpLangDesign/issues/FILL-ME-IN)
-* [ ] Implementation: [In progress](https://github.com/Microsoft/visualfsharp/pull/FILL-ME-IN)
+* [x] [User Voice Request](https://fslang.uservoice.com/forums/245727-f-language/suggestions/8899330-f-compiler-should-support-callerlinenumber-calle)
+* [x] Details: [under discussion](https://github.com/fsharp/FSharpLangDesign/issues/84)
+* [x] Implementation: [In progress](https://github.com/Microsoft/visualfsharp/issues/1113)
 
 
 # Summary
 [summary]: #summary
 
-One para explanation of the feature.
+This RFC describes F# support for the emerging .NET standard for compile-time treatment of method arguments tagged with one of
+the following attributes from the `System.Runtime.CompilerServices` namespace:
+
+  - `CallerLineNumberAttribute`
+    - An integer optional argument with this attribute will be given a runtime value matching the line number of the source of the callsite
+  - `CallerFilePathAttribute`
+    - A string optional argument with this attribute will be given a runtime value matching the absolute file path of source of the callsite
+  - `CallerMemberNameAttribute`
+    - A string optional argument with this attribute will be given a runtime value matching the unqualified name of the enclosing member of the callsite
+
+[Brief description and motivation on MSDN.](https://msdn.microsoft.com/en-us/library/hh534540.aspx)
 
 # Motivation
 [motivation]: #motivation
 
-Why are we doing this? What use cases does it support? What is the expected outcome?
+These attributes are useful for diagnostic and logging purposes, among others. They provide a way to obtain stack-trace or symbol-like source
+information in a lightweight way at runtime, perhaps for inclusion in a log line. They also help developers with patterns like `INotifyPropertyChanged`,
+providing a way to track member or property names as strings without hard-coded literals.
 
 # Detailed design
 [design]: #detailed-design
 
-This is the bulk of the RFC. Explain the design in enough detail for somebody familiar
-with the language to understand, and for somebody familiar with the compiler to implement.
-This should get into specifics and corner-cases, and include examples of how the feature is used.
+TBD
 
 # Drawbacks
 [drawbacks]: #drawbacks
 
-Why should we *not* do this?
+TBD
 
 # Alternatives
 [alternatives]: #alternatives
 
-What other designs have been considered? What is the impact of not doing this?
+TBD
 
 # Unresolved questions
 [unresolved]: #unresolved-questions
 
-What parts of the design are still TBD?
-
+TBD
