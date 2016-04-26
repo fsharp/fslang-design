@@ -38,14 +38,20 @@ TBD
 # Drawbacks
 [drawbacks]: #drawbacks
 
-TBD
+The major drawback is that added complexity this brings to the rules of the language.
 
 # Alternatives
 [alternatives]: #alternatives
 
-TBD
+Some alternatives are:
+
+- Implement an F#-specific version of this feature.  This is rejected because it is better to conform to .NET standards rather than be F#-specific for this feature.
+
+- Do not implement this feature.  This is rejected because it is better to conform to .NET standards for this topic.
+
 
 # Unresolved questions
 [unresolved]: #unresolved-questions
 
-TBD
+- What happens with first-class uses of attributed methods?
+- Does the use of an attribute change the way type inference and method selection works for a method?
