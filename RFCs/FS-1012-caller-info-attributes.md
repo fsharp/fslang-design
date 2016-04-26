@@ -53,5 +53,13 @@ Some alternatives are:
 # Unresolved questions
 [unresolved]: #unresolved-questions
 
-- What happens with first-class uses of attributed methods?
-- Does the use of an attribute change the way type inference and method selection works for a method?
+Feature interactions:
+
+- First-class uses of methods: What happens with first-class uses of attributed methods?
+
+- Method overloading: Does the use of an attribute change the way type inference and method selection works for a method?
+
+- Computation Expressions: Can computation expression methods accepting caller info attributes?
+
+- Quotations: Check this works as expected with quotation literals
+
