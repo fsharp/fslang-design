@@ -4,7 +4,7 @@ The design suggestion [Allow mutually referential types and modules over larger 
 
 * [x] Status: Approved in principle
 * [x] Details: [Under discussion](https://github.com/fsharp/FSharpLangDesign/issues/76)
-* [x] Implementation: [Prototyping](https://github.com/Microsoft/visualfsharp/compare/master...dsyme:mutrec)
+* [x] Implementation: [WIP PR](https://github.com/Microsoft/visualfsharp/pull/1132)
 
 
 # Summary
