@@ -380,6 +380,30 @@ This is of course the default assumption :)
 This is the assumption that C# and Java users have when coming to a new language.  It brings enormous challenges
 for type inference and for implementing efficient "safe" static initialization.
 
+### Alternative: ``... and ... `` for more declarations 
+
+One sytntac alternative that was considered was  allowing ``and`` to join more declaration forms, e.g.
+
+```fsharp
+
+module M = ...
+
+and module N = ....
+
+and exception E of stirng
+
+and let f x = x + 1
+
+and type C() = ...
+```
+
+We decided against this for two reasons
+
+* it is actually quite an intrusive change to the syntax of the language and it's implementation, particularly with regard to whitespace sensitivity and the offside rule
+
+* it feels syntactically awkward in a similar way to current ``type X .. and ... `` feels awkward, especially when combined with attribute declarations
+
+
 ### Alternative: ``#rec`` declarations and scoped mutually refential regions
 
 There is no intrinsic reason why mutual reference needs to be dealt
@@ -464,5 +488,5 @@ and should be considered and discussed separately.
 # Unresolved questions
 [unresolved]: #unresolved-questions
 
-There are many parts of this design still under investigation.  As issues are identified they will be noted in this RFC.
+As further issues are identified they will be noted in this RFC.
 
