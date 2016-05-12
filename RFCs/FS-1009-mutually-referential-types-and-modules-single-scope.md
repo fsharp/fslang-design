@@ -326,6 +326,7 @@ type D =
 ```
 
 
+
 #### Interaction with ``.fsx`` scripting files
 
 For ``.fsx`` files, the default is for declarations not to be part of a mutually referential group. Individual
@@ -344,6 +345,30 @@ printfn "more of a script"
 
 There is no way to declare that the whole script is mutually referential short of using one big module to contain all the
 contents of a script.
+
+#### Interaction with ``mutable`` 
+
+F# currently disallows ``let rec`` values being marked ``mutable``.  It is proposed that we 
+maintain this restriction for module-defined mutable values in mutually referential groups. e.g.
+
+```fsharp
+module rec Tests
+
+let mutable x = 0
+```
+will give an error ``error FS0874: reecursive 'let' bindings may be marked mutable.  
+
+Technically speaking, we could no doubt allow this.  However, it should be treated as an issue orthogonal to this feature.
+
+Note that static mutable data in classes is still permitted, e.g.
+```fsharp
+module rec Tests
+
+type C() =
+    static let mutable failures = []
+    static member Failures = failures
+```
+
 
 # Drawbacks
 [drawbacks]: #drawbacks
