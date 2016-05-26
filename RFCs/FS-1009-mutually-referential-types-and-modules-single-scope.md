@@ -369,6 +369,39 @@ type C() =
     static member Failures = failures
 ```
 
+#### Interaction with existing known issues
+
+Processing hierarchies of recursive type definitions of generic types where the
+type parameters of these types are constrained by instances of the generic types is
+quite difficult.  The use of ``rec`` can exacerbate this because more types are made recursive
+more easily.
+
+Specifically, during the course of development of a prototype of this RFC
+we noticed that there seems to be an existing known issue with processing these type definitions:
+
+```fsharp
+type Exp<'c when 'c :> Exp<'c>> = 
+    interface 
+    end
+
+and EvalExp<'c when 'c :> EvalExp<'c>> =
+    interface
+      inherit Exp<'c>
+    end
+
+type PrintLit<'c when 'c :> Exp<'c>>(value) =
+    member x.BasePrint() = printf "out %d" value
+    interface Exp<'c> 
+
+and EvalLit<'d when 'd :> EvalExp<'d>>(value:int) =
+    inherit PrintLit<'d>(value) 
+    interface EvalExp<'d> 
+```
+
+If the last ``and`` is changed to a ``type`` then the definitions are checked ok.
+
+This issue is orthogonal to the ``rec`` feature.
+
 
 # Drawbacks
 [drawbacks]: #drawbacks
