@@ -209,7 +209,7 @@ module rec Example =
           ...
 ```
 
-#### Meaning of ``rec``
+#### Meaning of ``rec`` w.r.t. Name Resoltion
 
 The meaning of ``rec`` is that _all_ type, function, member and value declarations in all nested modules
 may be mutually referential.  For example:
@@ -267,6 +267,26 @@ But unless M is opened, mutual references _must_ go via the name ``M``. This pro
 effectively an implicit ``open`` immediately after the ``rec`` and on all nested modules.  This fits
 with F#'s de-emphasis of modules-as-algebraic-values, and fits with F#'s existing rule that implicitly opens
 a namespace N inside the definition of N.
+
+#### Interaction with ``open``
+
+Consider the following code:
+
+```fsharp
+
+module Test = 
+      open System.Collections.Generic
+
+      type Queue<'a> = 
+        abstract IsEmpty : bool
+
+      let test (q: Queue<_>) = q.IsEmpty 
+```
+
+Which ``Queue`` does the type ``Queue<_>`` refer to?  The type being defined, obviously (and not
+the one from ``System.Collections.Generic``).  During the development of the prototype of this feature,
+a mistake was made where type definitions being defined in a module/namespace
+were added to the environment _before_ processing ``open`` declarations.  They should be added _after_.
 
 #### Interaction with ``[<AutoOpen>]``
 
