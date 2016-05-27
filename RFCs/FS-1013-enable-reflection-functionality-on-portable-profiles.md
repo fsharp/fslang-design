@@ -4,8 +4,8 @@ The design suggestion [Enable FSharp.Reflection functionality on Portable Profil
 This RFC covers the detailed proposal for this suggestion.
 
 * [x] Approved in principle
-* [ ] Details: [under discussion](https://github.com/fsharp/FSharpLangDesign/issues/FILL-ME-IN)
-* [ ] Implementation: [In progress](https://github.com/Microsoft/visualfsharp/pull/FILL-ME-IN)
+* [x] Details: No discussion needed, change has been implemented
+* [x] Implementation: Implemented 
 
 
 # Summary
@@ -22,12 +22,10 @@ This RFC is to make this functionality available, especially on .NET Core but al
 # Detailed design
 [design]: #detailed-design
 
-### Option 1 – Add extension methods
-
-One way to solve this would be to add optional extension methods in all profiles.   Here’s what we would add:
+The solution to this has already been implemented, and is the addition of these extension methods:
 
 ```fsharp
-module FSharp.Reflection.PortableExtensions 
+module FSharp.Reflection.FSharpReflectionExtensions
 
 type FSharpValue with 
     static member MakeRecord: recordType:Type * values:obj [] * ?nonPublic:bool  -> obj
@@ -54,48 +52,11 @@ type FSharpType with
     static member IsExceptionRepresentation: exceptionType:Type * ?nonPublic:bool -> bool
 ```
 
-The user would opt-in to using these by doing 
+The user mustwould opt-in to by using
 
 ```fsharp
-open FSharp.Reflection.PortableExtensions 
+open FSharp.Reflection.FSharpReflectionExtensions 
 ```
-
-The downside to this is that the module must be opened explicitly. 
-
-
-### Option 2 – Add overloaded methods with non-optional flag
-
-Another approach is to add new overloads to the above methods, all of which take a non-optional flag:
-
-```fsharp
-namespace FSharp.Reflection 
-
-type FSharpValue =
-    static member MakeRecord: recordType:Type * values:obj [] * nonPublic:bool  -> obj
-    static member GetRecordFields:  record:obj * nonPublic:bool  -> obj[]
-    static member PreComputeRecordReader : recordType:Type  * nonPublic:bool  -> (obj -> obj[])
-    static member PreComputeRecordConstructor : recordType:Type  * nonPublic:bool  -> (obj[] -> obj)
-    static member PreComputeRecordConstructorInfo: recordType:Type * nonPublic:bool -> ConstructorInfo
-    static member MakeUnion: unionCase:UnionCaseInfo * args:obj [] * nonPublic:bool -> obj
-    static member GetUnionFields:  value:obj * unionType:Type * nonPublic:bool -> UnionCaseInfo * obj []
-    static member PreComputeUnionTagReader          : unionType:Type  * nonPublic:bool -> (obj -> int)
-    static member PreComputeUnionTagMemberInfo : unionType:Type  * nonPublic:bool -> MemberInfo
-    static member PreComputeUnionReader       : unionCase:UnionCaseInfo  * nonPublic:bool -> (obj -> obj[])
-    static member PreComputeUnionConstructor : unionCase:UnionCaseInfo  * nonPublic:bool -> (obj[] -> obj)
-    static member PreComputeUnionConstructorInfo: unionCase:UnionCaseInfo * nonPublic:bool -> MethodInfo
-    static member GetExceptionFields:  exn:obj * nonPublic:bool -> obj[]
-
-type FSharpType =
-
-    static member GetRecordFields: recordType:Type * nonPublic:bool -> PropertyInfo[]
-    static member GetUnionCases: unionType:Type * nonPublic:bool -> UnionCaseInfo[]
-    static member IsRecord: typ:Type * nonPublic:bool -> bool
-    static member IsUnion: typ:Type * nonPublic:bool -> bool
-    static member GetExceptionFields: exceptionType:Type * nonPublic:bool -> PropertyInfo[]
-    static member IsExceptionRepresentation: exceptionType:Type * nonPublic:bool -> bool
-```
-
-I believe the flag needs to be non-optional or else the change will break existing source code.  (In some corner situations, the above might also break existing source code, but the resolution would be a simple type annotation) 
 
 
 # Drawbacks
