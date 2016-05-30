@@ -17,34 +17,19 @@ it's useful to have a fsharp type who contains the result on success or the erro
 
 ```fsharp
 type Result<'TSuccess,'TError> = 
-     | Success of 'TSuccess 
+     | Ok of 'TSuccess 
      | Error of 'TError
 ```
 
-The type should be added in `FSharp.Core` library
+The type should be added in `FSharp.Core` library in the ``FSharp.Core`` namespace.
 
-### Naming 
+The compiled name of the type should be ``FSharpResult`2`` for consistency with other FSharp.Core types.
 
-The name of the type and union cases has not been finalized. Some of the suggestions are
+### Unresolved Questions
 
-| Type name | Success case  | Failure case |
-| --------- | ------------- | ------------ |
-| Result    | Success       | Failure      |
-| Result    | Success       | Error        |
-| Result    | OK            | Error        |
-| Result    | OK            | Err          |
-| Result    | OK            | Bad          |
-| Result    | Ok            | Error        |
-| Result    | Ok            | Err          |
-| Result    | Ok            | Bad          |
+- declare as struct (waiting for support for union types to be structs)
 
-### Testing considerations
 
-The standard range of testing considerations for F# library types apply.
+### Resolved Questions
 
-### Open Questions
-
-- namespace
-- declare as struct
-- compiled name
-- require additional functions?
+* No additional functions or methods will be supported in FSharp.Core.   These may be added in a community library or user code.
