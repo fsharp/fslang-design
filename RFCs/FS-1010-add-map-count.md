@@ -3,8 +3,8 @@
 The design suggestion [Add Map.count](https://fslang.uservoice.com/forums/245727-f-language/suggestions/12880398-add-map-count) has been marked "approved in principle".
 This RFC covers the detailed proposal for this suggestion.
 
-* [ ] Details: [under discussion](https://github.com/fsharp/FSharpLangDesign/issues/78)
-* [ ] Implementation: [In progress](https://github.com/Microsoft/visualfsharp/pull/1007)
+* [x] Details: [Discussion Completed](https://github.com/fsharp/FSharpLangDesign/issues/78)
+* [x] Implementation: [Completed](https://github.com/Microsoft/visualfsharp/pull/1007)
 
 
 # Summary
@@ -15,7 +15,7 @@ Add ``Map.count``.
 # Motivation
 [motivation]: #motivation
 
-TBD
+To align with ``Set.count``
 
 # Detailed design
 [design]: #detailed-design
