@@ -48,3 +48,24 @@ The standard range of testing considerations for F# library types apply.
 - declare as struct
 - compiled name
 - require additional functions?
+
+### Proposal for additional functions
+
+Uncontentious:
+
+```fsharp
+bind : ('T -> Result<'U, 'TError>) -> Result<'T, 'TError> -> Result<'U, 'TError>
+map : ('T -> 'U) -> Result<'T, 'TError> -> Result<'U, 'TError>
+mapError : ('TError -> 'U) -> Result<'T, 'TError> -> Result<'T, 'U>
+```
+
+A result builder should be a separate RFC which covers adding builders for both `Option` and `Result`.
+
+Suggested:
+
+```fsharp
+attempt : (unit -> 'a) -> Result<'a,exn>
+```
+
+
+
