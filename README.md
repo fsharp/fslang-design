@@ -3,6 +3,11 @@ F# Language Design RFCs
 
 RFCs and docs related to the F# langauge design process.
 
+Completed RFCs
+
+* [RFC FS-1002 Cartesian product function for collections](https://github.com/fsharp/FSharpLangDesign/blob/master/RFCs/FS-1002-cartesian-product-for-collections.md)
+* [F# RFC FS-1010 - Add Map.count](https://github.com/fsharp/FSharpLangDesign/blob/master/RFCs/FS-1010-add-map-count.md)
+
 Open RFCs
 
 * [F# RFC FS-1001 - String interpolation](https://github.com/fsharp/FSharpLangDesign/blob/master/RFCs/FS-1001-StringInterpolation.md)
@@ -14,11 +19,6 @@ Open RFCs
 * [F# RFC FS-0008 - Struct Records](https://github.com/fsharp/FSharpLangDesign/blob/master/RFCs/FS-1008-struct-records.md)
 * [F# RFC FS-1009 - Allow mutually referential types and modules over larger scopes](https://github.com/fsharp/FSharpLangDesign/blob/master/RFCs/FS-1009-mutually-referential-types-and-modules-single-scope.md)
 * [F# RFC FS-1011 - Warn when recursive function is not tail-recursive](https://github.com/fsharp/FSharpLangDesign/blob/master/RFCs/FS-1011-warn-on-recursive-without-tail-call.md)
-
-Completed RFCs
-
-* [RFC FS-1002 Cartesian product function for collections](https://github.com/fsharp/FSharpLangDesign/blob/master/RFCs/FS-1002-cartesian-product-for-collections.md)
-* [F# RFC FS-1010 - Add Map.count](https://github.com/fsharp/FSharpLangDesign/blob/master/RFCs/FS-1010-add-map-count.md)
 
 Process:
 
