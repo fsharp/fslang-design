@@ -92,4 +92,10 @@ Some alternatives are:
 # Unresolved questions
 [unresolved]: #unresolved-questions
 
-None
+[Query](https://github.com/Microsoft/visualfsharp/pull/1114/files#r66590569): Could you please also specify and test what happens when the call to GetCallerMemberName is made from
+
+* an anonymous lambda experession, e.g. ``(fun () -> ...)``.  
+* an object expression member implementation implementing an interface
+* an object expression member implementation implementing an abstract member in a base class
+* a delegate implementation e.g. ``new System.Func<int,int>(fun a -> ...)``
+* within an async expression ``async { ... }`` (whose desugaring has some implied lambda expressions)
