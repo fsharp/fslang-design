@@ -4,8 +4,8 @@ The design suggestion [F# compiler should support CallerLineNumber, CallerFilePa
 This RFC covers the detailed proposal for this suggestion.
 
 * [x] Approved in principle
-* [x] Details: [under discussion](https://github.com/fsharp/FSharpLangDesign/issues/84)
-* [x] Implementation: [In progress](https://github.com/Microsoft/visualfsharp/issues/1114)
+* [x] [Discussion](https://github.com/fsharp/FSharpLangDesign/issues/84)
+* [x] Implementation: [Ready to commit](https://github.com/Microsoft/visualfsharp/issues/1114)
 
 
 # Summary
@@ -33,7 +33,46 @@ providing a way to track member or property names as strings without hard-coded 
 # Detailed design
 [design]: #detailed-design
 
-TBD
+## Feature interaction: First-class uses of methods
+
+What happens with first-class uses of attributed methods?
+
+Answer: First-class uses of methods work as expected for C# and F# methods and there are tests in the PR.
+
+## Feature Interaction - Method overloading
+
+Does the use of an attribute change the way type inference and method selection works for a method?
+
+Answer: No changes were made in this area so existing rules apply. The output of the code below is: ``Line f``
+
+```fsharp
+type M() =
+    member self.f([<CallerLineNumber>]?line : int) =
+        printfn "Line %d" line.Value
+
+    member self.f() =
+        printfn "Line f"
+
+let m = M()
+
+let foo () =
+    m.f()
+    
+foo ()
+
+```
+
+## Feature Interaction - Computation Expressions
+
+Can computation expression methods accepting caller info attributes?
+
+Yes: Computation Expressions accept caller info attributes no special implementation and there are tests in the PR.
+
+## Feature Interaction - Quotations
+
+Check this feature works as expected with quotation literals
+
+Yes: Quotations works as expected no special implementation and there are tests in the PR.
 
 # Drawbacks
 [drawbacks]: #drawbacks
@@ -53,34 +92,4 @@ Some alternatives are:
 # Unresolved questions
 [unresolved]: #unresolved-questions
 
-Feature interactions:
-
-- First-class uses of methods: What happens with first-class uses of attributed methods?
-- First-class uses of methods work as expected for C# and F# methods and there is tests in the PR
-
-- Method overloading: Does the use of an attribute change the way type inference and method selection works for a method?
-- No changes was made but the output of the code below is: Line f
-
-```fsharp
-type M() =
-    member self.f([<CallerLineNumber>]?line : int) =
-        printfn "Line %d" line.Value
-
-    member self.f() =
-        printfn "Line f"
-
-let m = M()
-
-let foo () =
-    m.f()
-    
-foo ()
-
-```
-
-- Computation Expressions: Can computation expression methods accepting caller info attributes?
-- Computation Expressions accept caller info attributes no special implementation and there is test in the PR 
-
-- Quotations: Check this works as expected with quotation literals
-- Quotations works as expected no special implementation and there is tests in the PR
-
+None
