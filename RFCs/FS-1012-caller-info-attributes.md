@@ -70,7 +70,7 @@ Yes: Computation Expressions accept caller info attributes no special implementa
 
 Check within an async expression ``async { ... }`` (whose desugaring has some implied lambda expressions)
 
-Yes: Ayync computation expression values works as expected no special implementation and there are tests in the PR.
+Yes: Async computation expression values works as expected no special implementation and there are tests in the PR.
 
 ## Feature Interaction - Quotations
 
@@ -80,7 +80,7 @@ Yes: Quotations works as expected no special implementation and there are tests 
 
 ## Feature Interaction - Anonymous function
 
-Checl an anonymous lambda experession, e.g. ``(fun () -> ...)``.  
+Check an anonymous lambda experession, e.g. ``(fun () -> ...)``.  
 
 Yes: anonymous lambda expression works as expected no special implementation and there are tests in the PR.
 
@@ -130,4 +130,3 @@ Some alternatives are:
 # Unresolved questions
 [unresolved]: #unresolved-questions
 
-[Query](https://github.com/Microsoft/visualfsharp/pull/1114/files#r66590569): Could you please also specify and test what happens when the call to GetCallerMemberName is made from
