@@ -68,11 +68,49 @@ Can computation expression methods accepting caller info attributes?
 
 Yes: Computation Expressions accept caller info attributes no special implementation and there are tests in the PR.
 
+Check within an async expression ``async { ... }`` (whose desugaring has some implied lambda expressions)
+
+Yes: Async computation expression values works as expected no special implementation and there are tests in the PR.
+
 ## Feature Interaction - Quotations
 
 Check this feature works as expected with quotation literals
 
 Yes: Quotations works as expected no special implementation and there are tests in the PR.
+
+## Feature Interaction - Anonymous function
+
+Check an anonymous lambda experession, e.g. ``(fun () -> ...)``.  
+
+Yes: anonymous lambda expression works as expected no special implementation and there are tests in the PR.
+
+## Feature Interaction - Object expression
+
+Check an object expression member implementation implementing an interface
+And check an object expression member implementation implementing an abstract member in a base class
+
+Yes: Object expression works as expected no special implementation and there are tests in the PR.
+
+## Feature Interaction - Delegates
+
+Check a delegate implementation e.g. ``new System.Func<int,int>(fun a -> ...)``
+
+Yes: Delegates works as expected no special implementation and there are tests in the PR.
+
+## Implementation Details
+Caller member name is the "top-level" bindings like methods, module-level and class-level functions, module-level and class-level values and they will be captured.
+Sub-level bindings like "local variable" let bindings or nested functions are not captured as member name and the name the capture is from the parent scope.
+For example the output of the code below is: f
+```fsharp
+module Test
+let f () = 
+    let x = 
+        let g () = MyTy.GetCallerMemberName() 
+        g()
+    x
+```
+
+Top level bindings like class ctor or static ctor output is like in c# https://github.com/dotnet/roslyn/blob/56f605c41915317ccdb925f66974ee52282609e7/src/Compilers/CSharp/Test/Emit/Attributes/AttributeTests_CallerInfoAttributes.cs#L1274
 
 # Drawbacks
 [drawbacks]: #drawbacks
@@ -92,10 +130,3 @@ Some alternatives are:
 # Unresolved questions
 [unresolved]: #unresolved-questions
 
-[Query](https://github.com/Microsoft/visualfsharp/pull/1114/files#r66590569): Could you please also specify and test what happens when the call to GetCallerMemberName is made from
-
-* an anonymous lambda experession, e.g. ``(fun () -> ...)``.  
-* an object expression member implementation implementing an interface
-* an object expression member implementation implementing an abstract member in a base class
-* a delegate implementation e.g. ``new System.Func<int,int>(fun a -> ...)``
-* within an async expression ``async { ... }`` (whose desugaring has some implied lambda expressions)
