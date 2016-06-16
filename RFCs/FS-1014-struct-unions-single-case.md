@@ -35,9 +35,99 @@ type UnionExample = U of int * int * bool
 
 Key differences in struct records:
 
-You cannot have cyclic references to the same type being defined. ex: type T = U of T
+* You cannot have cyclic references to the same type being defined. ex: type T = U of T
 
-You also cannot call the default ctor, like you could with normal F# structs.
+* You also cannot call the default ctor, like you could with normal F# structs.
+
+
+## Feature interaction - Generated IComparable, GetHashCode, Equals
+
+The code generation for these generated interface/overrides must be carefully adjusted.
+
+
+## Feature interaction - Reflection
+
+FSharp.Reflection.FSharpType and FSharp.Reflection.FSharpValue implementations must work correctly
+on struct union types.  
+
+
+## Performance Considerations and Code Quality 
+
+### Avoiding needless copying in normal code
+
+Consider code such as the following:
+```fsharp 
+
+[<Struct>]
+type U = U of int * int
+
+let g1 (U(a,b)) = a + b 
+
+let g2 u = 
+    let (U(a,b)) = u
+    a + b 
+```
+
+A naive (e.g. debug) implementation of these will create many copies of the input structs.  For example, the debug form of ``g2`` will look like this (in C syntax)
+```fsharp
+
+let g2 u = 
+    let patternInput = u
+    let a = (&patternInput)->item1
+    let b = (&patternInput)->item2
+    a + b
+```
+giving three locals.  The actual optimized code is
+```fsharp
+let g2 u = (&u)->item1) + (&u)->item2
+```
+The F# optimizer gets from the first form to the second.
+
+Likewise, for this code:
+```fsharp
+let g3 (x:U) (y: U) = 
+    match x,y with 
+    | U(3,a), U(5,b) -> a + b
+    | U(a,b), U(c,d) -> a + b + c + d
+```
+a very considerable amount of optimization work needs to happen to make this copy-free. For example 
+the ``x, y`` is a tuple of structs.  In the naive debug code-quality form a new tuple gets 
+allocated.  
+
+
+In the implementation, the F# compiler generally does an OK-ish job of avoiding copying 
+of structs - an address is often generated to an existing copy of an immutable struct.
+
+### Avoiding needless copying in code using byrefs to structs
+
+In higher-performance code it is normal to pass around pointers (byrefs) to structs.
+
+For example consider
+
+```fsharp
+let f1 (x:U byref) =  
+    let (U(a,b)) = x 
+    a + b 
+```
+Which gets compiled to approximately the following using C-style syntax
+
+```fsharp
+let f1 (x : U byref ) = 
+  let pi = *x
+  let a = (&pi)->item1
+  let b = (&pi)->item2
+  a + b
+```
+
+The ``pi`` copy of the input struct is difficult to eliminate because reading the byref is seen as an effect (e.g. if the byref is accessible from other threads and is being written into).
+
+The ideal code would be:
+```fsharp
+let f1 (x : U byref ) = x->item1 + x->item2
+```
+and this code is relatively easy to get for the equivalent code for a struct-record.  For struct-unions, the 
+only way to decompose the union is through pattern matching, and the semantics of pattern matching 
+is "build the input to the match then decompose it".
 
 
 # Drawbacks
@@ -51,9 +141,10 @@ The same as [struct records](https://github.com/fsharp/FSharpLangDesign/blob/mas
 # Alternatives
 [alternatives]: #alternatives
 
-TBD: What other designs have been considered? What is the impact of not doing this?
+* Require programmers to code structs by hand
 
 # Unresolved questions
 [unresolved]: #unresolved-questions
 
-TBD: What parts of the design are still TBD?
+None
+
