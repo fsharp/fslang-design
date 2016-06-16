@@ -1,11 +1,11 @@
-# F# RFC FS-0014 - Struct unions (single case)
+# F# RFC FS-1014 - Struct unions (single case)
 
 The design suggestion [Allow single case unions to be compiled as structs](https://fslang.uservoice.com/forums/245727-f-language/suggestions/6147144-allow-single-case-unions-to-be-compiled-as-structs) has been marked "approved in principle".
 This RFC covers the detailed proposal for this suggestion.
 
 * [x] [User Voice Request](https://fslang.uservoice.com/forums/245727-f-language/suggestions/6147144-allow-single-case-unions-to-be-compiled-as-structs)
-* [ ] Details: [under discussion](https://github.com/fsharp/FSharpLangDesign/issues/FILL-ME-IN)
-* [ ] Implementation: [In progress](https://github.com/Microsoft/visualfsharp/pull/FILL-ME-IN)
+* [x] Details: [under discussion](https://github.com/fsharp/FSharpLangDesign/issues/95)
+* [x] Implementation: [Nearing completion](https://github.com/Microsoft/visualfsharp/pull/1262)
 
 
 # Summary
