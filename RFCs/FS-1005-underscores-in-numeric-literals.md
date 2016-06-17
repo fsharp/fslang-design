@@ -4,8 +4,8 @@ The design suggestion [Underscores in Numeric Literals](https://fslang.uservoice
 This RFC covers the detailed proposal for this suggestion.
 
 * [x] [Approved in principle](https://fslang.uservoice.com/forums/245727-f-language/suggestions/6628026-accept-integer-literals-like-12-345-for-readabilit)
-* [ ] Details: [under discussion](https://github.com/fsharp/FSharpLangDesign/issues/52)
-* [ ] Implementation: https://github.com/Microsoft/visualfsharp/pull/1243
+* [x] Details: [discussion](https://github.com/fsharp/FSharpLangDesign/issues/52)
+* [x] Implementation: [Completed](https://github.com/Microsoft/visualfsharp/pull/1243)
 
 
 # Summary
@@ -95,4 +95,4 @@ The main alternative is simply not doing it at all.
 # Unresolved questions
 [unresolved]: #unresolved-questions
 
-None unless specific undetermined issues are raised by the implementation.
+None remaining
