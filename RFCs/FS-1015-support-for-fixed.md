@@ -36,13 +36,13 @@ type Point = { mutable x : int; mutable y : int }
 
 let pinObject() = 
     let point = Point(1.0,2.0);
-    use p1 = fixed &point.x
+    use p1 = fixed &point.x   // note, fixed is a keyword and would be highlighted
     ... // some code that uses p1
 ```
 
 Pinning arrays:
-```
 
+```fsharp
 let pinArray1() = 
     let arr = [| 0; 1.5; 2.3; 3.4; 4.0; 5.9 |]
     use p1 = fixed arr
@@ -55,7 +55,7 @@ let pinArray2() =
     ...   // some code that uses p
 ```
 Pinning strings
-```
+```fsharp
 let pinString() = 
     let str = "Hello World"
     // The following assignment initializes p by using a string.
