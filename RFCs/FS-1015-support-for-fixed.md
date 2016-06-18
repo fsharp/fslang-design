@@ -1,6 +1,6 @@
-# F# RFC FS-NNNN - (Fill me in with a feature name)
+# F# RFC FS-1015 - Support for "fixed"
 
-The design suggestion [Add suppor for 'fixed'](https://fslang.uservoice.com/forums/245727-f-language/suggestions/5663721-add-support-for-fixed) has been marked "approved in principle".
+The design suggestion [Add support for 'fixed'](https://fslang.uservoice.com/forums/245727-f-language/suggestions/5663721-add-support-for-fixed) has been marked "approved in principle".
 This RFC covers the detailed proposal for this suggestion.
 
 * [x] Approved in principle
