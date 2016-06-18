@@ -1,9 +1,7 @@
 F# Language Design RFCs 
 =================
 
-RFCs and docs related to the F# langauge design process.
-
-The Process:
+RFCs and docs related to the F# langauge design process. The Process:
 
 1. Use [F# Language User Voice](http://fslang.uservoice.com) to submit ideas, vote on them and discuss them.
 
