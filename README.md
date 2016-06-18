@@ -23,14 +23,17 @@ Completed RFCs
 * [F# RFC FS-1010 - Add Map.count](https://github.com/fsharp/FSharpLangDesign/blob/master/RFCs/FS-1010-add-map-count.md)
 * [F# RFC FS-1013 - Enable FSharp.Reflection functionality in PCLS](https://github.com/fsharp/FSharpLangDesign/blob/master/RFCs/FS-1013-enable-reflection-functionality-on-portable-profiles.md)
 
+Nearing-Completion RFCs
+
+* [F# RFC FS-1006 - Struct Tuples and Interop with C# 7.0 Tuples](https://github.com/fsharp/FSharpLangDesign/blob/master/RFCs/FS-1006-struct-tuples.md)
+* [F# RFC FS-1012 - Support for caller info argument attributes (CallerLineNumber, CallerFileName, CallerMemberName)](https://github.com/fsharp/FSharpLangDesign/blob/master/RFCs/FS-1012-caller-info-attributes.md)
+* [F# RFC FS-1014 - Single case struct unions](https://github.com/fsharp/FSharpLangDesign/blob/master/RFCs/FS-1014-struct-unions-single-case.md)
+
 Open RFCs
 
 * [F# RFC FS-1001 - String interpolation](https://github.com/fsharp/FSharpLangDesign/blob/master/RFCs/FS-1001-StringInterpolation.md)
 * [F# RFC FS-1003 - Add nameof Operator](https://github.com/fsharp/FSharpLangDesign/blob/master/RFCs/FS-1003-nameof-operator.md)
 * [F# RFC FS-1004 - Result type](https://github.com/fsharp/FSharpLangDesign/blob/master/RFCs/FS-1004-result-type.md)
-* [F# RFC FS-1006 - Struct Tuples and Interop with C# 7.0 Tuples](https://github.com/fsharp/FSharpLangDesign/blob/master/RFCs/FS-1006-struct-tuples.md)
 * [F# RFC FS-1007 - Additional Option module functions](https://github.com/fsharp/FSharpLangDesign/blob/master/RFCs/FS-1007-additional-Option-module-functions.md)
 * [F# RFC FS-1011 - Warn when recursive function is not tail-recursive](https://github.com/fsharp/FSharpLangDesign/blob/master/RFCs/FS-1011-warn-on-recursive-without-tail-call.md)
-* [F# RFC FS-1012 - Support for caller info argument attributes (CallerLineNumber, CallerFileName, CallerMemberName)](https://github.com/fsharp/FSharpLangDesign/blob/master/RFCs/FS-1012-caller-info-attributes.md)
-* [F# RFC FS-1014 - Single case struct unions](https://github.com/fsharp/FSharpLangDesign/blob/master/RFCs/FS-1014-struct-unions-single-case.md)
 
