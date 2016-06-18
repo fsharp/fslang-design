@@ -36,4 +36,5 @@ Open RFCs
 * [F# RFC FS-1004 - Result type](https://github.com/fsharp/FSharpLangDesign/blob/master/RFCs/FS-1004-result-type.md)
 * [F# RFC FS-1007 - Additional Option module functions](https://github.com/fsharp/FSharpLangDesign/blob/master/RFCs/FS-1007-additional-Option-module-functions.md)
 * [F# RFC FS-1011 - Warn when recursive function is not tail-recursive](https://github.com/fsharp/FSharpLangDesign/blob/master/RFCs/FS-1011-warn-on-recursive-without-tail-call.md)
+* [F# RFC FS-1015 - Support for "fixed"](https://github.com/fsharp/FSharpLangDesign/blob/master/RFCs/FS-1015-support-for-fixed.md)
 
