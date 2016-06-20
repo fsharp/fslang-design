@@ -35,7 +35,7 @@ Pinning objects:
 type Point = { mutable x : int; mutable y : int }
 
 let pinObject() = 
-    let point = Point(1.0,2.0);
+    let point = { x = 1.0; y = 2.0 }
     use p1 = fixed &point.x   // note, fixed is a keyword and would be highlighted
     ... // some code that uses p1
 ```
