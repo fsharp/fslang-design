@@ -35,7 +35,7 @@ Pinning objects:
 type Point = { mutable x : int; mutable y : int }
 
 let pinObject() = 
-    let point = { x = 1.0; y = 2.0 }
+    let point = { x = 1; y = 2 }
     use p1 = fixed &point.x   // note, fixed is a keyword and would be highlighted
     ... // some code that uses p1
 ```
@@ -44,12 +44,12 @@ Pinning arrays:
 
 ```fsharp
 let pinArray1() = 
-    let arr = [| 0; 1.5; 2.3; 3.4; 4.0; 5.9 |]
+    let arr = [| 0.0; 1.5; 2.3; 3.4; 4.0; 5.9 |]
     use p1 = fixed arr
     ...  // some code that uses p1
 
 let pinArray2() = 
-    let arr = [| 0; 1.5; 2.3; 3.4; 4.0; 5.9 |]
+    let arr = [| 0.0; 1.5; 2.3; 3.4; 4.0; 5.9 |]
     // You can initialize a pointer by using the address of a variable. 
     use p = fixed &arr.[0]
     ...   // some code that uses p
