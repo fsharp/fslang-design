@@ -59,7 +59,7 @@ Pinning strings
 let pinString() = 
     let str = "Hello World"
     // The following assignment initializes p by using a string.
-    use pChar = str
+    use pChar = fixed str
     ... // some coe that uses pChar, which has type char*
 ```
 
