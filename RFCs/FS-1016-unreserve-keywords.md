@@ -4,8 +4,8 @@ The design suggestion [Revise the reserved keyword list](https://fslang.uservoic
 This RFC covers the detailed proposal for this suggestion.
 
 * [x] Approved in principle
-* [ ] Details: [discussion](https://github.com/fsharp/FSharpLangDesign/issues/102)
-* [x] Implementation: [Ready](https://github.com/Microsoft/visualfsharp/pull/1279)
+* [x] Details: [discussion](https://github.com/fsharp/FSharpLangDesign/issues/102)
+* [x] Implementation: [Completed](https://github.com/Microsoft/visualfsharp/pull/1279)
 
 
 # Summary
