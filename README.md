@@ -18,7 +18,7 @@ Completed RFCs
 
 * [F# RFC FS-1005 - Underscore Literals](https://github.com/fsharp/FSharpLangDesign/blob/master/RFCs/FS-1005-underscores-in-numeric-literals.md)
 * [F# RFC FS-1008 - Struct Records](https://github.com/fsharp/FSharpLangDesign/blob/master/RFCs/FS-1008-struct-records.md)
-* [RFC FS-1002 Cartesian product function for collections](https://github.com/fsharp/FSharpLangDesign/blob/master/RFCs/FS-1002-cartesian-product-for-collections.md)
+* [F# RFC FS-1002 Cartesian product function for collections](https://github.com/fsharp/FSharpLangDesign/blob/master/RFCs/FS-1002-cartesian-product-for-collections.md)
 * [F# RFC FS-1009 - Allow mutually referential types and modules over larger scopes](https://github.com/fsharp/FSharpLangDesign/blob/master/RFCs/FS-1009-mutually-referential-types-and-modules-single-scope.md)
 * [F# RFC FS-1010 - Add Map.count](https://github.com/fsharp/FSharpLangDesign/blob/master/RFCs/FS-1010-add-map-count.md)
 * [F# RFC FS-1013 - Enable FSharp.Reflection functionality in PCLS](https://github.com/fsharp/FSharpLangDesign/blob/master/RFCs/FS-1013-enable-reflection-functionality-on-portable-profiles.md)
