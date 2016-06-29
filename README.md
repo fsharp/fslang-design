@@ -31,12 +31,12 @@ Nearing-Completion RFCs
 
 * [F# RFC FS-1006 - Struct Tuples and Interop with C# 7.0 Tuples](https://github.com/fsharp/FSharpLangDesign/blob/master/RFCs/FS-1006-struct-tuples.md)
 * [F# RFC FS-1017 - Allow all inferrable SRTP constraints to be written](https://github.com/fsharp/FSharpLangDesign/blob/master/RFCs/FS-1017-fix-srtp-constraint-parsing.md)
+* [F# RFC FS-1004 - Result type](https://github.com/fsharp/FSharpLangDesign/blob/master/RFCs/FS-1004-result-type.md)
 
 Open RFCs
 
 * [F# RFC FS-1001 - String interpolation](https://github.com/fsharp/FSharpLangDesign/blob/master/RFCs/FS-1001-StringInterpolation.md)
 * [F# RFC FS-1003 - Add nameof Operator](https://github.com/fsharp/FSharpLangDesign/blob/master/RFCs/FS-1003-nameof-operator.md)
-* [F# RFC FS-1004 - Result type](https://github.com/fsharp/FSharpLangDesign/blob/master/RFCs/FS-1004-result-type.md)
 * [F# RFC FS-1007 - Additional Option module functions](https://github.com/fsharp/FSharpLangDesign/blob/master/RFCs/FS-1007-additional-Option-module-functions.md)
 * [F# RFC FS-1011 - Warn when recursive function is not tail-recursive](https://github.com/fsharp/FSharpLangDesign/blob/master/RFCs/FS-1011-warn-on-recursive-without-tail-call.md)
 
