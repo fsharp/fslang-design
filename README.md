@@ -23,13 +23,14 @@ Completed RFCs
 * [F# RFC FS-1010 - Add Map.count](https://github.com/fsharp/FSharpLangDesign/blob/master/RFCs/FS-1010-add-map-count.md)
 * [F# RFC FS-1013 - Enable FSharp.Reflection functionality in PCLS](https://github.com/fsharp/FSharpLangDesign/blob/master/RFCs/FS-1013-enable-reflection-functionality-on-portable-profiles.md)
 * [F# RFC FS-1016 - Revise reserved keyword list](https://github.com/fsharp/FSharpLangDesign/blob/master/RFCs/FS-1016-unreserve-keywords.md)
+* [F# RFC FS-1012 - Support for caller info argument attributes (CallerLineNumber, CallerFileName, CallerMemberName)](https://github.com/fsharp/FSharpLangDesign/blob/master/RFCs/FS-1012-caller-info-attributes.md)
+* [F# RFC FS-1014 - Single case struct unions](https://github.com/fsharp/FSharpLangDesign/blob/master/RFCs/FS-1014-struct-unions-single-case.md)
+* [F# RFC FS-1015 - Support for "fixed"](https://github.com/fsharp/FSharpLangDesign/blob/master/RFCs/FS-1015-support-for-fixed.md)
 
 Nearing-Completion RFCs
 
 * [F# RFC FS-1006 - Struct Tuples and Interop with C# 7.0 Tuples](https://github.com/fsharp/FSharpLangDesign/blob/master/RFCs/FS-1006-struct-tuples.md)
-* [F# RFC FS-1012 - Support for caller info argument attributes (CallerLineNumber, CallerFileName, CallerMemberName)](https://github.com/fsharp/FSharpLangDesign/blob/master/RFCs/FS-1012-caller-info-attributes.md)
-* [F# RFC FS-1014 - Single case struct unions](https://github.com/fsharp/FSharpLangDesign/blob/master/RFCs/FS-1014-struct-unions-single-case.md)
-* [F# RFC FS-1015 - Support for "fixed"](https://github.com/fsharp/FSharpLangDesign/blob/master/RFCs/FS-1015-support-for-fixed.md)
+* [F# RFC FS-1017 - Allow all inferrable SRTP constraints to be written](https://github.com/fsharp/FSharpLangDesign/blob/master/RFCs/FS-1017-fix-srtp-constraint-parsing.md)
 
 Open RFCs
 
