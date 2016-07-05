@@ -21,8 +21,8 @@ This is a bug fix, but being documented as an RFC entry for reference.
 [This issue](https://github.com/Microsoft/visualfsharp/issues/1296) was the original report of code that no longer compiles.
 
 Consider this example using C#-style extension members:
-```fsharp
 
+```fsharp
 open System.Text
 open System.Runtime.CompilerServices
 open System.Runtime.InteropServices
@@ -31,9 +31,11 @@ open System.Runtime.InteropServices
 type StringBuilder with 
     member x.Append (y:StringBuilder) = x.Append(y)
 ```
+
 In F# 4.0, the above pathological code compiled and the ``x.Append(y)`` call resolved to ``StringBuilder::Append(object)``.  The inferred return type of the extension method is ``StringBuilder``.
 
 In contrast, consider the following code using F#-style extension members:
+
 ```fsharp
 [<Sealed>]
 
@@ -45,14 +47,14 @@ In F# 4.0, the above pathological code compiled and the ``x.Append(y)`` call res
 In F# 4.1, the first case is adjusted to have the same behaviour as the second casse.
 
 Here is the original example:
-```
+```fsharp
 open System.Text
 open System.Runtime.CompilerServices
 open System.Runtime.InteropServices
 
 [<Extension; Sealed>]
 type T = 
-    [<Extension>]static member Append (x:StringBuilder, y:StringBuilder) = StringBuilder().Append(x).Append(y)
+    [<Extension>] static member Append (x:StringBuilder, y:StringBuilder) = StringBuilder().Append(x).Append(y)
 ```
 
 Basically, the question is whether C#-style extension members are in scope within their own implementations. Clearly they should be.
