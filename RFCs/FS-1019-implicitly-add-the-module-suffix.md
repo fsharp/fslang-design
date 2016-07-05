@@ -10,21 +10,19 @@ This RFC covers the detailed proposal for this suggestion.
 # Summary
 [summary]: #summary
 
-The ``[<CompilationRepresentation(CompilationRepresentationFlags.ModuleSuffix )>]`` attribute is so commonly used on top of modules. But it is verbose and tedious. 
+The ``[<CompilationRepresentation(CompilationRepresentationFlags.ModuleSuffix)>]`` attribute is so commonly used on top of modules. But it is verbose and tedious. 
 
 This RFC proposes that the ``Module`` suffix be added implicitly if a type and a module have the same name within the same namespace declaration group.
 
 For example, for the code below the compiled name of ``module A`` will be ``AModule``, just as if the attribute had been used.
 
+```fsharp
+type A() = 
+    member x.P = 1
+
+module A =
+    let create() = 1
 ```
-    type A() = 
-        member x.P = 1
-
-
-    module A =
-        let create() = 1
-```
-
 
 # Motivation
 [motivation]: #motivation
