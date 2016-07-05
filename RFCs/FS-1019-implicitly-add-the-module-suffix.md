@@ -4,9 +4,8 @@ The design suggestion [Implicitly add the Module suffix if a type is being defin
 This RFC covers the detailed proposal for this suggestion.
 
 * [x] Approved in principle
-* [ ] Details: [under discussion](https://github.com/fsharp/FSharpLangDesign/issues/FILL-ME-IN)
+* [x] Details: [under discussion](https://github.com/fsharp/FSharpLangDesign/issues/108)
 * [x] Implementation: [Ready](https://github.com/Microsoft/visualfsharp/pull/1319)
-
 
 # Summary
 [summary]: #summary
