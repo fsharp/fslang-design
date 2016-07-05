@@ -5,7 +5,7 @@ This RFC tracks a fix which in certain circumstances can adjust the behaviour of
 # Summary
 [summary]: #summary
 
-In F# 4.0 and before, certain extension methods were not in scope within their own implementation.
+In F# 4.0 and before, C#-style extension methods were not in scope within their own implementation.
 
 In F# 4.1, these extension methods are now considered in scope. In very rare circumstances, this can change
 the behaviour of existing F# code.
