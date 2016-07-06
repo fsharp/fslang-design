@@ -32,7 +32,7 @@ Why are we doing this? What use cases does it support? What is the expected outc
 # Detailed design
 [design]: #detailed-design
 
-If a module is defined in a declaration group (i.e. namespace declaration group, or the group of declarations making up a module) containing a non-augmentation type definition of the same name, then the the compiled name of the module is implicitly suffixed by ``Module`` as if the  ``[<CompilationRepresentation(CompilationRepresentationFlags.ModuleSuffix )>]`` had been used.
+If a module is defined in a declaration group (i.e. namespace declaration group, or the group of declarations making up a module) containing a non-augmentation type definition of the same name, then the compiled name of the module is implicitly suffixed by ``Module`` as if the ``[<CompilationRepresentation(CompilationRepresentationFlags.ModuleSuffix )>]`` had been used.
 
 This applies whether the module is an abbreviation,  or with or  without generic parameters.
 
@@ -42,7 +42,7 @@ The use of the explicit attribute is not deprecated, since it can still be usefu
 # Drawbacks
 [drawbacks]: #drawbacks
 
-The main drawback of doing this is that the compileed form of ``module X`` becomes a little more subtle, since you have to check if a type is being defined with the same name.  Hwoever this is a very minor problem.
+The main drawback of doing this is that the compiled form of ``module X`` becomes a little more subtle, since you have to check if a type is being defined with the same name.  However this is a very minor problem.
 
 # Alternatives
 [alternatives]: #alternatives
