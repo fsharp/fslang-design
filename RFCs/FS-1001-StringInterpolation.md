@@ -3,16 +3,10 @@
 
 There is an approved-in-principle [proposal](http://fslang.uservoice.com/forums/245727-f-language/suggestions/6002107-steal-nice-println-syntax-from-swift) to extend the existing printf functionality in the F# language design with [string interpolation][2]. To discuss this design please us [design discussion thread][7].
 
-  * [x] Approved in principle 
-  * [ ] Details: [under discussion](https://github.com/fsharp/FSharpLangDesign/issues/6)
-  * [ ] Implementation: Proof of concept submitted
+  * [ ] Discussion: [under discussion](https://github.com/fsharp/FSharpLangDesign/issues/6)
+  * [ ] Implementation: [Proof of concept submitted](https://github.com/Microsoft/visualfsharp/pull/921)
 
-### Introduction
-
-* [C# string interpolation docs](https://msdn.microsoft.com/en-us/library/dn961160.aspx)
-* [Swift string interpolation](https://developer.apple.com/library/ios/documentation/Swift/Conceptual/Swift_Programming_Language/StringsAndCharacters.html)
-
-### Proposal
+### Summary
 
 Proposed syntax:
 
@@ -20,7 +14,19 @@ Proposed syntax:
 "%(**embedded expression**)"
 ```
 
-Initial implementation prototype has been [submitted][3]. Prototype accepts arbitrary F# expression as **embedded expression**. 
+### Links
+
+* [C# string interpolation docs](https://msdn.microsoft.com/en-us/library/dn961160.aspx)
+* [Swift string interpolation](https://developer.apple.com/library/ios/documentation/Swift/Conceptual/Swift_Programming_Language/StringsAndCharacters.html)
+
+### Motivation
+
+TBD
+
+### Detailed Design
+
+
+The linked prototype accepts arbitrary F# expression as **embedded expression**. 
 In prototype source string literal is split into chunks containing text and embedded expressions. Then chunks are joined using [String.Concat][4].
 
 Initial string literal:
@@ -41,6 +47,14 @@ Final result
 String.Concat([| "%d"; box foo; "%d"; box (bar.baz) |])
 ```
 
+### Drawbacks
+
+TBD
+
+### Alternatives
+
+TBD
+
 ### Open questions:
 
 * Is general idea of implementing this feature entirely on semantic level is acceptable?
@@ -56,7 +70,6 @@ Should we always prefer one way of printing things (and if yes - which one) or p
 TBD
 
 [2]:http://en.wikipedia.org/wiki/String_interpolation
-[3]:https://github.com/Microsoft/visualfsharp/pull/921
 [4]:http://msdn.microsoft.com/en-us/library/system.string.concat(v=vs.110).aspx
 [5]:http://msdn.microsoft.com/en-us/library/system.object.tostring(v=vs.110).aspx
 [6]:http://msdn.microsoft.com/en-us/library/ee370560.aspx
