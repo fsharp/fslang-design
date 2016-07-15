@@ -31,7 +31,7 @@ let ys = [y1 .. yM]
 cross xs ys =
     [x1, y1; x1, y.; x1, yM;
      x., y1; x., y.; x., yM;
-     xN, yM; xN, y.; xN, yM]
+     xN, y1; xN, y.; xN, yM]
 ```
 
 ### Naming 
