@@ -4,7 +4,8 @@ The design suggestion [FILL ME IN](https://fslang.uservoice.com/forums/245727-f-
 This RFC covers the detailed proposal for this suggestion.
 
 * [ ] Approved in principle
-* [x] [User Voice Request](https://fslang.uservoice.com/not-applicable)
+* [X] The result of a discussion ;-)
+* [ ] [User Voice Request](https://fslang.uservoice.com/no-user-voice-request-created)
 * [ ] Details: [under discussion](https://github.com/fsharp/FSharpLangDesign/issues/FILL-ME-IN)
 * [ ] Implementation: [In progress](https://github.com/Microsoft/visualfsharp/pull/FILL-ME-IN)
 
@@ -23,7 +24,7 @@ Further, unit tests could be devised to grade different releases of the F# Compi
 
 New F# users eventually get past teething issues and find out how to disambiguate, and so on. However, once a habit is formed, we lose the opportunity to sand off rough edges in the code authoring process. New users should be encouraged to speak up about things that don't make sense. It's possible they just don't make sense.
 
-Additionally, advanced users from other functional languages may expect that certain constructs should work out of the box. Perhaps they should. Perhaps they shouldn't given a slightly different philosophy. Either way, let's try to capture these too.
+Additionally, advanced users from other functional languages may expect that certain constructs should work out of the box. Perhaps they should. Perhaps they shouldn't give a slightly different philosophy. Either way, let's try to capture these too.
 
 The last category of things this database might cover is inconsistencies in the language which may not be apparent on the surface.
 
