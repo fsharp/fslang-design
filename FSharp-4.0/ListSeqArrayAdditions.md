@@ -40,7 +40,7 @@ Function | Comment | List | Array | Seq | PR | Status
 `compareWith` |   | ADD | ADD | o | PR | [committed](https://github.com/Microsoft/visualfsharp/commit/befea5b6c8182ba054831a6155a101df97e70c27)
 `concat` |   | o | o | o | --- | n/a
 `countBy` |   | ADD | ADD | o | PR | [committed](https://github.com/Microsoft/visualfsharp/commit/321dcde0fd686491d07d03f96d770d07a57f40cf)
-`distinct` |   | ADD | ADD | o | PR | [committed](https://github.com/Microsoft/visualfsharp/commit/bd6ac78c1378d5f565b86691f1e54f99e7339b4b)
+`distinct` |   | ADD | ADD | o | PR | [committed](https://github.com/Microsoft/visualfsharp/commit/bebe9a2faecdaa340d4740b3ae639b506d0e2fef)
 `distinctBy` |   | ADD | ADD | o | PR | [committed](https://github.com/Microsoft/visualfsharp/commit/bd6ac78c1378d5f565b86691f1e54f99e7339b4b)
 `splitInto` |   | ADD | ADD | ADD | [PR](https://github.com/Microsoft/visualfsharp/pull/261) | [committed](https://github.com/Microsoft/visualfsharp/commit/a1a27a4d8884f093700ffd4f2843b7622a950199)
 `empty` |   | o | o | o | --- | n/a
