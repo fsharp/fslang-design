@@ -3,7 +3,7 @@
 The design suggestion [Support byref returns to match C# 7](https://fslang.uservoice.com/forums/245727-f-language/suggestions/11125137-expand-support-for-byref-to-match-c-7) has been marked "approved".
 This RFC covers the detailed proposal for this suggestion.
 
-* [ ] Details: [under discussion](https://github.com/fsharp/FSharpLangDesign/issues/FILL-ME-IN)
+* [ ] Details: [under discussion](https://github.com/fsharp/FSharpLangDesign/issues/115)
 * [ ] Implementation: [In progress](https://github.com/Microsoft/visualfsharp/pull/1367)
 
 
