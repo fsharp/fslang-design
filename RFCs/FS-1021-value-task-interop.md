@@ -3,26 +3,31 @@
 There is no UserVoice feature for this RFC.  This was created after a short discussion with [dsyme](github.com/dsyme) about and upcoming feature in Roslyn.
 
 * [x] Approved in principle
-* [ ] [User Voice Request](https://fslang.uservoice.com/FILL-ME-IN)
-* [ ] Details: [under discussion](https://github.com/fsharp/FSharpLangDesign/issues/FILL-ME-IN)
-* [ ] Implementation: [In progress](https://github.com/Microsoft/visualfsharp/pull/FILL-ME-IN)
+* [ ] Details: [under discussion](https://github.com/fsharp/FSharpLangDesign/issues/118)
+* [ ] Implementation: TBD
 
 
 # Summary
 [summary]: #summary
 
-A big feature has been added to Roslyn to support [Task-like returns for async methods](https://github.com/dotnet/roslyn/pull/12518).  This no longer ties async code in C# or VB to the `Task` and `Task<T>` objects.  This brings a number of benefits, namely the ability to write async methods which return `ValueTask<T>` which can provide significant performance benefits in some scenarios.
+A feature has been added to Roslyn to support [Task-like returns for async methods](https://github.com/dotnet/roslyn/pull/12518).
+This no longer ties async code in C# or VB to the `Task` and `Task<T>` objects.  This brings a number of benefits, namely the
+ability to write async methods which return `ValueTask<T>` which can provide significant performance benefits in some scenarios.
 
-We should support interop with `ValueTask<T>` in the `Async` type to support consuming code which uses this feature via two functions: `Async.AwaitValueTask` and `Async.StartAsValueTask`.
+We should support interop with `ValueTask<T>` in the `Async` type to support consuming code which uses this feature via
+two functions: `Async.AwaitValueTask` and `Async.StartAsValueTask`.
 
-In the long term, we may wish to consider augmenting async programming so that we can support arbitrary Task-like returns rather than having to add new conversation functions in the Async type for each type.
+In the long term, we may wish to consider augmenting async programming so that we can support arbitrary Task-like returns
+rather than having to add new conversation functions in the Async type for each type.
 
-There is more information about Task-like returns for async methods available in the [Arbitrary Async Returns](https://github.com/ljw1004/roslyn/blob/features/async-return/docs/specs/feature%20-%20arbitrary%20async%20returns.md) document.
+There is more information about Task-like returns for async methods available in the
+[Arbitrary Async Returns](https://github.com/ljw1004/roslyn/blob/features/async-return/docs/specs/feature%20-%20arbitrary%20async%20returns.md) document.
 
 # Motivation
 [motivation]: #motivation
 
-When the Roslyn feature is shipped, we anticipate a lot of code getting updates to use `ValueTask<T>` for peformance benefits.  Adding the ability to await and start ValueTasks from an async workflow fills a hole in interop scenarios.
+When the Roslyn feature is shipped, we anticipate a lot of code getting updates to use `ValueTask<T>` for peformance
+benefits.  Adding the ability to await and start ValueTasks from an async workflow fills a hole in interop scenarios.
 
 # Detailed design
 [design]: #detailed-design
