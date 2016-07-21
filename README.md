@@ -26,12 +26,14 @@ Completed RFCs
 * [F# RFC FS-1012 - Support for caller info argument attributes (CallerLineNumber, CallerFileName, CallerMemberName)](https://github.com/fsharp/FSharpLangDesign/blob/master/RFCs/FS-1012-caller-info-attributes.md)
 * [F# RFC FS-1014 - Single case struct unions](https://github.com/fsharp/FSharpLangDesign/blob/master/RFCs/FS-1014-struct-unions-single-case.md)
 * [F# RFC FS-1015 - Support for "fixed"](https://github.com/fsharp/FSharpLangDesign/blob/master/RFCs/FS-1015-support-for-fixed.md)
+* [F# RFC FS-1017 - Allow all inferrable SRTP constraints to be written](https://github.com/fsharp/FSharpLangDesign/blob/master/RFCs/FS-1017-fix-srtp-constraint-parsing.md)
+* [F# RFC FS-1018 - Adjust extension method scope](https://github.com/fsharp/FSharpLangDesign/blob/master/RFCs/FS-1018-adjust-extensions-method-scope.md)
+* [F# RFC FS-1019 - Implicitly add the Module suffix if a type is being defined with the same name as a module](https://github.com/fsharp/FSharpLangDesign/blob/master/RFCs/FS-1019-implicitly-add-the-module-suffix.md)
 
 Nearing-Completion RFCs
 
 * [F# RFC FS-1006 - Struct Tuples and Interop with C# 7.0 Tuples](https://github.com/fsharp/FSharpLangDesign/blob/master/RFCs/FS-1006-struct-tuples.md)
-* [F# RFC FS-1017 - Allow all inferrable SRTP constraints to be written](https://github.com/fsharp/FSharpLangDesign/blob/master/RFCs/FS-1017-fix-srtp-constraint-parsing.md)
-* [F# RFC FS-1004 - Result type](https://github.com/fsharp/FSharpLangDesign/blob/master/RFCs/FS-1004-result-type.md)
+* [F# RFC FS-1020 - Support byref returns](https://github.com/fsharp/FSharpLangDesign/blob/master/RFCs/FS-1020-byref-returns.md)
 
 Open RFCs
 
