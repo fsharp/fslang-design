@@ -10,9 +10,9 @@ This RFC covers the detailed proposal for this suggestion.
 # Summary
 [summary]: #summary
 
-C# is adding support for byref locals and returns (see https://github.com/dotnet/roslyn/issues/118, slated for milestone 1.3). This will result in many libraries that expose these features (which the CLR already supports), but methods with such return types aren't currently usable from F#. F# already supports byref locals, but doesn't support implementing byref-returning methods nor does it support calling byref-returning methods.
+C# is adding support for byref locals and returns (see https://github.com/dotnet/roslyn/issues/118, slated for milestone C# 7.0). This will result in libraries that expose these features (which the CLR already supports), but methods with such return types aren't currently usable from F#. F# already supports byref locals, but doesn't support implementing byref-returning methods nor does it support calling byref-returning methods.
 
-At a minimum, F# should support calling byref-returning-methods (e.g. SomeRefReturningMethod(x,y,z) <- w), since C# users will be creating methods like these.
+At a minimum, F# should support calling byref-returning-methods (e.g. let x = SomeRefReturningMethod(x,y,z)), since C# users will be creating methods like these.
 
 It would be nice if on top of that base level of support F# also supported declaring such methods, using the same safety rules that C# is using (e.g. the only refs that are safe to return are those that point to values stored on the heap or existing refs that are passed into the method).
 
