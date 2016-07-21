@@ -4,7 +4,7 @@ The design suggestion [Support byref returns to match C# 7](https://fslang.userv
 This RFC covers the detailed proposal for this suggestion.
 
 * [ ] Details: [under discussion](https://github.com/fsharp/FSharpLangDesign/issues/FILL-ME-IN)
-* [ ] Implementation: [In progress](https://github.com/Microsoft/visualfsharp/pull/FILL-ME-IN)
+* [ ] Implementation: [In progress](https://github.com/Microsoft/visualfsharp/pull/1367)
 
 
 # Summary
