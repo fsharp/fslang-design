@@ -55,7 +55,7 @@ Function | Comment | List | Array | Seq | PR | Status
 `findIndexBack` | new | ADD | ADD | ADD | PR | [committed](https://github.com/Microsoft/visualfsharp/commit/4b52be7812360e6f562238d3c0e06576513dbeb9)
 `fold` |   | o | o | o | --- | n/a
 `fold2` |   | o | o | ADD | PR | [committed](https://github.com/Microsoft/visualfsharp/commit/15f04de4e08ec8484938b3a853063cd0ab04e9fc)
-`foldBack` |   | o | o | ADD | PR | [committed](https://github.com/Microsoft/visualfsharp/commit/91c644d26c6a82e8d10d93f345be891738070c8c)
+`foldBack` |   | o | o | ADD | PR | [committed](https://github.com/Microsoft/visualfsharp/commit/366777f04cb9a4387934911ea2e459a65a09ef53)
 `foldBack2` |   | o | o | ADD | PR | [committed](https://github.com/Microsoft/visualfsharp/commit/91c644d26c6a82e8d10d93f345be891738070c8c)
 `forall` |   | o | o | o | --- | n/a
 `forall2` |   | o | o | o | --- | n/a
