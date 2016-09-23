@@ -72,6 +72,11 @@ This constructor currently also takes an optional default value; it's unclear wh
 
 From there on, type provider should be able to proceed as usual, having access to the standard methods on Type to guide the generated types. There are unresolved questions on what kind of access the type provider has to the `Type` object - there will likely be various constraints. See unresolved questions.
 
+# Implementation Notes
+
+The implementation of the FSharp.Compiler.Service "Symbols" API (Symbols.fs) contains much of the logic needed for this work.
+
+
 # Drawbacks
 [drawbacks]: #drawbacks
 
@@ -102,3 +107,7 @@ To a certain extent, these downsides are already present in the current type pro
 * Can type arguments be optional?
 * Is an instance of `Type` an appropriate choice for passing into the type provider implementation?
 * Which subset of functionality on the passed in `Type` instances can the type provider access? For example, can it access only structure (members and signature) or also implementation? Can it traverse the class hierarchy?
+I would add 
+* F# type definitions are ``realized`` in several phases, as described in the F# spec.  For example, the "kind" of the type is first established, then the method symbols, then the method signatures, then the method implementations.  Is this process visible via the (changing?) results of the ``Type`` object?  This is mostly problematic when provided types are in a mutually-referential cycle with normal (non-provided) type definitions, and the normal types are passed as static parameters to the provided types.  However it may also be problematic when a normal (non-provided) type definition has members whose type signatures are incomplete from the type inference process (i.e. contain as-yet-un-inferred type variables).
+
+
