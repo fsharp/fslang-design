@@ -74,7 +74,7 @@ From there on, type provider should be able to proceed as usual, having access t
 
 # Implementation Notes
 
-The implementation of the FSharp.Compiler.Service "Symbols" API (Symbols.fs) contains much of the logic needed for this work.
+The implementation of the FSharp.Compiler.Service "Symbols" API in [Symbols.fs](https://github.com/fsharp/FSharp.Compiler.Service/blob/master/src/fsharp/vs/Symbols.fs) contains much of the logic needed for this work.
 
 
 # Drawbacks
