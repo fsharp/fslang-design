@@ -65,7 +65,7 @@ To allow implementations of type providers with this new feature, some of the AP
 In particular, it must be possible to take in a static parameter of type `Type` in addition to the existing primitive types (`sbyte, int16, int32, int64, byte, uint16, uint32, uint64, bool, char, string, single, double`):
 
 ```fsharp
-ProvidedStaticParameter(parameterName="name", parameterType:typeof<Type>)
+ProvidedStaticParameter(parameterName="name", parameterType=typeof<Type>)
 ```
 
 This constructor currently also takes an optional default value; it's unclear whether this should be allowed for `Type` arguments. In addition, perhaps it should be possible for the type provider to impose some constraints on the possible types that can be passed in (similar to generic type constraints). See unresolved questions.
