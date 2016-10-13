@@ -279,7 +279,7 @@ let f2 (struct (x,y)) = x + y
 is
 
 ```
-.method public static int32  f1(valuetype [FSharp.Core]System.StructTuple`2<int32,int32> s) cil managed
+.method public static int32  f2(valuetype [FSharp.Core]System.StructTuple`2<int32,int32> s) cil managed
 {
   // Code size       16 (0x10)
   .maxstack  8
@@ -289,7 +289,7 @@ is
   IL_0009:  call       instance !1 valuetype [FSharp.Core]System.StructTuple`2<int32,int32>::get_Item2()
   IL_000e:  add
   IL_000f:  ret
-} // end of method A::f1
+} // end of method A::f2
 
 ```
 
