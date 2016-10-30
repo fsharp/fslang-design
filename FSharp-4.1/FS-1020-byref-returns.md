@@ -4,7 +4,7 @@ The design suggestion [Support byref returns to match C# 7](https://fslang.userv
 This RFC covers the detailed proposal for this suggestion.
 
 * [ ] Details: [under discussion](https://github.com/fsharp/FSharpLangDesign/issues/115)
-* [ ] Implementation: [In progress](https://github.com/Microsoft/visualfsharp/pull/1367)
+* [ ] Implementation: [Completed](https://github.com/Microsoft/visualfsharp/pull/1367)
 
 
 # Summary
@@ -12,7 +12,40 @@ This RFC covers the detailed proposal for this suggestion.
 
 C# is adding support for byref locals and returns (see https://github.com/dotnet/roslyn/issues/118, slated for milestone C# 7.0). This will result in libraries that expose these features (which the CLR already supports), but methods with such return types aren't currently usable from F#. F# already supports byref locals, but doesn't support implementing byref-returning methods nor does it support calling byref-returning methods.
 
-At a minimum, F# should support calling byref-returning-methods (e.g. let x = SomeRefReturningMethod(x,y,z)), since C# users will be creating methods like these.
+At a minimum, F# should support calling byref-returning-methods (e.g. let x = SomeRefReturningMethod(x,y,z)), since C# users will be creating methods like these.  Example:
+
+The following C# function:
+
+```cs
+namespace RefReturns
+{
+    public static class RefClass
+    {
+        public static ref int Find(int val, int[] vals)
+        {
+            for (int i = 0; i < vals.Length; i++)
+            {
+                if (vals[i] == val)
+                {
+                    return ref numbers[i]; // Returns the location, not the value
+                }
+            }
+
+            throw new IndexOutOfRangeException($"{nameof(number)} not found");
+        }
+    }
+}
+```
+
+Can be consumed in F# directly:
+
+```fsharp
+open RefReturns
+
+let consumeRefReturn() =
+    let result = RefClass.Find(3, [| 1; 2; 3; 4; 5 |]) // 'result' is of type 'byref<int>'.
+    ()
+```
 
 It would be nice if on top of that base level of support F# also supported declaring such methods, using the same safety rules that C# is using (e.g. the only refs that are safe to return are those that point to values stored on the heap or existing refs that are passed into the method).
 
