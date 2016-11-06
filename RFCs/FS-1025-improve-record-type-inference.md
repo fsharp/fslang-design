@@ -1,10 +1,10 @@
 # F# RFC FS-1025 - Improve record type inference
 
-The design suggestion [FILL ME IN](https://fslang.uservoice.com/forums/245727-f-language/suggestions/7138324-record-type-inference-suggestion) has been marked "approved in principle".
+The design suggestion [Improve record type inference](https://github.com/fsharp/fslang-suggestions/issues/415) has been marked "approved in principle".
 This RFC covers the detailed proposal for this suggestion.
 
 * [x] Approved in principle
-* [x] [User Voice Request](https://fslang.uservoice.com/forums/245727-f-language/suggestions/7138324-record-type-inference-suggestion)
+* [x] [User Voice Request](https://github.com/fsharp/fslang-suggestions/issues/415)
 * [ ] Details: To be discussed.
 * [ ] Implementation: Not started.
 
