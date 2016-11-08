@@ -1,11 +1,11 @@
-# F# RFC FS-1014 - Struct unions (single case)
+# F# RFC FS-1014 - Struct Discriminated Unions
 
 The design suggestion [Allow single case unions to be compiled as structs](https://fslang.uservoice.com/forums/245727-f-language/suggestions/6147144-allow-single-case-unions-to-be-compiled-as-structs) has been marked "approved in principle".
 This RFC covers the detailed proposal for this suggestion.
 
 * [x] [User Voice Request](https://fslang.uservoice.com/forums/245727-f-language/suggestions/6147144-allow-single-case-unions-to-be-compiled-as-structs)
 * [x] Details: [under discussion](https://github.com/fsharp/FSharpLangDesign/issues/95)
-* [x] Implementation: [Nearing completion](https://github.com/Microsoft/visualfsharp/pull/1262)
+* [x] Implementation: [Completed for Single-case](https://github.com/Microsoft/visualfsharp/pull/1262) and for [Multi-case](https://github.com/Microsoft/visualfsharp/pull/1399)
 
 
 # Summary
@@ -13,7 +13,7 @@ This RFC covers the detailed proposal for this suggestion.
 
 See [struct records](https://github.com/fsharp/FSharpLangDesign/blob/master/RFCs/FS-1008-struct-records.md):
 
-Like record types, single case union types should be able to be marked as a struct,
+Like record types, Discriminated Union types should be able to be marked as a struct,
 effectively making the union type have the semantics of value types.
 
 
@@ -29,27 +29,34 @@ Enable better performance in some situations via a simple attribute addition.
 How to use:
 
 ```fsharp
+// Single case:
+
 [<Struct>]
 type UnionExample = U of int * int * bool
+
+// Multi-case:
+
+[<Struct>]
+type Shape =
+    | Circle of radius: double
+    | Square of side: int
 ```
 
 Key differences in struct records:
 
-* You cannot have cyclic references to the same type being defined. ex: type T = U of T
+* You cannot have cyclic references to the same type being defined. ex: `type T = U of T`
 
 * You also cannot call the default ctor, like you could with normal F# structs.
 
+* For multi-case struct unions, each case must have a unique name.
 
 ## Feature interaction - Generated IComparable, GetHashCode, Equals
 
 The code generation for these generated interface/overrides must be carefully adjusted.
 
-
 ## Feature interaction - Reflection
 
-FSharp.Reflection.FSharpType and FSharp.Reflection.FSharpValue implementations must work correctly
-on struct union types.  
-
+`FSharp.Reflection.FSharpType` and `FSharp.Reflection.FSharpValue` implementations must work correctly on struct union types.  
 
 ## Performance Considerations and Code Quality 
 
@@ -94,7 +101,6 @@ a very considerable amount of optimization work needs to happen to make this cop
 the ``x, y`` is a tuple of structs.  In the naive debug code-quality form a new tuple gets 
 allocated.  
 
-
 In the implementation, the F# compiler generally does an OK-ish job of avoiding copying 
 of structs - an address is often generated to an existing copy of an immutable struct.
 
@@ -128,7 +134,6 @@ let f1 (x : U byref ) = x->item1 + x->item2
 and this code is relatively easy to get for the equivalent code for a struct-record.  For struct-unions, the 
 only way to decompose the union is through pattern matching, and the semantics of pattern matching 
 is "build the input to the match then decompose it".
-
 
 # Drawbacks
 [drawbacks]: #drawbacks
