@@ -5,8 +5,8 @@ This RFC covers the detailed proposal for this suggestion.
 
 * [x] Approved in principle
 * [x] [User Voice Request](https://fslang.uservoice.com/forums/245727-f-language/suggestions/7574961-override-tostring-for-discriminated-unions-and-r)
-* [ ] Details: [under discussion](https://github.com/fsharp/FSharpLangDesign/issues/123)
-* [ ] Implementation
+* [x] Details: [under discussion](https://github.com/fsharp/FSharpLangDesign/issues/123)
+* [x] Implementation: [in progress](https://github.com/Microsoft/visualfsharp/pull/1589)
 
 # Summary
 [summary]: #summary
