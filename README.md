@@ -1,5 +1,4 @@
-F# Language Design RFCs 
-=================
+# F# Language Design RFCs 
 
 RFCs and docs related to the F# language design process. The Process:
 
@@ -14,33 +13,22 @@ RFCs and docs related to the F# language design process. The Process:
 
 3. Implementations and testing are usually submitted to the [visualfsharp](https://github.com/Microsoft/visualfsharp) repository and then integrated to [fsharp](https://github.com/fsharp/fsharp) and  [FSharp.Compiler.Service](https://github.com/fsharp/FSharp.Compiler.Service)
 
-Completed RFCs
+All in-progress RFCs, listed in the [RFC folder](https://github.com/fsharp/fslang-design/blob/master/RFCs), are part of a future version of F#.
 
-* [F# RFC FS-1005 - Underscore Literals](https://github.com/fsharp/fslang-design/blob/master/RFCs/FS-1005-underscores-in-numeric-literals.md)
-* [F# RFC FS-1008 - Struct Records](https://github.com/fsharp/fslang-design/blob/master/RFCs/FS-1008-struct-records.md)
-* [F# RFC FS-1002 - Cartesian product function for collections](https://github.com/fsharp/fslang-design/blob/master/RFCs/FS-1002-cartesian-product-for-collections.md)
-* [F# RFC FS-1009 - Allow mutually referential types and modules over larger scopes](https://github.com/fsharp/fslang-design/blob/master/RFCs/FS-1009-mutually-referential-types-and-modules-single-scope.md)
-* [F# RFC FS-1010 - Add Map.count](https://github.com/fsharp/fslang-design/blob/master/RFCs/FS-1010-add-map-count.md)
-* [F# RFC FS-1013 - Enable FSharp.Reflection functionality in PCLS](https://github.com/fsharp/fslang-design/blob/master/RFCs/FS-1013-enable-reflection-functionality-on-portable-profiles.md)
-* [F# RFC FS-1016 - Revise reserved keyword list](https://github.com/fsharp/fslang-design/blob/master/RFCs/FS-1016-unreserve-keywords.md)
-* [F# RFC FS-1012 - Support for caller info argument attributes (CallerLineNumber, CallerFileName, CallerMemberName)](https://github.com/fsharp/fslang-design/blob/master/RFCs/FS-1012-caller-info-attributes.md)
-* [F# RFC FS-1014 - Single case struct unions](https://github.com/fsharp/fslang-design/blob/master/RFCs/FS-1014-struct-unions-single-case.md)
-* [F# RFC FS-1015 - Support for "fixed"](https://github.com/fsharp/fslang-design/blob/master/RFCs/FS-1015-support-for-fixed.md)
-* [F# RFC FS-1017 - Allow all inferrable SRTP constraints to be written](https://github.com/fsharp/fslang-design/blob/master/RFCs/FS-1017-fix-srtp-constraint-parsing.md)
-* [F# RFC FS-1018 - Adjust extension method scope](https://github.com/fsharp/fslang-design/blob/master/RFCs/FS-1018-adjust-extensions-method-scope.md)
-* [F# RFC FS-1019 - Implicitly add the Module suffix if a type is being defined with the same name as a module](https://github.com/fsharp/fslang-design/blob/master/RFCs/FS-1019-implicitly-add-the-module-suffix.md)
+When RFCs are implemented and a version of F# is revved, the RFCs which correspond to the F# version they were implemented in are archived under the appropriate folder.
 
-Nearing-Completion RFCs
+For RFCs that were implemented in F# 4.0, see the [F# 4.0 RFCs](https://github.com/fsharp/fslang-design/blob/master/FSharp-4.0)
 
-* [F# RFC FS-1006 - Struct Tuples and Interop with C# 7.0 Tuples](https://github.com/fsharp/fslang-design/blob/master/RFCs/FS-1006-struct-tuples.md)
-* [F# RFC FS-1020 - Support byref returns](https://github.com/fsharp/fslang-design/blob/master/RFCs/FS-1020-byref-returns.md)
+For RFCs that were implemented in F# 4.1, see the [F# 4.1 RFCs](https://github.com/fsharp/fslang-design/blob/master/FSharp-4.1
 
-Open RFCs
+
+## Open RFCs
 
 * [F# RFC FS-1001 - String interpolation](https://github.com/fsharp/fslang-design/blob/master/RFCs/FS-1001-StringInterpolation.md)
 * [F# RFC FS-1003 - Add nameof Operator](https://github.com/fsharp/fslang-design/blob/master/RFCs/FS-1003-nameof-operator.md)
 * [F# RFC FS-1007 - Additional Option module functions](https://github.com/fsharp/fslang-design/blob/master/RFCs/FS-1007-additional-Option-module-functions.md)
 * [F# RFC FS-1011 - Warn when recursive function is not tail-recursive](https://github.com/fsharp/fslang-design/blob/master/RFCs/FS-1011-warn-on-recursive-without-tail-call.md)
+* [F# RFC FS-1018 - Adjust extension method scope](https://github.com/fsharp/fslang-design/blob/master/RFCs/FS-1018-adjust-extensions-method-scope.md)
 * [F# RFC FS-1022 - Override  ToString  for discriminated unions and records](https://github.com/fsharp/fslang-design/blob/master/RFCs/FS-1022-override-ToString-for-discriminated-unions-and-records.md)
 * [F# RFC FS-1023 - Allow type providers to generate types from types](https://github.com/fsharp/fslang-design/blob/master/RFCs/FS-1023-type-providers-generate-types-from-types.md)
 * [F# RFC FS-1024 - Simplify call syntax for statically resolved member constraints](https://github.com/fsharp/fslang-design/blob/master/RFCs/FS-1024-simplify-call-syntax-for-statically-resolved-member-constraints.md)
