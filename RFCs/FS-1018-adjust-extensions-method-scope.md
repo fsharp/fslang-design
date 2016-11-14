@@ -60,7 +60,7 @@ type T =
 Basically, the question is whether C#-style extension members are in scope within their own implementations. Clearly they should be.
 This is the behaviour now implemented in F# 4.1 and is correct according to the F# language specification.
 
-The fix was made as part of [F# RFC FS-1009 - Allow mutually referential types and modules over larger scopes within files](https://github.com/fsharp/FSharpLangDesign/blob/master/RFCs/FS-1009-mutually-referential-types-and-modules-single-scope.md).
+The fix was made as part of [F# RFC FS-1009 - Allow mutually referential types and modules over larger scopes within files](https://github.com/fsharp/FSharpLangDesign/blob/master/FSharp-4.1/FS-1009-mutually-referential-types-and-modules-single-scope.md).
 
 # Drawbacks
 [drawbacks]: #drawbacks
