@@ -1,10 +1,10 @@
 # F# RFC FS-NNNN - (Fill me in with a feature name)
 
-The design suggestion [FILL ME IN](https://fslang.uservoice.com/forums/245727-f-language/suggestions/fill-me-in) has been marked "approved in principle".
+The design suggestion [FILL ME IN](https://github.com/fsharp/fslang-suggestions/issues/fill-me-in) has been marked "approved in principle".
 This RFC covers the detailed proposal for this suggestion.
 
 * [x] Approved in principle
-* [ ] [User Voice Request](https://fslang.uservoice.com/FILL-ME-IN)
+* [ ] [Suggestion](https://github.com/fsharp/fslang-suggestions/issues/fill-me-in)
 * [ ] Details: [under discussion](https://github.com/fsharp/FSharpLangDesign/issues/FILL-ME-IN)
 * [ ] Implementation: [In progress](https://github.com/Microsoft/visualfsharp/pull/FILL-ME-IN)
 
