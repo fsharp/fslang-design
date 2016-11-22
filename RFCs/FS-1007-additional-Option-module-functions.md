@@ -13,42 +13,63 @@ This RFC covers the detailed proposal for this suggestion.
 
 Additional functions to `Option` module
 
-Proposed functions:
+### Proposed functions
 
-#### Default if `None`
+#### Functions that provide default values in case of `None`
 
-Gets the value associated with the option or the supplied default value
+Currently three slates of names have been proposed:
 
 ```fsharp
-val getOrDefault : 'a -> 'a option -> 'a
-val defaultIfNone : 'a -> 'a option -> 'a
-val orDefault : 'a -> 'a option -> 'a
-val fill : 'a -> 'a option -> 'a // ExtCore.Option.fill
+val defaultIfNone :              'a         -> 'a option -> 'a
+val defaultIfNoneFrom : (unit -> 'a)        -> 'a option -> 'a
+val orElse :                     'a option  -> 'a option -> 'a option
+val orElseFrom :        (unit -> 'a option) -> 'a option -> 'a option
 ```
 
-#### Option.map overload
+```fsharp
+val getOrDefault :             'a         -> 'a option -> 'a
+val getOrDefaultFun : (unit -> 'a)        -> 'a option -> 'a
+val orElse :                   'a option  -> 'a option -> 'a option
+val orElseFun :       (unit -> 'a option) -> 'a option -> 'a option
+```
+
+```fsharp
+val withDefault :          'a         -> 'a option -> 'a
+val defaultFrom : (unit -> 'a)        -> 'a option -> 'a
+val orElse :               'a option  -> 'a option -> 'a option
+val orElseWith:   (unit -> 'a option) -> 'a option -> 'a option
+```
+
+#### `Option.map` overloads
 
 ```fsharp
 val map2: ('a -> 'b -> 'c) -> 'a option -> 'b option -> 'c option
-```
-
-```fsharp
 val map3: ('a -> 'b -> 'c -> 'd) -> 'a option -> 'b option -> 'c option -> 'd option
 ```
 
+#### `Option.apply`
+
+```fsharp
+val apply: 'a option -> ('a -> 'b) option -> 'b option
+```
+
+#### `Option.contains`
+
+```fsharp
+val contains: 'a -> 'a option -> bool
+```
+
+#### `Option.flatten`
+
+```fsharp
+val flatten: 'a option option -> 'a option
+```
 
 ### Under discussion:
 
-- `inline` modifier
-- exact additions
-  - study adopting `ExtCore.Option` module declared in https://github.com/jack-pappas/ExtCore/blob/5221f4e67a93cffdb85203f3ae403a6052bcfbc0/ExtCore/Pervasive.fs#L810
-
-### Naming 
-
-The name of the functions has not been finalized.  Some of the suggestions are:
-
-- `getOrDefault`
-   * `getOrElse`
+- `inline` modifier: Should functions in the `Option` module be marked as inline? If so, which ones would benefit the most?
+- Naming of new functions
+- study adopting [`ExtCore.Option` module](https://github.com/jack-pappas/ExtCore/blob/5221f4e67a93cffdb85203f3ae403a6052bcfbc0/ExtCore/Pervasive.fs#L810)
 
 ### Performance considerations
 
