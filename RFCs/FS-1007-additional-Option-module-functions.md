@@ -13,6 +13,42 @@ This RFC covers the detailed proposal for this suggestion.
 
 Additional functions to `Option` module
 
+### Proposed functions
+
+#### Handling the result of `TryParse`-style functions
+
+```fsharp
+val ofTry : bool * 'a -> 'a option
+```
+
+Proposed names:
+* `ofTry`
+* `ofByRef`
+
+Use case:
+
+```fsharp
+let parseInt x =
+  match System.Int32.TryParse x with
+  | false, _ -> None
+  | true, v -> Some v
+```
+becomes
+```fsharp
+let parseInt x =
+  System.Int32.TryParse x
+  |> Option.ofByRef
+```
+
+#### Add `toSeq`
+
+Provides a more complete relation to the `Array`–`List`–`Seq` set,
+as `toArray` and `toList` already exist.
+
+```fsharp
+val toSeq : 'a option -> 'a seq
+```
+
 ### Approved functions
 
 #### Functions that provide default values in case of `None`
