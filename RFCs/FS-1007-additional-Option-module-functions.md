@@ -15,29 +15,50 @@ Additional functions to `Option` module
 
 ### Proposed functions
 
+#### Handling the result of `TryParse`-style functions
+
+```fsharp
+val ofTry : bool * 'a -> 'a option
+```
+
+Proposed names:
+* `ofTry`
+* `ofByRef`
+
+Use case:
+
+```fsharp
+let parseInt x =
+  match System.Int32.TryParse x with
+  | false, _ -> None
+  | true, v -> Some v
+```
+becomes
+```fsharp
+let parseInt x =
+  System.Int32.TryParse x
+  |> Option.ofByRef
+```
+
+#### Add `toSeq`
+
+Provides a more complete relation to the `Array`–`List`–`Seq` set,
+as `toArray` and `toList` already exist.
+
+```fsharp
+val toSeq : 'a option -> 'a seq
+```
+
+### Approved functions
+
 #### Functions that provide default values in case of `None`
 
-Currently three slates of names have been proposed:
-
+The approved names and forms are:
 ```fsharp
-val defaultIfNone :              'a         -> 'a option -> 'a
-val defaultIfNoneFrom : (unit -> 'a)        -> 'a option -> 'a
-val orElse :                     'a option  -> 'a option -> 'a option
-val orElseFrom :        (unit -> 'a option) -> 'a option -> 'a option
-```
-
-```fsharp
-val getOrDefault :             'a         -> 'a option -> 'a
-val getOrDefaultFun : (unit -> 'a)        -> 'a option -> 'a
-val orElse :                   'a option  -> 'a option -> 'a option
-val orElseFun :       (unit -> 'a option) -> 'a option -> 'a option
-```
-
-```fsharp
-val withDefault :          'a         -> 'a option -> 'a
-val defaultFrom : (unit -> 'a)        -> 'a option -> 'a
+val defaultValue :         'a         -> 'a option -> 'a
+val defaultWith : (unit -> 'a)        -> 'a option -> 'a
 val orElse :               'a option  -> 'a option -> 'a option
-val orElseWith:   (unit -> 'a option) -> 'a option -> 'a option
+val orElseWith :  (unit -> 'a option) -> 'a option -> 'a option
 ```
 
 #### `Option.map` overloads
@@ -45,12 +66,6 @@ val orElseWith:   (unit -> 'a option) -> 'a option -> 'a option
 ```fsharp
 val map2: ('a -> 'b -> 'c) -> 'a option -> 'b option -> 'c option
 val map3: ('a -> 'b -> 'c -> 'd) -> 'a option -> 'b option -> 'c option -> 'd option
-```
-
-#### `Option.apply`
-
-```fsharp
-val apply: 'a option -> ('a -> 'b) option -> 'b option
 ```
 
 #### `Option.contains`
@@ -65,10 +80,23 @@ val contains: 'a -> 'a option -> bool
 val flatten: 'a option option -> 'a option
 ```
 
+### Denied functions
+
+#### `Option.apply`
+
+```fsharp
+val apply: 'a option -> ('a -> 'b) option -> 'b option
+```
+
+> We don't have any other functions in the F# core library working over
+> containers of function values. Uses of this function are very rare and
+> using it doesn't particularly make code more readable or even much more
+> succinct. Any programmer who can use it correctly can write the one line
+> helper.
+
 ### Under discussion:
 
 - `inline` modifier: Should functions in the `Option` module be marked as inline? If so, which ones would benefit the most?
-- Naming of new functions
 - study adopting [`ExtCore.Option` module](https://github.com/jack-pappas/ExtCore/blob/5221f4e67a93cffdb85203f3ae403a6052bcfbc0/ExtCore/Pervasive.fs#L810)
 
 ### Performance considerations
