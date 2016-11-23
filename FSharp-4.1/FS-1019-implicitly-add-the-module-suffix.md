@@ -10,9 +10,7 @@ This RFC covers the detailed proposal for this suggestion.
 # Summary
 [summary]: #summary
 
-The ``[<CompilationRepresentation(CompilationRepresentationFlags.ModuleSuffix)>]`` attribute is so commonly used on top of modules. But it is verbose and tedious. 
-
-This RFC proposes that the ``Module`` suffix be added implicitly if a type and a module have the same name within the same namespace declaration group.
+The ``[<CompilationRepresentation(CompilationRepresentationFlags.ModuleSuffix)>]`` attribute is commonly used on top of modules. This RFC proposes that the ``Module`` suffix be added implicitly if a type and a module have the same name within the same namespace declaration group.
 
 For example, for the code below the compiled name of ``module A`` will be ``AModule``, just as if the attribute had been used.
 
@@ -27,17 +25,27 @@ module A =
 # Motivation
 [motivation]: #motivation
 
-Why are we doing this? What use cases does it support? What is the expected outcome?
+The attribute is verbose and tedious. In the cases that this RFC seeks to address, _not_ adding the attribute would result in a compilation error anyway, so allowing it to be omitted makes the compiler more user friendly.
 
 # Detailed design
 [design]: #detailed-design
 
 If a module is defined in a declaration group (i.e. namespace declaration group, or the group of declarations making up a module) containing a non-augmentation type definition of the same name, then the compiled name of the module is implicitly suffixed by ``Module`` as if the ``[<CompilationRepresentation(CompilationRepresentationFlags.ModuleSuffix )>]`` had been used.
 
-This applies whether the module is an abbreviation,  or with or  without generic parameters.
+This applies if the module is an abbreviation.
+
+This does not apply if the type with the same name as the module has generic parameters, because in that case there is no ambiguity between the module type and the other type. Also, this would break code where a module with the same name has no ``ModuleSuffix`` argument currently:
+
+```fsharp
+
+type Go<'a> = Go of 'a
+
+module Go
+```
+
+The `Go` module in this example should not be compiled as `GoModule` after this change, as it wasn't previously.
 
 The use of the explicit attribute is not deprecated, since it can still be useful in a signature file, in the case that the type definition is hidden by the signature but the module definition is not.
-
 
 # Drawbacks
 [drawbacks]: #drawbacks
