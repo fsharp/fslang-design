@@ -4,8 +4,8 @@ The design suggestion [Add support for 'fixed'](https://fslang.uservoice.com/for
 This RFC covers the detailed proposal for this suggestion.
 
 * [x] Approved in principle
-* [ ] Details: [under discussion](https://github.com/fsharp/FSharpLangDesign/issues/99)
-* [ ] Implementation: [Completed](https://github.com/Microsoft/visualfsharp/pull/1270)
+* [x] Details: [under discussion](https://github.com/fsharp/FSharpLangDesign/issues/99)
+* [x] Implementation: [Completed](https://github.com/Microsoft/visualfsharp/pull/1270)
 
 
 # Summary
