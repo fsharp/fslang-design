@@ -17,7 +17,7 @@ Implement Async.StartImmediateAsTask function to Async module in order to better
 [motivation]: #motivation
 
 Current functions in async method does not allow starting a task immediately. Async.StartImmediate, only starts the async workflow without returning a value,
-where as Async.StartAsTask creates a new task on a new thread. Async.StartImmediateAsTask starts a task imeddiately however this task start running immediately.
+where as Async.StartAsTask creates a new task on a new thread. Async.StartImmediateAsTask starts a task immediately however this task start running in the current thread and can return a result.
 This is the preferred solution for interacting existing C# async-await structures that expect you to return a Task.
 
 # Detailed design
