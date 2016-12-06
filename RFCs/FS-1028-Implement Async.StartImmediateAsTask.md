@@ -1,6 +1,6 @@
 # F# RFC FS-1028 - Implement Async.StartImmediateAsTask
 
-The design suggestion Implement Async.StartImmediateAsTask (https://github.com/fsharp/fslang-suggestions/issues/521) has been marked "approved in principle".
+The design suggestion, **Implement Async.StartImmediateAsTask** (https://github.com/fsharp/fslang-suggestions/issues/521) has been marked "approved in principle".
 This RFC covers the detailed proposal for this suggestion.
 
 * [x] Approved in principle
@@ -8,23 +8,22 @@ This RFC covers the detailed proposal for this suggestion.
 * [ ] Details: [under discussion]
 * [ ] Implementation: [In progress]
 
-
+w
 # Summary
 [summary]: #summary
-Implement Async.StartImmediateAsTask function to Async module in order to better interop with C# async-await. 
+Implement **Async.StartImmediateAsTask** function to the **Async** module in order to better interop with C# async-await keywords. 
 
 # Motivation
 [motivation]: #motivation
 
-Current functions in async method does not allow starting a task immediately. Async.StartImmediate, only starts the async workflow without returning a value,
-where as Async.StartAsTask creates a new task on a new thread. Async.StartImmediateAsTask starts a task immediately however this task start running in the current thread and can return a result.
-This is the preferred solution for interacting existing C# async-await structures that expect you to return a Task.
+Current functions in the **Async** module does not allow starting a BCL Task "immediately". **Async.StartImmediate**, starts an async workflow immediately but returning unit, thus making it unconvertible to a Task, whereas **Async.StartAsTask** creates a new Task on a new thread. **Async.StartImmediateAsTask** would start a Task immediately however unlike the existing methods, this Task starts running within the current thread and also it can return a result which is wrapped into a Task.
+This is the preferred way for interacting with the C# async-await keywords that expect you to return a "started" Task but does not expect you to create thread.
 
 # Detailed design
 [design]: #detailed-design
 
-To implement this feature, we can make use of Async.StartWithContinuations function, that can be wrapped inside a TaskCompletionSource.
-Since Async.StartWithContinuations start immediately and we are able to extract the result as a continuation.
+For this feature, we can make use of **Async.StartWithContinuations** function that can be wrapped inside a **TaskCompletionSource**.
+Since **Async.StartWithContinuations** starts an async workflow immediately and also we are able to extract the result as a continuation.
 
 Example code:
 
@@ -42,22 +41,24 @@ Example code:
  
 
 ```
-If a synchronization context exists, the above code should return the same thread number. For applications like console, then thread 2 and 3 will return the same id. 
-So a possible output for above code assuming running as Console application is :
-1- 1
-2- 4
-3- 4
-4- 4
+If a synchronization context exists, the above code should return the same thread number. For applications like console, then thread 2. 3 and 4 will return the same id. 
+So a possible output for the above code assuming it is running as a Console application is :
 
-Where as using StartAsTask would yield this:
-1- 3
-2- 4
-3- 4
-4- 3
+    1- 1
+    2- 4
+    3- 4
+    4- 4
+
+whereas using **StartAsTask** would yield the following:
+
+    1- 3
+    2- 4
+    3- 4
+    4- 3
 
 Note that the main thread ID for both cases is 1.
 
-So a draft implementation for this feature would be 
+So a draft implementation for this feature would be: 
 
 ```fsharp
   let StartImmediateAsTask<'T> (asyn : Async<'T>) =
@@ -69,12 +70,12 @@ So a draft implementation for this feature would be
       task
 ```
 
-However real implementation should be a member since there is a need for optional CancellationToken parameter.
+However the real implementation should be a member rather than a function, since there is a need for optional **CancellationToken** parameter.
 
 # Drawbacks
 [drawbacks]: #drawbacks
 
-A possible drawback is that perhaps Async module is getting to crowded with a lot of similar functions.
+A possible drawback is that perhaps the **Async** module is getting too crowded with a lot of similar functions.
 
 # Alternatives
 [alternatives]: #alternatives
