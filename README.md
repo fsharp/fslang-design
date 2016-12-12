@@ -19,7 +19,7 @@ When RFCs are implemented and a version of F# is revved, the RFCs which correspo
 
 For RFCs that were implemented in F# 4.0, see the [F# 4.0 RFCs](https://github.com/fsharp/fslang-design/blob/master/FSharp-4.0)
 
-For RFCs that were implemented in F# 4.1, see the [F# 4.1 RFCs](https://github.com/fsharp/fslang-design/blob/master/FSharp-4.1
+For RFCs that were implemented in F# 4.1, see the [F# 4.1 RFCs](https://github.com/fsharp/fslang-design/blob/master/FSharp-4.1)
 
 
 ## Open RFCs
