@@ -34,6 +34,7 @@ interface IReadOnlyCollection<'T> with
 [drawbacks]: #drawbacks
 
 The Count property would not be `O(1)`, which could be surprising. However, Length is a property of F# lists that is already not O(1).
+This caused Json.NET to fail to be able to deserialize F# lists as documented [here](https://github.com/Microsoft/visualfsharp/issues/2257). It was resolved by Json.NET [here](https://github.com/JamesNK/Newtonsoft.Json/pull/1181).
 
 # Alternatives
 [alternatives]: #alternatives
