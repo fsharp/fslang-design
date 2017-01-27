@@ -6,48 +6,12 @@ This RFC covers the detailed proposal for this suggestion.
 [Discussion thread](https://github.com/fsharp/FSharpLangDesign/issues/60)
 
 * [x] Approved in principle
-* [ ] Details: [under discussion](https://github.com/fsharp/FSharpLangDesign/issues/60)
-* [ ] Implementation: [submitted](https://github.com/Microsoft/visualfsharp/pull/1781)
+* [x] Details: [under discussion](https://github.com/fsharp/FSharpLangDesign/issues/60)
+* [x] Implementation: [Completed](https://github.com/Microsoft/visualfsharp/pull/1781)
 
 ### Introduction
 
 Additional functions to `Option` module
-
-### Proposed functions
-
-#### Handling the result of `TryParse`-style functions
-
-```fsharp
-val ofTry : bool * 'a -> 'a option
-```
-
-Proposed names:
-* `ofTry`
-* `ofByRef`
-
-Use case:
-
-```fsharp
-let parseInt x =
-  match System.Int32.TryParse x with
-  | false, _ -> None
-  | true, v -> Some v
-```
-becomes
-```fsharp
-let parseInt x =
-  System.Int32.TryParse x
-  |> Option.ofByRef
-```
-
-#### Add `toSeq`
-
-Provides a more complete relation to the `Array`–`List`–`Seq` set,
-as `toArray` and `toList` already exist.
-
-```fsharp
-val toSeq : 'a option -> 'a seq
-```
 
 ### Approved functions
 
@@ -93,6 +57,44 @@ val apply: 'a option -> ('a -> 'b) option -> 'b option
 > using it doesn't particularly make code more readable or even much more
 > succinct. Any programmer who can use it correctly can write the one line
 > helper.
+
+### Functions not acted on
+
+These functions may be brought up at a later time. Action was not taken on these function definitions:
+
+#### Handling the result of `TryParse`-style functions
+
+```fsharp
+val ofTry : bool * 'a -> 'a option
+```
+
+Proposed names:
+* `ofTry`
+* `ofByRef`
+
+Use case:
+
+```fsharp
+let parseInt x =
+  match System.Int32.TryParse x with
+  | false, _ -> None
+  | true, v -> Some v
+```
+becomes
+```fsharp
+let parseInt x =
+  System.Int32.TryParse x
+  |> Option.ofByRef
+```
+
+#### Add `toSeq`
+
+Provides a more complete relation to the `Array`–`List`–`Seq` set,
+as `toArray` and `toList` already exist.
+
+```fsharp
+val toSeq : 'a option -> 'a seq
+```
 
 ### Under discussion:
 
