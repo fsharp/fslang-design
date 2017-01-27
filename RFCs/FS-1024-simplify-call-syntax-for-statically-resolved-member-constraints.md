@@ -5,7 +5,7 @@ This RFC covers the detailed proposal for this suggestion.
 
 * [x] Approved in principle
 * [x] [User Voice Request](https://fslang.uservoice.com/forums/245727-f-language/suggestions/8014059-make-call-syntax-simpler-for-statically-resolved-m)
-* [ ] Details: to be discussed
+* [ ] Details: [under discussion](https://github.com/fsharp/fslang-design/issues/162)
 * [ ] Implementation: not started
 
 
