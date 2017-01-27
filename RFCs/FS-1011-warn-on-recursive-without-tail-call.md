@@ -6,11 +6,11 @@ This RFC covers the detailed proposal for this suggestion.
 * [x] Approved in principle
 * [ ] [User Voice Request][UserVoice]
 * [ ] Details: [under discussion][Details]
-* [ ] Implementation: Not yet started
+* [ ] Implementation: [in progress][Implementation]
 
   [UserVoice]:https://fslang.uservoice.com/forums/245727-f-language/suggestions/5663074-enable-a-compiler-warning-when-a-recursive-algorit
   [Details]:https://github.com/fsharp/FSharpLangDesign/issues/82
-  [Implementation]:#NOT-READY
+  [Implementation]:https://github.com/Microsoft/visualfsharp/pull/1976
 
 # Summary
 [summary]: #summary
