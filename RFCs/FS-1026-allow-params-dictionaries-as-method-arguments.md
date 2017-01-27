@@ -5,7 +5,7 @@ This RFC covers the detailed proposal for this suggestion.
 
 * [x] Approved in principle
 * [x] [User Voice Request](https://fslang.uservoice.com/forums/245727-f-language/suggestions/5975840-allow-params-dictionaries-as-method-arguments)
-* [ ] Details: To be discussed.
+* [ ] Details: [under discussion](https://github.com/fsharp/fslang-design/issues/164)
 * [ ] Implementation: Not started.
 
 # Summary
