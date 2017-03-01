@@ -14,6 +14,11 @@ Proposed syntax:
 printf "some text %(expression) some more text"
 ```
 
+An alternate has been proposed which would mirror the syntax from C#:
+```fsharp
+$"some text {expression} some more text"
+```
+
 ### Links
 
 * [C# string interpolation docs](https://msdn.microsoft.com/en-us/library/dn961160.aspx)
