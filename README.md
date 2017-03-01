@@ -28,7 +28,6 @@ For RFCs that were implemented in F# 4.1, see the [F# 4.1 RFCs](https://github.c
 * [F# RFC FS-1011 - Warn when recursive function is not tail-recursive](https://github.com/fsharp/fslang-design/blob/master/RFCs/FS-1011-warn-on-recursive-without-tail-call.md)
 * [F# RFC FS-1018 - Adjust extension method scope](https://github.com/fsharp/fslang-design/blob/master/RFCs/FS-1018-adjust-extensions-method-scope.md)
 * [F# RFC FS-1021 - Support Interop with ValueTask in Async Type](https://github.com/fsharp/fslang-design/blob/master/RFCs/FS-1021-value-task-interop.md)
-* [F# RFC FS-1022 - Override  ToString  for discriminated unions and records](https://github.com/fsharp/fslang-design/blob/master/RFCs/FS-1022-override-ToString-for-discriminated-unions-and-records.md)
 * [F# RFC FS-1023 - Allow type providers to generate types from types](https://github.com/fsharp/fslang-design/blob/master/RFCs/FS-1023-type-providers-generate-types-from-types.md)
 * [F# RFC FS-1024 - Simplify call syntax for statically resolved member constraints](https://github.com/fsharp/fslang-design/blob/master/RFCs/FS-1024-simplify-call-syntax-for-statically-resolved-member-constraints.md)
 * [F# RFC FS-1025 - Improve record type inference](https://github.com/fsharp/fslang-design/blob/master/RFCs/FS-1025-improve-record-type-inference.md)
