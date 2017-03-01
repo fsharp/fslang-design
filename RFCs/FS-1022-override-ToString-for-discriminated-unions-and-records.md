@@ -6,7 +6,7 @@ This RFC covers the detailed proposal for this suggestion.
 * [x] Approved in principle
 * [x] [User Voice Request](https://fslang.uservoice.com/forums/245727-f-language/suggestions/7574961-override-tostring-for-discriminated-unions-and-r)
 * [x] Details: [under discussion](https://github.com/fsharp/FSharpLangDesign/issues/123)
-* [x] Implementation: [in progress](https://github.com/Microsoft/visualfsharp/pull/1589)
+* [x] Implementation: completed for [unions](https://github.com/Microsoft/visualfsharp/pull/1589) and [records](https://github.com/Microsoft/visualfsharp/pull/2430)
 
 # Summary
 [summary]: #summary
