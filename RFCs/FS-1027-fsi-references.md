@@ -2,7 +2,7 @@
 
 * [x] Approved in principle
 * [ ] [FSLang Suggestion](https://github.com/fsharp/fslang-suggestions/issues/542)
-* [ ] Details: [under discussion](https://github.com/fsharp/FSharpLangDesign/issues/FILL-ME-IN)
+* [ ] Details: [under discussion](https://github.com/fsharp/fslang-design/issues/167)
 * [ ] Implementation: [In progress](https://github.com/Microsoft/visualfsharp/pull/FILL-ME-IN)
 
 # Summary
