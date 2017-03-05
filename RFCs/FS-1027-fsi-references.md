@@ -60,7 +60,7 @@ When FSI encounters this script, it will:
 
 ## Errors
 
-FSI will have to display errors from the underlying assembly resolver.  For example, if someone specifies `#r paket: <nuget-command>` and Paket generates an error, FSI must display that.
+FSI will have to display errors from the underlying assembly resolver.  For example, if someone specifies `#r "paket: <paket-command>"` and Paket generates an error, FSI must display that.
 
 There is also another scenario to consider, which we will explicitly not handle.  For example, given the following:
 
@@ -89,7 +89,7 @@ Another alternative is to add more directives, such as the following:
 
 * `#r-impl "<path-to-impl-assembly>`
 * `#r-nuget "<package-name>, <package-version>`
-* `#r-paket "<paket-directive>: <package-or-dependency>`
+* `#r-paket "<paket-command>: <package-or-dependency>`
 
 A drawback here is that this is not something that C# would likely do in C# scripting.  Although the goal isn't to align with whatever C# is doing, differentiating on directives doesn't seem worth it unless a new directive is added for each *type* of operation we wish to perform.  Having a new directive for one type of operation (e.g., `#r-impl`), but no new directive for the rest would be strange and inconsistent.
 
