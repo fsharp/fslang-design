@@ -84,7 +84,7 @@ val data :  {| X : int; Y : int |}
 
 The proposal is 
 1. the primary syntax  ``{| X = 1; Y = 2 |}`` should be used to support the most common, natural case in F#, where we are happy for the values to have no backing .NET metadata.  
-2. the extended syntax  ``netobj {| X = 1; Y = 2 |}`` gives C#-3.0 compatible anonymous objects with full .NET metadata.  This syntax may not be written in types outside the assembly where the objects are used. The types are implicitly assembly-qualified.
+2. the extended syntax  ``new {| X = 1; Y = 2 |}`` gives C#-3.0 compatible anonymous objects with full .NET metadata.  This syntax may not be written in types outside the assembly where the objects are used. The types are implicitly assembly-qualified.
 
 The precise syntax for the second is TBD, another suggestion is ``{< ... >}`` (e.g. to avoid extra parentheses) though the differences betweeen the two are subtle. The prototype will support both.
 
@@ -155,7 +155,7 @@ module FSharpFriendlyAnonymousObjectsWithoutDotNetReflectionData =
 
 #### C#-compatible anonymous objects
 
-In addition we support a separate collection of C#-compatible anonymous object types. The syntax is an open question - see "Unrsolved questions" below. For example we may use ``{< X = 1 >}``
+In addition we support a separate collection of C#-compatible anonymous object types. The syntax is an open question - see "Unresolved questions" below. For example we may use ``{< X = 1 >}`` or  ``new {< X = 1 >}``
 
 These give an object that has full C#-compatible anonymous object metadata. 
 Underneath these compile to an instantiation of a generic type defined in the declaring assembly with appropriate .NET 
@@ -173,9 +173,9 @@ These values _can_ be used outside their assembly, but the types can _not_ be na
 ```fsharp
 module CSharpCompatAnonymousObjects = 
     
-    let data1 = netobj {| X = 1 |}
+    let data1 = new {| X = 1 |}
 
-    let f1 (x : netobj {| X : int |}) =  x.X
+    let f1 (x : new {| X : int |}) =  x.X
 
 ```
 
@@ -183,9 +183,9 @@ Here's the alternative syntax:
 ```fsharp
 module CSharpCompatAnonymousObjects = 
     
-    let data1 = {< X = 1 >}
+    let data1 = new {< X = 1 >}
 
-    let f1 (x : {< X : int >}) =  x.X
+    let f1 (x : new {< X : int >}) =  x.X
 
 ```
 
@@ -195,6 +195,7 @@ module CSharpCompatAnonymousObjects =
 2. The prototype C#-compatible types are TBD
 3. The alternative syntax is TBD
 4. The language service features are TBD
+5. Give a good error message when ``new { ... }`` is used when converting from C# code
 
 # Drawbacks
 [drawbacks]: #drawbacks
