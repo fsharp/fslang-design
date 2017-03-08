@@ -1,4 +1,4 @@
-# F# RFC FS-1030 - Anonynous Records
+# F# RFC FS-1030 - Anonymous Records
 
 The design suggestion [Anonymous Records](https://github.com/fsharp/fslang-suggestions/issues/207) has been marked "approved in principle".
 This RFC covers the detailed proposal for this suggestion.
