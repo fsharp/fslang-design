@@ -13,7 +13,12 @@ This RFC is preliminary and very much WIP
 # Summary
 [summary]: #summary
 
-Add anonymous records as a feature to F#.
+Add anonymous records as a feature to F#, e.g.
+
+```fsharp
+let data = {| X = 1; Y = 2 |}
+```
+
 
 # Motivation
 [motivation]: #motivation
@@ -64,18 +69,21 @@ We choose to make the default (b) over (a) since F# developers can always move t
 
 In the prototype the primary syntax is 
 
-    let data = {| X = 1; Y = 2 |}
+```fsharp
+let data = {| X = 1; Y = 2 |}
+```
 
 An expression like this can be formed without a prior type definition for a record type.  The type of the expression is the natural syntax:
 
-    val data :  {| X : int; Y : int |}
+```fsharp
+val data :  {| X : int; Y : int |}
+```
 
 The proposal is 
 1. the primary syntax  ``{| X = 1; Y = 2 |}`` should be used to support the most common, natural case in F#, where we are happy for the values to have no backing .NET metadata.  
 2. the extended syntax  ``netobj {| X = 1; Y = 2 |}`` gives C#-3.0 compatible anonymous objects with full .NET metadata.  This syntax may not be written in types outside the assembly where the objects are used. The types are implicitly assembly-qualified.
 
-The precise syntax for the second is TBD, another suggestion is ``{< ... >}`` (e.g. to avoid extra parentheses) though the differences betweeen the two are subtle.
-The prototype will support both.
+The precise syntax for the second is TBD, another suggestion is ``{< ... >}`` (e.g. to avoid extra parentheses) though the differences betweeen the two are subtle. The prototype will support both.
 
 
 #### F#-friendly anonymous records 
