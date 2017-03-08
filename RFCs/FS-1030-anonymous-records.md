@@ -6,8 +6,8 @@ This RFC covers the detailed proposal for this suggestion.
 This RFC is preliminary and very much WIP
 
 * [x] Approved in principle
-* [ ] Details: under discussion
-* [ ] Implementation: [very preliminary draft](https://github.com/Microsoft/visualfsharp/compare/master...dsyme:anon-1?expand=1)
+* [x] Details: [under discussion](https://github.com/fsharp/fslang-design/issues/170)
+* [x] Implementation: [very preliminary draft](https://github.com/Microsoft/visualfsharp/compare/master...dsyme:anon-1?expand=1)
 
 
 # Summary
