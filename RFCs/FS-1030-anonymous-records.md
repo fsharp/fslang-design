@@ -23,17 +23,20 @@ let data = {| X = 1; Y = 2 |}
 # Motivation
 [motivation]: #motivation
 
-1. Writing named record types is painful in F#, especially if the recors are used ephemerally in return values from functions in scripts and the return types are entirely inferred
+1. Writing named record types is painful in F#, especially when
+   * the records are used ephemerally in functions, and/or 
+   * the records are in return values from functions, and/or
+   * the return types are easily entirely inferred, and/or
+   * the types are needed when interoperating with C# code
 
 2. There is evidence a lot of pain around converting C# code that uses anonymous records into F# code ([List courtesy of @jpierson](https://github.com/fsharp/fslang-suggestions/issues/207#issuecomment-282570213))
-
-* http://stackoverflow.com/q/8144184/83658
-* http://stackoverflow.com/q/31909234/83658
-* http://stackoverflow.com/q/8546823/83658
-* http://stackoverflow.com/q/21879859/83658
-* http://stackoverflow.com/q/26961004/83658
-* http://stackoverflow.com/q/8650463/83658
-* http://stackoverflow.com/q/13991448/83658
+   * http://stackoverflow.com/q/8144184/83658
+   * http://stackoverflow.com/q/31909234/83658
+   * http://stackoverflow.com/q/8546823/83658
+   * http://stackoverflow.com/q/21879859/83658
+   * http://stackoverflow.com/q/26961004/83658
+   * http://stackoverflow.com/q/8650463/83658
+   * http://stackoverflow.com/q/13991448/83658
 
 
 # Detailed design
