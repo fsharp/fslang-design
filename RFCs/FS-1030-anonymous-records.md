@@ -51,12 +51,12 @@ This is a tricky space: we simultaneously need to satisfy various needs includin
    (a) is assembly-private
    (b) uses very specific type and property names (understood by debugging tools)
    (c) has normal .NET metadata that supports normal .NET reflection
-   (d) is mutable and is in particular usable in LINQ queries
+   (d) is in particular usable in LINQ queries
 
 2. optional compatibility with the metadata-only (no .NET metadata) C#s struct tuples. These have an underlying .NET representation that:
    (a) is assembly-neutral
    (b) does _not_ have normal .NET metadata but rather is encoded into ``StructTuple`` typees
-   (c) uses associated attribute-encoded metadata at argument an return positions.
+   (c) uses associated attribute-encoded metadata at argument and return positions.
    (d) is mutable
    (e) is in usable in LINQ queries (needs to be checked)
 
@@ -66,7 +66,7 @@ In general F# developers will expect two contradictory things
 (a) that types will have .NET metadata (like F# nominal record types) supporting normal .NET reflection and .NET data binding.  
 (b) that types will be assembly neutral
 
-We choose to make the default (b) over (a) since F# developers can always move to nomina record types if necessary.
+We choose to make the default (b) over (a) since F# developers can always move to nominal record types if necessary.
 
 ## Syntax
 
@@ -219,9 +219,9 @@ module CSharpCompatAnonymousObjects =
 [unresolved]: #unresolved-questions
 
 1. Relationship beteen anonymous record types and existing nominal record types
-2. Do we emit and read C# tuple metdata information at return and argument positions?
+2. Do we emit and read C# tuple metadata information at return and argument positions?
 3. Behaviour under equality and comparison
-4. We need to identify the scenario where C#-compatible cnonymous objects are reqquired, and the scenarios where they need correct property  names in the .NET metadata
+4. We need to identify the scenario where C#-compatible anonymous objects are required, and the scenarios where they need correct property  names in the .NET metadata
 5. Do we use ``netobj {| ... |]`` to generate C# compatibile objects, expecially for use in LINQ queries?  Is that handy enough in queries?  Should them name be ``anonobj {| ...  |}`` or ``{< ... >}`` or ...??
 
 
