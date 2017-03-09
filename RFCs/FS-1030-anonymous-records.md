@@ -55,7 +55,7 @@ This is a tricky space: we simultaneously need to satisfy various needs includin
 
 2. optional compatibility with the metadata-only (no .NET metadata) C#s struct tuples. These have an underlying .NET representation that:
    (a) is assembly-neutral
-   (b) does _not_ have normal .NET metadata but rather is encoded into ``StructTuple`` typees
+   (b) does _not_ have normal .NET metadata but rather is encoded into ``StructTuple`` types
    (c) uses associated attribute-encoded metadata at argument and return positions.
    (d) is mutable
    (e) is in usable in LINQ queries (needs to be checked)
@@ -218,7 +218,7 @@ module CSharpCompatAnonymousObjects =
 # Unresolved questions
 [unresolved]: #unresolved-questions
 
-1. Relationship beteen anonymous record types and existing nominal record types
+1. Relationship between anonymous record types and existing nominal record types
 2. Do we emit and read C# tuple metadata information at return and argument positions?
 3. Behaviour under equality and comparison
 4. We need to identify the scenario where C#-compatible anonymous objects are required, and the scenarios where they need correct property  names in the .NET metadata
