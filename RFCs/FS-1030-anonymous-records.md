@@ -16,8 +16,11 @@ This RFC is preliminary and very much WIP
 Add anonymous records as a feature to F#, e.g.
 
 ```fsharp
-let data = {| X = 1; Y = 2 |}
+let data = {| X = 1; Y = "abc" |}
+
+val data : {| X : int; Y : string |}
 ```
+
 
 
 # Motivation
@@ -38,14 +41,77 @@ let data = {| X = 1; Y = 2 |}
    * http://stackoverflow.com/q/8650463/83658
    * http://stackoverflow.com/q/13991448/83658
 
+# Design Tensions and Limitations
 
-# Detailed design
-[design]: #detailed-design
+## Design Principle: Type Identity v. .NET metadata
+
+In general F# developers will expect two contradictory things:
+
+(a) that the runtime objects/types correspdonding to anonymous record values/types will have .NET metadata (like F# nominal record types) supporting normal .NET reflection and .NET data binding.  
+
+(b) that type identity will by default be assembly neutral, that is ``{| X:int; Y: int |}`` in one assemby will be type equivalent to the same type in when used in another assembly
+
+.NET provides no mechanism to achieve both of these, i.e. there is no .NET mechanism to make types with strong .NET metadata shared
+and equivaent across assembly boundaries.
+
+We choose to make the default (b) over (a) since F# developers can always move to nominal record types if necessary. However,
+we make (a) an option, see below.
+
+## Design Principle: Anonymous Records, not Anonymous Objects
+
+The aim of this feature is **not** to create a new "obejct calculus" in F#.  For example, the user can't define "anonymous class types"
+such as this:
+```fsharp
+let obj = {| member x.M(y) = 1 + y 
+             member x.P = 2 |}
+
+obj : {| member M : int -> int
+         member P : int } 
+```
+without defining an explicit nominal class.  
+
+## Design Principle: A Smooth Path to Nominalization
+
+A basic litmus test is this: can the user smoothly (through localized, regular transformations) adjust a closed body of code to use existing F# nominal record types instead of anonymous record types?
+
+The answer is "yes" - they just have to expicitly define each implied record type, and replace ``{| ... |}`` by ``{ .. }``, and add
+some type annotations.  Let's call this process "nominalization".
+
+Nominalization is imoprtant as code matures, because values that start as "just data" often gradaully become more like objects: they
+collect some associated derived properties, some methods, they start to have constraints and invariants applied, they may end up
+having their representation hidden, they may become mutable.  Anonymous records will **not** support this full range of
+machinery, though nominal record types and class types do.  As a type matures, you want to make sure
+that the user can transition towards nominal record types and class types. (TODO: ink to related suggestions about improving nominal
+record types and class types).
+
+Supporting "smooth nominalization" means that features such as these are out of scope or orthogonal
+* removing fields from anonymous records ``{ x without A}``
+* adding fields to anonymous records ``{ x with A = 1 }``
+* unioning anonymous records `` { include x; include y }``
+
+These would all be fine features, but we will treat them as orthogonal: they wil be included if and only if
+they are **also** implemented for nominal record types. Today F# record types do not support the above features - even ``{ x with A=1}``
+is restricted to create objects of the same type as the original.
+
+If smooth nominalization is not possible, then some users will inevitably use the unique features of anonymous record types, but then be left with no path to nominalize their code when they want to be more explicit, or as their types gradually 
+
+## Design Principle: No subtyping, no structural typing
+
+"Smooth nominalization" encourages another design limitation:
+
+* Anonymous record types will not support structural subtyping, except to type ``obj``.  So ``{| A : int; B : string |}`` is not a subtype of ``{| A: int |}``
+
+To consider: anonymous record types which have full .NET metadata (and thus assembly-bound identity) could in theory
+include interface implementations. For example:
+
+    new {| A : int; interface IComparable |}
+ 
+This tends towards an object calculus, or at least intersection types.  We don't plan to incude this feature.  It is better to use existing nominal types and object expressions for this purpose.
 
 
-## Assembly Neutrality and .NET metadata
+## Design Principle: Interop
 
-This is a tricky space: we simultaneously need to satisfy various needs including
+The feature must achieve both of these:
 
 1. optional compatibility with C# anonymous objects (from C# 3.0). These have an underlying .NET representation that:
    (a) is assembly-private
@@ -62,11 +128,11 @@ This is a tricky space: we simultaneously need to satisfy various needs includin
 
 Carrying precise .NET metadata for types of kind (1) is required.
 
-In general F# developers will expect two contradictory things
-(a) that types will have .NET metadata (like F# nominal record types) supporting normal .NET reflection and .NET data binding.  
-(b) that types will be assembly neutral
 
-We choose to make the default (b) over (a) since F# developers can always move to nominal record types if necessary.
+
+# Detailed design
+[design]: #detailed-design
+
 
 ## Syntax
 
