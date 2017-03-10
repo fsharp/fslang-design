@@ -26,13 +26,15 @@ val data : {| X : int; Y : string |}
 # Motivation
 [motivation]: #motivation
 
-1. Writing named record types is painful in F#, especially when
+1. There are many use cases where you want to package data without needing to write an explicit type
+
+2. Writing named record types is painful in F#, especially when
    * the records are used ephemerally in functions, and/or 
    * the records are in return values from functions, and/or
    * the return types are easily entirely inferred, and/or
    * the types are needed when interoperating with C# code
 
-2. There is evidence a lot of pain around converting C# code that uses anonymous records into F# code ([List courtesy of @jpierson](https://github.com/fsharp/fslang-suggestions/issues/207#issuecomment-282570213))
+3. There is evidence a lot of pain around converting C# code that uses anonymous records into F# code ([List courtesy of @jpierson](https://github.com/fsharp/fslang-suggestions/issues/207#issuecomment-282570213))
    * http://stackoverflow.com/q/8144184/83658
    * http://stackoverflow.com/q/31909234/83658
    * http://stackoverflow.com/q/8546823/83658
@@ -95,19 +97,6 @@ is restricted to create objects of the same type as the original.
 
 If smooth nominalization is not possible, then some users will inevitably use the unique features of anonymous record types, but then be left with no path to nominalize their code when they want to be more explicit, or as their types gradually 
 
-## Design Principle: No subtyping, no structural typing
-
-"Smooth nominalization" encourages another design limitation:
-
-* Anonymous record types will not support structural subtyping, except to type ``obj``.  So ``{| A : int; B : string |}`` is not a subtype of ``{| A: int |}``
-
-To consider: anonymous record types which have full .NET metadata (and thus assembly-bound identity) could in theory
-include interface implementations. For example:
-
-    new {| A : int; interface IComparable |}
- 
-This tends towards an object calculus, or at least intersection types.  We don't plan to incude this feature.  It is better to use existing nominal types and object expressions for this purpose.
-
 
 ## Design Principle: Interop
 
@@ -128,7 +117,57 @@ The feature must achieve both of these:
 
 Carrying precise .NET metadata for types of kind (1) is required.
 
+This leads to two different kinds of anonymous records: **Kind A** that are compatibile with C# anonymous objects and which have a corresponding nominal type, and **Kind B** that are compatibile with C# struct tuples.  From the point of view of regular F# coding there is very little difference between these.
 
+
+## Design Principle: Natural, interoperable compiled representations
+
+The need for interop means that anonymous records must use the "natural" compiler representations available on .NET:
+
+1. "Kind A" anonymous records must use a generated type with the same characteristics as mentioned above (except that it will be assembly-public)
+
+2. "Kind B" anonymous records must use the ``System.ValueTuple<...>`` encoding
+
+
+
+## Design Principle: No structural typing
+
+"Smooth nominalization" and "Interop" imply the following design limitation:
+
+* Anonymous record types will not support structural subtyping, except to type ``obj``.  So ``{| A : int; B : string |}`` is not a subtype of ``{| A: int |}``
+
+This is because
+1. the nominalized versions of these types don't support structural subtyping. 
+2. is not possible to support structural subtyping in the natural compiled representations of anonymous record types
+
+## Design Principle: Attributes and interfaces
+
+There are numerous aspects of the F#/.NET object system that coud be supported by "Kind A" anonymous record types (which have full .NET metadata and a backing .NET type). This incudes
+* properties (computerd on-demand)
+* interface implementations
+* methods
+* indexer properties
+* attributes on methods and properties
+* events
+* object-private ``let`` bindings
+* static members
+* mutable state
+
+While they don't prevent nominalization, we still don't plan to allow any of these in this feature.   It is better to use existing nominal types and object expressions for this purpose.  Just give the object type a name.
+
+For example these types  could in theory include members and interface implementations:
+
+```fsharp
+let data = new {| A = 3; interface IDisposable with member x.Dispose() = ... |}
+```
+
+Likewise "Kind A" anonymous record types could also in theory have attributes:
+
+```fsharp
+let data = new {| [<Foo>] A = 3; B = 4 |}
+```
+
+However we don't plan to alow either of these as part of this feature.
 
 # Detailed design
 [design]: #detailed-design
@@ -149,8 +188,8 @@ val data :  {| X : int; Y : int |}
 ```
 
 The proposal is 
-1. the primary syntax  ``{| X = 1; Y = 2 |}`` should be used to support the most common, natural case in F#, where we are happy for the values to have no backing .NET metadata.  
-2. the extended syntax  ``new {| X = 1; Y = 2 |}`` gives C#-3.0 compatible anonymous objects with full .NET metadata.  This syntax may not be written in types outside the assembly where the objects are used. The types are implicitly assembly-qualified.
+1. the primary syntax  ``{| X = 1; Y = 2 |}`` gives "Kind B" anonymous records, represented under-the-hood via tuples
+2. the extended syntax  ``new {| X = 1; Y = 2 |}`` gives "Kind A" anonymous records, C# compatible and with full .NET metadata.  This types are implicitly assembly-qualified.
 
 The precise syntax for the second is TBD, another suggestion is ``{< ... >}`` (e.g. to avoid extra parentheses) though the differences betweeen the two are subtle. The prototype will support both.
 
@@ -192,8 +231,8 @@ module FSharpFriendlyAnonymousObjectsWithoutDotNetReflectionData =
     printfn "10 = %A" (f2 {| X = {| X = 10 |} |}) 
     printfn "10 = %A" (f2 {| X = {| X = 10 |} |}) 
 
-    // TODO: field reordering....
-    //let test3b() = {| a = 1+1; b = 2 |} = {| b = 1; a = 2 |} 
+    // field reordering....
+    let test3b() = {| a = 1+1; b = 2 |} = {| b = 1; a = 2 |} 
 
     // Check we get compile-time errors
     //let negTest1() = {| a = 1+1; b = 2 |} = {| a = 2 |} 
@@ -221,7 +260,7 @@ module FSharpFriendlyAnonymousObjectsWithoutDotNetReflectionData =
 
 #### C#-compatible anonymous objects
 
-In addition we support a separate collection of C#-compatible anonymous object types. The syntax is an open question - see "Unresolved questions" below. For example we may use ``{< X = 1 >}`` or  ``new {< X = 1 >}``
+In addition we support a separate collection of C#-compatible anonymous object types. These are the "Kind A" objects mentioned above. The syntax is an open question - see "Unresolved questions" below. For example we may use ``{< X = 1 >}`` or  ``new {< X = 1 >}``
 
 These give an object that has full C#-compatible anonymous object metadata. 
 Underneath these compile to an instantiation of a generic type defined in the declaring assembly with appropriate .NET 
@@ -284,10 +323,7 @@ module CSharpCompatAnonymousObjects =
 # Unresolved questions
 [unresolved]: #unresolved-questions
 
-1. Relationship between anonymous record types and existing nominal record types
-2. Do we emit and read C# tuple metadata information at return and argument positions?
-3. Behaviour under equality and comparison
-4. We need to identify the scenario where C#-compatible anonymous objects are required, and the scenarios where they need correct property  names in the .NET metadata
-5. Do we use ``netobj {| ... |]`` to generate C# compatibile objects, expecially for use in LINQ queries?  Is that handy enough in queries?  Should them name be ``anonobj {| ...  |}`` or ``{< ... >}`` or ...??
+1. Do we emit and read C# tuple metadata information at return and argument positions?
+2. Behaviour under equality and comparison
 
 
