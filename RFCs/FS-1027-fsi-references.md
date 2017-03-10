@@ -11,8 +11,10 @@
 The following extensions to `#r` are proposed:
 
 * `#r "impl: <path-to-implementation-assembly>"`
+* `#r "ref: <path-to-reference-assembly>"`
 * `#r "paket: <paket command>"`
 * `#r "nuget: <package-name>, <package-version>"`
+* `#r "project: <project-name>"`
 
 This extends the "language" of `#r` to support implementation and reference assemblies, NuGet packages, Paket dependencies, and potentially more.
 
@@ -27,36 +29,119 @@ Motivation for this change is twofold:
 # Detailed design
 [design]: #detailed-design
 
-Supporting this design requires significant changes in how FSI references assemblies.  As stated above, .NET Core (and .NET Standard) introduces a new model by which assemblies are used and laid out on disk.  FSI cannot assume everything will be in the same place as it is in a .NET Framework world.
+Supporting this design requires significant changes in how FSI references assemblies.  As stated above, .NET Core (and .NET Standard) introduces a new model by which assemblies are used and laid out on disk.  FSI cannot assume everything will be in the same place as it is in a .NET Framework world.  Furthermore, when interactive with .NET Standard-based things, code is compiled against *Reference Assemblies* and ran against *Implementation Assemblies*.
 
-To begin, existing behavior with `#r` will remain unchanged for FSI running in non-.NET Core.  That is, if you reference an assembly today on .NET Framework or Mono via `#r`, it will always continue to work in the same way that it always has.
+To begin, existing behavior with `#r` will remain unchanged for FSI.  That is, if you reference an assembly today via `#r`, it will always continue to work in the same way that it always has.
 
-On .NET Core, however, `#r "<path-to-assembly>"` will be used for referencing *Reference Assemblies*.  To handle *Implementation Assemblies*, we introduce the notion of `#r impl: <path-to-implementation-assembly>`.  This is needed to directly reference implementation asseblies pulled down in packages or in the .NET Core Shared Framework.
+On .NET Core, however, `#r "ref: <path-to-reference-assembly>"` will be used for referencing *Reference Assemblies*.  To handle *Implementation Assemblies*, we use the notion of `#r impl: <path-to-implementation-assembly>`.  This is needed to directly reference implementation asseblies pulled down in packages or in the .NET Core Shared Framework.
 
-This split for .NET Core necessitates the introduction of `#r "nuget: name, version"` and `#r "paket: paket-command"` to simplify referencing dependencies in F# script files for .NET Core.  The intention is that FSI Scripts in the future will always specify dependencies via `#r "nuget` or `#r "paket` (or a future extended command, like `#r "project"`), allowing only FSI to be concerned with referencing the correct assemblies.  FSI in turn will defer to the specified package manager to resolve assemblies, load references in an ephemeral script, and load that script in the FSI session so that it has the references it needs.
+This split for .NET Core necessitates the introduction of `#r "nuget: name, version"` and `#r "paket: paket-command"` to simplify referencing dependencies in F# script files for .NET Core.  The intention is that FSI Scripts in the future will always specify dependencies via `#r "nuget` or `#r "paket` (or a future extended command, like `#r "project"`), allowing only FSI to be concerned with referencing the correct assemblies.
 
-Here is an example:
+There are two primary considerations here: design-time behavior and runtime behavior.
+
+## Design-Time
+
+A few things should happen at design time when using F# Scripting in an editor (VS, VS for Mac, Ionide) which supports IntelliSense.
+
+In the case of referencing a package via a specific tool (e.g., `#r "nuget:..."` or `#r "paket:..."`), F#
+
+1. Look for the tool on the PATH (or some other blessed location).  If it can't find it, error out with a nice error message.
+2. Call out to the tool to fetch packages and resolve dependencies.
+3. Reference the resolved `.dll`s via `#r` in an ephemeral script.
+4. Implicitly `#load` that ephemeral script to the current script.
+
+In the case of referencing a project, the editor will fall back on MSBuild.
+
+### Example - Paket:
 
 ```fsharp
 #r "paket: nuget Newtonsoft.Json"
-
-open Newtonsoft.Json
-
-type Foo = { IntVal: int; StringVal: string }
-
-let foo = { IntVal = 12; StringVal = "bananas" }
-let json = JsonConvert.SerializeObject(foo)
-
-printfn "Object: %A\n JSON: %s" foo json
 ```
 
-When FSI encounters this script, it will:
+After the above is typed, the editor will:
 
-1. Create an ephemeral script.
-2. Call into Paket to resolve dependencies.
-3. Generate a set of *Reference Assembly* and *Implementation Assembly* references in the ephemeral script, using `#r "path-to-ref-assembly"` and `#r "impl: path-to-impl-assembly""`
-4. Load the ephemeral script in the FSI session, thus giving FSI the correct references it needs to run in .NETCore
-4. Execute the above script which requires `Newtonsoft.Json`.
+1. Check to see if the specified dependency is already in a `.paket` folder, and then check to see if a `.dll` which matches that dependency exists.
+
+    a. If it does, `#r` the `.dll` in an ephemeral script, and then implicitly `#load` that script into the current script.
+
+2. If there is no such folder or `.dll`, look for Paket on the PATH (or some other blessed location).
+3. Invoke `paket install --generate-load-scripts` with the `nuget Newtonsoft.Json` command.  Source will default to `https://nuget.org/api/v2` for Paket.  Any error from Paket will be shown.
+4. Implicitly `#load` the generated script in the current script.
+   
+After everything is fetched, resolved, and loaded, types from `Newtonsoft.Jon` will be available after `open`ing the namespace.
+
+### Example - NuGet:
+
+```fsharp
+#r "nuget: Newtonsoft.Json, 9.0.1" // Example version, could be anything
+```
+
+After the above is typed, the editor will:
+
+1. Check to see if the specified dependency is already in the `packages` folder on the given machine.
+
+    a. If the exist, create an ephemeral script which loads the `.dll` with `#r`, and then implicitly `#load` that script into the current one.
+
+2. If there is no such folder or dependency, will look for NuGet on the PATH (or some other blessed location).
+3. Call out to NuGet to fetch and resolve the dependency.
+4. Create an ephemeral script and `#r` the assemblies that NuGet just resolved.  Any error from NuGet will be shown.
+5. Implicitly `#load` the generated script into the current script.
+
+### Example - Projects:
+
+```fsharp
+#r "project: MyProject"
+```
+
+After the above is typed, the editor will:
+
+1. Check to see if the containing project already has a reference to `MyProject.dll`.
+
+    a. If it does not find it, it will call out MSBuild (from the PATH or other blessed location - if it can't find it, error) for MSBuild to build that project.
+    b. Once it has `MyProject.dll`, it will reference it via `#r` in an ephemeral script.
+
+2. Implicitly `#load` the ephemeral script into the current script in the editor.
+
+## Runtime
+
+Behavior should not be so different at runtime.  When executing code interactive from a design-time scripting session, things are already resolved, so there is no extra consideration here - FSI has all the information it needs to execute code.
+
+### Starting FSI with the script
+
+When launching FSI with a script using one of the new `#r` references, FSI will do the following:
+
+1. Check if each dependency exists in the known place for the specified tool.  If it does, `#r` that dependency when executing FSI.
+2. If a dependency does not exist, search for the tool in a known/blessed area.  Error out if it can't be found.
+3. Call out to the tool to resolve dependencies.
+4. `#r` the resolved dependencies in an ephemeral script (or the script generated by Paket if using Paket).
+5. `#load` that script into the FSI session, thus giving it the references it needs to execute.
+
+### Running a script in an active FSI session
+
+This scenario is as follows: I have launched FSI at some point, and now I wish to execute a script which may or may not have references that I already have loaded into FSI.  The behavior should actually be the same as if FSI were launched with the script:
+
+1. Check if each dependency to be loaded exists in the known place for the specified tool.  If it does, `#r` that dependency when executing FSI.
+2. If a dependency does not exist, search for the tool in a known/blessed area.  Error out if it can't be found.
+3. Call out to the tool to resolve dependencies.
+4. `#r` the resolved dependencies in an ephemeral script (or the script generated by Paket if using Paket).  Check version numbers against what we already have loaded in the FSI session.  If any `.dll` names and versions match, don't `#r` them into the script.
+5. `#load` that script into the FSI session, thus giving it the references it needs to execute.
+
+This is because:
+
+1. A reference may already be loaded for the current FSI session, but a differen version was specified in that script.  We need to allow that to error out, because the script code may depend on a higher or lower version than what is already loaded.  That could cause a runtime error if we just allowed it to run on whatever we had already loaded.
+2. It's too complicated to attempt to only partially load stuff if something is already referenced.
+
+### Referencing a new dependency in an active FSI session
+
+This is the interactive scenario.  Interactively in an active FSI session, someone types, for example, `#r "paket: nuget Newtonsoft.Json"`.  Behavior should be identical to when running a script in an active FSI session:
+
+1. Check if each dependency to be loaded exists in the known place for the specified tool.  If it does, `#r` that dependency when executing FSI.
+2. If a dependency does not exist, search for the tool in a known/blessed area.  Error out if it can't be found.
+3. Call out to the tool to resolve dependencies.
+4. `#r` the resolved dependencies in an ephemeral script (or the script generated by Paket if using Paket).  Check version numbers against what we already have loaded in the FSI session.  If any `.dll` names and versions match, don't `#r` them into the script.
+5. `#load` that script into the FSI session, thus giving it the references it needs to execute.
+
+As above, if they somehow specify something which is already loaded, we should just let FSI attempt to load it and generate the error.
 
 ## Errors
 
@@ -90,6 +175,7 @@ Another alternative is to add more directives, such as the following:
 * `#r-impl "<path-to-impl-assembly>`
 * `#r-nuget "<package-name>, <package-version>`
 * `#r-paket "<paket-command>: <package-or-dependency>`
+* `#r-project "<projectname>"`
 
 A drawback here is that this is not something that C# would likely do in C# scripting.  Although the goal isn't to align with whatever C# is doing, differentiating on directives doesn't seem worth it unless a new directive is added for each *type* of operation we wish to perform.  Having a new directive for one type of operation (e.g., `#r-impl`), but no new directive for the rest would be strange and inconsistent.
 
