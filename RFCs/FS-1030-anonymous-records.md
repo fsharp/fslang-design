@@ -45,34 +45,38 @@ val data : {| X : int; Y : string |}
 
    In addition C# 7.0 has tuple types with named fields.  Currently F# ignores the named fields. We expect that these will become more frequent in .NET APIs.
 
-# Design Tensions and Limitations
+# Design Principles
 
-## Design Principle: Type Identity v. .NET metadata
+## Design Principle: Low Ceremony, Cheap and Cheerful data
+
+The basic design principle is that an explicit type decaration is not needed when packaging data in a record-like way:
+
+```fsharp
+let data = {| X = 1; Y = "abc" |}
+
+val data : {| X : int; Y : string |}
+```
+
+## Design Principle: By Default Works Across Assembly Boundaries
 
 In general F# developers will expect two contradictory things:
 
-(a) that the runtime objects/types correspdonding to anonymous record values/types will have .NET metadata (like F# nominal record types) supporting normal .NET reflection and .NET data binding.  
+(a) It Just Works across assembly boundaries. i.e. that type identity will by default be assembly neutral, that is ``{| X:int; Y: int |}`` in one assemby will be type equivalent to the same type in when used in another assembly
 
-(b) that type identity will by default be assembly neutral, that is ``{| X:int; Y: int |}`` in one assemby will be type equivalent to the same type in when used in another assembly
+(b) It has .NET metadata.  i.e. that the runtime objects/types correspdonding to anonymous record values/types will have .NET metadata (like F# nominal record types) supporting normal .NET reflection and .NET data binding.  
+
+
+This leads to two different kinds of anonymous records:
+
+* **Kind A** anonymous records that work smoothly across assembly boundaries 
+* **Kind B** anonymous records that are compatibile which have a corresponding .NET metadata
+
 
 .NET provides no mechanism to achieve both of these, i.e. there is no .NET mechanism to make types with strong .NET metadata shared
 and equivaent across assembly boundaries.
 
-We choose to make the default (b) over (a) since F# developers can always move to nominal record types if necessary. However,
-we make (a) an option, see below.
+We support both Kind A and B anonymous records.  However we make the default Kind A since F# developers can always move to nominal record types if necessary. However, we make Kind B an option, see below.
 
-## Design Principle: Anonymous Records, not Anonymous Objects
-
-The aim of this feature is **not** to create a new "obejct calculus" in F#.  For example, the user can't define "anonymous class types"
-such as this:
-```fsharp
-let obj = {| member x.M(y) = 1 + y 
-             member x.P = 2 |}
-
-obj : {| member M : int -> int
-         member P : int } 
-```
-without defining an explicit nominal class.  
 
 ## Design Principle: A Smooth Path to Nominalization
 
@@ -119,16 +123,35 @@ The feature must achieve both of these:
 
 Carrying precise .NET metadata for types of kind (1) is required.
 
-This leads to two different kinds of anonymous records: **Kind A** that are compatibile with C# anonymous objects and which have a corresponding nominal type, and **Kind B** that are compatibile with C# struct tuples.  From the point of view of regular F# coding there is very little difference between these.
+From the point of view of regular F# coding there is very little difference between these.
 
+## Design Principle: Kind A and Kind B are similar, not awkwardly different
+
+C# 3.0 anonymous objects sit awkwardly alongside C# 7.0 tuples.  They use a different syntax, the C# 3.0 feature is very limited in scope etc. They are hard for C# programmers to learn how to use well.  We want to avoid this.
+
+From the point of view of regular F# coding there is very little difference between Kind A and Kind B anonymous records, it should be very seamlesss ("slick and non-invasive") to move between the kinds. 
 
 ## Design Principle: Natural, interoperable compiled representations
 
 The need for interop means that anonymous records must use the "natural" compiler representations available on .NET:
 
-1. "Kind A" anonymous records must use a generated type with the same characteristics as mentioned above (except that it will be assembly-public)
+1. "Kind A" anonymous records must use the ``System.ValueTuple<...>`` encoding
 
-2. "Kind B" anonymous records must use the ``System.ValueTuple<...>`` encoding
+2. "Kind B" anonymous records must use a generated type with the same characteristics as mentioned above (except that it will be assembly-public)
+
+
+## Design Principle: Anonymous Records, not Anonymous Objects
+
+The aim of this feature is **not** to create a new "object calculus" in F#.  For example, the user can't define "anonymous class types"
+such as this:
+```fsharp
+let obj = {| member x.M(y) = 1 + y 
+             member x.P = 2 |}
+
+obj : {| member M : int -> int
+         member P : int } 
+```
+without defining an explicit nominal class.  
 
 
 
@@ -142,9 +165,9 @@ This is because
 1. the nominalized versions of these types don't support structural subtyping. 
 2. is not possible to support structural subtyping in the natural compiled representations of anonymous record types
 
-## Design Principle: Attributes and interfaces
+## Design Principle: Kind B just add .NET metadata, nothing else
 
-There are numerous aspects of the F#/.NET object system that coud be supported by "Kind A" anonymous record types (which have full .NET metadata and a backing .NET type). This incudes
+There are numerous aspects of the F#/.NET object system that coud be supported by "Kind B" anonymous record types (which have full .NET metadata and a backing .NET type). This incudes
 * properties (computerd on-demand)
 * interface implementations
 * methods
@@ -163,7 +186,7 @@ For example these types  could in theory include members and interface implement
 let data = new {| A = 3; interface IDisposable with member x.Dispose() = ... |}
 ```
 
-Likewise "Kind A" anonymous record types could also in theory have attributes:
+Likewise "Kind B" anonymous record types could also in theory have attributes:
 
 ```fsharp
 let data = new {| [<Foo>] A = 3; B = 4 |}
@@ -196,7 +219,9 @@ The proposal is
 The precise syntax for the second is TBD, another suggestion is ``{< ... >}`` (e.g. to avoid extra parentheses) though the differences betweeen the two are subtle. The prototype will support both.
 
 
-#### F#-friendly anonymous records 
+#### Basic anonymous records  ("Kind A")
+
+These are the "Kind A" anonymous record values mentioned above.
 
 ```fsharp
 module FSharpFriendlyAnonymousObjectsWithoutDotNetReflectionData = 
@@ -260,9 +285,9 @@ module FSharpFriendlyAnonymousObjectsWithoutDotNetReflectionData =
     let test8<'T>(x:'T) = {| a = x; b = x  |}
 ```
 
-#### C#-compatible anonymous objects
+#### Anonymous record values with added .NET metadata ("Kind B")
 
-In addition we support a separate collection of C#-compatible anonymous object types. These are the "Kind A" objects mentioned above. The syntax is an open question - see "Unresolved questions" below. For example we may use ``{< X = 1 >}`` or  ``new {< X = 1 >}``
+In addition we support a separate collection of C#-compatible anonymous object types. These are the "Kind B" objects mentioned above. The syntax is an open question - see "Unresolved questions" below. For example we may use ``{< X = 1 >}`` or  ``new {< X = 1 >}``
 
 These give an object that has full C#-compatible anonymous object metadata. 
 Underneath these compile to an instantiation of a generic type defined in the declaring assembly with appropriate .NET 
