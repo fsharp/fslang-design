@@ -34,7 +34,7 @@ val data : {| X : int; Y : string |}
    * the return types are easily entirely inferred, and/or
    * the types are needed when interoperating with C# code
 
-3. There is evidence a lot of pain around converting C# code that uses anonymous records into F# code ([List courtesy of @jpierson](https://github.com/fsharp/fslang-suggestions/issues/207#issuecomment-282570213))
+3. There is evidence a lot of pain around converting C# code that uses C# 3.0 "anonymous objects" into F# code ([List courtesy of @jpierson](https://github.com/fsharp/fslang-suggestions/issues/207#issuecomment-282570213)).
    * http://stackoverflow.com/q/8144184/83658
    * http://stackoverflow.com/q/31909234/83658
    * http://stackoverflow.com/q/8546823/83658
@@ -42,6 +42,8 @@ val data : {| X : int; Y : string |}
    * http://stackoverflow.com/q/26961004/83658
    * http://stackoverflow.com/q/8650463/83658
    * http://stackoverflow.com/q/13991448/83658
+
+   In addition C# 7.0 has tuple types with named fields.  Currently F# ignores the named fields. We expect that these will become more frequent in .NET APIs.
 
 # Design Tensions and Limitations
 
