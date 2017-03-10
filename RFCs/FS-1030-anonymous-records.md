@@ -63,19 +63,17 @@ In general F# developers will expect two contradictory things:
 
 (a) It Just Works across assembly boundaries. i.e. that type identity will by default be assembly neutral, that is ``{| X:int; Y: int |}`` in one assemby will be type equivalent to the same type in when used in another assembly
 
-(b) It has .NET metadata.  i.e. that the runtime objects/types correspdonding to anonymous record values/types will have .NET metadata (like F# nominal record types) supporting normal .NET reflection and .NET data binding.  
+(b) It Just Works with .NET Reflection, %A, Json.NET and other features, i.e. has .NET metadata.  i.e. that the runtime objects/types correspdonding to anonymous record values/types will have .NET metadata (like F# nominal record types) supporting normal .NET reflection and .NET data binding.  
 
 
 This leads to two different kinds of anonymous records:
 
 * **Kind A** anonymous records that work smoothly across assembly boundaries 
-* **Kind B** anonymous records that are compatibile which have a corresponding .NET metadata
+* **Kind B** anonymous records that have corresponding strong .NET metadata
 
+.NET provides no mechanism to achieve both of these, i.e. there is no .NET mechanism to make types both have "strong" .NET metadata shared and be equivalent across assembly boundaries.
 
-.NET provides no mechanism to achieve both of these, i.e. there is no .NET mechanism to make types with strong .NET metadata shared
-and equivaent across assembly boundaries.
-
-We support both Kind A and B anonymous records.  However we make the default Kind A since F# developers can always move to nominal record types if necessary. However, we make Kind B an option, see below.
+We support both Kind A and B anonymous records.  However we make the default Kind A since F# developers can always move to either Kind B or nominal record types if necessary. However, we make Kind B an option, see below.
 
 
 ## Design Principle: A Smooth Path to Nominalization
@@ -127,15 +125,32 @@ From the point of view of regular F# coding there is very little difference betw
 
 ## Design Principle: Kind A and Kind B are similar, not awkwardly different
 
-C# 3.0 anonymous objects sit awkwardly alongside C# 7.0 tuples.  They use a different syntax, the C# 3.0 feature is very limited in scope etc. They are hard for C# programmers to learn how to use well.  We want to avoid this.
+C# has both Kind A (C# 7.0 tuples) and Kind B (C# 3.0 anonymous objects) mechanisms, but they sit awkwardly alongside.  They use a different syntax, and the C# 3.0 feature is very limited in scope. It is hard to transition from one to the other without losing things. This means they are hard for C# programmers to learn how to use well, and different members of the same team will use these mechanisms differently and conflictingly.  We want to avoid this.
 
 From the point of view of regular F# coding there is very little difference between Kind A and Kind B anonymous records, it should be very seamlesss ("slick and non-invasive") to move between the kinds. 
+
+In practice this means adding and removing ``new`` as needed, from this (Kind A):
+
+```fsharp
+let data = {| X = 1; Y = "abc" |}
+
+val data : {| X : int; Y : string |}
+```
+
+to this (Kind B):
+
+```fsharp
+let data = new {| X = 1; Y = "abc" |}
+
+val data : new {| X : int; Y : string |}
+```
+The second has strong .NET metadata, the first doesn't.  The first is usable freely across assembly boundaries, the second isn't.
 
 ## Design Principle: Natural, interoperable compiled representations
 
 The need for interop means that anonymous records must use the "natural" compiler representations available on .NET:
 
-1. "Kind A" anonymous records must use the ``System.ValueTuple<...>`` encoding
+1. "Kind A" anonymous records must use the ``System.Tuple<...>`` and ``System.ValueTuple<...>`` encodings
 
 2. "Kind B" anonymous records must use a generated type with the same characteristics as mentioned above (except that it will be assembly-public)
 
