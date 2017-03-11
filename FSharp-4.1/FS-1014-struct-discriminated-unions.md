@@ -11,7 +11,7 @@ This RFC covers the detailed proposal for this suggestion.
 # Summary
 [summary]: #summary
 
-See [struct records](https://github.com/fsharp/FSharpLangDesign/blob/master/RFCs/FS-1008-struct-records.md):
+See [struct records](https://github.com/fsharp/fslang-design/blob/master/FSharp-4.1/FS-1008-struct-records.md):
 
 Like record types, Discriminated Union types should be able to be marked as a struct,
 effectively making the union type have the semantics of value types.
@@ -138,7 +138,7 @@ is "build the input to the match then decompose it".
 # Drawbacks
 [drawbacks]: #drawbacks
 
-The same as [struct records](https://github.com/fsharp/FSharpLangDesign/blob/master/RFCs/FS-1008-struct-records.md):
+The same as [struct records](https://github.com/fsharp/fslang-design/blob/master/FSharp-4.1/FS-1008-struct-records.md):
 * People may not understand when to use the attribute, and, like inline, use it inappropriately, giving worse performance.
 * People may "fiddle around" applying the attribute when performance is OK or performance gains are more likely to come via other routes
 * It's one more trick for F# programmers to learn
