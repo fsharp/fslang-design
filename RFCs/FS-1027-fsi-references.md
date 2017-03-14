@@ -154,13 +154,13 @@ FSI will have to display errors from the underlying assembly resolver.  For exam
 There is also another scenario to consider, which we will explicitly not handle.  For example, given the following:
 
 ```fsharp
-#r "paket: nuget Foo.Bar" // Depends on System.Whatever version 4.1.0
-#r "paket: nuget Baz.Qux" // Depends on System.Whatever version 4.2.0
+#r "nuget: Foo.Bar" // Depends on System.Whatever version 4.1.0
+#r "nuget: Baz.Qux" // Depends on System.Whatever version 4.2.0
 
 // some scripting code
 ```
 
-This will generate an error because `System.Whatever` version `4.1.0` will already be loaded.  It's not possible to load two versions of the same assembly in the same session without doing so within an `AssemblyLoadContext`, which is not something we will do at this time.  Thus, a meaningful error must be generated stating that the `paket: nuget Baz.Qux` requires `System.Whatever` version `4.2.0`, but version `4.1.0` was already loaded.
+This will generate an error because `System.Whatever` version `4.1.0` will already be loaded.  It's not possible to load two versions of the same assembly in the same session without doing so within an `AssemblyLoadContext`, which is not something we will do at this time.  Thus, a meaningful error must be generated stating that the `nuget: Baz.Qux` requires `System.Whatever` version `4.2.0`, but version `4.1.0` was already loaded.
 
 We may consider using `AssemblyLoadContext` in some clever way in the future, but it's very difficult to get right and well outside the scope of what we need to support for a .NET Core 2.0 timeframe.
 
