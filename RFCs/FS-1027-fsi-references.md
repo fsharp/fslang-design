@@ -3,18 +3,24 @@
 * [x] Approved in principle
 * [ ] [FSLang Suggestion](https://github.com/fsharp/fslang-suggestions/issues/542)
 * [ ] Details: [under discussion](https://github.com/fsharp/fslang-design/issues/167)
-* [ ] Implementation: [In progress](https://github.com/Microsoft/visualfsharp/pull/FILL-ME-IN)
+* [x] Implementation: [In progress](https://github.com/Microsoft/visualfsharp/pull/2483)
 
 # Summary
 [summary]: #summary
 
 The following extensions to `#r` are proposed:
 
+a) built-in:
+
+* `#r "project: <project-name>"`
 * `#r "impl: <path-to-implementation-assembly>"`
 * `#r "ref: <path-to-reference-assembly>"`
-* `#r "paket: <paket command>"`
-* `#r "nuget: <package-name>, <package-version>"`
-* `#r "project: <project-name>"`
+
+b) via .dll extension;
+
+* `#r "[dependency manager]: <dependency manager command>"` like
+   * `#r "paket: <paket command>"`
+   * `#r "nuget: <package-name>, <package-version>"`
 
 This extends the "language" of `#r` to support implementation and reference assemblies, NuGet packages, Paket dependencies, and potentially more.
 
@@ -33,7 +39,7 @@ Supporting this design requires significant changes in how FSI references assemb
 
 To begin, existing behavior with `#r` will remain unchanged for FSI.  That is, if you reference an assembly today via `#r`, it will always continue to work in the same way that it always has.
 
-On .NET Core, however, `#r "ref: <path-to-reference-assembly>"` will be used for referencing *Reference Assemblies*.  To handle *Implementation Assemblies*, we use the notion of `#r impl: <path-to-implementation-assembly>`.  This is needed to directly reference implementation asseblies pulled down in packages or in the .NET Core Shared Framework.
+On .NET Core, however, `#r "ref: <path-to-reference-assembly>"` will be used for referencing *Reference Assemblies*.  To handle *Implementation Assemblies*, we use the notion of `#r impl: <path-to-implementation-assembly>`.  This is needed to directly reference implementation assemblies pulled down in packages or in the .NET Core Shared Framework.
 
 This split for .NET Core necessitates the introduction of `#r "nuget: name, version"` and `#r "paket: paket-command"` to simplify referencing dependencies in F# script files for .NET Core.  The intention is that FSI Scripts in the future will always specify dependencies via `#r "nuget` or `#r "paket` (or a future extended command, like `#r "project"`), allowing only FSI to be concerned with referencing the correct assemblies.
 
@@ -55,17 +61,15 @@ In the case of referencing a project, the editor will fall back on MSBuild.
 ### Example - Paket:
 
 ```fsharp
-#r "paket: nuget Newtonsoft.Json"
+#r "paket: nuget Newtonsoft.Json ~> 9.0.1" // Example. All paket features are allowed
 ```
 
 After the above is typed, the editor will:
 
-1. Check to see if the specified dependency is already in a `.paket` folder, and then check to see if a `.dll` which matches that dependency exists.
-
-    a. If it does, `#r` the `.dll` in an ephemeral script, and then implicitly `#load` that script into the current script.
-
-2. If there is no such folder or `.dll`, look for Paket on the PATH (or some other blessed location).
-3. Invoke `paket install --generate-load-scripts` with the `nuget Newtonsoft.Json` command.  Source will default to `https://nuget.org/api/v2` for Paket.  Any error from Paket will be shown.
+1. Check if it can find a registered dependency manager which reacts to the prefix "paket:"
+2. If the paket tool is found it will call the `resolve` method on it
+    a. Paket will internally check if it needs to restore the dependency or if everything is already in place. Any error from Paket will be shown.
+    b. Paket will create an ephemeral script that `#r` all direct and indirect libraries for the specified dependency.
 4. Implicitly `#load` the generated script in the current script.
    
 After everything is fetched, resolved, and loaded, types from `Newtonsoft.Jon` will be available after `open`ing the namespace.
