@@ -166,11 +166,19 @@ We may consider using `AssemblyLoadContext` in some clever way in the future, bu
 
 FSI/Design time support will look at the following places in order:
 
-* if the script is a physical file, check current folder and browse all parent folders looking for .fsharp/fsi-extensions folder in each one
-* look into ~/.fsharp/fsi-extensions
-* look into .fsharp/fsi-extensions folder next to fsi.exe
+* if the script is a physical file, check current folder and browse all parent folders looking for .fsharp/fsx-extensions folder in each one
+* look into ~/.fsharp/fsx-extensions
+* look into .fsharp/fsx-extensions folder next to fsi.exe
 
 gather all the distinct dll names, order of precedence favorising those in the same order shown above, and load them in the process if their assembly contains an arbitrary attribute (resolved by name rather than dependency on external library) and types marked with same attributes.
+
+On .NET Framework, the dll are loaded through `Assembly.LoadFrom`.
+
+On .NET Core the loading mechanism is yet to be determined (**TBD**), although the extensions will need to be targetting .NET Standard 1.6 or higher.
+
+The fact that those dll will be loadable for both .NET Core and .NET Framework compilers  is yet to be determined (**TBD**).
+
+In context of tooling, the location are scanned initially once per interactive session, but as evaluation of additional script occurs, it might be necessary to scan additional locations (same rules apply, but it will only scan the additional places from first point in the list above, and won't scan again those folders already scanned).
 
 If a handler key (such as `nuget` or `paket`) is found several times, report a warning showing location of assemblies and showing which one was picked (we apply same order of precedence as for finding the assemblies).
 
