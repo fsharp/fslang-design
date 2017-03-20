@@ -344,11 +344,8 @@ module CSharpCompatAnonymousObjects =
 
 # Implementation TBD
 
-1. The prototype generates struct representations by default.  We don't normally want this.
-2. The prototype C#-compatible types are TBD
-3. The alternative syntax is TBD
-4. The language service features are TBD
-5. Give a good error message when ``new { ... }`` is used when converting from C# code
+1. C#-compatible types Kind B types are not yet generated
+2. The language service features are TBD
 
 # Drawbacks
 [drawbacks]: #drawbacks
@@ -357,11 +354,7 @@ module CSharpCompatAnonymousObjects =
 
 2. It adds another **two** ways to tuple data in F# (we already have tuples, records, classes, single-case-unions....)
 
-3. The types don't by default carry .NET metadata, so for example ``sprintf "%A"`` doesn't show record field names by default unless we do a lot of extra work. But this also applies to C# tuple types, so we have some of this pain in any case.  But are we just making it much worse?
-
-4. The distinction between types that carry .NET metadata and types that don't is subtle
-
-5. The cost of checking that intellisense, auto-compete etc. work is quite high
+3. The distinction between Kind A and Kind B types is subtle
 
 # Alternatives
 [alternatives]: #alternatives
