@@ -61,9 +61,9 @@ val data : {| X : int; Y : string |}
 
 In general F# developers will expect two contradictory things:
 
-(a) It Just Works across assembly boundaries. i.e. that type identity will by default be assembly neutral, that is ``{| X:int; Y: int |}`` in one assemby will be type equivalent to the same type in when used in another assembly
+(a) **It Just Works across assembly boundaries**. That is, type identity for anonymous types will, by default, be assembly neutral. So ``{| X:int; Y: int |}`` in one assembly will be type equivalent to the same type when used in another assembly
 
-(b) It Just Works with .NET Reflection, %A, Json.NET and other features, i.e. has .NET metadata.  i.e. that the runtime objects/types correspdonding to anonymous record values/types will have .NET metadata (like F# nominal record types) supporting normal .NET reflection and .NET data binding.  
+(b) **It Just Works with .NET Reflection, ``sprintf "%A"``, Json.NET and other features.** That is, the implied runtime types of the objects have .NET metadata, i.e. the runtime objects/types correspdonding to anonymous record values/types will have .NET metadata (like F# nominal record types).
 
 
 This leads to two different kinds of anonymous records:
@@ -71,23 +71,27 @@ This leads to two different kinds of anonymous records:
 * **Kind A** anonymous records that work smoothly across assembly boundaries 
 * **Kind B** anonymous records that have corresponding strong .NET metadata
 
-.NET provides no mechanism to achieve both of these, i.e. there is no .NET mechanism to make types both have "strong" .NET metadata shared and be equivalent across assembly boundaries.
+.NET provides no mechanism to achieve both of these, i.e. there is no .NET mechanism to make types both have "strong" .NET metadata and be equivalent across assembly boundaries.
 
-We support both Kind A and B anonymous records.  However we make the default Kind A since F# developers can always move to either Kind B or nominal record types if necessary. However, we make Kind B an option, see below.
+In this proposal we support both Kind A and B anonymous records.  However we make the default Kind A, allowing F# developers to move to either Kind B or nominal record types if necessary. However, we make Kind B an option, see below.
 
 
 ## Design Principle: A Smooth Path to Nominalization
 
-A basic litmus test is this: can the user smoothly (through localized, regular transformations) adjust a closed body of code to use existing F# nominal record types instead of anonymous record types?
+A basic litmus test of this feature is this: can the user smoothly (through localized, regular transformations) adjust a closed body of code to use existing F# nominal record types instead of anonymous record types?
 
-The answer is "yes" - they just have to expicitly define each implied record type, and replace ``{| ... |}`` by ``{ .. }``, and add
-some type annotations.  Let's call this process "nominalization".
+We adopt the dsign principle that the answer to this must be "yes" - the developer just has to
+1. expicitly define each implied record type
+2. replace ``{| ... |}`` by ``{ .. }``
+3. add some type annotations.
+Let's call this process "nominalization".
 
-Nominalization is imoprtant as code matures, because values that start as "just data" often gradaully become more like objects: they
-collect some associated derived properties, some methods, they start to have constraints and invariants applied, they may end up
-having their representation hidden, they may become mutable.  Anonymous records will **not** support this full range of
-machinery, though nominal record types and class types do.  As a type matures, you want to make sure
-that the user can transition towards nominal record types and class types. (TODO: ink to related suggestions about improving nominal
+Supporting smooth nominalization is important as code matures, because values that start
+as "just data" often gradaully become more like objects: they collect some associated derived properties,
+some methods, they start to have constraints and invariants applied, they may end up
+having their representation hidden, they may become mutable.  Anonymous record types do **not** support this full range of
+nominal type machinery, however nominal record types and class types do.  As a type matures, you want to make sure
+that the user can transition towards nominal record types and class types. (TODO: link to related suggestions about improving nominal
 record types and class types).
 
 Supporting "smooth nominalization" means that features such as these are out of scope or orthogonal
@@ -95,11 +99,12 @@ Supporting "smooth nominalization" means that features such as these are out of 
 * adding fields to anonymous records ``{ x with A = 1 }``
 * unioning anonymous records `` { include x; include y }``
 
-These would all be fine features, but we will treat them as orthogonal: they wil be included if and only if
-they are **also** implemented for nominal record types. Today F# record types do not support the above features - even ``{ x with A=1}``
-is restricted to create objects of the same type as the original.
+These would all be fine features, but we will treat them as orthogonal: they could be included if and only if
+they are **also** implemented for nominal record types. F# nominal record types do not support the above
+features - even ``{ x with A=1}`` is restricted to create objects of the same type as the original ``x``.
 
-If smooth nominalization is not possible, then some users will inevitably use the unique features of anonymous record types, but then be left with no path to nominalize their code when they want to be more explicit, or as their types gradually 
+Without smooth nominalization, developers will inevitably use unique features of anonymous record types,
+but be left with no path to nominalize their code as it matures.
 
 
 ## Design Principle: Interop
@@ -228,8 +233,8 @@ val data :  {| X : int; Y : int |}
 ```
 
 The proposal is 
-1. the primary syntax  ``{| X = 1; Y = 2 |}`` gives "Kind B" anonymous records, represented under-the-hood via tuples
-2. the extended syntax  ``new {| X = 1; Y = 2 |}`` gives "Kind A" anonymous records, C# compatible and with full .NET metadata.  This types are implicitly assembly-qualified.
+1. the primary syntax  ``{| X = 1; Y = 2 |}`` gives "Kind A" anonymous records, represented under-the-hood via tuples
+2. the extended syntax  ``new {| X = 1; Y = 2 |}`` gives "Kind B" anonymous records, C# compatible and with full .NET metadata.  This types are implicitly assembly-qualified.
 
 The precise syntax for the second is TBD, another suggestion is ``{< ... >}`` (e.g. to avoid extra parentheses) though the differences betweeen the two are subtle. The prototype will support both.
 
