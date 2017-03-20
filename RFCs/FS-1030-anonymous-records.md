@@ -368,3 +368,177 @@ module CSharpCompatAnonymousObjects =
 2. Behaviour under equality and comparison
 
 
+# Addenda
+
+## C# anonymous type MSIL
+
+this is IL generated for assembly containing this expression:
+
+```csharp
+new { a = 1 }
+```
+
+```csharp
+.class private auto ansi sealed beforefieldinit '<>f__AnonymousType0`1'<'<a>j__TPar'>
+	extends [mscorlib]System.Object
+{
+	.custom instance void [mscorlib]System.Runtime.CompilerServices.CompilerGeneratedAttribute::.ctor() = (
+		01 00 00 00
+	)
+	.custom instance void [mscorlib]System.Diagnostics.DebuggerDisplayAttribute::.ctor(string) = (
+		01 00 0c 5c 7b 20 61 20 3d 20 7b 61 7d 20 7d 01
+		00 54 0e 04 54 79 70 65 10 3c 41 6e 6f 6e 79 6d
+		6f 75 73 20 54 79 70 65 3e
+	)
+	// Fields
+	.field private initonly !'<a>j__TPar' '<a>i__Field'
+	.custom instance void [mscorlib]System.Diagnostics.DebuggerBrowsableAttribute::.ctor(valuetype [mscorlib]System.Diagnostics.DebuggerBrowsableState) = (
+		01 00 00 00 00 00 00 00
+	)
+
+	// Methods
+	.method public hidebysig specialname 
+		instance !'<a>j__TPar' get_a () cil managed 
+	{
+		// Method begins at RVA 0x2050
+		// Code size 7 (0x7)
+		.maxstack 8
+
+		IL_0000: ldarg.0
+		IL_0001: ldfld !0 class '<>f__AnonymousType0`1'<!'<a>j__TPar'>::'<a>i__Field'
+		IL_0006: ret
+	} // end of method '<>f__AnonymousType0`1'::get_a
+
+	.method public hidebysig specialname rtspecialname 
+		instance void .ctor (
+			!'<a>j__TPar' a
+		) cil managed 
+	{
+		.custom instance void [mscorlib]System.Diagnostics.DebuggerHiddenAttribute::.ctor() = (
+			01 00 00 00
+		)
+		// Method begins at RVA 0x2058
+		// Code size 14 (0xe)
+		.maxstack 8
+
+		IL_0000: ldarg.0
+		IL_0001: call instance void [mscorlib]System.Object::.ctor()
+		IL_0006: ldarg.0
+		IL_0007: ldarg.1
+		IL_0008: stfld !0 class '<>f__AnonymousType0`1'<!'<a>j__TPar'>::'<a>i__Field'
+		IL_000d: ret
+	} // end of method '<>f__AnonymousType0`1'::.ctor
+
+	.method public hidebysig virtual 
+		instance bool Equals (
+			object 'value'
+		) cil managed 
+	{
+		.custom instance void [mscorlib]System.Diagnostics.DebuggerHiddenAttribute::.ctor() = (
+			01 00 00 00
+		)
+		// Method begins at RVA 0x2068
+		// Code size 36 (0x24)
+		.maxstack 3
+		.locals init (
+			[0] class '<>f__AnonymousType0`1'<!'<a>j__TPar'>
+		)
+
+		IL_0000: ldarg.1
+		IL_0001: isinst class '<>f__AnonymousType0`1'<!'<a>j__TPar'>
+		IL_0006: stloc.0
+		IL_0007: ldloc.0
+		IL_0008: brfalse.s IL_0022
+
+		IL_000a: call class [mscorlib]System.Collections.Generic.EqualityComparer`1<!0> class [mscorlib]System.Collections.Generic.EqualityComparer`1<!'<a>j__TPar'>::get_Default()
+		IL_000f: ldarg.0
+		IL_0010: ldfld !0 class '<>f__AnonymousType0`1'<!'<a>j__TPar'>::'<a>i__Field'
+		IL_0015: ldloc.0
+		IL_0016: ldfld !0 class '<>f__AnonymousType0`1'<!'<a>j__TPar'>::'<a>i__Field'
+		IL_001b: callvirt instance bool class [mscorlib]System.Collections.Generic.EqualityComparer`1<!'<a>j__TPar'>::Equals(!0, !0)
+		IL_0020: br.s IL_0023
+
+		IL_0022: ldc.i4.0
+
+		IL_0023: ret
+	} // end of method '<>f__AnonymousType0`1'::Equals
+
+	.method public hidebysig virtual 
+		instance int32 GetHashCode () cil managed 
+	{
+		.custom instance void [mscorlib]System.Diagnostics.DebuggerHiddenAttribute::.ctor() = (
+			01 00 00 00
+		)
+		// Method begins at RVA 0x2098
+		// Code size 29 (0x1d)
+		.maxstack 8
+
+		IL_0000: ldc.i4 -327796526
+		IL_0005: ldc.i4 -1521134295
+		IL_000a: mul
+		IL_000b: call class [mscorlib]System.Collections.Generic.EqualityComparer`1<!0> class [mscorlib]System.Collections.Generic.EqualityComparer`1<!'<a>j__TPar'>::get_Default()
+		IL_0010: ldarg.0
+		IL_0011: ldfld !0 class '<>f__AnonymousType0`1'<!'<a>j__TPar'>::'<a>i__Field'
+		IL_0016: callvirt instance int32 class [mscorlib]System.Collections.Generic.EqualityComparer`1<!'<a>j__TPar'>::GetHashCode(!0)
+		IL_001b: add
+		IL_001c: ret
+	} // end of method '<>f__AnonymousType0`1'::GetHashCode
+
+	.method public hidebysig virtual 
+		instance string ToString () cil managed 
+	{
+		.custom instance void [mscorlib]System.Diagnostics.DebuggerHiddenAttribute::.ctor() = (
+			01 00 00 00
+		)
+		// Method begins at RVA 0x20b8
+		// Code size 77 (0x4d)
+		.maxstack 7
+		.locals init (
+			[0] !'<a>j__TPar',
+			[1] !'<a>j__TPar'
+		)
+
+		IL_0000: ldnull
+		IL_0001: ldstr "{{ a = {0} }}"
+		IL_0006: ldc.i4.1
+		IL_0007: newarr [mscorlib]System.Object
+		IL_000c: dup
+		IL_000d: ldc.i4.0
+		IL_000e: ldarg.0
+		IL_000f: ldfld !0 class '<>f__AnonymousType0`1'<!'<a>j__TPar'>::'<a>i__Field'
+		IL_0014: stloc.0
+		IL_0015: ldloca.s 0
+		IL_0017: ldloca.s 1
+		IL_0019: initobj !'<a>j__TPar'
+		IL_001f: ldloc.1
+		IL_0020: box !'<a>j__TPar'
+		IL_0025: brtrue.s IL_003b
+
+		IL_0027: ldobj !'<a>j__TPar'
+		IL_002c: stloc.1
+		IL_002d: ldloca.s 1
+		IL_002f: ldloc.1
+		IL_0030: box !'<a>j__TPar'
+		IL_0035: brtrue.s IL_003b
+
+		IL_0037: pop
+		IL_0038: ldnull
+		IL_0039: br.s IL_0046
+
+		IL_003b: constrained. !'<a>j__TPar'
+		IL_0041: callvirt instance string [mscorlib]System.Object::ToString()
+
+		IL_0046: stelem.ref
+		IL_0047: call string [mscorlib]System.String::Format(class [mscorlib]System.IFormatProvider, string, object[])
+		IL_004c: ret
+	} // end of method '<>f__AnonymousType0`1'::ToString
+
+	// Properties
+	.property instance !'<a>j__TPar' a()
+	{
+		.get instance !0 '<>f__AnonymousType0`1'::get_a()
+	}
+
+} // end of class <>f__AnonymousType0`1
+
+```
