@@ -344,7 +344,9 @@ module CSharpCompatAnonymousObjects =
 
 # Implementation Notes
 
-Kind B types are given a unique name by SHA1 hashing the names of the fields
+* Kind B types are given a unique name by SHA1 hashing the names of the fields
+
+* Kind B types are marked serializable
 
 
 # Implementation TBD
