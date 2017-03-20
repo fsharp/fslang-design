@@ -66,14 +66,15 @@ In general F# developers will expect two contradictory things:
 (b) **It Just Works with .NET Reflection, ``sprintf "%A"``, Json.NET and other features.** That is, the implied runtime types of the objects have .NET metadata, i.e. the runtime objects/types correspdonding to anonymous record values/types will have .NET metadata (like F# nominal record types).
 
 
+
+Unfortunately .NET provides no mechanism to achieve both of these, i.e. there is no .NET mechanism to make types both have "strong" .NET metadata and be equivalent across assembly boundaries.
+
 This leads to two different kinds of anonymous records:
 
 * **Kind A** anonymous records that work smoothly across assembly boundaries 
 * **Kind B** anonymous records that have corresponding strong .NET metadata
 
-.NET provides no mechanism to achieve both of these, i.e. there is no .NET mechanism to make types both have "strong" .NET metadata and be equivalent across assembly boundaries.
-
-In this proposal we support both Kind A and B anonymous records.  However we make the default Kind A, allowing F# developers to move to either Kind B or nominal record types if necessary. However, we make Kind B an option, see below.
+In this proposal we support both Kind A and B anonymous records.  We make the default "Kind A", but allow F# developers to move to either Kind B or nominal record types if necessary.
 
 
 ## Design Principle: A Smooth Path to Nominalization
