@@ -342,9 +342,14 @@ module CSharpCompatAnonymousObjects =
 
 ```
 
+# Implementation Notes
+
+Kind B types are given a unique name by SHA1 hashing the names of the fields
+
+
 # Implementation TBD
 
-1. C#-compatible types Kind B types are not yet generated
+1. Equaity, hash and comparison on Kind B types are TBD
 2. The language service features are TBD
 
 # Drawbacks
