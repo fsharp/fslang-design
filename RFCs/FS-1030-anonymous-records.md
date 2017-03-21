@@ -201,6 +201,8 @@ be expressed in the .NET type system.  It could in theory be supported for inlin
 complex for reatively little gain in the overall context of F#.  Many practical uses of this kind of genericity can be adequately dealt with via object interfaces and, if necessary, a limited amount of casting.
 
 
+However code that is generic over record types  _can_ be written using static member constraints, e.g.
+
 
 ## Design Principle: Not anonymous object expressions
 
@@ -408,7 +410,7 @@ module CSharpCompatAnonymousObjects =
 1. Do we emit and read C# tuple metadata information at return and argument positions?
 2. Behaviour under equality and comparison
 3. Can records be created using implied field names ``{ x.Name; Age = 31 }``
-
+4. Do FSharp.Core functions ``FSharp.Reflection.FSharpType.GetRecordFields`` and ``FSharp.Reflection.FSharpValue.MakeRecord/GetRecordField/GetRecordFields`` work with anonymous record values?  
 
 # Addenda
 
