@@ -175,7 +175,7 @@ without defining an explicit nominal class.
 
 
 
-## Design Principle: No structural typing
+## Design Principle: No structural subtyping
 
 "Smooth nominalization" and "Interop" imply the following design limitation:
 
