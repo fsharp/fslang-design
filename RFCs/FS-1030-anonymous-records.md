@@ -129,7 +129,7 @@ Carrying precise .NET metadata for types of kind (1) is required.
 
 From the point of view of regular F# coding there is very little difference between these.
 
-## Design Principle: Kind A and Kind B are syntactically similar, not awkwardly different
+## Design Principle: Kind A and Kind B are syntactically similar, despite their semantic differences
 
 C# has both Kind A (C# 7.0 tuples) and Kind B (C# 3.0 anonymous objects) mechanisms, but they sit awkwardly alongside.  They use a different syntax, and the C# 3.0 feature is very limited in scope. It is hard to transition from one to the other without losing things. This means they are hard for C# programmers to learn how to use well, and different members of the same team will use these mechanisms differently and conflictingly.  We want to avoid this.
 
