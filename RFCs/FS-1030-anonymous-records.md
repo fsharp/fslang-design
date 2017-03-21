@@ -186,9 +186,25 @@ This is because
 1. the nominalized versions of these types don't support structural subtyping. 
 2. is not possible to support structural subtyping in the natural compiled representations of anonymous record types
 
-## Design Principle: Kind B just add .NET metadata, nothing else
+## Design Principle: No parameterization by record bindings
 
-There are numerous aspects of the F#/.NET object system that coud be supported by "Kind B" anonymous record types (which have full .NET metadata and a backing .NET type). This incudes
+OCaml supports an object calculus that includes polymorphism (generics) over sets of bindings - so-called "row variables", e.g.
+
+```fsharp
+let f x = x#p
+
+val f : { x : 'a; .. } -> 'b 
+```
+
+where the `..` means "a set of object members".  This kind of polymorphism is very natural for anonymous objects.  However, it can't
+be expressed in the .NET type system.  It could in theory be supported for inlined F# functions but doing that would be somewhat
+complex for reatively little gain in the overall context of F#.  Many practical uses of this kind of genericity can be adequately dealt with via object interfaces and, if necessary, a limited amount of casting.
+
+
+
+## Design Principle: Not anonymous object expressions
+
+There are numerous aspects of the F#/.NET object system that could, in theory, be supported by "Kind B" anonymous record types (which have full .NET metadata and a backing .NET type). This incudes
 * properties (computerd on-demand)
 * interface implementations
 * methods
@@ -215,13 +231,18 @@ let data = new {| [<Foo>] A = 3; B = 4 |}
 
 However we don't plan to alow either of these as part of this feature.
 
+## Design Principle: No anonymous unions
+
+Anonymous unions are a natural analogue to anonymous records. They can be tagged or untagged. However this proposal doesn't
+cover anonymous unions.
+
 # Detailed design
 [design]: #detailed-design
 
 
 ## Syntax
 
-In the prototype the primary syntax is 
+The primary syntax is 
 
 ```fsharp
 let data = {| X = 1; Y = 2 |}
@@ -233,14 +254,25 @@ An expression like this can be formed without a prior type definition for a reco
 val data :  {| X : int; Y : int |}
 ```
 
-The proposal is 
-1. the primary syntax  ``{| X = 1; Y = 2 |}`` gives "Kind A" anonymous records, represented under-the-hood via tuples
-2. the extended syntax  ``new {| X = 1; Y = 2 |}`` gives "Kind B" anonymous records, C# compatible and with full .NET metadata.  This types are implicitly assembly-qualified.
+In more detail, a new form of expression is added:
 
-The precise syntax for the second is TBD, another suggestion is ``{< ... >}`` (e.g. to avoid extra parentheses) though the differences betweeen the two are subtle. The prototype will support both.
+    expr = 
+       | ... 
+       | new_opt struct_opt {| record-field-bindings |}
+
+A new form of type is added:
+
+    type = 
+       | ... 
+       | new_opt struct_opt {| record-field-declarations |}
 
 
-#### Basic anonymous records  ("Kind A")
+* The primary syntax  ``{| X = 1; Y = 2 |}`` gives "Kind A" anonymous records, represented under-the-hood via tuples
+* The extended syntax  ``new {| X = 1; Y = 2 |}`` gives "Kind B" anonymous records, C# compatible and with full .NET metadata.  This types are implicitly assembly-qualified.
+
+The checking and elaboration of these forms is fairly straight-forward.
+
+## Examples: Basic anonymous records  ("Kind A")
 
 These are the "Kind A" anonymous record values mentioned above.
 
@@ -306,9 +338,9 @@ module FSharpFriendlyAnonymousObjectsWithoutDotNetReflectionData =
     let test8<'T>(x:'T) = {| a = x; b = x  |}
 ```
 
-#### Anonymous record values with added .NET metadata ("Kind B")
+## Examples: Anonymous record values with added .NET metadata ("Kind B")
 
-In addition we support a separate collection of C#-compatible anonymous object types. These are the "Kind B" objects mentioned above. The syntax is an open question - see "Unresolved questions" below. For example we may use ``{< X = 1 >}`` or  ``new {< X = 1 >}``
+In addition we support a separate collection of C#-compatible anonymous object types. These are the "Kind B" objects mentioned above. The syntax is ``new {| X = 1; Y = 2 |}``.
 
 These give an object that has full C#-compatible anonymous object metadata. 
 Underneath these compile to an instantiation of a generic type defined in the declaring assembly with appropriate .NET 
@@ -329,16 +361,6 @@ module CSharpCompatAnonymousObjects =
     let data1 = new {| X = 1 |}
 
     let f1 (x : new {| X : int |}) =  x.X
-
-```
-
-Here's the alternative syntax:
-```fsharp
-module CSharpCompatAnonymousObjects = 
-    
-    let data1 = new {< X = 1 >}
-
-    let f1 (x : new {< X : int >}) =  x.X
 
 ```
 
@@ -368,11 +390,24 @@ module CSharpCompatAnonymousObjects =
 
 1. Don't do it.  Just use tuples or new nominal record types
 
+
+2. Use `{< ... >}` for kind B values. Here's an example of this alternative syntax:
+
+```fsharp
+module CSharpCompatAnonymousObjects = 
+    
+    let data1 = new {< X = 1 >}
+
+    let f1 (x : new {< X : int >}) =  x.X
+```
+
+
 # Unresolved questions
 [unresolved]: #unresolved-questions
 
 1. Do we emit and read C# tuple metadata information at return and argument positions?
 2. Behaviour under equality and comparison
+3. Can records be created using implied field names ``{ x.Name; Age = 31 }``
 
 
 # Addenda
