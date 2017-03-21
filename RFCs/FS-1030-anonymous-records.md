@@ -200,7 +200,26 @@ be expressed in the .NET type system.  It could in theory be supported for inlin
 complex for reatively little gain in the overall context of F#.  Many practical uses of this kind of genericity can be adequately dealt with via object interfaces and, if necessary, a limited amount of casting.
 
 
-However code that is generic over record types  _can_ be written using static member constraints, e.g.
+Code that is generic over record types  _can_ be written using static member constraints, e.g.
+```
+    let inline getX (x: ^TX) : ^X = 
+          (^TX : (member get_X : unit -> ^X) (x))
+
+    getX {| X = 0 |}
+    
+    let data1 = new {| X = 1; Y = "abc" |}
+    getX data1
+    
+    getX {| X = 2; Y = "2" |}
+
+```
+Or, with the syntax proposed for F# 4.1:
+```fsharp
+
+    let inline getX x = (_.X) x
+
+    getX {| X = 0 |}
+```
 
 
 ## Design Principle: Not anonymous object expressions
