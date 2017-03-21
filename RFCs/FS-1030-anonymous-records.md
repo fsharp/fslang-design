@@ -427,7 +427,7 @@ module CSharpCompatAnonymousObjects =
 
 1. Do we emit and read C# tuple metadata information at return and argument positions?
 2. Behaviour under equality and comparison
-3. Can records be created using implied field names ``{ x.Name; Age = 31 }``
+3. Can records be created using implied field names ``{| x.Name; Age = 31 |}`` instead of `` {| Name=x.Name; Age=31 |}``. 
 4. Do FSharp.Core functions ``FSharp.Reflection.FSharpType.GetRecordFields`` and ``FSharp.Reflection.FSharpValue.MakeRecord/GetRecordField/GetRecordFields`` work with anonymous record values?  
 
 # Addenda
