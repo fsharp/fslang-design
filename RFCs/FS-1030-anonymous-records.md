@@ -6,7 +6,7 @@ This RFC is WIP
 
 * [x] Approved in principle
 * [x] Details: [under discussion](https://github.com/fsharp/fslang-design/issues/170)
-* [x] Implementation: [preliminary draft](https://github.com/Microsoft/visualfsharp/compare/master...dsyme:anon-1?expand=1)
+* [x] Implementation: [draft submitted](https://github.com/Microsoft/visualfsharp/pull/2671)
 
 
 # Summary
