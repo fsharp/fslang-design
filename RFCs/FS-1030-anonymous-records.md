@@ -152,7 +152,7 @@ val data : new {| X : int; Y : string |}
 ```
 The second has strong .NET metadata, the first doesn't.  The first is usable freely across assembly boundaries, the second isn't.
 
-## Design Principle: Natural, interoperable compiled representations
+## Design Principle: Interoperable compiled representations
 
 The need for interop means that anonymous records must use the "natural" compiler representations available on .NET:
 
