@@ -416,9 +416,9 @@ module CSharpCompatAnonymousObjects =
 ```fsharp
 module CSharpCompatAnonymousObjects = 
     
-    let data1 = new {< X = 1 >}
+    let data1 = {< X = 1 >}
 
-    let f1 (x : new {< X : int >}) =  x.X
+    let f1 (x : {< X : int >}) =  x.X
 ```
 
 
