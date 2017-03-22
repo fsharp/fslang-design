@@ -25,15 +25,13 @@ val data : {| X : int; Y : string |}
 # Motivation
 [motivation]: #motivation
 
-1. There are many use cases where you want to package data without needing to write an explicit type
-
-2. Writing named record types is painful in F#, especially when
+1. Writing named record types is painful in F#, especially when
    * the records are used ephemerally in functions, and/or 
    * the records are in return values from functions, and/or
    * the return types are easily entirely inferred, and/or
    * the types are needed when interoperating with C# code
 
-3. There is evidence a lot of pain around converting C# code that uses C# 3.0 "anonymous objects" into F# code ([List courtesy of @jpierson](https://github.com/fsharp/fslang-suggestions/issues/207#issuecomment-282570213)).
+2. There is evidence a lot of pain around converting C# code that uses C# 3.0 "anonymous objects" into F# code ([List courtesy of @jpierson](https://github.com/fsharp/fslang-suggestions/issues/207#issuecomment-282570213)).
    * http://stackoverflow.com/q/8144184/83658
    * http://stackoverflow.com/q/31909234/83658
    * http://stackoverflow.com/q/8546823/83658
@@ -42,18 +40,27 @@ val data : {| X : int; Y : string |}
    * http://stackoverflow.com/q/8650463/83658
    * http://stackoverflow.com/q/13991448/83658
 
-   In addition C# 7.0 has tuple types with named fields.  Currently F# ignores the named fields. We expect that these will become more frequent in .NET APIs.
+3. C# 7.0 has tuple types with named fields.  Currently F# ignores the named fields. We expect that these will become more frequent in .NET APIs.
 
 # Design Principles
 
 ## Design Principle: Low Ceremony, Cheap and Cheerful data
 
-The basic design principle is that an explicit type decaration is not needed when packaging data in a record-like way:
+The basic design principle is that an explicit record type decaration is not needed when packaging data in a record-like way:
 
 ```fsharp
 let data = {| X = 1; Y = "abc" |}
 
 val data : {| X : int; Y : string |}
+```
+
+instead of
+```fsharp
+type Data = { X : int; Y : string }
+
+let data = { X = 1; Y = "abc" }
+
+val data: Data
 ```
 
 ## Design Principle: By Default Works Across Assembly Boundaries
@@ -73,7 +80,7 @@ This leads to two different kinds of anonymous records:
 * **Kind A** anonymous records that work smoothly across assembly boundaries 
 * **Kind B** anonymous records that have corresponding strong .NET metadata
 
-In this proposal we support both Kind A and B anonymous records.  We make the default "Kind A", but allow F# developers to move to either Kind B or nominal record types if necessary.
+In this proposal we support both Kind A and B anonymous records.  We make the default "Kind A", but allow F# developers to easily move to either Kind B or nominal record types if necessary.
 
 
 ## Design Principle: A Smooth Path to Nominalization
@@ -287,10 +294,68 @@ A new form of type is added:
        | new_opt struct_opt {| record-field-declarations |}
 
 
+## Type Identity
+
+Section to be written. For now see notes above.  
+
+Types ``{| X : int |}`` and ``{| Y : int |}`` are considered to be separate types.  They are not just be aliases of ``Tuple<int>``.
+They are separate types erased to the same representation. The compiler doesn't consider them compatible.
+
+
+## Checking and Elaboration
+
+
+The checking and elaboration of these forms is fairly straight-forward.
+
 * The primary syntax  ``{| X = 1; Y = 2 |}`` gives "Kind A" anonymous records, represented under-the-hood via tuples
 * The extended syntax  ``new {| X = 1; Y = 2 |}`` gives "Kind B" anonymous records, C# compatible and with full .NET metadata.  This types are implicitly assembly-qualified.
 
-The checking and elaboration of these forms is fairly straight-forward.
+
+Notes:
+* Kind B types are given a unique name by SHA1 hashing the names of the fields
+* Kind B types are marked serializable
+
+## Kind A types
+
+## Kind B types
+
+Kind B types have  full C#-compatible anonymous object metadata. Underneath these compile to an instantiation of a generic type defined in the declaring assembly with appropriate .NET metadata (property names). These types are CLIMutable and thus C#-compatible. The identity of the types are implicitly assembly-qualified.
+
+These types are usable in LINQ queries.
+
+Struct representations may be specified.
+
+```fsharp
+new {| X = 1; Y = 2 |}
+new struct {| X = 1; Y = 2 |}
+```
+
+These values _can_ be used outside their assembly, but the types can _not_ be named in the syntax of types outside that assembly.
+
+## Copy and Update
+
+TBD
+
+## Field Ordering
+
+For both Kind A and Kind B types, fields are placed in a canonical order by the compiler, so type ``{| A : int; B : int |}`` is type-equivalent to ``{| B: int; A : int |}``. 
+
+Some questions around field ordering for are TBD.   Specifically, C# considers these to be separate types (though, somewhat amazingly, they are inter-convertible without a compiler reordering being inserted). F# won't implement this C# rule. However we must interop with C# types in non-canonical order, and possibly even emit them as well (or warn when emitting them on a public API boundary?). 
+
+See also [this comment](https://github.com/fsharp/fslang-design/issues/170#issuecomment-288382645)
+
+## Interaction with F# Reflection Utilies
+
+TBD
+
+## Equality and Comparison
+
+TBD
+
+## Interaction with C# 7.0 Tuple metadata
+
+TBD
+
 
 ## Examples: Basic anonymous records  ("Kind A")
 
@@ -360,19 +425,6 @@ module FSharpFriendlyAnonymousObjectsWithoutDotNetReflectionData =
 
 ## Examples: Anonymous record values with added .NET metadata ("Kind B")
 
-In addition we support a separate collection of C#-compatible anonymous object types. These are the "Kind B" objects mentioned above. The syntax is ``new {| X = 1; Y = 2 |}``.
-
-These give an object that has full C#-compatible anonymous object metadata. 
-Underneath these compile to an instantiation of a generic type defined in the declaring assembly with appropriate .NET 
-metadata (property names). These types are CLIMutable and thus C#-compatible. The identity of the types are implicitly assembly-qualified.
-
-These types are usable in LINQ queries.
-
-Struct representations may not be specified, since C# doesn't allow them
-    
-Copy-and-update may not be used, since C# doesn't allow this on anonymous objects
-
-These values _can_ be used outside their assembly, but the types can _not_ be named in the syntax of types outside that assembly.
 
 
 ```fsharp
@@ -384,34 +436,50 @@ module CSharpCompatAnonymousObjects =
 
 ```
 
-# Implementation Notes
+# Unresolved questions
+[unresolved]: #unresolved-questions
 
-* Kind B types are given a unique name by SHA1 hashing the names of the fields
+1. Do we emit and read C# tuple metadata information at return and argument positions?
+2. Behaviour under equality and comparison
+3. Can records be created using implied field names ``{| x.Name; Age = 31 |}`` instead of `` {| Name=x.Name; Age=31 |}``. 
+4. Do FSharp.Core functions ``FSharp.Reflection.FSharpType.GetRecordFields`` and ``FSharp.Reflection.FSharpValue.MakeRecord/GetRecordField/GetRecordFields`` work with anonymous record values?  
+5. Some questions around field ordering for are TBD
+6. Can copy-and-update be used?
 
-* Kind B types are marked serializable
 
-
-# Implementation TBD
-
-1. Equaity, hash and comparison on Kind B types are TBD
-2. The language service features are TBD
 
 # Drawbacks
 [drawbacks]: #drawbacks
 
-1. It's work
+#### Drawback: It's work
 
-2. It adds another **two** ways to tuple data in F# (we already have tuples, records, classes, single-case-unions....)
+#### Drawback: More ways to do things
 
-3. The distinction between Kind A and Kind B types is subtle
+This adds another way to tuple data in F#. We already have tuples, records, classes, single-case-unions....
+
+#### Drawback: The distinction between Kind A and Kind B types is subtle
+
+Description:
+> Passing "Kind A" records to any reflection-based serializer will cause the value to be serialized like a tuple. "Kind B" exists to address these types of concerns, but "Kind A" may be violating expectations. This may be an avenue for serious bugs, incorrectly writing to a database because somebody forgot to put a new keyword before the record declaration.
+
+In response: 
+> Creating objects to hand off to reflection operations is indeed one use case - though it's not the only one. The feature is useful enough simply to avoid writing out record types for transient data within F#-to-F# code.
+> 
+> C# 7.0 tuples are very much exposed to this -  it's even worse there because there is more reliance in C# on .NET metadata, and not much of a tradition of erased information. Many C# people will try to go and mine the metadata, e.g. by looking at the calling method, cracking the IL etc. However this information is often completely erased so they will be frustrated at how hard it is to do, and in most cases just give up.
+> A lot of this depends on how you frame the purpose of the feature, and how much reflection programming you see F# programmers doing. It is also why I emphasize the importance of nominalization as a way to transition from "cheep and cheerful data" to data with strong .NET types and cross-assembly type names.
+
 
 # Alternatives
 [alternatives]: #alternatives
 
-1. Don't do it.  Just use tuples or new nominal record types
+#### Alternative: Don't do it
+
+Just have users continue to use tuples or new nominal record types.
 
 
-2. Use `{< ... >}` for kind B values. Here's an example of this alternative syntax:
+#### Alternative: Use ``{< ... >}`` syntax for Kind B
+
+1.  Use `{< ... >}` for kind B values. Here's an example of this alternative syntax:
 
 ```fsharp
 module CSharpCompatAnonymousObjects = 
@@ -421,14 +489,44 @@ module CSharpCompatAnonymousObjects =
     let f1 (x : {< X : int >}) =  x.X
 ```
 
+However we decided against this.  It is one thing to expain that ``new`` adds .NET metadata to an anonymous type.  It is another to explain the existence of an entirely new set of ``{< ... >}`` parentheses.
 
-# Unresolved questions
-[unresolved]: #unresolved-questions
+#### Alternative: Allow optional naming of anonymous types.  
 
-1. Do we emit and read C# tuple metadata information at return and argument positions?
-2. Behaviour under equality and comparison
-3. Can records be created using implied field names ``{| x.Name; Age = 31 |}`` instead of `` {| Name=x.Name; Age=31 |}``. 
-4. Do FSharp.Core functions ``FSharp.Reflection.FSharpType.GetRecordFields`` and ``FSharp.Reflection.FSharpValue.MakeRecord/GetRecordField/GetRecordFields`` work with anonymous record values?  
+This proposal was to allow anonymous types to be named:
+
+```fsharp
+let makePerson(name:string, dob:DateTime) : Person = {| Name = name; DOB = dob |}
+```
+
+Note the ``Person``.  We decided not to do this.  If you want to name the types, use a type declaration - either an abbreviation or a proper record type.
+
+#### Alternative: Use existing tuple syntax
+
+This proposal was to use the existing tuple notation for anonymous records. e.g.
+
+```fsharp
+struct (x = 4, y = "")
+(x = 4, y = "")
+```
+
+or some other variation.
+
+There are pros and cons to this. The biggest positive is that it may help to emphasise that the field names are erased.  The biggest negative is that the process of "nominalization" is much less smooth should you want to move to nominal record types.
+
+
+#### Alternative: Use a dynamic representation
+
+Alternative:
+> Kind A values do not support any runtime metadata for field names - it has been erased.  This begs the question whether "Kind A" records would be better off using a dynamically typed representation at runtime, in the sense of ``Map<string, obj>``.
+
+Response:
+> It's just too deeply flawed - it neither gives performance, nor interop, nor reflection metadata. We can't leave such a huge performance hole lying around F#.
+
+### Alternative: syntax ``type {| i = 1 |}``
+
+Response: This is one of a number of alternatives trying imply "this value has runtime type information".  Others might be ``rtt {| i = 1 |}`` (``rtt`` for "runtime type") or ``obj {| i = 1 |}``.  However each of which seems worse in other ways. For example ``type`` mighy imply "what comes after this is in the syntax of types" or something like that.
+
 
 # Addenda
 
