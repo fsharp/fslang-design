@@ -116,25 +116,13 @@ but be left with no path to nominalize their code as it matures.
 
 ## Design Principle: Interop
 
-The feature must achieve both of these:
-
-1. optional compatibility with C# anonymous objects (from C# 3.0). These have an underlying .NET representation that:
+The feature must achieve compatibility with C# anonymous objects (from C# 3.0). These have an underlying .NET representation that:
    (a) is assembly-private
    (b) uses very specific type and property names (understood by debugging tools)
    (c) has normal .NET metadata that supports normal .NET reflection
    (d) is in particular usable in LINQ queries
 
-2. optional compatibility with the metadata-only (no .NET metadata) C#s struct tuples. These have an underlying .NET representation that:
-   (a) is assembly-neutral
-   (b) does _not_ have normal .NET metadata but rather is encoded into ``StructTuple`` types
-   (c) uses associated attribute-encoded metadata at argument and return positions.
-   (d) is mutable
-   (e) is in usable in LINQ queries (needs to be checked)
-
-Carrying precise .NET metadata for types of kind (1) is required.
-
-From the point of view of regular F# coding there is very little difference between these.
-
+The major difference in the F# types are they are not assembly-private
 
 ## Design Principle: Interoperable compiled representations
 
