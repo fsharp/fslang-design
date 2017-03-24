@@ -117,18 +117,20 @@ but be left with no path to nominalize their code as it matures.
 ## Design Principle: Interop
 
 The feature must achieve compatibility with C# anonymous objects (from C# 3.0). These have an underlying .NET representation that:
-   (a) is assembly-private
-   (b) uses very specific type and property names (understood by debugging tools)
-   (c) has normal .NET metadata that supports normal .NET reflection
-   (d) is in particular usable in LINQ queries
+
+(a) is assembly-private
+
+(b) uses very specific type and property names (understood by debugging tools)
+
+(c) has normal .NET metadata that supports normal .NET reflection
+
+(d) is in particular usable in LINQ queries
 
 The major difference in the F# types are they are not assembly-private
 
 ## Design Principle: Interoperable compiled representations
 
-The need for interop means that anonymous records must use the "natural" compiler representations available on .NET:
-
-2. "Kind B" anonymous records must use a generated type with the same characteristics as used by C# anonymous records (except that it will be assembly-public)
+The need for interop means that anonymous records must use the "natural" compiler representations available on .NET. Anonymous records must use a generated type with the same characteristics as used by C# anonymous records (except that it will be assembly-public)
 
 
 ## Design Principle: Anonymous Records, not Anonymous Objects
