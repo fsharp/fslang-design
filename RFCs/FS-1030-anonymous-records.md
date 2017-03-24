@@ -262,20 +262,29 @@ A new form of type is added:
 
 ## Type Identity
 
-Section to be written. For now see notes above.  
+Different types, e.g. ``{| X : int |}`` and ``{| Y : int |}`` are considered to be separate types.  
 
-Types ``{| X : int |}`` and ``{| Y : int |}`` are considered to be separate types.  They are not just be aliases of ``Tuple<int>``.
-They are separate types erased to the same representation. The compiler doesn't consider them compatible.
+In the generated code, anonymous record types are given a unique name by SHA1 hashing the names of the fields.  This name must never change in future F# compilers.  The exact hash used is very, very, very, very, very, very, very, very, very, very, very unlikely to collide, see [probability of SHA-1 hash collision](http://stackoverflow.com/questions/1867191/probability-of-sha1-collisions)
 
+## Closure under substitution
+
+```fsharp
+let f (x: 'T) = {| X = x |}
+
+f 3
+```
+gives a value of the same type as 
+```
+let f () = {| X = 3 |}
+```
+
+That is, if you create anonymous records generically,  their types are correctly "filled in" and become type equivalent.  This is because the generated class for the anonymous type is made generic in an appropriate number of generic type parameters, with one generic parameter for each field type.
 
 ## Checking and Elaboration
 
-
 The checking and elaboration of these forms is fairly straight-forward.
 
-
 Notes:
-* Anonymous record types are given a unique name by SHA1 hashing the names of the fields
 * Anonymous record types are marked serializable
 
 Anonymous record types types have  full C#-compatible anonymous object metadata. Underneath these compile to an instantiation of a generic type defined in the declaring assembly with appropriate .NET metadata (property names). These types are CLIMutable and thus C#-compatible. The identity of the types are implicitly assembly-qualified.
