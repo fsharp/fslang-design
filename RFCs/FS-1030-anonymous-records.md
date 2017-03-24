@@ -2,8 +2,6 @@
 
 The design suggestion [Anonymous Records](https://github.com/fsharp/fslang-suggestions/issues/207) has been marked "approved in principle".
 
-This RFC is WIP
-
 * [x] Approved in principle
 * [x] Details: [under discussion](https://github.com/fsharp/fslang-design/issues/170)
 * [x] Implementation: [draft submitted](https://github.com/Microsoft/visualfsharp/pull/2671)
@@ -192,8 +190,8 @@ Code that is generic over record types  _can_ be written using static member con
 
     getX {| X = 0 |}
     
-    let data1 = new {| X = 1; Y = "abc" |}
-    getX data1
+    getX {| X = 1; Y = "abc" |}
+    
     
     getX {| X = 2; Y = "2" |}
 
@@ -225,13 +223,13 @@ While they don't prevent nominalization, we still don't plan to allow any of the
 For example these types  could in theory include members and interface implementations:
 
 ```fsharp
-let data = new {| A = 3; interface IDisposable with member x.Dispose() = ... |}
+let data = {| A = 3; interface IDisposable with member x.Dispose() = ... |}
 ```
 
 Likewise "Kind B" anonymous record types could also in theory have attributes:
 
 ```fsharp
-let data = new {| [<Foo>] A = 3; B = 4 |}
+let data = {| [<Foo>] A = 3; B = 4 |}
 ```
 
 However we don't plan to alow either of these as part of this feature.
@@ -287,20 +285,18 @@ The checking and elaboration of these forms is fairly straight-forward.
 
 
 Notes:
-* Kind B types are given a unique name by SHA1 hashing the names of the fields
-* Kind B types are marked serializable
+* Anonymous record types are given a unique name by SHA1 hashing the names of the fields
+* Anonymous record types are marked serializable
 
-## Kind B types
-
-Kind B types have  full C#-compatible anonymous object metadata. Underneath these compile to an instantiation of a generic type defined in the declaring assembly with appropriate .NET metadata (property names). These types are CLIMutable and thus C#-compatible. The identity of the types are implicitly assembly-qualified.
+Anonymous record types types have  full C#-compatible anonymous object metadata. Underneath these compile to an instantiation of a generic type defined in the declaring assembly with appropriate .NET metadata (property names). These types are CLIMutable and thus C#-compatible. The identity of the types are implicitly assembly-qualified.
 
 These types are usable in LINQ queries.
 
 Struct representations may be specified.
 
 ```fsharp
-new {| X = 1; Y = 2 |}
-new struct {| X = 1; Y = 2 |}
+{| X = 1; Y = 2 |}
+struct {| X = 1; Y = 2 |}
 ```
 
 These values _can_ be used outside their assembly, but the types can _not_ be named in the syntax of types outside that assembly.
@@ -469,7 +465,14 @@ Response: This is one of a number of alternatives trying imply "this value has r
 
 #### Alternative: Support both Kind A and Kind B types 
 
-The problem is that the distinction between Kind A and Kind B is subtle. See discussion:
+The original version of this RFC supported both Kind A and Kind B types
+```
+{| X = 1 |} //  Kind A
+new {| X = 1 |} //  Kind B
+```
+
+
+The problem is that the distinction between Kind A and Kind B is very subtle, as is the lack of reflection metadata on Kind A. See discussion:
 
     https://github.com/fsharp/fslang-design/issues/170#issuecomment-288394546
 
@@ -487,7 +490,7 @@ In response:
 
 ## C# anonymous type MSIL
 
-this is IL generated for assembly containing this expression:
+this is IL generated for C# code  containing this expression:
 
 ```csharp
 new { a = 1 }
