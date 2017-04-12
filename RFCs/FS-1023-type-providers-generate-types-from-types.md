@@ -6,7 +6,7 @@ This RFC covers the detailed proposal for this suggestion.
 * [x] Approved in principle
 * [x] [User Voice Request](https://fslang.uservoice.com/forums/245727-f-language/suggestions/5675977-allow-type-providers-to-generate-types-from-other)
 * [ ] Details: [under discussion](https://github.com/fsharp/FSharpLangDesign/issues/125)
-* [ ] Implementation: Not started
+* [ ] Implementation: [early proof of concept](https://github.com/colinbull/visualfsharp/tree/rfc/fs-1023-type-providers)
 
 # Summary
 [summary]: #summary
@@ -15,7 +15,7 @@ Today, type providers can take instances of primitive types as argument, e.g. a 
 
 ```fsharp
 // a normal record type
-type MyRecord = { Id : int, Description : string }
+type MyRecord = { Id : int; Description : string }
 
 // a provided type based on the existing type
 type MyPocoRecord = PocoTypeProvider<MyRecord>()
@@ -76,6 +76,22 @@ From there on, type provider should be able to proceed as usual, having access t
 
 The implementation of the FSharp.Compiler.Service "Symbols" API in [Symbols.fs](https://github.com/fsharp/FSharp.Compiler.Service/blob/master/src/fsharp/vs/Symbols.fs) contains much of the logic needed for this work.
 
+# Things to test
+
+* [ ] Type abbreviations, e.g. ``int32`` in the blow
+
+```
+type Test3 = TypePassing.TypePassingTP<int32>
+```
+
+* [ ] Generic type instantiations implied by type abbreviations, e.g. 
+
+```
+type A = list<int>
+type Test3 = TypePassing.TypePassingTP<A>``
+```
+
+* [ ] lots of recursive cases
 
 # Drawbacks
 [drawbacks]: #drawbacks
