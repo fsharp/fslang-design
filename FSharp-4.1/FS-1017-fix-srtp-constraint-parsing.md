@@ -5,7 +5,7 @@ This RFC covers the detailed proposal for this suggestion.
 
 * [x] Approved in principle
 * [x] [User Voice Request](https://fslang.uservoice.com/forums/245727-f-language/suggestions/7887270-allow-all-inferrable-srtp-constraints-to-be-writte)
-* [x] Details: [under discussion](https://github.com/fsharp/FSharpLangDesign/blob/master/RFCs/FS-1017-fix-srtp-constraint-parsing.md)
+* [x] Details: [no separate discussion](https://github.com/fsharp/fslang-design/blob/master/FSharp-4.1/FS-1017-fix-srtp-constraint-parsing.md)
 * [x] Implementation: [Completed](https://github.com/Microsoft/visualfsharp/pull/1278)
 
 
