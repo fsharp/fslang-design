@@ -133,6 +133,21 @@ It would be great if the following also compiled correctly, but that may complic
 During implementation, care should be taken that the following correctly fails:
 
 * the same interface must not be implemented twice (e.g. twice ``IGet<float>`` in the same class / oe)
+  * but it should be possible to override an implementation in an inherited type:
+```F#
+type MyClass() =
+    interface IGet<int> with
+        member x.Get() = 1
+    interface IGet<string> with
+        member x.Get() = "2"
+
+type MyClass2() =
+    inherit MyClass()
+    interface IGet<int> with
+        member x.Get() = 1
+    interface IGet<string> with
+        member x.Get() = "2"
+```
 * a type alias and the underlying type must be correctly unified, e.g. we may not implement ``IGet<float>`` and ``IGet<System.Double>`` in the same class.
 * similar to type aliases, units of measure must be erased.
 
