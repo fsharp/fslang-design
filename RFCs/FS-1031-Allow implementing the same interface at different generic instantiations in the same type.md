@@ -127,6 +127,25 @@ It would be great if the following also compiled correctly, but that may complic
               interface IGet<_> with member x.Get() = 1. }
 ```
 
+## Generics
+
+If the surrounding type itself is generic, then it is not allowed to implement an interface with both a concrete type and one of the generic parameters.
+
+Example:
+
+```F#
+ type IGet<'T> =
+    abstract member Get : unit -> 'T
+
+ type MyClass<'T>() =
+    interface IGet<'T> with
+        member x.Get() = Unchecked.defaultof<'T>
+    interface IGet<string> with
+        member x.Get() = "Hello"
+
+let x = MyClass<string>() :> IGet<string> // now what?
+```
+
 
 ## Negative test cases
 
