@@ -119,7 +119,7 @@ In object expressions, the type parameter can be infered, e.g. the following is 
 let x = { new IGet<_> with member x.Get() = 1 }
 ```
 
-It would be great if the following also compiled correctly, but that may complicate the implementation.
+It is an explicit non-goal to allow type unknowns when implementing an interface more than once, the following code is NOT valid, even though the types _could_ be infered in this case:
 
 ```F#
     let x = { new IGet<_> with member x.Get() = 1
@@ -156,7 +156,7 @@ This list is not exhaustive and basically a todo-list for implementing individua
 # Drawbacks
 [drawbacks]: #drawbacks
 
-The implementation may be non-trivial, especially wrt type unknowns in object expressions.
+There is non-orthogonality between object expressions which implement an interface once (can use type unknowns) and multiple times (all type parameters must be specified).
 
 # Alternatives
 [alternatives]: #alternatives
@@ -166,4 +166,4 @@ The existing workaround is to add one extra hierarchy level per generic instanti
 # Unresolved questions
 [unresolved]: #unresolved-questions
 
-Allow multiple type unknowns in object expressions?
+None
