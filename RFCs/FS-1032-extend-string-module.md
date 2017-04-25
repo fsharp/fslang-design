@@ -25,30 +25,30 @@ Philip Carter detailed the usages of String class methods in the wider .NET ecos
 
 Proposed Signature | String method | API Port Telemetry (% all apps)
 --- | --- | ---
-contains : string -> string -> bool | String.Contains(String) | 24%
-compare : StringComparison -> string -> string -> int | String.Compare(String, String, StringComparison) | 15%
-endsWith : string -> string -> bool | String.EndsWith(String) | 19%
-endsWithComparison : StringComparison -> string -> string -> bool | String.EndsWith(String, StringComparison) | 14%
-equals : StringComparison -> string -> string -> bool | 18%
-indexOf : string -> string -> int | String.IndexOf(String) | 16%
-indexOfComparison : StringComparison -> string -> string -> int | String.IndexOf(String, StringComparison) | 14%
-lastIndexOf : string -> string -> int | String.LastIndexOf(String) | 7%
-lastIndexOfComparison : StringComparison -> string -> string -> int | String.LastIndexOf(String, StringComparison) | 6%
-replaceChar : char -> char -> string -> string | String.Replace(char, char) | 14%
-replace : string -> string -> string -> string | String.Replace(String, String) | 32%
-splitChar : StringSplitOptions -> seq<char> -> string -> string [] | String.Split(char[]) | 31%
-split : StringSplitOptions -> seq<string> -> string -> string [] | String.Split(string[]) | 10%
-startsWith : string -> string -> bool | String.StartsWith(string) | 25%
-startsWithComparison : StringComparison -> string -> string -> bool | String.StartsWith(string, StringComparison) | 18%
-substring : (length: int?) -> (startIndex: int) -> string -> string | String.Substring(int, int) | 32% and 35%
-toLower : CultureInfo -> string -> string | String.ToLower(CultureInfo) | 8%, 23% (no arguments)
-toLowerInvariant : string -> string | String.ToLowerInvariant() | 15%
-toUpper : CultureInfo -> string -> string | String.ToUpper(CultureInfo) | 8%, 13% (no arguments)
-toUpperInvariant : string -> string | String.ToUpperInvariant() | 11%
-trim : string -> string | String.Trim() | 29%
-trimChars : seq<char> -> string -> string | String.Trim(char[]) | 11%
-trimEndChars : seq<char> -> string -> string | String.TrimEnd(char[]) | 16%
-trimStartChars : seq<char> -> string -> string | String.TrimStart(char[]) | 13%
+`contains : string -> string -> bool` | String.Contains(String) | 24%
+`compare : StringComparison -> string -> string -> int` | String.Compare(String, String, StringComparison) | 15%
+`endsWith : string -> string -> bool` | String.EndsWith(String) | 19%
+`endsWithComparison : StringComparison -> string -> string -> bool` | String.EndsWith(String, StringComparison) | 14%
+`equals : StringComparison -> string -> string -> bool` <br> (ordinary String.Equals purposefully missed as it already exists with `((=) other)`) | String.Equals(String, StringComparison) | 18%
+`indexOf : string -> string -> int` | String.IndexOf(String) | 16%
+`indexOfComparison : StringComparison -> string -> string -> int` | String.IndexOf(String, StringComparison) | 14%
+`lastIndexOf : string -> string -> int` <br> (for symmetry with indexOf) | String.LastIndexOf(String) | 7%
+`lastIndexOfComparison : StringComparison -> string -> string -> int` <br> (for symmetry with indexOfComparison) | String.LastIndexOf(String, StringComparison) | 6%
+`replaceChar : char -> char -> string -> string` | String.Replace(char, char) | 14%
+`replace : string -> string -> string -> string` | String.Replace(String, String) | 32%
+`splitChar : StringSplitOptions -> seq<char> -> string -> string []` | String.Split(char[]) | 31%
+`split : StringSplitOptions -> seq<string> -> string -> string []` | String.Split(string[]) | 10%
+`startsWith : string -> string -> bool` | String.StartsWith(string) | 25%
+`startsWithComparison : StringComparison -> string -> string -> bool` | String.StartsWith(string, StringComparison) | 18%
+`substring : (length: int?) -> (startIndex: int) -> string -> string` | String.Substring(int, int) | 32% and 35%
+`toLower : CultureInfo -> string -> string` | String.ToLower(CultureInfo) | 8%, 23% (no arguments)
+`toLowerInvariant : string -> string` | String.ToLowerInvariant() | 15%
+`toUpper : CultureInfo -> string -> string` | String.ToUpper(CultureInfo) | 8%, 13% (no arguments)
+`toUpperInvariant : string -> string` | String.ToUpperInvariant() | 11%
+`trim : string -> string` | String.Trim() | 29%
+`trimChars : seq<char> -> string -> string` | String.Trim(char[]) | 11%
+`trimEndChars : seq<char> -> string -> string` | String.TrimEnd(char[]) | 16%
+`trimStartChars : seq<char> -> string -> string` | String.TrimStart(char[]) | 13%
 
 The rationale for leaving some String properties/methods such as String.Empty, String.IsNullOrEmpty and String.IsNullOrWhiteSpace, is that they already exist in the BCL and would otherwise just be direct aliases on the FSharp.Core String module.
 
