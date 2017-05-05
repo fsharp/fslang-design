@@ -29,9 +29,7 @@ of effort, see below.
 
 ## Background
 
-The next generation of .NET programming tooling is being delivered via the [Microsoft.NET.Sdk](https://github.com/dotnet/sdk), aka "dotnet sdk".  This SDK also
-helps support both .NET Core and .NET Framework programming. (In some cases, support for .NET Framework programming relies on referencing through
-to an existing install of the .NET Framework SDK)
+The next generation of .NET programming tooling is being delivered via the [dotnet sdk](https://github.com/dotnet/sdk), aka "Microsoft.NET.Sdk".  This SDK supports both .NET Core and .NET Framework programming. (In some cases, the dotnet sdk support for .NET Framework programming implicitly references through to an existing install of the .NET Framework SDK or Mono tooling)
 
 .NET programming is also supported by the [.NET CLI Tools](https://github.com/dotnet/cli). Up to this point, F# integration for this next generation of .NET tooling has been via [FSharp.NET.Sdk], whcih can be
 seen as an extension SDK to the .NET CLI Tools. At the time of writing the FSharp.NET.Sdk is "bundled" with the .NET 
