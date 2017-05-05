@@ -1,7 +1,7 @@
 # F# RFC FS-1032 - Support for F# in the Microsoft.NET.Sdk
 
 A proposal is being put forward - initially by Microsoft - to include F# functionality directly in [Microsoft.NET.Sdk](https://github.com/dotnet/sdk),
-which is the primary SDK for .NET Core programming. This can be seen as the next logical step
+which is the primary cross-platform SDK for .NET Core programming. This can be seen as the next logical step
 in the evolution of [the FSharp.NET.SDK](https://github.com/dotnet/netcorecli-fsc/).
 
 Despite being a tooling issue rather than a language issue, this is being treated as an F# RFC to facilitate discussion.
