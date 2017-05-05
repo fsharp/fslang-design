@@ -76,6 +76,8 @@ Some specific technical advantages:
 
 * The proposal may not be approved and may be disruptive
 
+* The F# community lose a point where they can inject new commands into the dotnet CLI tooling experience, e.g. "dotnet script".
+
 * Speed of iteration on the tooling may be reduced
 
   --> The iteration speed of the FSHarp.NET.Sdk has been incredible. However there is an inherent tradeoff
