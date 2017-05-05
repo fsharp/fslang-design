@@ -1,4 +1,4 @@
-# F# RFC FS-1032 - Extend String module
+# F# RFC FS-1033 - Extend String module
 
 The design suggestion [#112](https://github.com/fsharp/fslang-suggestions/issues/112) has been marked "approved in principle".
 This RFC covers the detailed proposal for this suggestion.
