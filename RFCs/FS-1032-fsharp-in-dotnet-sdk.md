@@ -6,7 +6,7 @@ in the evolution of [the FSharp.NET.SDK](https://github.com/dotnet/netcorecli-fs
 
 Despite being a tooling issue rather than a language issue, this is being treated as an F# RFC to facilitate discussion.
 
-* [ ] [Discussion](https://github.com/fsharp/fslang-design/issues/188)
+* [ ] Most discussion is happening on [this PR](https://github.com/dotnet/sdk/pull/1172). There is also [the RFC discussion issue](https://github.com/fsharp/fslang-design/issues/188)
 
 The implementation of this RFC is fragmented into [dotnet/sdk](https://github.com/dotnet/sdk) and [Microsoft/visualfsharp](https://github.com/Microsoft/visualfsharp).
 Much of the functionality involves transitioning, merging or rejigging the logic of [FSharp.NET.Sdk](https://github.com/dotnet/netcorecli-fsc/).
