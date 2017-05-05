@@ -69,7 +69,7 @@ Some specific technical advantages:
 
 * No need to publish FSharp.NET.Sdk separately.
 
-# Drawbacks
+## Drawbacks
 [drawbacks]: #drawbacks
 
 * The proposal may not be approved and may be disruptive
@@ -89,7 +89,7 @@ Some specific technical advantages:
 
   --> This can be addressed by a proper RFC and by making sure the implementation is fully transparent.
 
-# Unresolved questions
+## Unresolved questions
 [unresolved]: #unresolved-questions
 
 * If F# support goes in the Microsoft.NET.Sdk, then it would seem logical to remove the bundling of
@@ -106,7 +106,7 @@ Some specific technical advantages:
   like [this one](https://github.com/dotnet/netcorecli-fsc/issues/93). The list is an interesting guide.
   For example, it looks like we need to add F# support to [this code](https://github.com/Microsoft/msbuild/blob/master/src/Tasks/WriteCodeFragment.cs#L294).
 
-# Alternatives
+## Alternatives
 [alternatives]: #alternatives
 
 * One alternative would be to continue with [FSharp.NET.Sdk] and not integrate F# support directly into Microsoft.NET.Sdk.
