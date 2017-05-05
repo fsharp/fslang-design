@@ -5,7 +5,6 @@ which is the primary next-generation cross-platform SDK for .NET Framework and .
 in the evolution of [the FSharp.NET.SDK](https://github.com/dotnet/netcorecli-fsc/).
 
 Despite being a tooling issue rather than a language issue, this is being treated as an F# RFC to facilitate discussion.
-**Discussion should please be de-personalized and focus only on the technical details involved**.
 
 * [ ] [Discussion](https://github.com/fsharp/fslang-design/issues/188)
 
