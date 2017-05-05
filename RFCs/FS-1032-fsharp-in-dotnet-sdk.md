@@ -29,7 +29,7 @@ of effort, see below.
 
 ## Background
 
-The next generation of .NET programming tooling is being delivered via the [Microsoft.NET.Sdk](https://github.com/dotnet/sdk).  This SDK also
+The next generation of .NET programming tooling is being delivered via the [Microsoft.NET.Sdk](https://github.com/dotnet/sdk), aka "dotnet sdk".  This SDK also
 helps support both .NET Core and .NET Framework programming. (In some cases, support for .NET Framework programming relies on referencing through
 to an existing install of the .NET Framework SDK)
 
