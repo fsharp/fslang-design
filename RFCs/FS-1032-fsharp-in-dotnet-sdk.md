@@ -131,9 +131,9 @@ Relevant comment from @dsyme
 
 > The value that the FSharp.NET.Sdk has brought in this space is vast.   Just last week Enrico really achieved an amazing “convergence” result when the same tooling could build the same project files on .NET Core, Mono, .NET Framework and everything works (apart from the few orthogonal known issues, which are on all platforms). I can’t tell you what a breakthrough this is for F#.  For the first time, cross-platform F# project build/test tooling feels like it is on a convergence path – the new .NET tooling is really going to simplify everyone’s lives. Every F# repo was suddenly going to become simpler.
 > 
-> I was so excited by this result I told my wife.  That’s a sure indicator that we have to make sure we keep that value. 😊
+> I was so excited by this result I told my wife.  That’s a sure indicator that we have to make sure we keep that value. 
 
-### Bundling of FSHarp.NET.Sdk with CLI tools
+### Bundling of FSharp.NET.Sdk with CLI tools
 
 If F# support goes in the Microsoft.NET.Sdk, then it would seem logical to remove the bundling of
 the FSharp.NET.Sdk in the .NET CLI tools or to reduce the FSharp.NET.Sdk package to only deal with some orthogonal issue
