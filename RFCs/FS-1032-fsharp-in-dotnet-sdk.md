@@ -133,6 +133,133 @@ Relevant comment from @dsyme
 > 
 > I was so excited by this result I told my wife.  That’s a sure indicator that we have to make sure we keep that value. 
 
+### DotNet SDK F# Templates 
+
+https://github.com/fsharp/fslang-design/blob/master/RFCs/FS-1032-fsharp-in-dotnet-sdk.md
+The basic template for a console app looks like:
+````
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>netcoreapp2.0</TargetFramework>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="Program.fs" />
+  </ItemGroup>
+</Project>
+````
+__TargetFramework__
+Modify the TargetFramework tag to target different frameworks:
+valid values include but are not limited to:
+* netcoreapp1.0
+* netstandard1.6
+* net45
+* net46
+* net461
+* net47
+
+__TargetFrameworks__
+The dotnetsdk allows a project to produce multiple targets use the target frameworks tag
+
+````
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFrameworks>net45;net46;net461;net462;netcoreapp1.0;netcoreapp2.0</TargetFramework>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="Program.fs" />
+  </ItemGroup>
+</Project>
+````
+
+__Notes:__
+
+__Portable Libraries: TBD:___
+currently the SDK doesn't support portable library targets. Use the legacy project format for these.
+Really unfortunately in FSharp.Core we rely on some APIs that require high versions of netstandard (1.6) -- so we will probably have to produce a new netstandard version of FSharp.Core for portability ... probably netstandard 1.3.
+
+__System.ValueTuple Reference__
+It is not necessary to include System.ValueTuple reference. Thje reason is that a packagereference is automagically added during the build.
+This is valuable because System.ValueTuple is kind of confusing ...
+You need to reference it for net45,net46, net461, net462, net47 and coreapp1.+ and netstandard 1.6. You don't need to reference it for net471 and up or netcoreapp 2.+ or netstandard2.+.
+net47 is the most vexing, because the full desktop framework contains the type but the reference assemblies do not contain the type forward.
+
+__DisableAutoValueTupleReference__
+To disable this, because ... reasons ...
+Use the DisableAutoValueTupleReference property [true or false]
+FSharp.Core reference
+When building coreclr the framework automagically references the FSharp.Core using a wild card
+Currently:  1.0.0-*  Once we have a netcore2.0 fsharp.core package it will likely change to 1.0.0-* for netcoreapp1.+ and netstandard1+ and 2.0.0-* for netcoreapp2+ etc.
+
+__DisableAutoFSharpCoreReference__
+To disable automagic fsharp.core reference use the DisableAutoFSharpCoreReference property [true or false]
+
+__TargetFSharpCorePackageVersion__
+To change the package version set: the TargetFSharpCorePackageVersion to a specific value.
+
+__TargetFSharpCorePackageIdentity__
+To use a different nuget package for FSharp.Core.dll use the TargetFSharpCorePackageIdentity property.
+__TargetFSharpCoreVersion__
+For desktop versions, E.g. those who want to target FSharp.Core.4.3.0.0 e.t.c use the TargetFSharpCoreVersion property. This has no effect on netstandar or netcoreapp target builds.
+These proposals are implemented within the VisualFSharp repo in targets we deploy with the compiler, and so will not require coordination with the cli or sdk to implement.
+The source files can be found here: https://github.com/Microsoft/visualfsharp/blob/master/src/fsharp/FSharp.Build/Microsoft.FSharp.NetSdk.props
+and here: https://github.com/Microsoft/visualfsharp/blob/master/src/fsharp/FSharp.Build/Microsoft.FSharp.NetSdk.targets
+
+A console app targeting multiple frameworks and the 4.4.0.0 fsharp.core
+````
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFrameworks>net45;net46;net461;net462;net47</TargetFramework>
+    <TargetFSharpCoreVersion>4.4.0.0</TargetFSharpCoreVersion>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="Program.fs" />
+  </ItemGroup>
+</Project>
+````
+
+Build Spew
+````
+C:\temp\fsharp.builtin>dotnet restore
+  Restoring packages for C:\temp\fsharp.builtin\fsharp.builtin.fsproj...
+  Generating MSBuild file C:\temp\fsharp.builtin\obj\fsharp.builtin.fsproj.nuget.g.props.
+  Generating MSBuild file C:\temp\fsharp.builtin\obj\fsharp.builtin.fsproj.nuget.g.targets.
+  Writing lock file to disk. Path: C:\temp\fsharp.builtin\obj\project.assets.json
+  Restore completed in 295.17 ms for C:\temp\fsharp.builtin\fsharp.builtin.fsproj.
+
+  NuGet Config files used:
+      C:\temp\fsharp.builtin\NuGet.Config
+      C:\Users\kevinr\AppData\Roaming\NuGet\NuGet.Config
+      C:\Program Files (x86)\NuGet\Config\Microsoft.VisualStudio.Offline.config
+
+  Feeds used:
+      https://dotnet.myget.org/F/dotnet-core/api/v3/index.json
+      https://api.nuget.org/v3/index.json
+      C:\Users\kevinr\.dotnet\NuGetFallbackFolder
+      C:\Program Files (x86)\Microsoft SDKs\NuGetPackages\
+
+C:\temp\fsharp.builtin>dotnet build
+Microsoft (R) Build Engine version 15.3.117.23532
+Copyright (C) Microsoft Corporation. All rights reserved.
+
+  fsharp.builtin -> C:\temp\fsharp.builtin\bin\Debug\net45\fsharp.builtin.exe
+  fsharp.builtin -> C:\temp\fsharp.builtin\bin\Debug\net46\fsharp.builtin.exe
+  fsharp.builtin -> C:\temp\fsharp.builtin\bin\Debug\net461\fsharp.builtin.exe
+  fsharp.builtin -> C:\temp\fsharp.builtin\bin\Debug\net47\fsharp.builtin.exe
+  fsharp.builtin -> C:\temp\fsharp.builtin\bin\Debug\net462\fsharp.builtin.exe
+
+Build succeeded.
+    0 Warning(s)
+    0 Error(s)
+
+Time Elapsed 00:00:09.58
+
+C:\temp\fsharp.builtin>
+````
+If the SDK detects that an FSharp.SDK project is loaded then, the FSharp integration is disabled, and the FSharp.SDK builds per normal.  However, they currently donot build with the latst dotnet.exe tooling out of the box, because the compiler doesn't run on NetStandard 2.0, it requires netstandard 1.0 shared library to be downloaded.
+
 ### Bundling of FSharp.NET.Sdk with CLI tools
 
 If F# support goes in the Microsoft.NET.Sdk, then it would seem logical to remove the bundling of
