@@ -175,6 +175,12 @@ The dotnetsdk allows a project to produce multiple targets use the target framew
 
 __Notes:__
 
+__F# Template format compared with C#__
+In general there are no deviations between the two languages.  C# supports source code globbing (Wild carding).  The F# compiler requires source file ordering specified in the project file and so this feature is disabled for F# projects.
+PackageRefs in an F# project are specified in the same way as C# projects, Similarly for Project Refs and References.
+
+There are extra properties toi control F# specific features, such as FSharp.Core dll and Package referencing as well as ValueTuple referencing.  The real value of these extra properties is apparent when targetting multiple .net frameworks.
+
 __Portable Libraries: TBD:___
 currently the SDK doesn't support portable library targets. Use the legacy project format for these.
 Really unfortunately in FSharp.Core we rely on some APIs that require high versions of netstandard (1.6) -- so we will probably have to produce a new netstandard version of FSharp.Core for portability ... probably netstandard 1.3.
