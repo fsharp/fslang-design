@@ -133,7 +133,7 @@ Relevant comment from @dsyme
 > 
 > I was so excited by this result I told my wife.  That’s a sure indicator that we have to make sure we keep that value. 
 
-### DotNet SDK F# Templates 
+### .NET SDK F# Templates 
 
 https://github.com/fsharp/fslang-design/blob/master/RFCs/FS-1032-fsharp-in-dotnet-sdk.md
 The basic template for a console app looks like:
@@ -159,7 +159,7 @@ valid values include but are not limited to:
 * net47
 
 __TargetFrameworks__
-The dotnetsdk allows a project to produce multiple targets use the target frameworks tag
+The .NET SDK allows a project to produce multiple targets use the target frameworks tag
 
 ````
 <Project Sdk="Microsoft.NET.Sdk">
