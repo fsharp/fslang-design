@@ -136,7 +136,7 @@ Relevant comment from @dsyme
 ### .NET SDK F# Templates 
 
 The basic template for a console app looks like:
-````
+```
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <OutputType>Exe</OutputType>
@@ -146,7 +146,7 @@ The basic template for a console app looks like:
     <Compile Include="Program.fs" />
   </ItemGroup>
 </Project>
-````
+```
 __TargetFramework__
 Modify the TargetFramework tag to target different frameworks:
 valid values include but are not limited to:
@@ -158,9 +158,9 @@ valid values include but are not limited to:
 * net47
 
 __TargetFrameworks__
-The .NET SDK allows a project to produce multiple targets use the target frameworks tag
+The .NET SDK allows a project to produce multiple targets use the ``TargetFrameworks`` tag
 
-````
+```
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <OutputType>Exe</OutputType>
@@ -170,7 +170,7 @@ The .NET SDK allows a project to produce multiple targets use the target framewo
     <Compile Include="Program.fs" />
   </ItemGroup>
 </Project>
-````
+```
 
 __Notes:__
 
@@ -212,7 +212,7 @@ The source files can be found here: https://github.com/Microsoft/visualfsharp/bl
 and here: https://github.com/Microsoft/visualfsharp/blob/master/src/fsharp/FSharp.Build/Microsoft.FSharp.NetSdk.targets
 
 A console app targeting multiple frameworks and the 4.4.0.0 fsharp.core
-````
+```
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <OutputType>Exe</OutputType>
@@ -223,10 +223,10 @@ A console app targeting multiple frameworks and the 4.4.0.0 fsharp.core
     <Compile Include="Program.fs" />
   </ItemGroup>
 </Project>
-````
+```
 
 Build Spew
-````
+```
 C:\temp\fsharp.builtin>dotnet restore
   Restoring packages for C:\temp\fsharp.builtin\fsharp.builtin.fsproj...
   Generating MSBuild file C:\temp\fsharp.builtin\obj\fsharp.builtin.fsproj.nuget.g.props.
@@ -262,7 +262,7 @@ Build succeeded.
 Time Elapsed 00:00:09.58
 
 C:\temp\fsharp.builtin>
-````
+```
 If the SDK detects that an FSharp.SDK project is loaded then, the FSharp integration is disabled, and the FSharp.SDK builds per normal.  However, they currently donot build with the latst dotnet.exe tooling out of the box, because the compiler doesn't run on NetStandard 2.0, it requires netstandard 1.0 shared library to be downloaded.
 
 ### Bundling of FSharp.NET.Sdk with CLI tools
