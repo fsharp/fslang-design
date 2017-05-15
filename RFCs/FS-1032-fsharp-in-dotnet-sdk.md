@@ -135,7 +135,6 @@ Relevant comment from @dsyme
 
 ### .NET SDK F# Templates 
 
-https://github.com/fsharp/fslang-design/blob/master/RFCs/FS-1032-fsharp-in-dotnet-sdk.md
 The basic template for a console app looks like:
 ````
 <Project Sdk="Microsoft.NET.Sdk">
