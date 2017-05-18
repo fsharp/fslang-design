@@ -132,7 +132,8 @@ incorrect way
 > It is techinically very very hard to use different packages of FSharp.Core.dll for the same target framework. Is
 > a special case not handled, and result in messed transitive dependencies and multiple FSharp.Core.dll referenced.
 
-We should determine the exact nature of this problem and solve it.
+We should determine the exact nature of this problem and solve it. If it is not solvable in a reasonable time, we will
+need to assess the implications of that.
 
 ### Open Questions
 
