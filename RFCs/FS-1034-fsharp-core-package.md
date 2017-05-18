@@ -29,6 +29,8 @@ package for FSharp.Core for all different target platforms. A single, unified FS
 * Multi-targeting: One packge supports building against multiple targets
 The F# Core Engineering group also publish [notes and guidance on FSharp.Core.dll](http://fsharp.github.io/2015/04/18/fsharp-core-notes.html).
 
+Equally, the FSharp.Core nuget pacakge has problems, see below.
+
 ### Today
 
 As of 2017, ``FSharp.Core.dll`` is very stable in design and the ``FSharp.Core`` nuget package is in good shape for the main scenarios envisaged by the F# Core Engineering Group. It has prevented
