@@ -200,7 +200,7 @@ are somewhat orthogonal to the package structure and delivery. See [this comment
 Here are a list of some sample F# libraries with .NET Standard or .NET Core compilations and an existing compile-time  dependency on the FSharp.Core nuget package
 
 * [Expecto](https://github.com/haf/expecto)
-* [Logary](https://github.com/haf/logary)
+* [Logary](https://github.com/logary/logary)
 * [Suave](https://github.com/SuaveIO/suave)
 * [FSharp.Compiler.Service](https://github.com/fsharp/FSharp.Compiler.Service)
 * [Fable compiler](https://github.com/fable-compiler/Fable)
