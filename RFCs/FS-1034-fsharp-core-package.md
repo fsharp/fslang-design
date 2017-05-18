@@ -27,7 +27,7 @@ package for FSharp.Core for all different target platforms. A single, unified FS
 * Multi-targeting: One packge supports building against multiple targets
 The F# Core Engineering group also publish [notes and guidance on FSharp.Core.dll](http://fsharp.github.io/2015/04/18/fsharp-core-notes.html).
 
-As of 2017, this pacakge is in good shape for the main uses envisaged by the F# Core Engineering Group. It has prevented
+As of 2017, this package is in good shape for the main uses envisaged by the F# Core Engineering Group. It has prevented
 F# users posting new, random packagings of FSharp.Core, and become a tructed part of the F# library ecosystem.  Frequently,
 the package reference is managed by [Paket](https://fsprojects.github.io/Paket/), though the package also works well with
 nuget tooling in IDE environments.
@@ -74,7 +74,7 @@ It is **very important** to note that nuget packages can easily be progressed fr
 without breaking existing consumers of specific versions:
 * a future version of a package can become "empty" and refer to a different package as an identity, effectively renaming the package (without breaking consumers of existing versions)
 * a future version of a package can emit a warning (without breaking consumers of existing versions)
-* a future version of a pacakge can **drop** or **add** platforms and dependencies (without breaking consumers of existing versions)
+* a future version of a package can **drop** or **add** platforms and dependencies (without breaking consumers of existing versions)
 * a future version of a package can be signed by a different authority (without breaking consumers of existing versions)
 
 Together this means that, no matter what the situation at any particular point in time, we can **always** iterate
