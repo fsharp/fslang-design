@@ -58,8 +58,8 @@ and we can **always** iterate towards a better solution. That's just what we nee
 #### Assumptions 
 
 For the purposes of this RFC we will assume
-* Portable profiles will eventually disappear in favour of .NET Standard.  (People building PCL DLLs will still be able to reference an earlier FSharp.Core package)
-* Xamarin profiles will eventually iterate towards .NET Standard, at least for the purposes of FSharp.Core. (People building Xamarin apps will still be able to reference an earlier FSharp.Core package)
+* Portable profiles will eventually be legacy in favour of .NET Standard.  (People building PCL DLLs will still be able to reference an earlier FSharp.Core package)
+* Xamarin programmability will eventually iterate towards .NET Standard, at least for the purposes of FSharp.Core. (People building Xamarin apps today will still be able to reference an earlier FSharp.Core package)
 * The runtime dependencies in the F# library ecosystem are based around DLL identity (not package identity).
 * The compile-time dependencies in the F# library ecosystem are based on package identity.  
 
