@@ -67,7 +67,7 @@ For the purposes of this RFC we will assume
 * Portable profiles will eventually be legacy in favour of .NET Standard.  (People building PCL DLLs will still be able to reference an earlier FSharp.Core package)
 * Xamarin programmability will eventually iterate towards .NET Standard, at least for the purposes of FSharp.Core. (People building Xamarin apps today will still be able to reference an earlier FSharp.Core package)
 * The runtime dependencies in the F# library ecosystem are based around DLL identity (not package identity).
-* The compile-time dependencies in the F# library ecosystem are based on package identity.  
+* The compile-time and script-execution-time dependencies in the F# library ecosystem are based on package identity.  
 
 FSharp.Core is a "root dependency" in the F# library ecosystem, both as a DLL with a version and strong name dependency,
 and, increasingly, as a package.  Currently, F# libraries tend to assume either
