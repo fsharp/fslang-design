@@ -31,7 +31,7 @@ The F# Core Engineering group also publish [notes and guidance on FSharp.Core.dl
 
 ### Today
 
-As of 2017, the FSHarp.Core nuget package is in good shape for the main scenarios envisaged by the F# Core Engineering Group. It has prevented
+As of 2017, ``FSharp.Core.dll`` is very stable in design and the ``FSharp.Core`` nuget package is in good shape for the main scenarios envisaged by the F# Core Engineering Group. It has prevented
 F# users posting new, random packagings of FSharp.Core, and become a tructed part of the F# library ecosystem.  Frequently,
 the package reference is managed by [Paket](https://fsprojects.github.io/Paket/), though the package also works well with
 nuget tooling in IDE environments.
