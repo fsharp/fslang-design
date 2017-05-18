@@ -39,7 +39,7 @@ for discussion and pros/cons.
 Up to this point, Microsoft have found it difficult to commit to a dependency on the community-provided
 FSharp.Core package in the dotnet SDK tooling for a number of reasons
 * The package is not signed
-* THe package is now relatively large (68MB on disk unzipped) due to the large number of variations, and may get bigger (E.g. embedded PDBs)
+* The package is now relatively large (68MB on disk unzipped) due to the large number of variations, and may get bigger (E.g. embedded PDBs)
 * The package was prepared and pushed in an adhoc way
 * The package contains some delay-signed DLLs (the Xamarin variations on FSharp.Core are delay-signed)
 * The package is not pre-installed with tooling
