@@ -29,7 +29,9 @@ package for FSharp.Core for all different target platforms. A single, unified FS
 * Multi-targeting: One packge supports building against multiple targets
 The F# Core Engineering group also publish [notes and guidance on FSharp.Core.dll](http://fsharp.github.io/2015/04/18/fsharp-core-notes.html).
 
-As of 2017, this package is in good shape for the main scenarios envisaged by the F# Core Engineering Group. It has prevented
+### Today
+
+As of 2017, the FSHarp.Core nuget package is in good shape for the main scenarios envisaged by the F# Core Engineering Group. It has prevented
 F# users posting new, random packagings of FSharp.Core, and become a tructed part of the F# library ecosystem.  Frequently,
 the package reference is managed by [Paket](https://fsprojects.github.io/Paket/), though the package also works well with
 nuget tooling in IDE environments.
@@ -57,7 +59,7 @@ default assumption for the F# support embedded in the .NET SDK. That **doesn't**
 the problems aren't solvable. There is long-term value in a unified, simple FSharp.Core package,
 and we can **always** iterate towards a better solution. That's just what we need to do.
 
-#### Assumptions 
+### Assumptions 
 
 For the purposes of this RFC we will assume
 * Portable profiles will eventually be legacy in favour of .NET Standard.  (People building PCL DLLs will still be able to reference an earlier FSharp.Core package)
