@@ -107,6 +107,7 @@ without breaking existing consumers of specific versions:
 Together this means that, no matter what the situation at any particular point in time, we can **always** iterate
 towards a better world.
 
+
 ### Shared long term goals
 
 All core engineering participants share some common long term goals
@@ -192,6 +193,20 @@ are somewhat orthogonal to the package structure and delivery. See [this comment
   - Implicit is one line less in template.
   - Other package managers (like Paket) can just add that property as default, to manage FSharp.Core himself
   - Explicit is easier to understand, and less surprises changing sdk version
+
+
+### Example F# Libraries
+
+Here are a list of some sample F# libraries with .NET Standard or .NET Core compilations and an existing compile-time  dependency on the FSharp.Core nuget package
+
+* [Expecto](https://github.com/haf/expecto)
+* [Logary](https://github.com/haf/logary)
+* [Suave](https://github.com/SuaveIO/suave)
+* [FSharp.Compiler.Service](https://github.com/fsharp/FSharp.Compiler.Service)
+* [Fable compiler](https://github.com/fable-compiler/Fable)
+
+There are many others - searching github for "nuget FSHarp.Core" in paket.dependencies is one way to find them. These libraries can be used to assess the suitabiity of proposals here. For example, does changing these libraries to an FSharp.Core.netstandard dependency birfurcate the world of F# libraries, or can a "FSharp.Core --> FSharp.Core.netstandard" dependency work to make the dependency chain commute.
+
 
 ## Alternatives
 [alternatives]: #alternatives
