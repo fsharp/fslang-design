@@ -46,7 +46,7 @@ FSharp.Core package in the dotnet SDK tooling for a number of reasons
 * The package is now relatively large (68MB on disk unzipped) due to the large number of variations, and may get bigger (E.g. embedded PDBs)
 * The package was prepared and pushed in an adhoc way
 * The package contains some delay-signed DLLs (the Xamarin variations are delay-signed)
-* The package is not pre-installed with tooling
+* The package is not pre-installed with tooling (preventing some offline development scenarios)
 * The package is not easily buildable from a source-tarball (a requirement in some settings)
 
 Some of these problems are easily solvable, others are more work. As a result, early versions of F# tooling for .NET Core 1.x have used a smaller, signed package
