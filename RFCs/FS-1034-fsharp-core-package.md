@@ -11,22 +11,23 @@ Also, this does not cover the actual functionality contained in FSharp.Core.
 
 ### Background
 
-Historically FSharp.Core was compiled and delivered by Microsoft as a .NET 4.x binary installed under "Reference Assemblies".  The DLL
+Historically ``FSharp.Core.dll`` was compiled and delivered by Microsoft as a .NET 4.x binary installed under "Reference Assemblies".  The DLL
 was signed and strong-named by Microsoft. Way, way back in time it was called ``fslib.dll``.
 
-Subsequently, FSharp.Core.dll has been recompiled for "trimmed down" platforms: portable profiles, Xamarin profiles,
+Subsequently, ``FSharp.Core.dll`` has been recompiled for "trimmed down" platforms: portable profiles, Xamarin profiles,
 .NET Core, .NET Standard and .NET Framework.  There is even a version of FSharp.Core for the "Xamarin iOS TV" profile....
 When provided by Microsoft, these were signed, strong-named and installed under "Reference Assemblies" on Windows.
 For other F# compilation environments like Xamarin, Mono, Cloud Sharper, FSharp.Formatting, Azure Notebooks, Azure Functions
 there was a bit of a mess (made considerably worse by the separation of sigdata/optdata files, [now addressed](https://github.com/Microsoft/visualfsharp/pull/2884))
 
-The FSSF Core Engineering Group created a nuget package called [FSharp.Core](https://www.nuget.org/packages/FSharp.Core), partly to avoid
+The F# Core Engineering Group created a nuget package called [FSharp.Core](https://www.nuget.org/packages/FSharp.Core), partly to avoid
 a proliferation of "homebrew" packges appearing at that time. This packge has now grown to be a "one-stop-shop"
 package for FSharp.Core for all different target platforms. A single, unified FSharp.Core nuget packge has advantages:
 * Simplicity: Users don't have to think at all - they just reference the package and that's that
 * Multi-targeting: One packge supports building against multiple targets
+The F# Core Engineering group also publish [notes and guidance on FSharp.Core.dll](http://fsharp.github.io/2015/04/18/fsharp-core-notes.html).
 
-As of 2017, this pacakge is in good shape for the main uses envisaged by the FSSF Core Engineering Group. It has prevented
+As of 2017, this pacakge is in good shape for the main uses envisaged by the F# Core Engineering Group. It has prevented
 F# users posting new, random packagings of FSharp.Core, and become a tructed part of the F# library ecosystem.  Frequently,
 the package reference is managed by [Paket](https://fsprojects.github.io/Paket/), though the package also works well with
 nuget tooling in IDE environments.
@@ -38,7 +39,7 @@ for discussion and pros/cons.
 Up to this point, Microsoft have found it difficult to commit to a dependency on the community-provided
 FSharp.Core package in the dotnet SDK tooling for a number of reasons
 * The package is not signed
-* THe package is now relatively large (68MB on disk unzipped) due to the large number of variations, and may get bigger
+* THe package is now relatively large (68MB on disk unzipped) due to the large number of variations, and may get bigger (E.g. embedded PDBs)
 * The package was prepared and pushed in an adhoc way
 * The package contains some delay-signed DLLs (the Xamarin variations on FSharp.Core are delay-signed)
 * The package is not pre-installed with tooling
