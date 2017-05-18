@@ -9,6 +9,8 @@ technical plan to converge to an optimal solution that satisfies both users of F
 This is not as simple as readers may expect. It is probably not interesting except to those contributing to F# Core Engineering.
 Also, this does not cover the actual functionality contained in FSharp.Core.
 
+Discussion thread: https://github.com/fsharp/fslang-design/issues/197
+
 ### Background
 
 Historically ``FSharp.Core.dll`` was compiled and delivered by Microsoft as a .NET 4.x binary installed under "Reference Assemblies".  The DLL
