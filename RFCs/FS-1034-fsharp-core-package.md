@@ -25,8 +25,11 @@ there was a bit of a mess (made considerably worse by the separation of sigdata/
 The F# Core Engineering Group created a nuget package called [FSharp.Core](https://www.nuget.org/packages/FSharp.Core), partly to avoid
 a proliferation of "homebrew" packges appearing at that time. This packge has now grown to be a "one-stop-shop"
 package for FSharp.Core for all different target platforms. A single, unified FSharp.Core nuget packge has advantages:
+
 * Simplicity: Users don't have to think at all - they just reference the package and that's that
+
 * Multi-targeting: One packge supports building against multiple targets
+
 The F# Core Engineering group also publish [notes and guidance on FSharp.Core.dll](http://fsharp.github.io/2015/04/18/fsharp-core-notes.html).
 
 Equally, the FSharp.Core nuget pacakge has problems, see below.
@@ -44,14 +47,21 @@ for discussion and pros/cons.
 
 Up to this point, Microsoft have found it difficult to commit to a dependency on the community-provided
 FSharp.Core package in the dotnet SDK tooling for a number of reasons
+
 * The package is not signed
+
 * The package is now relatively large (68MB on disk unzipped) due to the large number of variations, and may get bigger (E.g. embedded PDBs)
+
 * The package was prepared and pushed in an adhoc way
+
 * The package contains some delay-signed DLLs (the Xamarin variations are delay-signed)
+
 * The package is not pre-installed with tooling (preventing some offline development scenarios)
+
 * The package is not easily buildable from a source-tarball (a requirement in some settings)
 
-Some of these problems are easily solvable, others are more work. As a result, early versions of F# tooling for .NET Core 1.x have used a smaller, signed package
+Some of these problems are easily solvable, others are more work. As a result, early
+versions of F# tooling for .NET Core 1.x have used a smaller, signed package
 called [Microsoft.FSharp.Core.netcore](https://www.nuget.org/packages/Microsoft.FSharp.Core.netcore/). This contains
 nothing but the .NET Standard 1.6 build of FSharp.Core and is small. As a first small step, Microsoft have
 agreed to rename this pack ``FSharp.Core.netstandard`` (or possibly ``FSharp.Core.netstandard1.6``)
@@ -64,23 +74,34 @@ and we can **always** iterate towards a better solution. That's just what we nee
 ### Assumptions 
 
 For the purposes of this RFC we will assume
+
 * Portable profiles will eventually be legacy in favour of .NET Standard.  (People building PCL DLLs will still be able to reference an earlier FSharp.Core package)
+
 * Xamarin programmability will eventually iterate towards .NET Standard, at least for the purposes of FSharp.Core. (People building Xamarin apps today will still be able to reference an earlier FSharp.Core package)
+
 * The runtime dependencies in the F# library ecosystem are based around DLL identity (not package identity).
+
 * The compile-time and script-execution-time dependencies in the F# library ecosystem are based on package identity.  
 
 FSharp.Core is a "root dependency" in the F# library ecosystem, both as a DLL with a version and strong name dependency,
 and, increasingly, as a package.  Currently, F# libraries tend to assume either
+
 * The Profile 259 version of FSHarp.Core, or
+
 * The fatter .NET Framework 4.x version of FSharp.Core
+
 as their "root dependency".  Following the general principle that **libraries should have a "most portable" root dependency,
 it makes sense to 
 
 It is **very important** to note that nuget packages can easily be progressed from a current state to a different state
 without breaking existing consumers of specific versions:
+
 * a future version of a package can become "empty" and refer to a different package as an identity, effectively renaming the package (without breaking consumers of existing versions)
+
 * a future version of a package can emit a warning (without breaking consumers of existing versions)
+
 * a future version of a package can **drop** or **add** platforms and dependencies (without breaking consumers of existing versions)
+
 * a future version of a package can be signed by a different authority (without breaking consumers of existing versions)
 
 Together this means that, no matter what the situation at any particular point in time, we can **always** iterate
@@ -89,12 +110,19 @@ towards a better world.
 ### Shared long term goals
 
 All core engineering participants share some common long term goals
+
 * a simple experience for F# tooling users
+
 * a simpler set of FSharp.Core DLLs centered around a .NET Standard version of the library
+
 * the availability of a unified FSharp.Core package
+
 * ongoing binary compatibility for all existing users
+
 * a unified, sensible, healthy, "non-bifurcated" F# library ecosystem
+
 * mutual cooperation to see F# toioling succeed in many different scenarios
+
 * a healthy ecosystem of "innovative" F# tooling
 
 
