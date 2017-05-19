@@ -84,7 +84,7 @@ For the purposes of this RFC we will assume
 FSharp.Core is a "root dependency" in the F# library ecosystem, both as a DLL with a version and strong name dependency,
 and, increasingly, as a package.  Currently, F# libraries tend to assume either
 
-* The Profile 259 version of FSHarp.Core, or
+* The Profile 259 version of FSharp.Core, or
 
 * The fatter .NET Framework 4.x version of FSharp.Core
 
@@ -124,7 +124,7 @@ All core engineering participants share some common long term goals
 
 * a healthy ecosystem of "innovative" F# tooling
 
-### Scenarios
+## Scenarios
 
 Please contribute scenarios to the list below.
 
@@ -136,7 +136,7 @@ Please contribute scenarios to the list below.
 
 
 
-### Proposal A
+## Proposal A
 
 The following steps are proposed for the next few months, until about September 2017:
 
@@ -161,11 +161,11 @@ Looking beyond ~September 2017, we propose:
 
 2. Assess the viability of making the .NET Standard version of FSharp.Core be the "basic assumed library" for the F# library ecosystem.
 
-### Proposal B
+## Proposal B
 
 A second proposal has been developed.
 
-1. Microsoft make and publish the FSharp.Core nuget package containing **only** the .NET Standard 1.x (likely 1.6) and .NET Framework 4.x versions of the DLL. Assume this next version is FSharp.Core nuget package 4.2.0.
+1. Microsoft make and publish the FSharp.Core nuget package containing **only** the .NET Standard 1.x (likely 1.6) and .NET Framework 4.5 versions of the DLL. Assume this next version is FSharp.Core nuget package 4.2.0.
 
 Technically, this would be implemented by renaming the authoring Microsoft.FSharp.Core.netcore to FSharp.Core in the http://github.com/Microsoft/visualfsharp repo and adding the ``lib/net40/FSharp.Core.*`` files.
 
@@ -181,7 +181,9 @@ This approach _appears_ to meet
 
 * Community simplicity requirements (for a single, unified FSharp.Core package with no additional dependencies).
 
-Propoosal B drops support for some existing usage scenarios for FSHarp.Core, notably PCL library development.  Those developing PCL libraries must continue to use FSharp.Core nuget package 4.1.17 or before.  .NET Standard, .NET Core or .NET Framework consumers of PCL  libraries can use FSharp.Core 4.2.0.
+However, Propoosal B drops support for some existing usage scenarios for FSharp.Core, notably PCL library development.  Those developing PCL libraries would be instructed to continue to use FSharp.Core nuget package 4.1.17 or before. Tooling such as Paket would automatically ensure that an upgrade didn't happen for people developing PCL libraries.   .NET Standard, .NET Core or .NET Framework consumers of PCL  libraries can of course use FSharp.Core 4.2.0.
+
+Given the guidance that [library authors should target lower versions of FSharp.Core](https://fsharp.github.io/2015/04/18/fsharp-core-notes.html#libraries-target-lower-versions-of-fsharpcore) in order to make their library more useful in more scenarios this seems like a reasonable tradeoff.  Effectively it would be saying __PCL library development is fine until .NET Standard library development is fully supported by all tooling.  However  please stick to referencing nuget package FSharp.Core 4.1.17 or before, and by the way you will get slightly greater reach for your library if you use nuget package 4.0.0.1 anyway__. 
 
 
 ###  Problems (Proposal A)
