@@ -91,7 +91,7 @@ and, increasingly, as a package.  Currently, F# libraries tend to assume either
 * The fatter .NET Framework 4.x version of FSharp.Core
 
 as their "root dependency".  the general principle that **libraries should have a "most portable sufficient" root dependency**,
-it makes sense to more to a .NET Standard dependency.
+it makes sense to move to a .NET Standard dependency.
 
 It is **very important** to note that nuget packages can easily be progressed from a current state to a different state
 without breaking existing consumers of specific versions:
