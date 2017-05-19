@@ -48,17 +48,15 @@ for discussion and pros/cons.
 Up to this point, Microsoft have found it difficult to commit to a dependency on the community-provided
 FSharp.Core package in the dotnet SDK tooling for a number of reasons
 
-* The package is not signed
+* The package contains some delay-signed DLLs (e.g. the Xamarin variations are delay-signed)
 
-* The package is now relatively large (68MB on disk unzipped) due to the large number of variations, and may get bigger (E.g. embedded PDBs)
+* The package is now relatively large (33MB unzipped, 8MB zipped) and may get bigger (e.g. embedded PDBs).
 
-* The package was prepared and pushed in an adhoc way
-
-* The package contains some delay-signed DLLs (the Xamarin variations are delay-signed)
+* The package has been prepared and pushed in an adhoc way
 
 * The package is not pre-installed with tooling (preventing some offline development scenarios)
 
-* The package is not easily buildable from a source-tarball (a requirement in some settings)
+* The package is not easily buildable from a source-tarball (a legal requirement for Microsoft in some commercial settings)
 
 Some of these problems are easily solvable, others are more work. As a result, early
 versions of F# tooling for .NET Core 1.x have used a smaller, signed package
@@ -66,7 +64,7 @@ called [Microsoft.FSharp.Core.netcore](https://www.nuget.org/packages/Microsoft.
 nothing but the .NET Standard 1.6 build of FSharp.Core and is small. As a first small step, Microsoft have
 agreed to rename this pack ``FSharp.Core.netstandard`` (or possibly ``FSharp.Core.netstandard1.6``)
 
-This means that today the FSharp.Core nuget package is not **yet** in sufficiently good shape to become a
+This means that prior to this PR the FSharp.Core nuget package is not **yet** in sufficiently good shape to become a
 default assumption for the F# support embedded in the .NET SDK. That **doesn't** mean that
 the problems aren't solvable. There is long-term value in a unified, simple FSharp.Core package,
 and we can **always** iterate towards a better solution. That's just what we need to do.
@@ -126,8 +124,19 @@ All core engineering participants share some common long term goals
 
 * a healthy ecosystem of "innovative" F# tooling
 
+### Scenarios
 
-### Steps ahead
+Please contribute scenarios to the list below.
+
+**Using FSharp.Core nuget package to simplify .NET Framework development**.  The F# community regularly use the existing FSharp.Core nuget package to simplify and remove edge cases in .NET Framework development.
+
+1. A C# programmer wants to  consume an F# library (which is assumed not to package FSharp.Core).  Adding a reference to the package doesn't add an FSharp.Core reference to the C# project.  THe F# programmer solves this situation by adding an FSharp.Core nuget reference to their project, and republishing.
+
+1. Likewise, a C# programmer wants to  consume multiple F# libraries where FSharp.Core dependencies need to be resolved by Paket or Nuget.
+
+
+
+### Proposal A
 
 The following steps are proposed for the next few months, until about September 2017:
 
@@ -152,7 +161,30 @@ Looking beyond ~September 2017, we propose:
 
 2. Assess the viability of making the .NET Standard version of FSharp.Core be the "basic assumed library" for the F# library ecosystem.
 
-### Possible Problems
+### Proposal B
+
+A second proposal has been developed.
+
+1. Microsoft make and publish the FSharp.Core nuget package containing **only** the .NET Standard 1.x (likely 1.6) and .NET Framework 4.x versions of the DLL. Assume this next version is FSharp.Core nuget package 4.2.0.
+
+Technically, this would be implemented by renaming the authoring Microsoft.FSharp.Core.netcore to FSharp.Core in the http://github.com/Microsoft/visualfsharp repo and adding the ``lib/net40/FSharp.Core.*`` files.
+
+This approach _appears_ to meet 
+
+* Community scenario requirements
+
+* Microsoft scenario requirements
+
+* Microsoft size requrements
+
+* Microsoft publication criteria
+
+* Community simplicity requirements (for a single, unified FSharp.Core package with no additional dependencies).
+
+Propoosal B drops support for some existing usage scenarios for FSHarp.Core, notably PCL library development.  Those developing PCL libraries must continue to use FSharp.Core nuget package 4.1.17 or before.  .NET Standard, .NET Core or .NET Framework consumers of PCL  libraries can use FSharp.Core 4.2.0.
+
+
+###  Problems (Proposal A)
 
 F# Core Engineering previously tried to make ``FSharp.Core`` be a unifying package by using a dependency on ``FSharp.Core.netstandard`` (then called ``Microsoft.FSharp.Core.netcore``).
 For some reason that approach failed technically. It is a priority to determine what, if anything, goes wrong with doing that.
@@ -166,15 +198,8 @@ incorrect way
 We should determine the exact nature of this problem and solve it. If it is not solvable in a reasonable time, we will
 need to assess the implications of that.
 
-### Open Questions
 
-* Once  ``FSharp.Core.netfx`` is available, will Mono, Xamarin and Visual Studio templates reference this?
-
-* At what point does the ``FSharp.Core`` package drop the inclusion of PCL versions of FSharp.Core (as mentioned above, PCL library development will still always be available by referencing older versions of the package)
-  - Answer: when support for .NET Standard package references is widespread, stable and fully accepted
-
-* At what point does the ``FSharp.Core`` package drop the inclusion of Xamarin-specific versions of FSHarp.Core (as mentioned above, Xamaring library development will still always be possible by referencing older versions of the package)
-  - Answer: when Xamarin no longer needs these
+### Open Questions (General)
 
 There are a number of open questions about the way FSharp.Core is referenced by dotnet SDK templates and tooling. These
 are somewhat orthogonal to the package structure and delivery. See [this comment](https://github.com/fsharp/fslang-design/issues/188#issuecomment-301245317).
@@ -182,8 +207,8 @@ are somewhat orthogonal to the package structure and delivery. See [this comment
 * Is the FSharp.Core package reference pinned or not in templates?  
   - PackageReference support version ranges. Package versions in nuget are major.minor.patch (semver), that's the official versioning scheme.
   - Pinning to an exact specific version, es 4.1.9 mean if i need to update it, user need to do it manually. And is bad for resilience to bugs. And is more complicated if implicit.
-  - Pinning to a wilcard .path (es 4.1.*) mean it's possibile to update it later.
-  - Pinning to wilcard minor (es 4.*) mean a more strict contract for the package.
+  - Pinning to a wilcard .path (eg ``4.1.*``) mean it's possibile to update it later.
+  - Pinning to wilcard minor (eg ``4.*``) mean a more strict contract for the package.
   - Implicit version may help just give the minimal supported version.
   - All bundles (VS/Mono/cli) support offline packages (to not downlaod additional stuff). So this doesnt preclude open ranges, just mean new version need to be downloaded if needed.
 
@@ -193,6 +218,20 @@ are somewhat orthogonal to the package structure and delivery. See [this comment
   - Implicit is one line less in template.
   - Other package managers (like Paket) can just add that property as default, to manage FSharp.Core himself
   - Explicit is easier to understand, and less surprises changing sdk version
+
+### Open Questions (Proposal A)
+
+* Once  ``FSharp.Core.netfx`` is available, will Mono, Xamarin and Visual Studio templates reference this?
+
+* At what point does the ``FSharp.Core`` package drop the inclusion of PCL versions of FSharp.Core (as mentioned above, PCL library development will still always be available by referencing older versions of the package)
+  - Answer: when support for .NET Standard package references is widespread, stable and fully accepted
+
+* At what point does the ``FSharp.Core`` package drop the inclusion of Xamarin-specific versions of FSHarp.Core (as mentioned above, Xamaring library development will still always be possible by referencing older versions of the package)
+  - Answer: when Xamarin no longer needs these
+
+### Open Questions (Proposal B)
+
+* Is Xamarin development substantially affected?
 
 
 ### Example F# Libraries
