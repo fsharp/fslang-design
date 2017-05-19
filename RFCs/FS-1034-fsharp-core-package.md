@@ -1,8 +1,8 @@
-# F# Tooling RFC FS-1034 - FSharp.Core delivery via nuget packages
+# F# Tooling RFC FS-1034 - FSharp.Core delivery via NuGet packages
 
 **NOTE:** This is a draft and remains to be reviewed by key contributors.  Please contribute to the discussion and submit adjustments to the draft.
 
-The purpose of this RFC document is to develop a shared plan of record for the delivery of FSharp.Core in nuget package form that takes
+The purpose of this RFC document is to develop a shared plan of record for the delivery of FSharp.Core in NuGet package form that takes
 into account the needs of F# Core Engineering contributors. This is a long-term
 technical plan to converge to an optimal solution that satisfies both users of F# and those delivering tooling for it.
 
@@ -22,9 +22,9 @@ When provided by Microsoft, these were signed, strong-named and installed under 
 For other F# compilation environments like Xamarin, Mono, Cloud Sharper, FSharp.Formatting, Azure Notebooks, Azure Functions
 there was a bit of a mess (made considerably worse by the separation of sigdata/optdata files, [now addressed](https://github.com/Microsoft/visualfsharp/pull/2884))
 
-The F# Core Engineering Group created a nuget package called [FSharp.Core](https://www.nuget.org/packages/FSharp.Core), partly to avoid
+The F# Core Engineering Group created a NuGet package called [FSharp.Core](https://www.nuget.org/packages/FSharp.Core), partly to avoid
 a proliferation of "homebrew" packges appearing at that time. This packge has now grown to be a "one-stop-shop"
-package for FSharp.Core for all different target platforms. A single, unified FSharp.Core nuget packge has advantages:
+package for FSharp.Core for all different target platforms. A single, unified FSharp.Core NuGet packge has advantages:
 
 * Simplicity: Users don't have to think at all - they just reference the package and that's that
 
@@ -32,14 +32,14 @@ package for FSharp.Core for all different target platforms. A single, unified FS
 
 The F# Core Engineering group also publish [notes and guidance on FSharp.Core.dll](http://fsharp.github.io/2015/04/18/fsharp-core-notes.html).
 
-Equally, the FSharp.Core nuget pacakge has problems, see below.
+Equally, the FSharp.Core NuGet pacakge has problems, see below.
 
 ### Today
 
-As of 2017, ``FSharp.Core.dll`` is very stable in design and the ``FSharp.Core`` nuget package is in good shape for the main scenarios envisaged by the F# Core Engineering Group. It has prevented
+As of 2017, ``FSharp.Core.dll`` is very stable in design and the ``FSharp.Core`` NuGet package is in good shape for the main scenarios envisaged by the F# Core Engineering Group. It has prevented
 F# users posting new, random packagings of FSharp.Core, and become a trusted part of the F# library ecosystem.  Frequently,
 the package reference is managed by [Paket](https://fsprojects.github.io/Paket/), though the package also works well with
-nuget tooling in IDE environments.
+NuGet tooling in IDE environments.
 
 As of 2017, Microsoft have a set of [time-critical objectives](https://github.com/Microsoft/visualfsharp/issues/3069) to deliver quality core tooling for F# as
 a default part of the dotnet SDK, see [this RFC](https://github.com/fsharp/fslang-design/blob/master/RFCs/FS-1032-fsharp-in-dotnet-sdk.md)
@@ -64,7 +64,7 @@ called [Microsoft.FSharp.Core.netcore](https://www.nuget.org/packages/Microsoft.
 nothing but the .NET Standard 1.6 build of FSharp.Core and is small. As a first small step, Microsoft have
 agreed to rename this pack ``FSharp.Core.netstandard`` (or possibly ``FSharp.Core.netstandard1.6``)
 
-This means that prior to this PR the FSharp.Core nuget package is not **yet** in sufficiently good shape to become a
+This means that prior to this PR the FSharp.Core NuGet package is not **yet** in sufficiently good shape to become a
 default assumption for the F# support embedded in the .NET SDK. That **doesn't** mean that
 the problems aren't solvable. There is long-term value in a unified, simple FSharp.Core package,
 and we can **always** iterate towards a better solution. That's just what we need to do.
@@ -91,7 +91,7 @@ and, increasingly, as a package.  Currently, F# libraries tend to assume either
 as their "root dependency".  the general principle that **libraries should have a "most portable sufficient" root dependency**,
 it makes sense to move to a .NET Standard dependency.
 
-It is **very important** to note that nuget packages can easily be progressed from a current state to a different state
+It is **very important** to note that NuGet packages can easily be progressed from a current state to a different state
 without breaking existing consumers of specific versions:
 
 * a future version of a package can become "empty" and refer to a different package as an identity, effectively renaming the package (without breaking consumers of existing versions)
@@ -128,11 +128,11 @@ All core engineering participants share some common long term goals
 
 Please contribute scenarios to the list below.
 
-**Using FSharp.Core nuget package to simplify .NET Framework development**.  The F# community regularly use the existing FSharp.Core nuget package to simplify and remove edge cases in .NET Framework development.
+**Using FSharp.Core NuGet package to simplify .NET Framework development**.  The F# community regularly use the existing FSharp.Core NuGet package to simplify and remove edge cases in .NET Framework development.
 
-1. A C# programmer wants to  consume an F# library (which is assumed not to package FSharp.Core).  Adding a reference to the package doesn't add an FSharp.Core reference to the C# project.  THe F# programmer solves this situation by adding an FSharp.Core nuget reference to their project, and republishing.
+1. A C# programmer wants to  consume an F# library (which is assumed not to package FSharp.Core).  Adding a reference to the package doesn't add an FSharp.Core reference to the C# project.  THe F# programmer solves this situation by adding an FSharp.Core NuGet reference to their project, and republishing.
 
-1. Likewise, a C# programmer wants to  consume multiple F# libraries where FSharp.Core dependencies need to be resolved by Paket or Nuget.
+1. Likewise, a C# programmer wants to  consume multiple F# libraries where FSharp.Core dependencies need to be resolved by Paket or NuGet.
 
 
 
@@ -165,7 +165,7 @@ Looking beyond ~September 2017, we propose:
 
 A second proposal has been developed.
 
-1. Microsoft make and publish the FSharp.Core nuget package containing **only** the .NET Standard 1.x (likely 1.6) and .NET Framework 4.5 versions of the DLL. Assume this next version is FSharp.Core nuget package 4.2.0.
+1. Microsoft make and publish the FSharp.Core NuGet package containing **only** the .NET Standard 1.x (likely 1.6) and .NET Framework 4.5 versions of the DLL. Assume this next version is FSharp.Core NuGet package 4.2.0.
 
 Technically, this would be implemented by renaming the authoring Microsoft.FSharp.Core.netcore to FSharp.Core in the http://github.com/Microsoft/visualfsharp repo and adding the ``lib/net40/FSharp.Core.*`` files.
 
@@ -181,9 +181,9 @@ This approach _appears_ to meet
 
 * Community simplicity requirements (for a single, unified FSharp.Core package with no additional dependencies).
 
-However, Propoosal B drops support for some existing usage scenarios for FSharp.Core, notably PCL library development.  Those developing PCL libraries would be instructed to continue to use FSharp.Core nuget package 4.1.17 or before. Tooling such as Paket would automatically ensure that an upgrade didn't happen for people developing PCL libraries.   .NET Standard, .NET Core or .NET Framework consumers of PCL  libraries can of course use FSharp.Core 4.2.0.
+However, Propoosal B drops support for some existing usage scenarios for FSharp.Core, notably PCL library development.  Those developing PCL libraries would be instructed to continue to use FSharp.Core NuGet package 4.1.17 or before. Tooling such as Paket would automatically ensure that an upgrade didn't happen for people developing PCL libraries.   .NET Standard, .NET Core or .NET Framework consumers of PCL  libraries can of course use FSharp.Core 4.2.0.
 
-Given the guidance that [library authors should target lower versions of FSharp.Core](https://fsharp.github.io/2015/04/18/fsharp-core-notes.html#libraries-target-lower-versions-of-fsharpcore) in order to make their library more useful in more scenarios this seems like a reasonable tradeoff.  Effectively it would be saying __PCL library development is fine until .NET Standard library development is fully supported by all tooling.  However  please stick to referencing nuget package FSharp.Core 4.1.17 or before, and by the way you will get slightly greater reach for your library if you use nuget package 4.0.0.1 anyway__. 
+Given the guidance that [library authors should target lower versions of FSharp.Core](https://fsharp.github.io/2015/04/18/fsharp-core-notes.html#libraries-target-lower-versions-of-fsharpcore) in order to make their library more useful in more scenarios this seems like a reasonable tradeoff.  Effectively it would be saying __PCL library development is fine until .NET Standard library development is fully supported by all tooling.  However  please stick to referencing NuGet package FSharp.Core 4.1.17 or before, and by the way you will get slightly greater reach for your library if you use NuGet package 4.0.0.1 anyway__. 
 
 
 ###  Problems (Proposal A)
@@ -207,7 +207,7 @@ There are a number of open questions about the way FSharp.Core is referenced by 
 are somewhat orthogonal to the package structure and delivery. See [this comment](https://github.com/fsharp/fslang-design/issues/188#issuecomment-301245317).
 
 * Is the FSharp.Core package reference pinned or not in templates?  
-  - PackageReference support version ranges. Package versions in nuget are major.minor.patch (semver), that's the official versioning scheme.
+  - PackageReference support version ranges. Package versions in NuGet are major.minor.patch (semver), that's the official versioning scheme.
   - Pinning to an exact specific version, es 4.1.9 mean if i need to update it, user need to do it manually. And is bad for resilience to bugs. And is more complicated if implicit.
   - Pinning to a wilcard .path (eg ``4.1.*``) mean it's possibile to update it later.
   - Pinning to wilcard minor (eg ``4.*``) mean a more strict contract for the package.
@@ -238,7 +238,7 @@ are somewhat orthogonal to the package structure and delivery. See [this comment
 
 ### Example F# Libraries
 
-Here are a list of some sample F# libraries with .NET Standard or .NET Core compilations and an existing compile-time  dependency on the FSharp.Core nuget package
+Here are a list of some sample F# libraries with .NET Standard or .NET Core compilations and an existing compile-time  dependency on the FSharp.Core NuGet package
 
 * [Expecto](https://github.com/haf/expecto)
 * [Logary](https://github.com/logary/logary)
@@ -247,7 +247,7 @@ Here are a list of some sample F# libraries with .NET Standard or .NET Core comp
 * [Fable compiler](https://github.com/fable-compiler/Fable)
 * [FsCheck](https://github.com/fscheck/FsCheck) currently supports .NET, 3 PCL profiles, and .net standard
 
-There are many others - searching github for "nuget FSHarp.Core" in paket.dependencies is one way to find them. These libraries can be used to assess the suitabiity of proposals here. For example, does changing these libraries to an FSharp.Core.netstandard dependency birfurcate the world of F# libraries, or can a "FSharp.Core --> FSharp.Core.netstandard" dependency work to make the dependency chain commute.
+There are many others - searching github for ``nuget FSharp.Core`` in ``paket.dependencies`` is one way to find them. These libraries can be used to assess the suitabiity of proposals here. For example, does changing these libraries to an FSharp.Core.netstandard dependency birfurcate the world of F# libraries, or can a "FSharp.Core --> FSharp.Core.netstandard" dependency work to make the dependency chain commute.
 
 
 ## Alternatives
