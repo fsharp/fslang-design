@@ -204,6 +204,7 @@ Here are a list of some sample F# libraries with .NET Standard or .NET Core comp
 * [Suave](https://github.com/SuaveIO/suave)
 * [FSharp.Compiler.Service](https://github.com/fsharp/FSharp.Compiler.Service)
 * [Fable compiler](https://github.com/fable-compiler/Fable)
+* [FsCheck](https://github.com/fscheck/FsCheck) currently supports .NET, 3 PCL profiles, and .net standard
 
 There are many others - searching github for "nuget FSHarp.Core" in paket.dependencies is one way to find them. These libraries can be used to assess the suitabiity of proposals here. For example, does changing these libraries to an FSharp.Core.netstandard dependency birfurcate the world of F# libraries, or can a "FSharp.Core --> FSharp.Core.netstandard" dependency work to make the dependency chain commute.
 
