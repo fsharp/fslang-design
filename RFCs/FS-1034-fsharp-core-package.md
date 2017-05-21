@@ -23,12 +23,12 @@ For other F# compilation environments like Xamarin, Mono, Cloud Sharper, FSharp.
 there was a bit of a mess (made considerably worse by the separation of sigdata/optdata files, [now addressed](https://github.com/Microsoft/visualfsharp/pull/2884))
 
 The F# Core Engineering Group created a NuGet package called [FSharp.Core](https://www.nuget.org/packages/FSharp.Core), partly to avoid
-a proliferation of "homebrew" packges appearing at that time. This packge has now grown to be a "one-stop-shop"
-package for FSharp.Core for all different target platforms. A single, unified FSharp.Core NuGet packge has advantages:
+a proliferation of "homebrew" packages appearing at that time. This package has now grown to be a "one-stop-shop"
+package for FSharp.Core for all different target platforms. A single, unified FSharp.Core NuGet package has advantages:
 
 * Simplicity: Users don't have to think at all - they just reference the package and that's that
 
-* Multi-targeting: One packge supports building against multiple targets
+* Multi-targeting: One package supports building against multiple targets
 
 The F# Core Engineering group also publish [notes and guidance on FSharp.Core.dll](http://fsharp.github.io/2015/04/18/fsharp-core-notes.html).
 
@@ -120,7 +120,7 @@ All core engineering participants share some common long term goals
 
 * a unified, sensible, healthy, "non-bifurcated" F# library ecosystem
 
-* mutual cooperation to see F# toioling succeed in many different scenarios
+* mutual cooperation to see F# tooling succeed in many different scenarios
 
 * a healthy ecosystem of "innovative" F# tooling
 
@@ -191,7 +191,7 @@ Given the guidance that [library authors should target lower versions of FSharp.
 F# Core Engineering previously tried to make ``FSharp.Core`` be a unifying package by using a dependency on ``FSharp.Core.netstandard`` (then called ``Microsoft.FSharp.Core.netcore``).
 For some reason that approach failed technically. It is a priority to determine what, if anything, goes wrong with doing that.
 
-Specifically, [this comment](https://github.com/fsharp/fslang-design/issues/188#issuecomment-301245317) indicates that tooling can incorrectly interpret dependencies "FSHarp.Core --> FSharp.Core.netstandard" in an
+Specifically, [this comment](https://github.com/fsharp/fslang-design/issues/188#issuecomment-301245317) indicates that tooling can incorrectly interpret dependencies "FSharp.Core --> FSharp.Core.netstandard" in an
 incorrect way
 
 > It is techinically very very hard to use different packages of FSharp.Core.dll for the same target framework. Is
@@ -228,7 +228,7 @@ are somewhat orthogonal to the package structure and delivery. See [this comment
 * At what point does the ``FSharp.Core`` package drop the inclusion of PCL versions of FSharp.Core (as mentioned above, PCL library development will still always be available by referencing older versions of the package)
   - Answer: when support for .NET Standard package references is widespread, stable and fully accepted
 
-* At what point does the ``FSharp.Core`` package drop the inclusion of Xamarin-specific versions of FSHarp.Core (as mentioned above, Xamaring library development will still always be possible by referencing older versions of the package)
+* At what point does the ``FSharp.Core`` package drop the inclusion of Xamarin-specific versions of FSharp.Core (as mentioned above, Xamaring library development will still always be possible by referencing older versions of the package)
   - Answer: when Xamarin no longer needs these
 
 ### Open Questions (Proposal B)
