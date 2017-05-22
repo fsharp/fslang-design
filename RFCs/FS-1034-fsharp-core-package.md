@@ -164,16 +164,16 @@ Looking beyond ~September 2017, we propose:
 ## Proposal B
 
 1. Visual Studio deployed templates and the dotnet cli templates reference the FSharp.Core nuget package rather than Microsoft.FSharp.Core.netcore
-2. The __Visual F# compiler and OSS tools__ repo (https://github.com/Microsoft/visualfsharp) host, builds and signs the FSharp.Core nuget packages and publishes them to nuget.org
-3. __Visual F# compiler and OSS tools__ repo continues to update and publish __FSharp.Core.nuget, 4.1.xxx__ with all of the PCLs including the xamarin specific FSharp.Core.dlls until they are deprecated in the OSS repo (currently planned at End of Year 2017).
-5. __Visual F# compiler and OSS tools__ repo publishes __FSharp.Core.nuget, 4.2.xxx__ This release contains the net45 and the netstandard 1.6 build of FSharp.Core.dll.
+2. __Visual F# Compiler and tools OSS__ repo (https://github.com/Microsoft/visualfsharp) host, builds and signs the FSharp.Core nuget packages and publishes them to nuget.org
+3. __Visual F# compiler and tools OSS__ repo continues to update and publish __FSharp.Core.nuget, 4.1.xxx__ with all of the PCLs including the Xamarin specific FSharp.Core.dlls until they are deprecated in the OSS repo (currently planned at end of year 2017).
+4. __Visual F# compiler and tools OSS__ repo publishes __FSharp.Core.nuget, 4.2.xxx__ This release contains the net45 and the netstandard 1.6 build of FSharp.Core.dll.
 
 __Guidance for developers__
 * Existing packages targeting pcls, net20, or net40 use __FSharp.Core.nuget versions 4.1.xxx__
 * Existing desktop libraries or projects ... either package is fine, prefer __FSharp.Core.nuget versions 4.2.xxx__ where feasible.
-* New desktop projects, or netstandard projects use: FSharp.Core.nuget versions 4.2.xxx
-* Library develops --- target as low a version of dotnet standard as your API consumption allows. netstandard1.6 is ideal for libraries not including type providers. Provide a net45 and netstandard build of your libraries, to enable developers who need to deploy to a wide range of existing Windows dotnet installs.
-* TP developers you will need to target dotnet standard 2.0 and/or net45 --- but the netstandard1.6 profile of FSharp.Core will be ideal to build against use: FSharp.Core.nuget versions 4.2.xxx
+* New desktop projects, or netstandard projects use: __FSharp.Core.nuget versions 4.2.xxx__
+* Library develops --- target as low a version of dotnet standard as your API consumption allows. netstandard1.6 is ideal for libraries not including type providers. Provide a net45 and netstandard build of your libraries, to enable developers who need to deploy to a wide range of existing Windows dotnet installs.  __FSharp.Core.nuget versions 4.2.xxx__
+* TP developers you will need to target dotnet standard 2.0 and/or net45 --- but the netstandard1.6 profile of FSharp.Core will be ideal to build against use: __FSharp.Core.nuget, 4.2.xxx__
 
 This approach _appears_ to meet 
 
