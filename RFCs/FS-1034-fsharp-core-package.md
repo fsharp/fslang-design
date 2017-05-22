@@ -171,7 +171,7 @@ Looking beyond ~September 2017, we propose:
 __Guidance for developers__
 * Existing packages targeting pcls, net20, or net40 use __FSharp.Core.nuget versions 4.1.xxx__
 * Existing desktop libraries or projects ... either package is fine, prefer __FSharp.Core.nuget versions 4.2.xxx__ where feasible.
-* New desktop projects, or netstandard projects use: __FSharp.Core.nuget versions 4.2.xxx__
+* New desktop projects, Xamarin projects, or netstandard projects use: __FSharp.Core.nuget versions 4.2.xxx__
 * Library develops --- target as low a version of dotnet standard as your API consumption allows. netstandard1.6 is ideal for libraries not including type providers. Provide a net45 and netstandard build of your libraries, to enable developers who need to deploy to a wide range of existing Windows dotnet installs.  __FSharp.Core.nuget versions 4.2.xxx__
 * TP developers you will need to target dotnet standard 2.0 and/or net45 --- but the netstandard1.6 profile of FSharp.Core will be ideal to build against use: __FSharp.Core.nuget, 4.2.xxx__
 
