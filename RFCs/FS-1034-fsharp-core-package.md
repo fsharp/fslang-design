@@ -263,6 +263,13 @@ There are many others - searching github for ``nuget FSharp.Core`` in ``paket.de
   - Response:  No! See reasons above for  why this is not sensible - there are just too many scenarios where is it is just "way simpler and much easier" to instruct
     users to reference this package.
 
+## Notes
+
+* file size [more info and some stats](https://github.com/fsharp/fslang-design/pull/201), the 8MB nupkg is:
+  - the 6.5% of .net core sdk bundle, and 0.28% of VS local nupkg feed
+  - big (3-4 times) for a single library package
+
+
 ## Acknowledgements
 
 Thanks to Enrico Sada, Steffen Forkmann, Kevin Ransom, Phillip Carter for discussions leading up to the first draft of this RFC.
