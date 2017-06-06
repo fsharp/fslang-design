@@ -1,6 +1,6 @@
-# F# RFC FS-1035 - Support for converting a String to an Option
+# F# Suggestion FSS-0001 - Support for converting a String to an Option
 
-This RFC covers the detailed proposal for this suggestion.
+This document covers the detailed proposal for this suggestion.
 
 * [x] Implementation (with discussion): [In progress](https://github.com/Microsoft/visualfsharp/pull/3135)
 
