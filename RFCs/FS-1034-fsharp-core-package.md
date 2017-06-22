@@ -197,7 +197,7 @@ For some reason that approach failed technically. It is a priority to determine 
 Specifically, [this comment](https://github.com/fsharp/fslang-design/issues/188#issuecomment-301245317) indicates that tooling can incorrectly interpret dependencies "FSharp.Core --> FSharp.Core.netstandard" in an
 incorrect way
 
-> It is techinically very very hard to use different packages of FSharp.Core.dll for the same target framework. Is
+> It is technically very very hard to use different packages of FSharp.Core.dll for the same target framework. Is
 > a special case not handled, and result in messed transitive dependencies and multiple FSharp.Core.dll referenced.
 
 We should determine the exact nature of this problem and solve it. If it is not solvable in a reasonable time, we will
@@ -219,10 +219,10 @@ are somewhat orthogonal to the package structure and delivery. See [this comment
 
 * Is the FSharp.Core reference explicit or implicit in .NET SDK project files?  See [again this comment](https://github.com/fsharp/fslang-design/issues/188#issuecomment-301245317)
   - an Fsharp.Core.dll is always required. Template can implicit reference it or not.
-  - If implicit, it must be possible to disable it
+  - If implicit, it must be possible to disable it.
   - Implicit is one line less in template.
-  - Other package managers (like Paket) can just add that property as default, to manage FSharp.Core himself
-  - Explicit is easier to understand, and less surprises changing sdk version
+  - Other package managers (like Paket) can just add that property as default, to manage FSharp.Core himself.
+  - Explicit is easier to understand, and less surprises changing sdk version.
 
 ### Open Questions (Proposal A)
 
@@ -250,7 +250,7 @@ Here are a list of some sample F# libraries with .NET Standard or .NET Core comp
 * [Fable compiler](https://github.com/fable-compiler/Fable)
 * [FsCheck](https://github.com/fscheck/FsCheck) currently supports .NET, 3 PCL profiles, and .net standard
 
-There are many others - searching github for ``nuget FSharp.Core`` in ``paket.dependencies`` is one way to find them. These libraries can be used to assess the suitabiity of proposals here. For example, does changing these libraries to an FSharp.Core.netstandard dependency birfurcate the world of F# libraries, or can a "FSharp.Core --> FSharp.Core.netstandard" dependency work to make the dependency chain commute.
+There are many others - searching github for ``nuget FSharp.Core`` in ``paket.dependencies`` is one way to find them. These libraries can be used to assess the suitability of proposals here. For example, does changing these libraries to an FSharp.Core.netstandard dependency bifurcate the world of F# libraries, or can a "FSharp.Core --> FSharp.Core.netstandard" dependency work to make the dependency chain commute?
 
 
 ## Alternatives
@@ -266,7 +266,7 @@ There are many others - searching github for ``nuget FSharp.Core`` in ``paket.de
 ## Notes
 
 * file size [more info and some stats](https://github.com/fsharp/fslang-design/pull/201), the 8MB nupkg is:
-  - the 6.5% of .net core sdk bundle, and 0.28% of VS local nupkg feed
+  - the 6.5% of .NET Core sdk bundle, and 0.28% of VS local nupkg feed
   - big (3-4 times) for a single library package
 
 
