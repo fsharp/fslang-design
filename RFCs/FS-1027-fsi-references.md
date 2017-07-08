@@ -204,5 +204,16 @@ A drawback here is that this is not something that C# would likely do in C# scri
 # Unresolved questions
 [unresolved]: #unresolved-questions
 
-None at this time.
+
+* One technical concern about this mechanism is that the F# scripting model implementation currently has a set of default references to a bunch of DLLs. For facade assemblies these can resolve to, say, System.IO 4.1.1.0.  But later packages may need later versions of facade DLLs such as System.IO.  It seems that the package manage should be given the opportunity to decide what to do with these default references  so that a more up-to-date set of references can be determined at scripting engine startup
+
+* The discussion here is relevant: https://github.com/Microsoft/visualfsharp/pull/3307#issuecomment-313856347
+
+* Should we be adding a ``#r-typeprovider`` facility for package managers to decide to reference type providers independent of any specific runtime DLL
+
+* Comment here:
+
+> At the high level I'm just wondering if we can use .targets/.props in the nuget package to compute the relevant type provider references, and incorporate this into the #r "nuget: Foo" and/or #r "paket: Foo" mechanism for incrementally added references during scripting.
+
+
 
