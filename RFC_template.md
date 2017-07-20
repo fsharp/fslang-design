@@ -42,6 +42,16 @@ Why should we *not* do this?
 
 What other designs have been considered? What is the impact of not doing this?
 
+# Compatibility
+[compatibility]: #compatibility
+
+Please address all necessary compatibility questions:
+* Is this a breaking change?
+* What happens when previous versions of the F# compiler encounter this design addition as source code?
+* What happens when previous versions of the F# compiler encounter this design addition in compiled binaries?
+* If this is a change or extension to FSharp.Core, what happens when previous versions of the F# compiler encounter this construct?
+
+
 # Unresolved questions
 [unresolved]: #unresolved-questions
 
