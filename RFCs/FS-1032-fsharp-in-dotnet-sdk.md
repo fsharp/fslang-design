@@ -190,18 +190,18 @@ This is valuable because System.ValueTuple is kind of confusing ...
 You need to reference it for net45,net46, net461, net462, net47 and coreapp1.+ and netstandard 1.6. You don't need to reference it for net471 and up or netcoreapp 2.+ or netstandard2.+.
 net47 is the most vexing, because the full desktop framework contains the type but the reference assemblies do not contain the type forward.
 
-__DisableAutoValueTupleReference__
+__DisableImplicitSystemValueTupleReference__
 To disable this, because ... reasons ...
-Use the DisableAutoValueTupleReference property [true or false]
+Use the DisableImplicitSystemValueTupleReference property [true or false]
 FSharp.Core reference
 When building coreclr the framework automagically references the FSharp.Core using a wild card
 Currently:  1.0.0-*  Once we have a netcore2.0 fsharp.core package it will likely change to 1.0.0-* for netcoreapp1.+ and netstandard1+ and 2.0.0-* for netcoreapp2+ etc.
 
-__DisableAutoFSharpCoreReference__
-To disable automagic fsharp.core reference use the DisableAutoFSharpCoreReference property [true or false]
+__DisableImplicitFSharpCoreReference__
+To disable automagic fsharp.core reference use the DisableImplicitFSharpCoreReference property [true or false]
 
-__TargetFSharpCorePackageVersion__
-To change the package version set: the TargetFSharpCorePackageVersion to a specific value.
+__FSharpCoreImplicitPackageVersion__
+To change the package version set: the FSharpCoreImplicitPackageVersion to a specific value.
 
 __TargetFSharpCorePackageIdentity__
 To use a different nuget package for FSharp.Core.dll use the TargetFSharpCorePackageIdentity property.
