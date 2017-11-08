@@ -72,68 +72,7 @@ Some specific technical advantages:
 
 * No need to publish FSharp.NET.Sdk separately (except perhaps for templates? see below)
 
-## Drawbacks
-[drawbacks]: #drawbacks
-
-* The proposal may not be approved and may be disruptive
-
-* The F# community lose a point where they can inject new commands into the dotnet CLI tooling experience, e.g. "dotnet script".
-
-* Speed of iteration on the tooling may be reduced
-
-  --> The iteration speed of the FSharp.NET.Sdk has been incredible. However there is an inherent tradeoff
-  here: deeper integration makes more rapid iteration more difficult. The fully open nature of the process
-  and the fairly rapid iteration on preview releases of the Microsoft.NET.Sdk and the F# tools should
-  alleviate many of these concerns.
-
-* The implementation may ignore the many technical issues addressed by the [FSharp.NET.Sdk] work.
-
-  --> This can be addressed in part by making sure all work is referenced and compared with the relevant FSharp.NET.Sdk functionality.
-
-* The tooling may be biased to only address issues relevant to the proposers (Microsoft and VIsual Studio).
-
-  --> This can be addressed by a proper RFC and by making sure the implementation is fully transparent.
-
-## Unresolved questions
-[unresolved]: #unresolved-questions
-
-### Templating
-
-Templating for the next generation of .NET tooling is handled at [dotnet/templating](https://github.com/dotnet/templating). In that repo, the FSharp.NET.Sdk currently has the "good" name for F#, as in 
-
-    dotnet new --lang F# 
-
-Historically templates has been a major issue for the FSharp.NET.Sdk.  In the words of @enricosada:
-
-> - templates BITE ME HARD, A LOT, MULTIPLE TIMES, WHEN I WAS ALREADY ON THE FLOOR. for lots of reasons (and not just myself).
-
-We have options here:
-
-- We can propose switch the F# sdk templates to F#.sdk, and the integrated F# to use F#.  And have two sets of F# templates … 
-
-- We can have no templates in Microsoft.NET.Sdk and repurpose FSharp.NET.Sdk to be a collection of templates.
-
-There is ongoing dicussion on this point. It may be treated as an orthogonal issue. Relevant comment from @dsyme:
-
-> Historically we’ve tried to encourage developers to contribute templates to core tooling many times – but the turnaround times have been too long to make the mechanism useful.  If a developer contributes a template today, it needs to be usable by the developer (and her friends, and her friends friends) tomorrow – via the standard “dotnet new -lang F#” – without any reference to preview packages or alpha feeds - otherwise the templates just get completely stale, and no one contributes them.
-
-This indicates that the templating delivery mechanism may need much more rapid turnaround time than available through the mechanisms proposed in this RFC.
-
-### Mono
-
-There is a concern that Mono may not be correctly addressed. 
-
-It is very important to get a grip on the Mono angle to this work.  It is proposed that the FSharp.NET.Sdk test matrix or an equivalent integrated into visualfsharp repo as part of this work.  
-
-For the FSharp.NET.Sdk,  using msbuild on Mono with new-style project files will run ``mono fsc.exe`` from the referenced ``FSharp.Compiler.Tools`` package, see [this](https://bugzilla.xamarin.com/show_bug.cgi?id=55626)
-
-Relevant comment from @dsyme
-
-> The value that the FSharp.NET.Sdk has brought in this space is vast.   Just last week Enrico really achieved an amazing “convergence” result when the same tooling could build the same project files on .NET Core, Mono, .NET Framework and everything works (apart from the few orthogonal known issues, which are on all platforms). I can’t tell you what a breakthrough this is for F#.  For the first time, cross-platform F# project build/test tooling feels like it is on a convergence path – the new .NET tooling is really going to simplify everyone’s lives. Every F# repo was suddenly going to become simpler.
-> 
-> I was so excited by this result I told my wife.  That’s a sure indicator that we have to make sure we keep that value. 
-
-### .NET SDK F# Templates 
+### Sample .NET SDK Project File
 
 The basic template for a console app looks like:
 ```
@@ -150,8 +89,9 @@ The basic template for a console app looks like:
 __TargetFramework__
 Modify the TargetFramework tag to target different frameworks:
 valid values include but are not limited to:
-* netcoreapp1.0
+* netcoreapp2.0
 * netstandard1.6
+* netstandard2.0
 * net45
 * net46
 * net461
@@ -174,44 +114,45 @@ The .NET SDK allows a project to produce multiple targets use the ``TargetFramew
 
 __Notes:__
 
+__Debug Symbols__
+
+When using the F# compiler bundled with the .NET SDK, only portable debug symbols are produced, even if ``--debug:full`` is used.
+
 __F# Template format compared with C#__
+
 In general there are no deviations between the two languages.  C# supports source file globbing (Wild card search for files to compile).  The F# compiler requires source file ordering specified in the project file and so this feature is disabled for F# projects.
 PackageRefs in an F# project are specified in the same way as C# projects, Similarly for Project Refs and References.
 
 There are extra properties toi control F# specific features, such as FSharp.Core dll and Package referencing as well as System.ValueTuple package referencing.  The real value of these extra properties is apparent when targetting multiple .net frameworks.
 
-__Portable Libraries: TBD:___
-currently the SDK doesn't support portable library targets. Use the legacy project format for these.
-Really unfortunately in FSharp.Core we rely on some APIs that require high versions of netstandard (1.6) -- so we will probably have to produce a new netstandard version of FSharp.Core for portability ... probably netstandard 1.3.
-
 __System.ValueTuple Reference__
-It is not necessary to include System.ValueTuple reference. Thje reason is that a packagereference is automagically added during the build.
-This is valuable because System.ValueTuple is kind of confusing ...
-You need to reference it for net45,net46, net461, net462, net47 and coreapp1.+ and netstandard 1.6. You don't need to reference it for net471 and up or netcoreapp 2.+ or netstandard2.+.
-net47 is the most vexing, because the full desktop framework contains the type but the reference assemblies do not contain the type forward.
+
+It is not necessary to include System.ValueTuple reference. Thje reason is that a packagereference is automagically added during the build. This is valuable because System.ValueTuple is kind of confusing ... You need to reference it for ``net45``, ``net46``, ``net461``, ``net462``, ``net47``, ``netcoreapp1.+`` and ``netstandard 1.6``. You don't need to reference it for ``net471`` and up or ``netcoreapp 2.+`` or ``netstandard2.+``. ``net47`` is the most vexing, because the full desktop framework contains the type but the reference assemblies do not contain the type forward.
 
 __DisableImplicitSystemValueTupleReference__
-To disable this, because ... reasons ...
-Use the DisableImplicitSystemValueTupleReference property [true or false]
-FSharp.Core reference
+
+To disable the ``System.ValueTuple.dll`` reference, because ... reasons ... use the ``DisableImplicitSystemValueTupleReference`` property [true or false]
+
+__DisableImplicitFSharpCoreReference__
+
 When building coreclr the framework automagically references the FSharp.Core using a wild card
 Currently:  1.0.0-*  Once we have a netcore2.0 fsharp.core package it will likely change to 1.0.0-* for netcoreapp1.+ and netstandard1+ and 2.0.0-* for netcoreapp2+ etc.
 
-__DisableImplicitFSharpCoreReference__
-To disable automagic fsharp.core reference use the DisableImplicitFSharpCoreReference property [true or false]
+To disable automagic ``FSharp.Core`` reference use the ``DisableImplicitFSharpCoreReference`` property ``true`` or ``false``
 
 __FSharpCoreImplicitPackageVersion__
-To change the package version set: the FSharpCoreImplicitPackageVersion to a specific value.
 
-__TargetFSharpCorePackageIdentity__
-To use a different nuget package for FSharp.Core.dll use the TargetFSharpCorePackageIdentity property.
+To change the package version set ``FSharpCoreImplicitPackageVersion`` to a specific value. 
+
 __TargetFSharpCoreVersion__
-For desktop versions, E.g. those who want to target FSharp.Core.4.3.0.0 e.t.c use the TargetFSharpCoreVersion property. This has no effect on netstandar or netcoreapp target builds.
+
+For desktop versions, E.g. those who want to target FSharp.Core.4.3.0.0 e.t.c use the ``TargetFSharpCoreVersion`` property. This has no effect on netstandar or netcoreapp target builds.
 These proposals are implemented within the VisualFSharp repo in targets we deploy with the compiler, and so will not require coordination with the cli or sdk to implement.
+
 The source files can be found here: https://github.com/Microsoft/visualfsharp/blob/master/src/fsharp/FSharp.Build/Microsoft.FSharp.NetSdk.props
 and here: https://github.com/Microsoft/visualfsharp/blob/master/src/fsharp/FSharp.Build/Microsoft.FSharp.NetSdk.targets
 
-A console app targeting multiple frameworks and the 4.4.0.0 fsharp.core
+A console app targeting multiple frameworks and the 4.4.0.0 ``FSharp.Core``
 ```
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
@@ -276,15 +217,66 @@ such as templating.  It doesn't make sense to have two F# stories in the .NET CL
 > It has to continue to work, we will not remove it from the dotnet cli.  We assume that developers have existing projects that make use of it, we need to ensure that those projects build with the new tooling.  Currently they don’t because dotnet cli doesnot ship a with the ability to run 1.0 apps … super weirdly … I will put in a diversion to make it use the deployed compiler so that they work.
 
 
+### Mono
+
+Mono supports ``msbuild`` and the new .NET SDK project files.
+
+It is very important to get a grip on the Mono angle to this work.  It is proposed that the FSharp.NET.Sdk test matrix or an equivalent integrated into visualfsharp repo as part of this work.  
+
+For the FSharp.NET.Sdk,  using msbuild on Mono with new-style project files ran ``mono fsc.exe`` from the referenced ``FSharp.Compiler.Tools`` package, see [this](https://bugzilla.xamarin.com/show_bug.cgi?id=55626)
+
+### Misc
+
+Relevant comment from @dsyme
+
+> The value that the FSharp.NET.Sdk has brought in this space is vast.   Just last week Enrico really achieved an amazing “convergence” result when the same tooling could build the same project files on .NET Core, Mono, .NET Framework and everything works (apart from the few orthogonal known issues, which are on all platforms). I can’t tell you what a breakthrough this is for F#.  For the first time, cross-platform F# project build/test tooling feels like it is on a convergence path – the new .NET tooling is really going to simplify everyone’s lives. Every F# repo was suddenly going to become simpler.
+> 
+> I was so excited by this result I told my wife.  That’s a sure indicator that we have to make sure we keep that value. 
+
+
+### Templating
+
+Templating for the next generation of .NET tooling is handled at [dotnet/templating](https://github.com/dotnet/templating). In that repo, the FSharp.NET.Sdk currently has the "good" name for F#, as in 
+
+    dotnet new --lang F# 
+
+Historically templates has been a major issue for the FSharp.NET.Sdk.  In the words of @enricosada:
+
+> - templates BITE ME HARD, A LOT, MULTIPLE TIMES, WHEN I WAS ALREADY ON THE FLOOR. for lots of reasons (and not just myself).
+
+
 ### Others
 
 * There are open questions about how Roslyn Common Project System tooling integrates
   F# support, see [this PR](https://github.com/dotnet/project-system/pull/1670), [this comment thread](https://github.com/dotnet/project-system/pull/1670) and 
   potentially other ongoing work.
 
-* There are numerouow [FSharp.NET SDK bugs](https://github.com/dotnet/netcorecli-fsc/issues)
+* There were  [FSharp.NET SDK bugs](https://github.com/dotnet/netcorecli-fsc/issues)
   like [this one](https://github.com/dotnet/netcorecli-fsc/issues/93). The list is an interesting guide.
   For example, it looks like we need to add F# support to [this code](https://github.com/Microsoft/msbuild/blob/master/src/Tasks/WriteCodeFragment.cs#L294).
+
+## Drawbacks
+[drawbacks]: #drawbacks
+
+* The proposal may not be approved and may be disruptive
+
+* The F# community lose a point where they can inject new commands into the dotnet CLI tooling experience, e.g. "dotnet script".
+
+* Speed of iteration on the tooling may be reduced
+
+  --> The iteration speed of the FSharp.NET.Sdk has been incredible. However there is an inherent tradeoff
+  here: deeper integration makes more rapid iteration more difficult. The fully open nature of the process
+  and the fairly rapid iteration on preview releases of the Microsoft.NET.Sdk and the F# tools should
+  alleviate many of these concerns.
+
+* The implementation may ignore the many technical issues addressed by the [FSharp.NET.Sdk] work.
+
+  --> This can be addressed in part by making sure all work is referenced and compared with the relevant FSharp.NET.Sdk functionality.
+
+* The tooling may be biased to only address issues relevant to the proposers (Microsoft and VIsual Studio).
+
+  --> This can be addressed by a proper RFC and by making sure the implementation is fully transparent.
+
 
 ## Alternatives
 [alternatives]: #alternatives
