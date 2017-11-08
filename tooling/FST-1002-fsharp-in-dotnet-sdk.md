@@ -1,4 +1,4 @@
-# F# Tooling RFC FST-1032 - Support for F# in the dotnet sdk
+# F# Tooling RFC FST-1002 - Support for F# in the dotnet sdk
 
 A proposal is being put forward - initiated by Microsoft - to include F# functionality directly into [the dotnet SDK](https://github.com/dotnet/sdk), also known as "Microsoft.NET.Sdk",
 which is the primary next-generation cross-platform SDK for .NET Framework and .NET Core programming. This work can be seen as the next logical step
