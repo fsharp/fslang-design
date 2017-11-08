@@ -3,7 +3,7 @@
 ### Summary 
 
 This RFC proposes an adjustment to how the compile-time (aka "design time") component of an F# type provider is located and
-loaded into F# tooling.  This change would have an impact on the future package layout of components that include F# type providers.
+loaded into F# tooling.  This change will impact the future package layout of packages that include F# type providers.
 
 Despite being a tooling issue rather than a language issue, this is being treated as an F# RFC to facilitate discussion.
 
@@ -12,10 +12,10 @@ Despite being a tooling issue rather than a language issue, this is being treate
 
 ### Background and Terminology
 
-Type providers "augment" a regular DLL reference.  To use a type provider the
+Type providers augment a regular DLL reference by adding a component into host design-time tooling.  To use a type provider the
 programmer specifies a reference to a DLL (e.g. ``FSharp.Data.dll``), which contains an attribute that indicates there is an associated
-Type Provider Design Time Component (TPDTC, e.g. ``FSharp.Data.DesignTime.dll``) to also use. The TPDTC
-gets loaded into F#-aware host tools (i.e. compilers, editor addins and other tooling built using ``FSharp.Compiler.Service.dll``)
+Type Provider Design Time Component (TPDTC, e.g. ``FSharp.Data.DesignTime.dll``) to also use at design-time. The TPDTC
+gets loaded into F#-aware host tools (i.e. compilers, editor addins and any other tooling built using ``FSharp.Compiler.Service.dll``)
 at design-time. That is, any referenced DLL processed by the F# compiler logi  may contain a [``TypeProviderAssembly(...)``](https://msdn.microsoft.com/en-us/visualfsharpdocs/conceptual/compilerservices.typeproviderassemblyattribute-class-%5Bfsharp%5D) attribute indicating the presense of an associated TPDTC.
 
 The host tooling then does F# analysis or compilation via requests to ``FSharp.Compiler.Service.dll``, which in turn
@@ -160,10 +160,13 @@ This proposal has generated extensive discussion, see https://github.com/Microso
 
 A primary concern is that the F# compiler must include some minimal logic about framework names and package layout. This is anathema in modern .NET design, where tools such as Paket and Nuget are used to manage references and dependencies.
 
-The discussion thread linked above records the discussion and response. Basically relying on tools such as Paket and Nuget to handle the configuration of design-time tools is extremely problematic.  For example, at first sight it looks possible to utilize the capability of Paket emit load scripts to help with such configuration, however these wouldn't apply to coommand-line compilation or project builds.  Further, Nuget is very far from being able to do this kind of configuration and it is unrealistic to expect them to add this capability in any timeframe that helps. Further, the full set of design-time tooling contexts is not actually known to NuGet.exe or Paket.exe -  -  a new F# design-time  tool (such as a documentation generator or VSCode editor) hosted in .NET Core may arrive after the fact
+The discussion thread linked above records the discussion and response. Basically 
 
-In contrast, in the proposal in this RFC, a relatively modest adjustment is made to the current scheme to interpret ``TypeProviderAssembly`` attributes to a relative reference in a stable and predictable way.  This resolution would apply to any and
-all tooling built using updated versions of ``FSharp.Compiler.Service.dll``, and would roll out consistenly across all F# implementations.
+* the cheapest and most efficient way to get 100% consistent behaviour for TPDTC loading across all F# tooling providers and usage scenarios is to place this logic in FSHarp.COmpiler.Service.dll.  There is not point spreading the logic out across Paket, NuGet etc, and doing that would massively explode the matrix of possibilities of tooling (e.g. versions of F#, versions of Paket, versions of NuGet etc.)
+
+* relying on tools such as Paket and Nuget to handle the configuration of design-time tools is problematic.  For example, at first sight it looks possible to utilize the capability of Paket emit load scripts to help with such configuration, however these wouldn't apply to coommand-line compilation or project builds.  Further, NuGet is very far from being able to do this kind of configuration and it is unrealistic to expect them to add this capability in any timeframe that helps. Further, the full set of design-time tooling contexts is not actually known to NuGet.exe or Paket.exe -  -  a new F# design-time  tool (such as a documentation generator or VSCode editor) hosted in .NET Core may arrive after the fact
+
+In contrast, in the proposal in this RFC, a relatively modest adjustment is made to the current scheme to have the F# compiler logic interpret ``TypeProviderAssembly`` attributes to a relative reference in a stable and predictable way.  This resolution would apply to any and all tooling built using updated versions of ``FSharp.Compiler.Service.dll``, and would roll out consistenly across all F# implementations.
 
 ## Alternatives
 [alternatives]: #alternatives
@@ -180,6 +183,9 @@ all tooling built using updated versions of ``FSharp.Compiler.Service.dll``, and
 3. Radically change TPDTCs so they aren't compiled components at all, but are specified using some other means like F# source files (e.g. source tasks in MSBuild)
 
    Response: Too intrusive, too radical
+
+4. Wait for some other people in .NET land to formulate a notion of a "dyanmic package", its dependencies etc. and use that.  Or try to utilize an existing dynamic package composition framework.  Both seem overkill and wrong for F#.  Ideally, .NET would come with a notion of a "dynamic package" which could include sufficient rules for the selection of a component suitable for a runtime host, but to my knowlege that is not as yet the case.
+
 
 ## Links
 
