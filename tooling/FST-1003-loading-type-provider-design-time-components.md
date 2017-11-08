@@ -25,10 +25,10 @@ Tooling contexts include:
 
 * ``FsAutoComplete.exe`` .NET Framework or .NET Core
 * ``fsc.exe`` running on .NET Core 2.0 as either 64-bit or 32-bit
-* fsi.exe running on .NET Framework as 32-bit
-* fsiAnyCpu.exe running on .NET Framework as either 64-bit or 32-bit
-* fsc.exe running on .NET Framework as either 64-bit or 32-bit
-* devenv.exe running on .NET Framework 32-bit
+* ``fsi.exe`` running on .NET Framework as 32-bit
+* ``fsiAnyCpu.exe`` running on .NET Framework as either 64-bit or 32-bit
+* ``fsc.exe`` running on .NET Framework as either 64-bit or 32-bit
+* ``devenv.exe`` running on .NET Framework 32-bit
 
 and indeed any context that uses ``FSharp.Compiler.Service.dll`` as either netstandard 2.0 or .NET Framework component.
 
