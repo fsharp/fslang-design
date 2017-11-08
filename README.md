@@ -1,6 +1,18 @@
 # F# Language Design RFCs 
 
-RFCs and docs related to the F# language design process. The Process:
+RFCs and docs related to the F# language design process. 
+
+* [Open F# Language RFCs (including candidates for F# 4.2)](https://github.com/fsharp/fslang-design/blob/master/RFCs)
+
+* [RFCs implemented in F# 4.1](https://github.com/fsharp/fslang-design/blob/master/FSharp-4.1)
+
+* [RFCs implemented in F# 4.0](https://github.com/fsharp/fslang-design/blob/master/FSharp-4.0)
+
+* [F# Tooling RFCs](https://github.com/fsharp/fslang-design/blob/master/tooling)
+
+
+
+### The Process:
 
 1. Use [F# Language Suggestions](https://github.com/fsharp/fslang-suggestions) to submit ideas, vote on them and discuss them.
 
@@ -16,13 +28,4 @@ RFCs and docs related to the F# language design process. The Process:
 All in-progress RFCs, listed in the [RFC folder](https://github.com/fsharp/fslang-design/blob/master/RFCs), are part of a future version of F#.
 
 When RFCs are implemented and a version of F# is revved, the RFCs which correspond to the F# version they were implemented in are archived under the appropriate folder.
-
-[RFCs that implemented in F# 4.0](https://github.com/fsharp/fslang-design/blob/master/FSharp-4.0)
-
-[RFCs that implemented in F# 4.1](https://github.com/fsharp/fslang-design/blob/master/FSharp-4.1)
-
-[Open Language RFCs including candidates for F# 4.2](https://github.com/fsharp/fslang-design/blob/master/RFCs)
-
-[Tooling RFCs](https://github.com/fsharp/fslang-design/blob/master/tooling)
-
 
