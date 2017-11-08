@@ -17,19 +17,12 @@ All in-progress RFCs, listed in the [RFC folder](https://github.com/fsharp/fslan
 
 When RFCs are implemented and a version of F# is revved, the RFCs which correspond to the F# version they were implemented in are archived under the appropriate folder.
 
-For RFCs that were implemented in F# 4.0, see the [F# 4.0 RFCs](https://github.com/fsharp/fslang-design/blob/master/FSharp-4.0)
+[RFCs that implemented in F# 4.0](https://github.com/fsharp/fslang-design/blob/master/FSharp-4.0)
 
-For RFCs that were implemented in F# 4.1, see the [F# 4.1 RFCs](https://github.com/fsharp/fslang-design/blob/master/FSharp-4.1)
+[RFCs that implemented in F# 4.1](https://github.com/fsharp/fslang-design/blob/master/FSharp-4.1)
 
-## Open RFCs
+[Open Language RFCs including candidates for F# 4.2](https://github.com/fsharp/fslang-design/blob/master/RFCs)
 
-* [F# RFC FS-1001 - String interpolation](https://github.com/fsharp/fslang-design/blob/master/RFCs/FS-1001-StringInterpolation.md)
-* [F# RFC FS-1003 - Add nameof Operator](https://github.com/fsharp/fslang-design/blob/master/RFCs/FS-1003-nameof-operator.md)
-* [F# RFC FS-1011 - Warn when recursive function is not tail-recursive](https://github.com/fsharp/fslang-design/blob/master/RFCs/FS-1011-warn-on-recursive-without-tail-call.md)
-* [F# RFC FS-1018 - Adjust extension method scope](https://github.com/fsharp/fslang-design/blob/master/RFCs/FS-1018-adjust-extensions-method-scope.md)
-* [F# RFC FS-1021 - Support Interop with ValueTask in Async Type](https://github.com/fsharp/fslang-design/blob/master/RFCs/FS-1021-value-task-interop.md)
-* [F# RFC FS-1023 - Allow type providers to generate types from types](https://github.com/fsharp/fslang-design/blob/master/RFCs/FS-1023-type-providers-generate-types-from-types.md)
-* [F# RFC FS-1024 - Simplify call syntax for statically resolved member constraints](https://github.com/fsharp/fslang-design/blob/master/RFCs/FS-1024-simplify-call-syntax-for-statically-resolved-member-constraints.md)
-* [F# RFC FS-1025 - Improve record type inference](https://github.com/fsharp/fslang-design/blob/master/RFCs/FS-1025-improve-record-type-inference.md)
-* [F# RFC FS-1026 - Allow params dictionaries as method arguments](https://github.com/fsharp/fslang-design/blob/master/RFCs/FS-1026-allow-params-dictionaries-as-method-arguments.md)
-* [F# RFC FS-1028 - Implement Async.StartImmediateAsTask](https://github.com/fsharp/fslang-design/blob/master/RFCs/FS-1028-Implement%20Async.StartImmediateAsTask.md)
+[Tooling RFCs](https://github.com/fsharp/fslang-design/blob/master/tooling)
+
+
