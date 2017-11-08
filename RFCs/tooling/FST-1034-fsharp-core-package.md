@@ -1,4 +1,4 @@
-# F# Tooling RFC FS-1034 - FSharp.Core delivery via NuGet packages
+# F# Tooling RFC FST-1034 - FSharp.Core delivery via NuGet packages
 
 **NOTE:** This is a draft and remains to be reviewed by key contributors.  Please contribute to the discussion and submit adjustments to the draft.
 
