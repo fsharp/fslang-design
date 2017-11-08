@@ -7,6 +7,9 @@ loaded into F# tooling.  This change would have an impact on the future package 
 
 Despite being a tooling issue rather than a language issue, this is being treated as an F# RFC to facilitate discussion.
 
+* [Discussion](https://github.com/fsharp/fslang-design/issues/229)
+* [Implementation](https://github.com/Microsoft/visualfsharp/pull/3864)
+
 ### Background and Terminology
 
 Type providers "augment" a regular DLL reference.  To use a type provider the
