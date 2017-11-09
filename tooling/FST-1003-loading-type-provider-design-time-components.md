@@ -13,13 +13,11 @@ Despite being a tooling issue rather than a language issue, this is being treate
 ### Background and Terminology
 
 Type providers augment a regular DLL reference by adding a component into host design-time tooling.  To use a type provider the
-programmer specifies a reference to a DLL (e.g. ``FSharp.Data.dll``), which contains an attribute that indicates there is an associated
+programmer specifies a reference to normal a target platform DLL (e.g. ``-r:lib\net45\FSharp.Data.dll``), which contains a [``TypeProviderAssembly(...)``](https://msdn.microsoft.com/en-us/visualfsharpdocs/conceptual/compilerservices.typeproviderassemblyattribute-class-%5Bfsharp%5D) attribute that indicates there should exist an associated
 Type Provider Design Time Component (TPDTC, e.g. ``FSharp.Data.DesignTime.dll``) to also use at design-time. The TPDTC
-gets loaded into F#-aware host tools (i.e. compilers, editor addins and any other tooling built using ``FSharp.Compiler.Service.dll``)
-at design-time. That is, any referenced DLL processed by the F# compiler logi  may contain a [``TypeProviderAssembly(...)``](https://msdn.microsoft.com/en-us/visualfsharpdocs/conceptual/compilerservices.typeproviderassemblyattribute-class-%5Bfsharp%5D) attribute indicating the presense of an associated TPDTC.
+gets automatically loaded into any F#-aware host design-time tools (i.e. compilers, editor addins and any other tooling built using ``FSharp.Compiler.Service.dll``) that process the original reference.  
 
-The host tooling then does F# analysis or compilation via requests to ``FSharp.Compiler.Service.dll``, which in turn
-interrogates the TPDTCs to resolve type names, methods and so on.  The TPDTCs hand back metadata (via an artificial implementation of System.Type objects) and target code (via F# quotations and/or generated assembly fragments).
+The host tooling does F# analysis or compilation via requests to ``FSharp.Compiler.Service.dll``, which in turn interrogates the TPDTCs to resolve type names, methods and so on.  The TPDTCs hand back metadata (via an artificial implementation of System.Type objects) and target code (via F# quotations and/or generated assembly fragments).  The TPDTCs are given the list of target reference assemblies to help them prepare appropriate types and target code, a process largely automated by [the Type Provider SDK](https://github.com/fsprojects/FSharp.TypeProviders.SDK/).
 
 Tooling contexts include:
 
@@ -29,8 +27,9 @@ Tooling contexts include:
 * ``fsiAnyCpu.exe`` running on .NET Framework as either 64-bit or 32-bit
 * ``fsc.exe`` running on .NET Framework as either 64-bit or 32-bit
 * ``devenv.exe`` running on .NET Framework 32-bit
+* The host process used by JetBrains Rider
 
-and indeed any context that uses ``FSharp.Compiler.Service.dll`` as either netstandard 2.0 or .NET Framework component.
+and indeed any context that uses ``FSharp.Compiler.Service.dll`` as either a netstandard 2.0 or a .NET Framework component.
 
 Recent PRs in the Type Provider SDK repo (e.g. https://github.com/fsprojects/FSharp.TypeProviders.SDK/pull/139) are a big step towards completing our type provider story for .NET Core. With this work, properly written TPDTCs using the latest version of the TPSDK now _always_ produce target code for the **target** reference assemblies being used by the compilation. This applies to both generative and erasing type providers.  
 
@@ -168,6 +167,8 @@ The discussion thread linked above records the discussion and response. Basicall
 
 In contrast, in the proposal in this RFC, a relatively modest adjustment is made to the current scheme to have the F# compiler logic interpret ``TypeProviderAssembly`` attributes to a relative reference in a stable and predictable way.  This resolution would apply to any and all tooling built using updated versions of ``FSharp.Compiler.Service.dll``, and would roll out consistenly across all F# implementations.
 
+See also [this part of the discussion thread](https://github.com/fsharp/fslang-design/issues/229#issuecomment-343155429)
+
 ## Alternatives
 [alternatives]: #alternatives
 
@@ -185,6 +186,10 @@ In contrast, in the proposal in this RFC, a relatively modest adjustment is made
    Response: Too intrusive, too radical
 
 4. Wait for some other people in .NET land to formulate a notion of a "dyanmic package", its dependencies etc. and use that.  Or try to utilize an existing dynamic package composition framework.  Both seem overkill and wrong for F#.  Ideally, .NET would come with a notion of a "dynamic package" which could include sufficient rules for the selection of a component suitable for a runtime host, but to my knowlege that is not as yet the case.
+
+5. Require that all TPDTC components be .NET Standard 2.0 (and no more).
+
+   Response: This is consdidered too draconian, though will be very common in practice.  Even if we did this we would still need betterrules to locate the TPDTC from the TPRTC reference.
 
 
 ## Links
