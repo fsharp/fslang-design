@@ -13,11 +13,13 @@ Despite being a tooling issue rather than a language issue, this is being treate
 ### Background and Terminology
 
 Type providers augment a regular DLL reference by adding a component into host design-time tooling.  To use a type provider the
-programmer specifies a reference to normal a target platform DLL (e.g. ``-r:lib\net45\FSharp.Data.dll``), which contains a [``TypeProviderAssembly(...)``](https://msdn.microsoft.com/en-us/visualfsharpdocs/conceptual/compilerservices.typeproviderassemblyattribute-class-%5Bfsharp%5D) attribute that indicates there should exist an associated
+programmer specifies a reference to normal a target platform DLL (e.g. ``-r:lib\net45\FSharp.Data.dll``, normally via a reference to the ``FSharp.Data`` pacakge which has this DLL under ``lib\net45``), and this DLL contains a [``TypeProviderAssembly(...)``](https://msdn.microsoft.com/en-us/visualfsharpdocs/conceptual/compilerservices.typeproviderassemblyattribute-class-%5Bfsharp%5D) attribute that indicates there should exist an associated
 Type Provider Design Time Component (TPDTC, e.g. ``FSharp.Data.DesignTime.dll``) to also use at design-time. The TPDTC
-gets automatically loaded into any F#-aware host design-time tools (i.e. compilers, editor addins and any other tooling built using ``FSharp.Compiler.Service.dll``) that process the original reference.  
+gets automatically found and loaded into any F#-aware host design-time tools (i.e. compilers, editor addins and any other tooling built using ``FSharp.Compiler.Service.dll``) that process the original reference.  
 
 The host tooling does F# analysis or compilation via requests to ``FSharp.Compiler.Service.dll``, which in turn interrogates the TPDTCs to resolve type names, methods and so on.  The TPDTCs hand back metadata (via an artificial implementation of System.Type objects) and target code (via F# quotations and/or generated assembly fragments).  The TPDTCs are given the list of target reference assemblies to help them prepare appropriate types and target code, a process largely automated by [the Type Provider SDK](https://github.com/fsprojects/FSharp.TypeProviders.SDK/).
+
+Thiss RFC is about the process of finding and loading the TPDTC once the attribute has been detected.
 
 Tooling contexts include:
 
