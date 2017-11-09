@@ -21,7 +21,7 @@ The host tooling does F# analysis or compilation via requests to ``FSharp.Compil
 
 Thiss RFC is about the process of finding and loading the TPDTC once the attribute has been detected.
 
-Tooling contexts include:
+Host tools include:
 
 * ``FsAutoComplete.exe`` .NET Framework or .NET Core
 * ``fsc.exe`` running on .NET Core 2.0 as either 64-bit or 32-bit
@@ -31,7 +31,17 @@ Tooling contexts include:
 * ``devenv.exe`` running on .NET Framework 32-bit
 * The host process used by JetBrains Rider
 
-and indeed any context that uses ``FSharp.Compiler.Service.dll`` as either a netstandard 2.0 or a .NET Framework component.
+and indeed any tool that uses ``FSharp.Compiler.Service.dll`` as either a netstandard 2.0 or a .NET Framework component.
+
+Relevant information about the tooling context may include some or all of:
+
+* Is the tool being run using .NET Framework or .NET Core?
+* Which version of .NET Framework or .NET Core is the tool being run with?
+* Is the tool running 32-bit or 64-bit?
+* Can the tool load .NET Standard DLLs?
+* Which version of F# does the tooling support, and in particular which version(s) of the F# type provider plugin architecture does the tooling support? Note that there is only one such relevant version presently - that supported by F# 4.x.
+
+Some additional tooling context information is provided by the TypeProviderConfig object passed to the type provider.
 
 Recent PRs in the Type Provider SDK repo (e.g. https://github.com/fsprojects/FSharp.TypeProviders.SDK/pull/139) are a big step towards completing our type provider story for .NET Core. With this work, properly written TPDTCs using the latest version of the TPSDK now _always_ produce target code for the **target** reference assemblies being used by the compilation. This applies to both generative and erasing type providers.  
 
