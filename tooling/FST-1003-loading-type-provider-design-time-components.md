@@ -52,9 +52,17 @@ sitting alongside a runtime library. This is wrong from multiple angles. Specifi
 choose a TPDTC suitable for a particular tooling context.
 
 
-### Proposal
+### Current Situation
 
-When a referenced assembly contains [TypeProviderAssembly](https://msdn.microsoft.com/visualfsharpdocs/conceptual/compilerservices.typeproviderassemblyattribute-class-%5bfsharp%5d) attribute, indicating it wants design-time type provider component ``MyDesignTime.dll``, then
+When a referenced assembly contains [TypeProviderAssembly](https://msdn.microsoft.com/visualfsharpdocs/conceptual/compilerservices.typeproviderassemblyattribute-class-%5bfsharp%5d) attribute, indicating it wants design-time type provider component ``MyDesignTime.dll``, then the compiler looks for 
+
+    MyDesignTime.dll 
+
+in the same directory and loads it using ``Assembly.LoadFrom`` (.NET Framework) or ``ReflectionLoadContext.LoadAssemblyFromFile`` (.NET Core).
+
+### Proposed Adjustment
+
+The proposed adjustment is small.  When a referenced assembly contains [TypeProviderAssembly](https://msdn.microsoft.com/visualfsharpdocs/conceptual/compilerservices.typeproviderassemblyattribute-class-%5bfsharp%5d) attribute, indicating it wants design-time type provider component ``MyDesignTime.dll``, then
 
 1. When executing using .NET Core the compiler looks in this order
 
@@ -81,11 +89,11 @@ When a referenced assembly contains [TypeProviderAssembly](https://msdn.microsof
 
 relative to the location of the runtime DLL, which is presumed to be in a nuget package.  
 
-* When we use ``...`` we mean a recursive upwards directory search looking for a directory names ``typeproviders``, stopping when we find a directory name ``packages`` 
+* When we use ``...`` we mean a recursive upwards directory search looking for a directory names ``typeproviders``, stopping when we find a directory name ``packages`` or a directory root.
 
-* WHen we use ``fsharpNN`` we mean a successive search backwards for ``fsharp42``, ``fsharp41`` etc.  Putting a TPDTC in ``fsharp41`` means the TPDTC is suitable to load into F# 4.1 tooling and later, and has the right to minimally assume FSharp.Core 4.4.1.0
+* When we use ``fsharpNN`` we mean a successive search backwards for ``fsharp42``, ``fsharp41`` etc.  Putting a TPDTC in ``fsharp41`` means the TPDTC is suitable to load into F# 4.1 tooling and later, and has the right to minimally assume FSharp.Core 4.4.1.0
 
-his means that a package can contain a type provider design-time for both .NET Core and .NET Framework.  This will allow it to load into both compiler, F# Interactive and tools running .NET Framework OR .NET Core.
+This means that a package can contain a type provider design-time for both .NET Core and .NET Framework.  This will allow it to load into both compiler, F# Interactive and tools running .NET Framework OR .NET Core.
 
 ### Examples
 
