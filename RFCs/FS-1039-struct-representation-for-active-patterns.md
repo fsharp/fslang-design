@@ -1,12 +1,12 @@
-# F# RFC FS-1039 - (Struct representation for active patterns)
+# F# RFC FS-1039 - Struct representation for active patterns
 
 The design suggestion [Struct representation for active patterns](https://github.com/fsharp/fslang-suggestions/issues/612) has been marked "approved in principle".
 This RFC covers the detailed proposal for this suggestion.
 
 * [x] Approved in principle
 * [x] [Suggestion](https://github.com/fsharp/fslang-suggestions/issues/612)
-* [ ] Details: [under discussion](https://github.com/fsharp/FSharpLangDesign/issues/FILL-ME-IN)
-* [ ] Implementation: [In progress](https://github.com/Microsoft/visualfsharp/pull/FILL-ME-IN)
+* [ ] Details: [under discussion](https://github.com/fsharp/FSharpLangDesign/issues/230)
+* [ ] Implementation: not started
 
 
 # Summary
