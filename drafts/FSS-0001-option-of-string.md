@@ -3,6 +3,7 @@
 This document covers the detailed proposal for this suggestion.
 
 * [x] Implementation (with discussion): [In progress](https://github.com/Microsoft/visualfsharp/pull/3135)
+* Decision: [not going ahead with this](https://github.com/Microsoft/visualfsharp/pull/3135#issuecomment-344935301)
 
 # Summary
 [summary]: #summary
