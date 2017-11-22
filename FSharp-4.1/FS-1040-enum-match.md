@@ -1,7 +1,7 @@
 
-# Bug Fix for compiling matches against enums, now throws FS3191 
+# RFC FS-1040: Bug Fix for compiling matches against enums, now throws FS3191 
 
-A bug fix was made that means code may no longer compile
+In F# 4.1 a bug fix was made that means code may no longer compile. Because this was a breaking change to some code this "RFC" documents this bug-fix post-hoc.
 
 Reason: pattern matching against enums cannot take a variable anymore.
 
