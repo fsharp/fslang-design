@@ -4,7 +4,7 @@ The design suggestions [Implement IReadOnly* wherever possible in FSharp.Core](h
 
 * [x] Approved in principle
 * [x] [Suggestion](https://github.com/Microsoft/visualfsharp/issues/3999#issuecomment-346435080)
-* [x] Details: [under discussion](https://github.com/fsharp/FSharpLangDesign/issues/FILL-ME-IN)
+* [x] Details: [under discussion](https://github.com/fsharp/fslang-design/issues/238)
 * [x] Implementation: [1](https://github.com/Microsoft/visualfsharp/pull/4014) and [2](https://github.com/Microsoft/visualfsharp/pull/3988).
 
 
