@@ -22,17 +22,51 @@ This is a standard operation on matrices (or lists of lists) which could be a us
 # Detailed design
 [design]: #detailed-design
 
-Given a collection of m collections of length n, transpose returns a collection of n collections of length m, where result.[i].[j] = source.[j].[i], for 0 <= i < n and 0 <= j < m
+Given a sequence of m collections of length n, transpose returns a collection of n collections of length m, where result.[i].[j] = source.[j].[i], for 0 <= i < n and 0 <= j < m
+
+There is a choice of signatures here:
+
+1. `M(M('T)) -> M(M('T))`
+3. `seq<#seq<'T>> -> M(M('T))`
+2. `seq<M('T)> -> M(M('T))`
+
+Option 1:
+
+```
+module Array = val transpose: array:'T[][]] -> 'T[][]
+Module List = val transpose: lists:'T list list -> 'T list sist
+Module Seq = val transpose: source:seq<seq<'T> -> seq<seq<'T>>
+```
+
+Option 2:
+
+```
+module Array = val transpose: arrays:seq<#seq<'T>> -> 'T[][]
+Module List = val transpose: lists:seq<#seq<'T>> -> 'T list sist
+Module Seq = val transpose: source:seq<seq<'T> -> seq<seq<'T>>
+```
+
+Option 3:
+
+```
+module Array = val transpose: arrays:seq<'T[]> -> 'T[][]
+Module List = val transpose: lists:seq<'T list> -> 'T list sist
+Module Seq = val transpose: source:seq<seq<'T> -> seq<seq<'T>>
+```
+
+It is proposed to go with option 3 here.
 
 Example code:
 
 ```fsharp
-let t = Array.transpose [| [|1..3|]; [|4..6|] |]
+let t = Array.transpose <| seq [ [|1..3|]; [|4..6|] ]
 // t should be [| [|1;4|]; [|2;5|]; [|3;6|] |]
 ```
 
 Corner cases:
-* Similar to other methods in F# Core (e.g. zip), transpose should fail if gived a jagged array or list (e.g. [[1..3]; [1..2]]) whereas transpose on Seq should not fail if the inner sequences are of different lengths
+* Similar to other methods in F# Core (e.g. zip), transpose should fail if given a jagged array or list (e.g. [[1..3]; [1..2]]) whereas transpose on Seq should not fail if the inner sequences are of different lengths
+
+* Given an input of m empty collections, transpose should return an empty collection. (m x 0 -> 0 x m)
 
 # Drawbacks
 [drawbacks]: #drawbacks
