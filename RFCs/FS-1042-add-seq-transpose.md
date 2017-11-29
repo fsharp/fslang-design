@@ -32,26 +32,26 @@ There is a choice of signatures here:
 
 Option 1:
 
-```
+```fsharp
 module Array = val transpose: array:'T[][]] -> 'T[][]
-Module List = val transpose: lists:'T list list -> 'T list sist
-Module Seq = val transpose: source:seq<seq<'T> -> seq<seq<'T>>
+module List = val transpose: lists:'T list list -> 'T list sist
+module Seq = val transpose: source:seq<seq<'T> -> seq<seq<'T>>
 ```
 
 Option 2:
 
-```
+```fsharp
 module Array = val transpose: arrays:seq<#seq<'T>> -> 'T[][]
-Module List = val transpose: lists:seq<#seq<'T>> -> 'T list sist
-Module Seq = val transpose: source:seq<seq<'T> -> seq<seq<'T>>
+module List = val transpose: lists:seq<#seq<'T>> -> 'T list sist
+module Seq = val transpose: source:seq<#seq<'T> -> seq<seq<'T>>
 ```
 
 Option 3:
 
-```
+```fsharp
 module Array = val transpose: arrays:seq<'T[]> -> 'T[][]
-Module List = val transpose: lists:seq<'T list> -> 'T list sist
-Module Seq = val transpose: source:seq<seq<'T> -> seq<seq<'T>>
+module List = val transpose: lists:seq<'T list> -> 'T list sist
+module Seq = val transpose: source:seq<#seq<'T> -> seq<seq<'T>>
 ```
 
 It is proposed to go with option 3 here.
