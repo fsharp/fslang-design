@@ -1,10 +1,10 @@
 # F# RFC FS-1023 - Allow type providers to generate types from types
 
-The design suggestion [Allow type providers to generate types from other types](https://fslang.uservoice.com/forums/245727-f-language/suggestions/5675977-allow-type-providers-to-generate-types-from-other) has been marked "approved in principle".
+The design suggestion [Allow type providers to generate types from other types](https://github.com/fsharp/fslang-suggestions/issues/212) has been marked "approved in principle".
 This RFC covers the detailed proposal for this suggestion.
 
 * [x] Approved in principle
-* [x] [User Voice Request](https://fslang.uservoice.com/forums/245727-f-language/suggestions/5675977-allow-type-providers-to-generate-types-from-other)
+* [x] [User Voice Request](https://github.com/fsharp/fslang-suggestions/issues/212)
 * [ ] Details: [under discussion](https://github.com/fsharp/FSharpLangDesign/issues/125)
 * [ ] Implementation: [early proof of concept](https://github.com/colinbull/visualfsharp/tree/rfc/fs-1023-type-providers)
 
