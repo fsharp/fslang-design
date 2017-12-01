@@ -2,8 +2,8 @@
 
 These design suggestions:
 * https://github.com/fsharp/fslang-suggestions/issues/230
-* https://github.com/fsharp/fslang-suggestions/issues/243
 * https://github.com/fsharp/fslang-suggestions/issues/29
+
 have been marked "approved in principle". This RFC covers the detailed proposal for these
 
 * [x] Approved in principle
