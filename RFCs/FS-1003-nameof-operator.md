@@ -1,7 +1,7 @@
 
 # F# RFC FS-1003 - nameof Operator
 
-The design suggestion [nameof operator](http://fslang.uservoice.com/forums/245727-f-language/suggestions/5900625-add-nameof-operator-to-follow-c-vb-update) has been marked "approved in principle".
+The design suggestion [nameof operator](https://github.com/fsharp/fslang-suggestions/issues/252) has been marked "approved in principle".
 This RFC covers the detailed proposal for this suggestion.
 
 [Discussion thread](https://github.com/fsharp/FSharpLangDesign/issues/48)
