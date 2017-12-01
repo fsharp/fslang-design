@@ -1,10 +1,13 @@
 # F# RFC FS-1037 -  Allow Union Constructor to deal with Flexible Types
 
-The design suggestion [Stronger type directed conversion from functions to .Net delegates](https://github.com/fsharp/fslang-suggestions/issues/248) has been marked "approved in principle".
-This RFC covers the detailed proposal for this suggestion.
+An F# union type constructor doesn't act like a function with respect to subtyping, see https://github.com/fsharp/fsharp/issues/660
+
+After brief discussion in issue https://github.com/fsharp/fsharp/issues/660 Don Syme says:
+
+> @liboz I don't believe there's a specific reason to disallow this. In theory allowing it may be a breaking change, as it allows more general types to be inferred in some situations. Normally this is not a problem but perhaps the value restriction can some into play.
+
 
 * [x] Approved in principle
-* [ ] [Suggestion](https://github.com/fsharp/fslang-suggestions/issues/fill-me-in)
 * [x] Details: [under discussion](https://github.com/fsharp/fslang-design/issues/219)
 * [x] Implementation: [In progress](https://github.com/Microsoft/visualfsharp/pull/2382)
 
