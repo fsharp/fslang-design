@@ -1,4 +1,4 @@
-# F# RFC FS-1027 - FSI Reference Model and extending `#r`
+# F# RFC FST-1027 - FSI Reference Model and extending `#r`
 
 * [x] Approved in principle
 * [ ] [FSLang Suggestion](https://github.com/fsharp/fslang-suggestions/issues/542)
