@@ -1,10 +1,10 @@
 # F# RFC FS-1024 - Simplify call syntax for statically resolved member constraints
 
-The design suggestion [Simplify call syntax for statically resolved member constraints](https://fslang.uservoice.com/forums/245727-f-language/suggestions/8014059-make-call-syntax-simpler-for-statically-resolved-m) has been marked "approved in principle".
+The design suggestion [Simplify call syntax for statically resolved member constraints](https://github.com/fsharp/fslang-suggestions/issues/440) has been marked "approved in principle".
 This RFC covers the detailed proposal for this suggestion.
 
 * [x] Approved in principle
-* [x] [User Voice Request](https://fslang.uservoice.com/forums/245727-f-language/suggestions/8014059-make-call-syntax-simpler-for-statically-resolved-m)
+* [x] [User Voice Request](https://github.com/fsharp/fslang-suggestions/issues/440)
 * [ ] Details: [under discussion](https://github.com/fsharp/fslang-design/issues/162)
 * [ ] Implementation: not started
 
