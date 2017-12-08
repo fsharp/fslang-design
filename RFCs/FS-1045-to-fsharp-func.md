@@ -1,4 +1,4 @@
-# F# RFC FS-1044 - Add ``Func`` overloads of ``FuncConvert.ToFSharpFunc`` for use from C#
+# F# RFC FS-1045 - Add ``Func`` overloads of ``FuncConvert.ToFSharpFunc`` for use from C#
 
 The suggestion to add overloads to ``FuncConvert.ToFSharpFunc`` taking ``Func`` values has been approved in principle.
 This RFC covers the detailed proposal for this suggestion.
