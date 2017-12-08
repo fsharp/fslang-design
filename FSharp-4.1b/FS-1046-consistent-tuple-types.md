@@ -4,6 +4,10 @@ During the F# 4.1 release cycle, a breaking change was made to how explicit uses
 interpreted.  At the time this change was made (as a bug fix) the extent of its impact was not properly appreciated, resulting
 in the need for a subsequent set of code adjustments and a subequent fix.
 
+* [The PR that caused the change](https://github.com/Microsoft/visualfsharp/pull/3283)
+* [The issue documenting the regressions](https://github.com/Microsoft/visualfsharp/pull/3729)
+* [The PR that reduced the severity of breaking change](https://github.com/Microsoft/visualfsharp/pull/4034)
+ 
 ### The Change 
 
 F# maintains a distinction between "F# tuple types" (the F# view of tuple types) and ".NET tuple types" (the compiled view of tuple types).
