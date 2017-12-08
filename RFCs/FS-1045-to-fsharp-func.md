@@ -62,5 +62,4 @@ gives
 # Unresolved questions
 [unresolved]: #unresolved-questions
 
-None
-
+* What to do about the breaking change
