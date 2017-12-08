@@ -7,7 +7,7 @@ This RFC covers the detailed proposal for this suggestion.
 * [ ] Details
 * [ ] Implementation: [complete](https://github.com/Microsoft/visualfsharp/pull/3691)
 
-NOTE: this is a potential breaking change to C# code using ``FuncConvert.ToFSharpFunc`` and thus may need reconsideration.
+**NOTE: this is a potential breaking change to C# code using ``FuncConvert.ToFSharpFunc`` and thus may need reconsideration.**
 
 # Summary
 [summary]: #summary
@@ -18,8 +18,26 @@ overloads were available for this, only ones based on ``Converter`` and ``Action
 # Motivation
 [motivation]: #motivation
 
+The existing ``FuncConvert`` API is as follows:
+```fsharp
+    type FuncConvert = 
+        static member  inline ToFSharpFunc       : action:Action<'T> -> ('T -> unit)
+        static member  inline ToFSharpFunc       : converter:Converter<'T,'U> -> ('T -> 'U)
+```
+
+However as noted in [this issue](https://github.com/Microsoft/visualfsharp/issues/1847) the ``Converter`` overload is not available
+in the .NET Standard 1.6 DLL for FSharp.Core. 
+
 The use of ``Converter`` and ``Action`` overloads dates from .NET 2.0, when this API first appeared.  The complete set of ``Func``
-types only became available in .NET 4.x.
+types only became available in .NET 4.x.  One possible resolution of this issue is to move away from using ``Converter`` and use ``Func`` instead.
+
+# Discussion of Problems
+
+However, as noted below, this causes a breaking change for C# client code if we increase the number of overloads available, requiring
+many more C# type annotations and less use of ``a => b`` lambda syntax in C#.
+
+An alternative may be to make the ``Converter`` API available in the .NTE Standard 2.0 DLL for FSharp.Core assuming the ``Converter``
+type is available in .NET Standard 2.0.
 
 
 
@@ -40,7 +58,8 @@ Adds
 
 ```
 to the existing overloads:
-```
+
+```fsharp
     type FuncConvert = 
         static member  inline ToFSharpFunc       : action:Action<'T> -> ('T -> unit)
         static member  inline ToFSharpFunc       : converter:Converter<'T,'U> -> ('T -> 'U)
