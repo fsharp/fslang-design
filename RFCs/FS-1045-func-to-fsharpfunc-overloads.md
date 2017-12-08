@@ -22,7 +22,7 @@ The existing ``FuncConvert`` API is as follows:
         static member ToFSharpFunc: System.Converter<'T,'U> -> ('T -> 'U)
 ```
 The proposal is to add
-```
+```fsharp
     type FuncConvert = 
         static member ToFSharpFunc: System.Func<'U> -> (unit -> 'U)
         static member ToFSharpFunc: System.Func<'T,'U> -> ('T -> 'U)
