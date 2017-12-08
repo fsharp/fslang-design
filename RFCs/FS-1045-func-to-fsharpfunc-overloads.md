@@ -15,15 +15,29 @@ This RFC covers the detailed proposal for this suggestion.
 The recommended way to create an ``FSharpFunc`` value from C# is to use ``FuncConvert.ToFSharpFunc``.  However no ``Func``-based
 overloads were available for this, only ones based on ``Converter`` and ``Action``.
 
-# Motivation
-[motivation]: #motivation
-
 The existing ``FuncConvert`` API is as follows:
 ```fsharp
     type FuncConvert = 
-        static member  inline ToFSharpFunc       : action:Action<'T> -> ('T -> unit)
-        static member  inline ToFSharpFunc       : converter:Converter<'T,'U> -> ('T -> 'U)
+        static member ToFSharpFunc: System.Action<'T> -> ('T -> unit)
+        static member ToFSharpFunc: System.Converter<'T,'U> -> ('T -> 'U)
 ```
+The proposal is to add
+```
+    type FuncConvert = 
+        static member ToFSharpFunc: System.Func<'U> -> (unit -> 'U)
+        static member ToFSharpFunc: System.Func<'T,'U> -> ('T -> 'U)
+        static member ToFSharpFunc: System.Func<'T1,'T2,'U> -> ('T1 * 'T2 -> 'U)
+        static member ToFSharpFunc: System.Func<'T1,'T2,'T3,'U> -> ('T1 * 'T2 * 'T3 -> 'U)
+        static member ToFSharpFunc: System.Func<'T1,'T2,'T3,'T4,'U>  -> ('T1 * 'T2 * 'T3 * 'T4 -> 'U)
+        static member ToFSharpFunc: System.Func<'T1,'T2,'T3,'T4,'T5,'U> -> ('T1 * 'T2 * 'T3 * 'T4 * 'T5 -> 'U)
+        static member ToFSharpFunc: System.Func<'T1,'T2,'T3,'T4,'T5,'T6,'U> -> ('T1 * 'T2 * 'T3 * 'T4 * 'T5 * 'T6 -> 'U)
+        static member ToFSharpFunc: System.Func<'T1,'T2,'T3,'T4,'T5,'T6,'T7,'U> -> ('T1 * 'T2 * 'T3 * 'T4 * 'T5 * 'T6 * 'T7 -> 'U)
+
+```
+
+
+# Motivation
+[motivation]: #motivation
 
 However as noted in [this issue](https://github.com/Microsoft/visualfsharp/issues/1847) the ``Converter`` overload is not available
 in the .NET Standard 1.6 DLL for FSharp.Core. 
@@ -33,7 +47,7 @@ types only became available in .NET 4.x.  One possible resolution of this issue 
 
 # Discussion of Problems
 
-However, as noted below, this causes a breaking change for C# client code if we increase the number of overloads available, requiring
+As noted below, this causes a breaking change for C# client code if we increase the number of overloads available, requiring
 many more C# type annotations and less use of ``a => b`` lambda syntax in C#.
 
 An alternative may be to make the ``Converter`` API available in the .NTE Standard 2.0 DLL for FSharp.Core assuming the ``Converter``
@@ -44,27 +58,7 @@ type is available in .NET Standard 2.0.
 # Detailed design
 [design]: #detailed-design
 
-Adds
-```
-    type FuncConvert = 
-        static member  inline ToFSharpFunc       : func:Func<'U> -> (unit -> 'U)
-        static member  inline ToFSharpFunc       : func:Func<'T,'U> -> ('T -> 'U)
-        static member  inline ToFSharpFunc       : func:Func<'T1,'T2,'U> -> ('T1 * 'T2 -> 'U)
-        static member  inline ToFSharpFunc       : func:Func<'T1,'T2,'T3,'U> -> ('T1 * 'T2 * 'T3 -> 'U)
-        static member  inline ToFSharpFunc       : func:Func<'T1,'T2,'T3,'T4,'U>  -> ('T1 * 'T2 * 'T3 * 'T4 -> 'U)
-        static member  inline ToFSharpFunc       : func:Func<'T1,'T2,'T3,'T4,'T5,'U> -> ('T1 * 'T2 * 'T3 * 'T4 * 'T5 -> 'U)
-        static member  inline ToFSharpFunc       : func:Func<'T1,'T2,'T3,'T4,'T5,'T6,'U> -> ('T1 * 'T2 * 'T3 * 'T4 * 'T5 * 'T6 -> 'U)
-        static member  inline ToFSharpFunc       : func:Func<'T1,'T2,'T3,'T4,'T5,'T6,'T7,'U> -> ('T1 * 'T2 * 'T3 * 'T4 * 'T5 * 'T6 * 'T7 -> 'U)
-
-```
-to the existing overloads:
-
-```fsharp
-    type FuncConvert = 
-        static member  inline ToFSharpFunc       : action:Action<'T> -> ('T -> unit)
-        static member  inline ToFSharpFunc       : converter:Converter<'T,'U> -> ('T -> 'U)
-```
-
+See above
 
 # Compatibility
 [compatibility]: #compatibility
