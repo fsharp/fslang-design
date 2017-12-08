@@ -7,6 +7,7 @@ This RFC covers the detailed proposal for this suggestion.
 
 * [x] Approved in principle
 * [ ] Details
+* [ ] Approved 
 * [ ] Implementation: [complete](https://github.com/Microsoft/visualfsharp/pull/3013)
 
 **NOTE: this is a potential breaking change to C# code using ``FuncConvert.ToFSharpFunc`` and thus may need reconsideration, see below.**
