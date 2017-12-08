@@ -1,6 +1,6 @@
 # F# RFC FS-1045 - Add ``Func`` overloads of ``FuncConvert.ToFSharpFunc`` for use from C#
 
-As noted in [this issue](https://github.com/Microsoft/visualfsharp/issues/1847) qe need to make it possible to use ``FuncConvert.ToFSharpFunc`` in .NET Standard 2.0 and .NET CoreApp 2.0 programming.
+As noted in [this issue](https://github.com/Microsoft/visualfsharp/issues/1847) we need to make it possible to use ``FuncConvert.ToFSharpFunc`` in .NET Standard 2.0 and .NET CoreApp 2.0 programming.
 
 One approach is to add overloads to this API taking ``System.Func`` values.
 This RFC covers the detailed proposal for this suggestion.
