@@ -1,5 +1,7 @@
 # F# Tooling RFC FST-1004 - Versioning
 
+[Discussion here](https://github.com/fsharp/fslang-design/issues/250).
+
 We have strong motivation to decouple versioning of the F# compiler and tools from the F# language and core library. The reasoning is as follows:
 
 * The F# major language version number will change more and more slowly over time.  Proposed and approved new features still fit snugly in the minor version number.
