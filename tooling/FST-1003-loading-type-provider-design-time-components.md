@@ -67,29 +67,29 @@ The proposed adjustment is small.  When a referenced assembly contains [TypeProv
 1. When executing using .NET Core the compiler looks in this order
 
  ```
-    ...\typeproviders\fsharpNN\netcoreapp2.0\ARCH\MyDesignTime.dll
     ...\typeproviders\fsharpNN\netcoreapp2.0\MyDesignTime.dll 
-    ...\typeproviders\fsharpNN\netstandard2.0\ARCH\MyDesignTime.dll
+    ...\tools\fsharpNN\netcoreapp2.0\MyDesignTime.dll 
     ...\typeproviders\fsharpNN\netstandard2.0\MyDesignTime.dll 
+    ...\tools\fsharpNN\netstandard2.0\MyDesignTime.dll 
     MyDesignTime.dll 
 ```
 
 2.	When executing using .NET Framework the compiler looks in this order
 
 ```
-    ...\typeproviders\fsharpNN\net461\ARCH\MyDesignTime.dll
     ...\typeproviders\fsharpNN\net461\MyDesignTime.dll
-    ...\typeproviders\fsharpNN\net46\ARCH\MyDesignTime.dll
+    ...\tools\fsharpNN\net461\MyDesignTime.dll
     ...\typeproviders\fsharpNN\net46\MyDesignTime.dll
+    ...\tools\fsharpNN\net46\MyDesignTime.dll
     ...
-    ...\typeproviders\fsharpNN\netstandard2.0\ARCH\MyDesignTime.dll
     ...\typeproviders\fsharpNN\netstandard2.0\MyDesignTime.dll
+    ...\tools\fsharpNN\netstandard2.0\MyDesignTime.dll
     MyDesignTime.dll 
 ```
 
 relative to the location of the runtime DLL, which is presumed to be in a nuget package.  
 
-* When we use ``...`` we mean a recursive upwards directory search looking for a directory names ``typeproviders``, stopping when we find a directory name ``packages`` or a directory root.
+* When we use ``...`` we mean a recursive upwards directory search looking for a directory names ``typeproviders`` or ``tools`` respectively, stopping when we find a directory name ``packages`` or a directory root.
 
 * When we use ``fsharpNN`` we mean a successive search backwards for ``fsharp42``, ``fsharp41`` etc.  Putting a TPDTC in ``fsharp41`` means the TPDTC is suitable to load into F# 4.1 tooling and later, and has the right to minimally assume FSharp.Core 4.4.1.0
 
@@ -136,24 +136,7 @@ A layout like this may also be feasible if [shipping facades to create a .NET St
 
 See note on facades above.
 
-##### Example 4 - type providers with 32/64-bit dependencies
-
-A Python type provider may have different dependencies for 32 and 64-bit for both runtime and design-time (the directory names may not be exactly right)
-
-```
-    lib\netstandard2.0\x86\FPython.Runtime.dll 
-    lib\netstandard2.0\x64\FPython.Runtime.dll 
-
-    typeproviders\fsharp41\netstandard2.0\x86\FPython.Runtime.dll 
-    typeproviders\fsharp41\netstandard2.0\x86\cpython32.dll # some 32-bit DLL needed to run at design-time
-
-    typeproviders\fsharp41\netstandard2.0\x64\FPython.Runtime.dll 
-    typeproviders\fsharp41\netstandard2.0\x64\cpython64.dll # some 64-bit DLL needed to run at design-time
-```
-
-plus facades as mentioned above
-
-##### Non Example 5 
+##### Non Example 4
 
 Going forward, we should __not__ be happy with type provider packages that look like this - **these will be unusable when the compiler executes using .NET Core**
 
@@ -210,6 +193,10 @@ See also [this part of the discussion thread](https://github.com/fsharp/fslang-d
 5. Require that all TPDTC components be .NET Standard 2.0 (and no more).
 
    Response: This is consdidered too draconian, though will be very common in practice.  Even if we did this we would still need betterrules to locate the TPDTC from the TPRTC reference.
+
+6. Look in architecture folders x86/x64
+
+   Response: This was in the initial proposal and implementation but was removed as being too detailed for what we want
 
 
 ## Links
