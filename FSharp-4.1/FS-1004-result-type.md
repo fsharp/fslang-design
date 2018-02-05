@@ -1,7 +1,7 @@
 
 # F# RFC FS-1004 - Result type
 
-The design suggestion [Result type](https://fslang.uservoice.com/forums/245727-f-language/suggestions/9484395-discriminated-union-type-in-order-to-be-able-to-wr) has been marked "approved in principle".
+The design suggestion [Result type](https://fslang.uservoice.com/forums/245727-f-language/suggestions/9484395-discriminated-union-type-in-order-to-be-able-to-wr) has been implemented in F# 4.1.
 This RFC covers the detailed proposal for this suggestion.
 
 [Discussion thread](https://github.com/fsharp/FSharpLangDesign/issues/49)
@@ -25,29 +25,15 @@ The type should be added in `FSharp.Core` library
 
 ### Naming 
 
-The name of the type and union cases has not been finalized. Some of the suggestions are
 
 | Type name | Success case  | Failure case |
 | --------- | ------------- | ------------ |
-| Result    | Success       | Failure      |
-| Result    | Success       | Error        |
-| Result    | OK            | Error        |
-| Result    | OK            | Err          |
-| Result    | OK            | Bad          |
 | Result    | Ok            | Error        |
-| Result    | Ok            | Err          |
-| Result    | Ok            | Bad          |
+
 
 ### Testing considerations
 
 The standard range of testing considerations for F# library types apply.
-
-### Open Questions
-
-- namespace
-- declare as struct
-- compiled name
-- require additional functions?
 
 ### Proposal for additional functions
 
