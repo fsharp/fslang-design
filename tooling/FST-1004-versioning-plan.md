@@ -14,7 +14,7 @@ We have strong motivation to decouple versioning of the F# compiler and tools fr
 | Visual Studio version | 15.5 (current) | 15.6 | 15.7 | vNext |
 |------------|----------:|-----:|------:|------:|
 | **F# language version** | 4.1 | 4.1 | 4.5 | 4.x |
-| **FSharp.Core version** | 4.4.1.0 | 4.4.3.0 | 4.5.0.0 | 4.n.0.0 |
+| **FSharp.Core version** | 4.4.1.0 | 4.4.3.w | 4.5.w.0 | 4.n.w.0 |
 | **FSharp.Core NuGet package version** | 4.2.x | 4.3.x | 4.5.x | 4.n.x |
 | **F# compiler banner** | F# Compiler 4.1 | F# Compiler 10.a.b for F# 4.1 | F# Compiler 11.a.b for F# 4.5 | F# Compiler XX.a.b for F# 4.n |
 | **VS product Name** | Visual F# 4.1 | Visual F# 10.a.b for F# 4.1 | Visual F# 11.a.b for F# 4.5 | Visual F# XX.a.b for F# 4.n |
@@ -23,6 +23,14 @@ We have strong motivation to decouple versioning of the F# compiler and tools fr
 | **F# Compiler .dll version** | 4.4.1.0 | 10.a.b.c | 11.a.b.c | WW.a.b.c |
 | **FSharp.Compiler.Tools version** | 4.1.x | 10.a.b for F# 4.1 | 11.a.b for F# 4.5 | XX.a.b for F# 4.n |
 | **VS Assembly versions** | 15.4.x.y | 15.6.e.f | 15.7.e.f | vNext.e.f |
+
+Where:
+
+* `n` - occasional sequence of increments of F# language version
+* `w` - minor increment of FSharp.Core assembly version. Normally 0
+* `x` - minor increment of FSharp.Core nuget package version (may or may not change FSharp.Core assembly version)
+* `a.b.c` - sequence for compiler tools, independent of other versioning
+* `e.f` - sequence of Visual Studio binary version numbers, independent of other versioning
 
 You'll note a few things:
 
