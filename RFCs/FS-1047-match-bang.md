@@ -1,6 +1,6 @@
 # F# RFC FS-1047 - (match! syntactic sugar in computational expressions)
 
-The design suggestion [FILL ME IN](https://github.com/fsharp/fslang-suggestions/issues/572) has been marked "approved in principle".
+The design suggestion [match! syntactic sugar](https://github.com/fsharp/fslang-suggestions/issues/572) has been marked "approved in principle".
 This RFC covers the detailed proposal for this suggestion.
 
 * [x] Approved in principle
