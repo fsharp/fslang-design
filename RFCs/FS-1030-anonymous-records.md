@@ -4,7 +4,7 @@ The design suggestion [Anonymous Records](https://github.com/fsharp/fslang-sugge
 
 * [x] Approved in principle
 * [x] Details: [under discussion](https://github.com/fsharp/fslang-design/issues/170)
-* [x] Implementation: [nearing completion](https://github.com/Microsoft/visualfsharp/pull/2671)
+* [x] Implementation: [ready](https://github.com/Microsoft/visualfsharp/pull/2671)
 
 
 # Summary
@@ -16,6 +16,8 @@ Add anonymous records as a feature to F#, e.g.
 let data = {| X = 1; Y = "abc" |}
 
 val data : {| X : int; Y : string |}
+
+let result = data.X + data.Y.Length
 ```
 
 
@@ -38,7 +40,7 @@ val data : {| X : int; Y : string |}
    * http://stackoverflow.com/q/8650463/83658
    * http://stackoverflow.com/q/13991448/83658
 
-3. C# 7.0 has tuple types with named fields.  Currently F# ignores the named fields. We expect that these will become more frequent in .NET APIs.
+3. C# 7.0 has tuple types with named fields.  Currently F# ignores the named fields. We expect that these will become more frequent in .NET APIs.  However this design does not include interacting with this metadata.
 
 # Design Principles
 
@@ -71,8 +73,6 @@ In general F# developers will expect two contradictory things:
 
 (b) **It Just Works with .NET Reflection, ``sprintf "%A"``, Json.NET and other features.** That is, the implied runtime types of the objects have .NET metadata, i.e. the runtime objects/types correspdonding to anonymous record values/types will have .NET metadata (like F# nominal record types).
 
-
-
 Unfortunately .NET provides no mechanism to achieve both of these, i.e. there is no .NET mechanism to make types both have "strong" .NET metadata and be equivalent across assembly boundaries.
 
 This leads to two different kinds of anonymous records:
@@ -80,7 +80,7 @@ This leads to two different kinds of anonymous records:
 * **Kind A** anonymous records that work smoothly across assembly boundaries 
 * **Kind B** anonymous records that have corresponding strong .NET metadata but are nominally tied to a specific assembly
 
-In this proposal we support only Kind B anonymous records.
+**In this proposal we support only Kind B anonymous records.**
 
 
 ## Design Principle: A Smooth Path to Nominalization
@@ -106,13 +106,13 @@ Supporting "smooth nominalization" means that features such as these are out of 
 * adding fields to anonymous records ``{ x with A = 1 }``
 * unioning anonymous records `` { include x; include y }``
 
-These would all be fine features, but we will treat them as orthogonal: they could be included if and only if
-they are **also** implemented for nominal record types. F# nominal record types do not support the above
+These would all be fine features, and a re largely consistent with nominalization - but we will treat them
+as orthogonal: they could be included if and only if they are **also** implemented for nominal record types, or
+if we are willing to make the cost of nominalization higher.  Note that F# nominal record types do not support the above
 features - even ``{ x with A=1}`` is restricted to create objects of the same type as the original ``x``.
 
 Without smooth nominalization, developers will inevitably use unique features of anonymous record types,
-but be left with no path to nominalize their code as it matures.
-
+but be left with no easy path to nominalize their code as it matures.
 
 ## Design Principle: Interop
 
@@ -120,7 +120,7 @@ The feature must achieve compatibility with C# anonymous objects (from C# 3.0). 
 
 (a) is assembly-private
 
-(b) uses very specific type and property names (understood by debugging tools)
+(b) uses very specific type and property names (often understood by debugging tools)
 
 (c) has normal .NET metadata that supports normal .NET reflection
 
@@ -131,7 +131,6 @@ The major difference in the F# types are they are not assembly-private
 ## Design Principle: Interoperable compiled representations
 
 The need for interop means that anonymous records must use the "natural" compiler representations available on .NET. Anonymous records must use a generated type with the same characteristics as used by C# anonymous records (except that it will be assembly-public)
-
 
 ## Design Principle: Anonymous Records, not Anonymous Objects
 
@@ -300,6 +299,18 @@ struct {| X = 1; Y = 2 |}
 
 These values _can_ be used outside their assembly, but the types can _not_ be named in the syntax of types outside that assembly.
 
+## Name resolution
+
+Names are *only* resolved if known type information is available, e.g.
+
+```fsharp
+let f x = x.P // no resolution
+    
+let data = {| P = 3 }
+data.P  // has a resolution
+```
+
+
 ## Copy and Update
 
 TBD
@@ -308,10 +319,6 @@ TBD
 
 Fields are placed in a canonical order by the compiler, so type ``{| A : int; B : int |}`` is type-equivalent to ``{| B: int; A : int |}``. 
 
-Some questions around field ordering for are TBD.   Specifically, C# considers these to be separate types (though, somewhat amazingly, they are inter-convertible without a compiler reordering being inserted). F# won't implement this C# rule. However we must interop with C# types in non-canonical order, and possibly even emit them as well (or warn when emitting them on a public API boundary?). 
-
-See also [this comment](https://github.com/fsharp/fslang-design/issues/170#issuecomment-288382645)
-
 ## Interaction with F# Reflection Utilies
 
 The FSharp.Core functions ``FSharp.Reflection.FSharpType.GetRecordFields`` and ``FSharp.Reflection.FSharpValue.MakeRecord/GetRecordField/GetRecordFields`` work with anonymous record values and types.
@@ -319,12 +326,41 @@ The FSharp.Core functions ``FSharp.Reflection.FSharpType.GetRecordFields`` and `
 
 ## Equality and Comparison
 
-TBD
+Anonymous types support both structural equality (if all constituent members support equality) and structural comparison (if all constituent types support comparison)
 
-## Interaction with C# 7.0 Tuple metadata
+## Pattern matching
 
-TBD
+It is not possible to pattern match on anonymous record values, the dot-notation must be used instead.
 
+## Cross-assembly working
+
+Anonymous record types can't easily be created in other assemblies without type annotations (in which case normal record types can often be used).
+
+In general values of an anonymous record type from another assembly can't easily be created in other assemblies without type annotations (in which case normal record types can often be used).
+
+However, if an anonymous record type flows across an assembly boundary, and an anonymous record expression has known type of that anonymous record type, with correctly matching field labels etc, then the anonymous record expression will be assumed to be creating an instance of that type.  For example
+
+```fsharp
+let x : SomeOtherAssembly.SomeAbbreviationForAnAnonymousRecordType = {| A = 3; B = 4 |}
+```
+
+## Structness inference
+
+The structness of the anonymous record expressions is also inferred from the known type.
+
+For consistency, the structness of anonymous tuple expressions and types is now also inferred from the known type.  So
+
+```fsharp
+let f (struct (x,y)) = x + y
+f (4,5) // the structness of the tuple is inferred here
+```
+
+and
+
+```fsharp
+let f (x : struct {| A: int; B : int |})  = x.A + y.B
+f {| A = 1; B = 3 }
+```
 
 ## Examples: Basic anonymous records  
 
@@ -383,14 +419,26 @@ TBD
     let test8<'T>(x:'T) = {| a = x; b = x  |}
 ```
 
+## FCS Symbols API
+
+Straight-forward additions are made to the FCS symbols API, see the PR for details
+
+## Tooling
+
+The following features flow naturally from the implementation
+* Mouse-hover ver labels reports the instantiated type of the label
+* Anonymous record types are formatted and displayed in type info
+* Go-to-definition on a label `x.P` takes you to one of the declaration sites responsible for the declaration of `P`
+* Find-all-uses finds uses of labels when they are associated with the same anonymous record type
+
+
+
+
 # Unresolved questions
 [unresolved]: #unresolved-questions
 
-1. Do we emit and read C# tuple metadata information at return and argument positions?
-2. Can records be created using implied field names ``{| x.Name; Age = 31 |}`` instead of `` {| Name=x.Name; Age=31 |}``. 
-3. Some questions around field ordering for are TBD
-4. Can copy-and-update be used?
-
+1. Can records be created using implied field names ``{| x.Name; Age = 31 |}`` instead of `` {| Name=x.Name; Age=31 |}``. 
+2. Can copy-and-update be used?
 
 
 # Drawbacks
