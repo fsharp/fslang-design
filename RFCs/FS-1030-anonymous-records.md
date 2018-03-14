@@ -18,6 +18,8 @@ let data = {| X = 1; Y = "abc" |}
 val data : {| X : int; Y : string |}
 
 let result = data.X + data.Y.Length
+
+let newData = {| data with Z = data.X + 5 |}
 ```
 
 
@@ -67,7 +69,7 @@ val data: Data
 
 ## Design Principle: By Default Works Across Assembly Boundaries
 
-In general F# developers will expect two contradictory things:
+In theory F# developers will expect two contradictory things:
 
 (a) **It Just Works across assembly boundaries**. That is, type identity for anonymous types will, by default, be assembly neutral. So ``{| X:int; Y: int |}`` in one assembly will be type equivalent to the same type when used in another assembly
 
@@ -167,9 +169,9 @@ let f x = x#p
 val f : { x : 'a; .. } -> 'b 
 ```
 
-where the `..` means "a set of object members".  This kind of polymorphism is very natural for anonymous objects.  However, it can't
+where the `..` means "a set of object members".  (You could also call this "column polymorphism" or "column generics" since it is being generic over the set of other columns in a database). This kind of polymorphism is very natural for anonymous objects.  However, it can't
 be expressed in the .NET type system.  It could in theory be supported for inlined F# functions but doing that would be somewhat
-complex for reatively little gain in the overall context of F#.  Many practical uses of this kind of genericity can be adequately dealt with via object interfaces and, if necessary, a limited amount of casting.
+complex and is orthogonal to this PR.  Some practical uses of this kind of genericity can be adequately dealt with via object interfaces and, if necessary, a limited amount of casting.
 
 
 Code that is generic over record types  _can_ be written using static member constraints, e.g.
@@ -178,21 +180,10 @@ Code that is generic over record types  _can_ be written using static member con
           (^TX : (member get_X : unit -> ^X) (x))
 
     getX {| X = 0 |}
-    
     getX {| X = 1; Y = "abc" |}
-    
-    
     getX {| X = 2; Y = "2" |}
 
 ```
-Or, with the syntax proposed for F# 4.1:
-```fsharp
-
-    let inline getX x = (_.X) x
-
-    getX {| X = 0 |}
-```
-
 
 ## Design Principle: Not anonymous object expressions
 
@@ -313,7 +304,24 @@ data.P  // has a resolution
 
 ## Copy and Update
 
-TBD
+Copy and update expressions for anonymous records are like those for normal records with some significant differences.  For
+
+    { origExpr with X = 1; Y = 2 ... }
+
+1. The origExpr may be either a record or anonymous record.
+2. The origExpr may be either a struct or not.
+3. All the properties of origExpr are copied across except where they are overridden.
+4. The result is an anonymous record.
+5. Unlike records, we do _not_ assume that the origExpr has the same type as the overall expression.
+6. Unlike records,  {| a with X = 1 |} does not force a.X to exist or have had type 'int'
+
+For example:
+
+```fsharp
+let data = {| X = 1 |}               // gives { X = 1 }
+let data2 = {| data with Y = "1" |}  // gives { X = 1; Y = "1" }
+let data4 = {| data2 with X = "3" |} // gives { X = "3"; Y = "1" }
+```
 
 ## Field Ordering
 
@@ -497,6 +505,11 @@ or some other variation.
 
 There are pros and cons to this. The biggest positive is that it may help to emphasise that the field names are erased.  The biggest negative is that the process of "nominalization" is much less smooth should you want to move to nominal record types.
 
+#### Alternative: Do not sort fields by name
+
+Sorting by field name is the natural thing for the programmer from a type-system usability perspective.
+
+However it does have some downsides.  For example, when using anonymous record data for rows in tabular data the fields will not imply a column ordering.  
 
 #### Alternative: Use a dynamic representation
 
