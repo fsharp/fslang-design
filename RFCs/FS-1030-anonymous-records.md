@@ -440,13 +440,10 @@ The following features flow naturally from the implementation
 * Find-all-uses finds uses of labels when they are associated with the same anonymous record type
 
 
-
-
 # Unresolved questions
 [unresolved]: #unresolved-questions
 
 1. Can records be created using implied field names ``{| x.Name; Age = 31 |}`` instead of `` {| Name=x.Name; Age=31 |}``. 
-2. Can copy-and-update be used?
 
 
 # Drawbacks
