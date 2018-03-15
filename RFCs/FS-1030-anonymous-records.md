@@ -103,18 +103,14 @@ nominal type machinery, however nominal record types and class types do.  As a t
 that the user can transition towards nominal record types and class types. (TODO: link to related suggestions about improving nominal
 record types and class types).
 
-Supporting "smooth nominalization" means that features such as these are out of scope or orthogonal
+Supporting "smooth nominalization" means we need to carefully consider whether features such as these allowed:
 * removing fields from anonymous records ``{ x without A}``
 * adding fields to anonymous records ``{ x with A = 1 }``
 * unioning anonymous records `` { include x; include y }``
 
-These would all be fine features, and a re largely consistent with nominalization - but we will treat them
-as orthogonal: they could be included if and only if they are **also** implemented for nominal record types, or
-if we are willing to make the cost of nominalization higher.  Note that F# nominal record types do not support the above
-features - even ``{ x with A=1}`` is restricted to create objects of the same type as the original ``x``.
-
-Without smooth nominalization, developers will inevitably use unique features of anonymous record types,
-but be left with no easy path to nominalize their code as it matures.
+These should be included if and only if they are **also** implemented for nominal record types. Futher, their use makes the cost of nominalization higher, because F# nominal record types do not support the above
+features - even ``{ x with A=1 }`` is restricted to create objects of the same type as the original ``x``, and thus multiple
+nominal types will be needed where this construct is used.
 
 ## Design Principle: Interop
 
@@ -146,8 +142,6 @@ obj : {| member M : int -> int
          member P : int } 
 ```
 without defining an explicit nominal class.  
-
-
 
 ## Design Principle: No structural subtyping
 
@@ -444,6 +438,7 @@ The following features flow naturally from the implementation
 [unresolved]: #unresolved-questions
 
 1. Can records be created using implied field names ``{| x.Name; Age = 31 |}`` instead of `` {| Name=x.Name; Age=31 |}``. 
+1. Is pattern matching supported. 
 
 
 # Drawbacks
@@ -507,6 +502,24 @@ There are pros and cons to this. The biggest positive is that it may help to emp
 Sorting by field name is the natural thing for the programmer from a type-system usability perspective.
 
 However it does have some downsides.  For example, when using anonymous record data for rows in tabular data the fields will not imply a column ordering.  
+
+#### Alternative: Various alternatives aroud copy-and-update
+
+Copy-and-update could be design differently:
+* In the design, F# records _can_ be used as the starting expression for copy-and-update.
+* Other object types could also be allowed, but what properties would be used as the starting selection?  Better to require `{| x.Name, x.Foo |}` explicitly.  
+* Other whacky alternatives are possible, e.g. `{|  x.Foo* with A = 1 |}`
+* `{| x |}` without any `with` bindings is not allowed.  In theory it could be allowed.
+* `{| x |} : SomeOtherAnonymousRecordType` is not allowed, but in theory could be, where the fields to be selected out are determined by `SomeOtherAnonymousRecordType`
+
+
+#### Alternative: implicit conversion
+
+It would be possible to imagine an implicit conversion being applied whenever a value of one anonymous record type is used with a known type of another anonymous record type.  This is not done as this kind of implicit conversion is rarely used in the F# design.  
+
+Equally, such a conversion could either 
+1. be in a special function, e.g. `conv x` that "knows" about a whole range of conversions
+2. be applied at member application (i.e. in places where such conversions are already applied today
 
 #### Alternative: Use a dynamic representation
 
