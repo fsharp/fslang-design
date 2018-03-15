@@ -291,7 +291,7 @@ Names are *only* resolved if known type information is available, e.g.
 ```fsharp
 let f x = x.P // no resolution
     
-let data = {| P = 3 }
+let data = {| P = 3 |}
 data.P  // has a resolution
 ```
 
@@ -300,7 +300,7 @@ data.P  // has a resolution
 
 Copy and update expressions for anonymous records are like those for normal records with some significant differences.  For
 
-    { origExpr with X = 1; Y = 2 ... }
+    {| origExpr with X = 1; Y = 2 ... |}
 
 1. The origExpr may be either a record or anonymous record.
 2. The origExpr may be either a struct or not.
@@ -312,9 +312,9 @@ Copy and update expressions for anonymous records are like those for normal reco
 For example:
 
 ```fsharp
-let data = {| X = 1 |}               // gives { X = 1 }
-let data2 = {| data with Y = "1" |}  // gives { X = 1; Y = "1" }
-let data4 = {| data2 with X = "3" |} // gives { X = "3"; Y = "1" }
+let data = {| X = 1 |}               // gives {| X = 1 |}
+let data2 = {| data with Y = "1" |}  // gives {| X = 1; Y = "1" |}
+let data4 = {| data2 with X = "3" |} // gives {| X = "3"; Y = "1" |}
 ```
 
 ## Field Ordering
