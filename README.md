@@ -29,3 +29,25 @@ All in-progress RFCs, listed in the [RFC folder](https://github.com/fsharp/fslan
 
 When RFCs are implemented and a version of F# is revved, the RFCs which correspond to the F# version they were implemented in are archived under the appropriate folder.
 
+### Language Update Release Trains
+
+
+1. Delivery of language features is via RFCs plus implementations submitted to https://github.com/Microsoft/visualfsharp.
+
+2. We use incremental delivery of language features.  
+
+3. What this means procedurally is that when we have 1-3 100% “ready, tested and completed” FSharp.Core and F# Language features that aren't "too minor" then we will bump the language version in the actively developed release train branch (e.g. `dev15.8`) and start to merge the features to both master and that release branch.
+
+3. Practically speaking, this means the features are "on the train" to ship in preview releases of various tooling about ~1-2 months after integration, and non-preview releases about 2-3 months later (depending on everything).
+
+4. The feature set will get integrated and shipped in Visual Studio, FCS packages, Mono and .NET SDK compilers in about the same timeframe.  (Other editors can pick up an updated FCS pretty quickly)
+
+5. We may delay some features until a "major version release" (which may or may not corresponds to a new version of Visual Studio)
+
+### Roadmap and Areas of Priority Work
+
+Any or all of the [approved-in-principle](https://github.com/fsharp/fslang-suggestions/labels/approved-in-principle) items are eligible to catch a release train.  That is as good as it gets for a "roadmap" for the language design.
+
+The BDFL (@dsyme) has put together a list of "proposed priority" approved language design items which he plans to focus on or which other people have taken past RFC stage.  This is _not_ a roadmap, because other people will choose to prioritize other approved items (e.g. match! - which is not a priority item for me), and is also subject to change and edit.. It is an informal list.  You can find that list here: https://github.com/fsharp/fslang-suggestions/labels/proposed-priority 
+
+
