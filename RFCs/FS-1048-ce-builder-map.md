@@ -72,3 +72,20 @@ This is not a breaking change, and is backwards-compatible with existing code.
 * CE builders not implementing `Map` (and code using these builders) will be compiled in the same way as before.
 * Previous F# compilers encountering `Map` will simply never emit calls it, always using `Bind` and `Return`.
 * Previous F# compilers encountering this new construct in compiled binaries will not care -- it will be seen as just another method call.
+
+# Unresolved Questions
+[unresolved]: #unresolved-questions
+
+*For more detailed discussions of the following questions and their proposed resolutions, please see the [RFC discussion](https://github.com/fsharp/fslang-design/issues/258).*
+
+1. This document currently only specifies behavior in terms of `return`: should we allow this to be utilized by `yield` as well?
+    * If so, should we do this by looking for CE methods `MapReturn` and `MapYield` instead of `Map`? Or are there other ways?
+2. Should we apply this behavior to situations where the `let!` and `return` in question are not the last calls in the builder? For example, should we transform the following to `map` (and how would that work)?
+
+    ```fsharp
+    builder {
+        let! x = f a
+        return x
+        let! y = g b
+        return y }
+    ```
