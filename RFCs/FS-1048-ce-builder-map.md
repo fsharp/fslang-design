@@ -80,7 +80,7 @@ This is not a breaking change, and is backwards-compatible with existing code.
 
 1. This document currently only specifies behavior in terms of `return`: should we allow this to be utilized by `yield` as well?
     * If so, should we do this by looking for CE methods `MapReturn` and `MapYield` instead of `Map`? Or are there other ways?
-2. Should we apply this behavior to situations where the `let!` and `return` in question are not the last calls in the builder? For example, should we transform the following to `map` (and how would that work)?
+2. Should we apply this behavior to situations where the `let!` and `return` in question are not the last calls in the builder? For example, in the following snippet, should we transform both bindings to `map` (and how would that work)?
 
     ```fsharp
     builder {
