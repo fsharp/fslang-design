@@ -12,7 +12,7 @@ This RFC covers the detailed proposal for this suggestion.
 # Summary
 [summary]: #summary
 
-Computation expression builders would be allowed to implement a new method, `Map`, that the compiler will call in appropriate scenarios.
+Computation expression builders would be allowed to implement two new methods, `MapReturn`, and `MapYield`, that the compiler will call in certain scenarios involving `let!` followed by `return` or `yield`.
 
 # Motivation
 [motivation]: #motivation
@@ -36,6 +36,8 @@ builder.Bind(f (), fun x -> builder.Return (g x))
 
 This is wasteful.
 
+*The same applies to similar uses of `yield`.*
+
 # Detailed design
 [design]: #detailed-design
 
@@ -48,15 +50,17 @@ builder {
 }
 ```
 
-if `builder` defines a `Map` method, this would now get desugared to:
+if `builder` defines a `MapReturn` method, this would now get desugared to:
 
 ```fsharp
-builder.Map(f (), fun x -> g x)
+builder.MapReturn(f (), fun x -> g x)
 ```
 
-Alternatively, if `builder` does not contain a `Map` method, the existing behavior should be preserved (emitting the usual `Bind` and `Return`).
+Alternatively, if `builder` does not contain a `MapReturn` method, the existing behavior should be preserved (emitting the usual `Bind` and `Return`).
 
-Finally, existing CE builders should be modified to take advantage of this and implement `Map`.
+Finally, work should be done to update existing CE builders in the F# library to take advantage of this new construct.
+
+*These rules should also apply to constructs involving `yield`, desugaring as calls to `MapYield`.*
 
 # Drawbacks
 [drawbacks]: #drawbacks
@@ -69,8 +73,8 @@ This introduces additional complexity into computation expressions (both from th
 
 This is not a breaking change, and is backwards-compatible with existing code.
 
-* CE builders not implementing `Map` (and code using these builders) will be compiled in the same way as before.
-* Previous F# compilers encountering `Map` will simply never emit calls it, always using `Bind` and `Return`.
+* CE builders not implementing `MapReturn`/`MapYield` (and code using these builders) will be compiled in the same way as before.
+* Previous F# compilers encountering `Map*` will simply never emit calls it, always using `Bind` and `Return`/`Yield`.
 * Previous F# compilers encountering this new construct in compiled binaries will not care -- it will be seen as just another method call.
 
 # Unresolved Questions
@@ -78,8 +82,9 @@ This is not a breaking change, and is backwards-compatible with existing code.
 
 *For more detailed discussions of the following questions and their proposed resolutions, please see the [RFC discussion](https://github.com/fsharp/fslang-design/issues/258).*
 
-1. This document currently only specifies behavior in terms of `return`: should we allow this to be utilized by `yield` as well?
-    * If so, should we do this by looking for CE methods `MapReturn` and `MapYield` instead of `Map`? Or are there other ways?
+1. (*Resolved*) ~~This document currently only specifies behavior in terms of `return`: should we allow this to be utilized by `yield` as well?~~
+    * ~~If so, should we do this by looking for CE methods `MapReturn` and `MapYield` instead of `Map`? Or are there other ways?~~
+
 2. Should we apply this behavior to situations where the `let!` and `return` in question are not the last calls in the builder? For example, in the following snippet, should we transform both bindings to `map` (and how would that work)?
 
     ```fsharp
