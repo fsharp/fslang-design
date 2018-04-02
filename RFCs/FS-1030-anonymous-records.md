@@ -104,7 +104,7 @@ that the user can transition towards nominal record types and class types. (TODO
 record types and class types).
 
 Supporting "smooth nominalization" means we need to carefully consider whether features such as these allowed:
-* removing fields from anonymous records ``{ x without A}``
+* removing fields from anonymous records ``{ x without A }``
 * adding fields to anonymous records ``{ x with A = 1 }``
 * unioning anonymous records `` { include x; include y }``
 
@@ -139,7 +139,7 @@ let obj = {| member x.M(y) = 1 + y
              member x.P = 2 |}
 
 obj : {| member M : int -> int
-         member P : int } 
+         member P : int |} 
 ```
 without defining an explicit nominal class.  
 
@@ -361,7 +361,7 @@ and
 
 ```fsharp
 let f (x : struct {| A: int; B : int |})  = x.A + y.B
-f {| A = 1; B = 3 }
+f {| A = 1; B = 3 |}
 ```
 
 ## Examples: Basic anonymous records  
