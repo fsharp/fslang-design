@@ -83,7 +83,7 @@ builder.Bind(xexpr, fun x ->
     )
 ```
 
-This should be able to  `MapReturn` construct for both of these, with a little rearranging:
+This should be able to use the `MapReturn` construct for *both* of these, with a little rearranging:
 
 ```fsharp
 builder.Combine(builder.Map(fun x -> f x),
