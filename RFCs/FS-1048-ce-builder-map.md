@@ -8,7 +8,6 @@ This RFC covers the detailed proposal for this suggestion.
 * [ ] Details: [under discussion](https://github.com/fsharp/fslang-design/issues/258)
 * [ ] Implementation: Not started
 
-
 # Summary
 [summary]: #summary
 
@@ -41,6 +40,8 @@ This is wasteful.
 # Detailed design
 [design]: #detailed-design
 
+*Though this design only speaks about `return` and `MapReturn`, it also implicitly applies to constructs involving `yield`, desugaring as calls to `MapYield`.*
+
 Take the following code (repeated from [Motivation]):
 
 ```fsharp
@@ -60,7 +61,71 @@ Alternatively, if `builder` does not contain a `MapReturn` method, the existing 
 
 Finally, work should be done to update existing CE builders in the F# library to take advantage of this new construct.
 
-*These rules should also apply to constructs involving `yield`, desugaring as calls to `MapYield`.*
+## Other scenarios
+
+There is a more complicated scenario which can still use this construct. Take this snippet (showing both the sugared and desugared forms):
+
+```fsharp
+// sugared
+builder {
+    let! x = xexpr
+    return f x
+    let! y = yexpr
+    return g y }
+// normal desugaring
+builder.Bind(xexpr, fun x ->
+    builder.Combine
+       (builder.Return(f x),
+        builder.Bind(yexpr, fun y ->
+            builder.Return(g y)
+            )
+        )
+    )
+```
+
+This should be able to  `MapReturn` construct for both of these, with a little rearranging:
+
+```fsharp
+builder.Combine(builder.Map(fun x -> f x),
+                builder.Map(fun y -> g y))
+```
+
+This should also work with longer chains of `let!` + `return`s, as in this code:
+
+```fsharp
+// sugared
+builder {
+    let! x = xexpr
+    return f x
+    let! y = yexpr
+    return g y
+    let! z = zexpr
+    return h z }
+// normal desugaring
+builder.Bind(xexpr, fun x ->
+    builder.Combine
+       (builder.Return(f x),
+        builder.Bind(yexpr, fun y ->
+            builder.Combine
+                (builder.Return(g y),
+                builder.Bind(zexpr, fun z ->
+                    builder.Return (h z))
+                )
+            )
+        )
+    )
+```
+
+Which should become:
+
+```fsharp
+builder.Combine
+   (builder.Map(fun x -> f x),
+    builder.Combine
+       (builder.Map(fun y -> g y),
+        builder.Map(fun z -> h z))
+    )
+```
 
 # Drawbacks
 [drawbacks]: #drawbacks
@@ -69,7 +134,6 @@ This introduces additional complexity into computation expressions (both from th
 
 # Compatibility
 [compatibility]: #compatibility
-
 
 This is not a breaking change, and is backwards-compatible with existing code.
 
@@ -81,16 +145,3 @@ This is not a breaking change, and is backwards-compatible with existing code.
 [unresolved]: #unresolved-questions
 
 *For more detailed discussions of the following questions and their proposed resolutions, please see the [RFC discussion](https://github.com/fsharp/fslang-design/issues/258).*
-
-1. (*Resolved*) ~~This document currently only specifies behavior in terms of `return`: should we allow this to be utilized by `yield` as well?~~
-    * ~~If so, should we do this by looking for CE methods `MapReturn` and `MapYield` instead of `Map`? Or are there other ways?~~
-
-2. Should we apply this behavior to situations where the `let!` and `return` in question are not the last calls in the builder? For example, in the following snippet, should we transform both bindings to `map` (and how would that work)?
-
-    ```fsharp
-    builder {
-        let! x = f a
-        return x
-        let! y = g b
-        return y }
-    ```
