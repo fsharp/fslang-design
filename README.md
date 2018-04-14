@@ -2,7 +2,7 @@
 
 RFCs and docs related to the F# language design process. 
 
-* [Open F# Language RFCs (including candidates for F# 4.2)](https://github.com/fsharp/fslang-design/blob/master/RFCs)
+* [Open F# Language RFCs (including candidates for F# 4.5)](https://github.com/fsharp/fslang-design/blob/master/RFCs)
 
 * [RFCs implemented in F# 4.1](https://github.com/fsharp/fslang-design/blob/master/FSharp-4.1)
 
