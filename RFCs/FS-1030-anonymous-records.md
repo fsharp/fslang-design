@@ -4,7 +4,7 @@ The design suggestion [Anonymous Records](https://github.com/fsharp/fslang-sugge
 
 * [x] Approved in principle
 * [x] Details: [under discussion](https://github.com/fsharp/fslang-design/issues/170)
-* [x] Implementation: [ready](https://github.com/Microsoft/visualfsharp/pull/2671)
+* [x] Implementation: [ready](https://github.com/Microsoft/visualfsharp/pull/4499)
 
 
 # Summary
