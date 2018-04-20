@@ -44,6 +44,7 @@ Need to consider in some cases
 4. Collaborate with anonymous records feature
 5. Check IntelliSense
 6. Investigate other language features that should support nested paths like named arguments
+7. Check no same nested field update
 
 # Drawbacks
 [drawbacks]: #drawbacks
@@ -54,3 +55,35 @@ Additional complexity in the compiler.
 [compatibility]: #compatibility
 
 This is not a breaking change, and is backwards-compatible with existing code.
+
+# Open Questoions
+
+Q: What about indexers, e.g.
+```
+let anotherPerson1 = { person with A.[3].N = person.A.[3].N + ", k.2" }
+```
+A:Need to look at it 
+
+Q: What happens to cases where A.S is mentioned twice?
+
+```
+ { person with A.S.N = person.A.S.N + ", k.2"; A.S.M = person.A.S.M + ", k.3"  }
+```
+
+A: Already implemented will compile to
+
+```
+ { person with A = { person.A with S = { person.A.S with N = person.A.S.N + ", k.2"; M = person.A.S.M + ", k.3"  }
+```
+
+Q: What about similar features in the language that name fields, especially mutating property setters
+
+```
+Person(A.C.N = 3, A.C.M = 4)
+```
+
+A: Need to look at it after we finish with the records
+
+# Alternatives
+
+- Do not implement this feature
