@@ -439,6 +439,7 @@ The following features flow naturally from the implementation
 
 1. Can records be created using implied field names ``{| x.Name; Age = 31 |}`` instead of `` {| Name=x.Name; Age=31 |}``. 
 1. Is pattern matching supported. 
+1. Should `[<CLIMutable>]` be supported to allow usage in more scenarios? 
 
 
 # Drawbacks
