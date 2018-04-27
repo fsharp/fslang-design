@@ -120,10 +120,10 @@ Which should become:
 
 ```fsharp
 builder.Combine
-   (builder.Map(fun x -> f x),
+   (builder.MapReturn(fun x -> f x),
     builder.Combine
-       (builder.Map(fun y -> g y),
-        builder.Map(fun z -> h z))
+       (builder.MapReturn(fun y -> g y),
+        builder.MapReturn(fun z -> h z))
     )
 ```
 
