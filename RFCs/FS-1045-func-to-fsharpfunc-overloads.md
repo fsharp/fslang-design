@@ -55,6 +55,19 @@ See above. Note that:
 * The API produces _curried_ F# functions.  The previous API `FuncConvert.ToFSharpFunc` (which still exists) produced F# functions taking _tupled_ arguments.
 * The API is up to argument length 5 because that is the common limit used in existing FSharp.Core APIs, e.g. for `FuncConvert.FuncFromTupled`
 
+# Example C# code
+
+Here is are some example uses of FSharp.Core library functions from C#:
+
+      ListModule.Map<int,string>(FuncConvert.FromFunc<int,string>(i => i.ToString() + i.ToString()), myList);
+      ListModule.MapIndexed<int,string>(FuncConvert.FromFunc<int,int,string>((i,j) => i.ToString() + j), myList);
+      ListModule.Iterate<string>(FuncConvert.FromAction<string>(s => { Console.WriteLine("s = {0}", s);}), myList2);
+
+The code is still unpleasant, but at least:
+1. the code is using "modern" C# delegate types `Action` and `Func`
+1. the same C# code is usable on all of .NET Core, .NET Standard and .NET Framework
+
+
 # Compatibility
 [compatibility]: #compatibility
 
