@@ -1,21 +1,15 @@
-# F# RFC FS-1045 - Add ``Func`` overloads of ``FuncConvert.ToFSharpFunc`` for use from C#
+# F# RFC FS-1045 - Add new `FuncConvert.FromFunc` and `FuncConvert.FromAction` APIs  for use from C# (was "add `Func` overloads to ``FuncConvert.ToFSharpFunc``)
 
-As noted in [this issue](https://github.com/Microsoft/visualfsharp/issues/1847) we need to make it possible to use ``FuncConvert.ToFSharpFunc`` in .NET Standard 2.0 and .NET CoreApp 2.0 programming.
-
-One approach is to add overloads to this API taking ``System.Func`` values.
-This RFC covers the detailed proposal for this suggestion.
+Add new `FuncConvert.FromFunc` and `FuncConvert.FromAction` APIs.
 
 * [x] Approved in principle
-* [ ] Details
+* [x] Details
 * [ ] Approved 
-* [ ] Implementation: [complete](https://github.com/Microsoft/visualfsharp/pull/3013)
+* [x] Implementation: [complete](https://github.com/Microsoft/visualfsharp/pull/4815)
 
-**NOTE: this is a potential breaking change to C# code using ``FuncConvert.ToFSharpFunc`` and thus may need reconsideration, see below.**
+## Summary
 
-# Summary
-[summary]: #summary
-
-The recommended way to create an ``FSharpFunc`` value from C# is to use ``FuncConvert.ToFSharpFunc``.  However no ``Func``-based
+The previous recommended way to create an ``FSharpFunc`` value from C# is to use ``FuncConvert.ToFSharpFunc``.  However no ``Func``-based
 overloads were available for this, only ones based on ``Converter`` and ``Action``.
 
 The existing ``FuncConvert`` API is as follows:
@@ -24,20 +18,26 @@ The existing ``FuncConvert`` API is as follows:
         static member ToFSharpFunc: System.Action<'T> -> ('T -> unit)
         static member ToFSharpFunc: System.Converter<'T,'U> -> ('T -> 'U)
 ```
-The proposal is to add
-```fsharp
-    type FuncConvert = 
-        static member ToFSharpFunc: System.Func<'U> -> (unit -> 'U)
-        static member ToFSharpFunc: System.Func<'T,'U> -> ('T -> 'U)
-        static member ToFSharpFunc: System.Func<'T1,'T2,'U> -> ('T1 * 'T2 -> 'U)
-        static member ToFSharpFunc: System.Func<'T1,'T2,'T3,'U> -> ('T1 * 'T2 * 'T3 -> 'U)
-        static member ToFSharpFunc: System.Func<'T1,'T2,'T3,'T4,'U>  -> ('T1 * 'T2 * 'T3 * 'T4 -> 'U)
-        static member ToFSharpFunc: System.Func<'T1,'T2,'T3,'T4,'T5,'U> -> ('T1 * 'T2 * 'T3 * 'T4 * 'T5 -> 'U)
-        static member ToFSharpFunc: System.Func<'T1,'T2,'T3,'T4,'T5,'T6,'U> -> ('T1 * 'T2 * 'T3 * 'T4 * 'T5 * 'T6 -> 'U)
-        static member ToFSharpFunc: System.Func<'T1,'T2,'T3,'T4,'T5,'T6,'T7,'U> -> ('T1 * 'T2 * 'T3 * 'T4 * 'T5 * 'T6 * 'T7 -> 'U)
 
-```
+As noted in [this issue](https://github.com/Microsoft/visualfsharp/issues/1847) it is not possible to use ``FuncConvert.ToFSharpFunc`` in .NET Standard 1.6 and .NET CoreApp 2.0 programming because the `Converter` type is missing in .NET Standard 1.6. (It is present in .NET Standard 2.0 but FSharp.Core is not yet made available for that except through compat with .NET Standard 1.6) 
 
+Further, the existing `FuncConvert` API doesn't accept `Func<A,B>` nor `Action<A,B>` values which are now normal in C# programming. We could add overloads to this API taking ``System.Func`` values. However, this doesn't really work because the API becomes too heavily overloaded, breaking existing code.  
+
+Instead, in this RFC we add new APIs:
+
+        static member FromAction: action:Action -> (unit -> unit)
+        static member FromAction: action:Action<'T> -> ('T -> unit)
+        static member FromAction: action:Action<'T1,'T2> -> ('T1 -> 'T2 -> unit)
+        static member FromAction: action:Action<'T1,'T2,'T3> -> ('T1 -> 'T2 -> 'T3 -> unit)
+        static member FromAction: action:Action<'T1,'T2,'T3,'T4> -> ('T1 -> 'T2 -> 'T3 -> 'T4 -> unit)
+        static member FromAction: action:Action<'T1,'T2,'T3,'T4,'T5> -> ('T1 -> 'T2 -> 'T3 -> 'T4 -> 'T5 -> unit)
+
+        static member FromFunc: func:Func<'T> -> (unit -> 'T)
+        static member FromFunc: func:Func<'T,'U> -> ('T -> 'U)
+        static member FromFunc: func:Func<'T1,'T2,'U> -> ('T1 -> 'T2 -> 'U)
+        static member FromFunc: func:Func<'T1,'T2,'T3,'U> -> ('T1 -> 'T2 -> 'T3 -> 'U)
+        static member FromFunc: func:Func<'T1,'T2,'T3,'T4,'U> -> ('T1 -> 'T2 -> 'T3 -> 'T4 -> 'U)
+        static member FromFunc: func:Func<'T1,'T2,'T3,'T4,'T5,'U> -> ('T1 -> 'T2 -> 'T3 -> 'T4 -> 'T5 -> 'U)
 
 # Motivation
 [motivation]: #motivation
@@ -46,33 +46,34 @@ As noted in [this issue](https://github.com/Microsoft/visualfsharp/issues/1847) 
 in the .NET Standard 1.6 DLL for FSharp.Core, because the ``System.Converter`` type is not available at all in .NET Standard 1.6.
 
 The use of ``Converter`` and ``Action`` overloads dates from .NET 2.0, when this API first appeared.  The complete set of ``Func``
-types only became available in .NET 4.x.  As a result, one possible resolution of this issue is to move away from using ``Converter`` and use ``Func`` instead.
-
-However, as noted below, this causes a breaking change for C# client code if we increase the number of overloads available, requiring
-many more C# type annotations and less use of ``a => b`` lambda syntax in C#.
-
-An alternative approach may be to make the ``Converter`` API available in the .NTE Standard 2.0 DLL for FSharp.Core assuming the ``Converter`` type is available in .NET Standard 2.0.
-
-
+types only became available in .NET 4.x.  
 
 # Detailed design
 [design]: #detailed-design
 
-See above
+See above. Note that:
+* The API produces _curried_ F# functions.  The previous API `FuncConvert.ToFSharpFunc` (which still exists) produced F# functions taking _tupled_ arguments.
+* The API is up to argument length 5 because that is the common limit used in existing FSharp.Core APIs, e.g. for `FuncConvert.FuncFromTupled`
+
+# Example C# code
+
+Here is are some example uses of FSharp.Core library functions from C#:
+
+      ListModule.Map<int,string>(FuncConvert.FromFunc<int,string>(i => i.ToString() + i.ToString()), myList);
+      ListModule.MapIndexed<int,string>(FuncConvert.FromFunc<int,int,string>((i,j) => i.ToString() + j), myList);
+      ListModule.Iterate<string>(FuncConvert.FromAction<string>(s => { Console.WriteLine("s = {0}", s);}), myList2);
+
+The code is still unpleasant, but at least:
+1. the code is using "modern" C# delegate types `Action` and `Func`
+1. the same C# code is usable on all of .NET Core, .NET Standard and .NET Framework
+
 
 # Compatibility
 [compatibility]: #compatibility
 
-This change breaks existing C# code because additional overloads are available. In particular code such as 
-
-    FuncConvert.ToFSharpFunc<int,string>(i => i.ToString() + i.ToString())
-
-gives
-
-    test.cs(89,60): error CS0121: The call is ambiguous between the following methods or properties: 'FuncConvert.ToFSharpFunc<T, TResult>(Func<T, TResult>)' and 'FuncConvert.ToFSharpFunc<T, TResult>(Converter<T, TResult>)'
-
+This is a compatible change
 
 # Unresolved questions
 [unresolved]: #unresolved-questions
 
-* What to do about the breaking change
+None
