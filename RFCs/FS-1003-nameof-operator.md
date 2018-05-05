@@ -58,7 +58,7 @@ Additional considerations:
 - can get member names
 - can get static member names
 - can get static property names
-- can get names that quoted in ````
+- can get names that quoted in <code>``</code>
 - can get names of operators like `+`, `|>`, `typeof`, `nameof`, ...
 - can be used in pattern matching
 - can be used with generic functions/types
