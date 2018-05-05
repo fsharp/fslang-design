@@ -164,6 +164,11 @@ TBD, likely to be moved to a separate RFC, but naming should be considered here.
 - Require programmers to code complex matching by hands without expressiveness of active patterns
 - Provide better inlining and optimization for active patterns. It can be _hard_ to achieve.
 
+- Add a modality for "use structness for things declaraed in this scope", e.g.
+  * use struct representations for return results for all active pattern declared in this scope
+  * use struct representations for all syntactic tuples in this assembly in this scope
+  * use struct representations for all optional arguments declared in this scope
+
 # Compatibility
 [compatibility]: #compatibility
 
