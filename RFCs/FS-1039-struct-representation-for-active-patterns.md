@@ -52,7 +52,7 @@ The current proposal is
 ```
 though alternatives are discussed.
 
-**2. FSharp.Core should have unboxed (struct) versions of the `Choice` types
+**2. FSharp.Core should have unboxed (struct) versions of the `Choice` types**
 
 TBD
 
@@ -108,7 +108,7 @@ You might to note in struct version different names of `Some`/`None` cases are u
 - allow `StructAttribute` on active patterns
 - change codegen
 
-**5. It should be possible to use struct options in optional parameters
+**5. It should be possible to use struct options in optional parameters**
 
 TBD. This is tricky partly because of the problem of finding a good signature syntax, e.g. for boxed options we use:
 
@@ -142,6 +142,13 @@ Likewise in a signature:
 
 though in both cases it's not at all clear that `struct` is sufficiently disambiguated from its use as a type (I think it is not).
 
+**6. FSharp.Core should contain a `ValueOption` module of operators**
+
+TBD, likely to be moved to a separate RFC, but naming should be considered here.
+
+**7. FSharp.Core should contain `List/Seq/Array/Map.tryv*` operations which take/produce unboxed options**
+
+TBD, likely to be moved to a separate RFC, but naming should be considered here.
 
 # Drawbacks
 [drawbacks]: #drawbacks
