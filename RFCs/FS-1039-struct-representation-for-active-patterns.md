@@ -54,11 +54,36 @@ though alternatives are discussed.
 
 **2. FSharp.Core should have unboxed (struct) versions of the `Choice` types**
 
-TBD
+TBD. Naming would follow whatever is devided for struct options.
 
 **3. It should be possible to compile partial `(|A|_|)` active patterns to use struct options**
 
+TBD, likely to be moved to a separate RFC, but preliminary decisions should be considered here.
+
+How to use:
+
+```fsharp
+let (|Int|_|) str =
+   match System.Int32.TryParse(str) with
+   | (true,int) -> Some(int)
+   | _ -> None
+```
+
+Put the `StructAttribute` on the active pattern definition.
+
+```fsharp
+[<Struct>]
+let (|Int|_|) str =
+   match System.Int32.TryParse(str) with
+   | (true,int) -> VSome(int)
+   | _ -> VNone
+```
+
+You might to note in struct version different names of `Some`/`None` cases are used. This is because of we need to distinguish between struct and non-struct versions of the `option` type.
+
 **4. It should be possible to compile total `(|A|B|)` active patterns to use struct choices**
+
+TBD, likely to be moved to a separate RFC, but preliminary decisions should be considered here.
 
 How to use:
 
@@ -81,36 +106,12 @@ let (|Even|Odd|) n =
         Odd
 ```
 
-It should be compiled as function that returns struct version of `FSharpChoice<Unit, Unit>` union. In F#4.1 it's possible to define struct discriminated unions, so we can avoid extra allocations.
+It should be compiled as function that returns struct version of `FSharpChoice<Unit, Unit>` union. In F# 4.1 it's possible to define struct discriminated unions, so we can avoid extra allocations.
 
-The same for partial active patterns.
-
-```fsharp
-let (|Int|_|) str =
-   match System.Int32.TryParse(str) with
-   | (true,int) -> Some(int)
-   | _ -> None
-```
-
-```fsharp
-[<Struct>]
-let (|Int|_|) str =
-   match System.Int32.TryParse(str) with
-   | (true,int) -> StructSome(int)
-   | _ -> StructNone
-```
-
-You might to note in struct version different names of `Some`/`None` cases are used. This is because of we need to distinguish between struct and non-struct versions of the `option` type.
-
-Сonsequently we need to make this changes in compiler and FSharp.Core:
-
-- add new struct versions for `FSharpOption` and `FSharpChoice` types
-- allow `StructAttribute` on active patterns
-- change codegen
 
 **5. It should be possible to use struct options in optional parameters**
 
-TBD. This is tricky partly because of the problem of finding a good signature syntax, e.g. for boxed options we use:
+This is tricky partly because of the problem of finding a good signature syntax, e.g. for boxed options we use:
 
     static member M(?x) = 
         let x = defaultArg x 5
