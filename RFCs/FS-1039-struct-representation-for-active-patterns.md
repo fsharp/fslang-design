@@ -1,18 +1,21 @@
 # F# RFC FS-1039 - Struct options and struct representations for active patterns and optional arguments
 
 The design suggestion [Struct representation for active patterns](https://github.com/fsharp/fslang-suggestions/issues/612) has been marked "approved in principle".
-This RFC covers the detailed proposal for this suggestion.
+
+Likewise the idea of have a struct option type is implied by this suggestion and has also been approved.
+
+This RFC covers the detailed proposal starting from this suggestion and elaborating into 7 parts.
 
 * [x] Approved in principle
 * [x] [Suggestion](https://github.com/fsharp/fslang-suggestions/issues/612)
 * [ ] Details: [under discussion](https://github.com/fsharp/FSharpLangDesign/issues/230)
-* [ ] Implementation: not started
+* [ ] Implementation: [Part 1](https://github.com/Microsoft/visualfsharp/pull/4837)
 
 
 # Summary
 [summary]: #summary
 
-This RFC covers several things:
+This RFC covers 7 things:
 1. FSharp.Core should have an unboxed (struct) version of the `option` type, e.g. `ValueOption` and `voption`
 2. FSharp.Core should have unboxed (struct) versions of the `Choice` types
 3. It should be possible to compile partial `(|A|_|)` active patterns to use struct options
