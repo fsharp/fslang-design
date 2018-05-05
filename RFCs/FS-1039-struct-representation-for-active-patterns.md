@@ -1,4 +1,4 @@
-# F# RFC FS-1039 - Struct options and representation for active patterns
+# F# RFC FS-1039 - Struct options and struct representations for active patterns and optional arguments
 
 The design suggestion [Struct representation for active patterns](https://github.com/fsharp/fslang-suggestions/issues/612) has been marked "approved in principle".
 This RFC covers the detailed proposal for this suggestion.
