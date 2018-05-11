@@ -4,15 +4,15 @@
 This RFC deals with its interaction with struct types.
 
 * [x] Approved in principle
-* [ ] [Discussion](https://github.com/fsharp/fslang-design/issues/FILL-ME-IN)
-* [ ] Implementation: [In progress](https://github.com/Microsoft/visualfsharp/pull/FILL-ME-IN)
+* Discussion: TBD
+* Implementation: TBD
 
 
 # Summary
 [summary]: #summary
 
-.NET has a new attribute `IsReadOnly` that can b applied to struct types and other things. This
-is now starting to appear in .NET libraries and C# code.
+.NET has [a new attribute `IsReadOnly`](https://msdn.microsoft.com/en-us/library/system.runtime.compilerservices.isreadonlyattribute(v=vs.110).aspx) that can 
+be applied to struct types and other things. This is now starting to appear in .NET libraries and C# code.
 
 F# structs are normally readonly, it is quite hard to write a mutable struct.
 
