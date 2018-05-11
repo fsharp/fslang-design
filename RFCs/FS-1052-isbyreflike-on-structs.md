@@ -1,4 +1,4 @@
-# F# RFC FS-1052 - Allow `IsByRefLike`  attribute on structs ("ref stucts") and respect it when present
+# F# RFC FS-1052 - Allow `IsByRefLike`  attribute on structs ("ref structs") and respect it when present
 
 .NET has a new attribute `IsByRefLike` that can be applied to struct types. It is used for the feature C# calls "ref structs".
 This RFC deals with respecting this attribute in F#.
