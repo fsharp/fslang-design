@@ -31,7 +31,7 @@ Parity with .NET/C#, better codegen.
 # Detailed design
 [design]: #detailed-design
 
-Here is an example of a typical readonly struct in F#:
+Here is an example of what declaring a ref struct would look like in F#:
 ```fsharp
 open System.Runtime.CompilerServices
 
@@ -40,6 +40,16 @@ type S(count1: int, count2: int) =
     member x.Count1 = count1
     member x.Count2 = count2
 ```
+
+We could potentially give an alias for the attribute.
+
+
+Separately, C# attaches the following `Obsolete` attribute to these types, and presumably has special code to ignore it:
+```
+Types with embedded references are not supported in this version of your compiler
+```
+We would have to also ignore this attribute.
+
 
 # Drawbacks
 [drawbacks]: #drawbacks
