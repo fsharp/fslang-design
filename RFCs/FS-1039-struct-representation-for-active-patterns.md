@@ -24,14 +24,14 @@ This RFC covers 7 things:
 6. FSharp.Core should contain a `ValueOption` module of operators
 7. FSharp.Core should contain `List/Seq/Array/Map.tryv*` operations which take/produce unboxed options
 
-Parts (2) and (4) are optional and could be done later (parts 2 and 4), as could parts (6) and (7).  As a result, for the most part this RFC will focus initially on parts (1), (3) and (5).
+Parts (2) and (4) are optional and could be done later, as could parts (6) and (7).  As a result, for the most part this RFC will focus initially on parts (1), (3) and (5).
 
 # Motivation
 [motivation]: #motivation
 
 Powerful and extensible features such as active patterns and optional arguments should be near-zero-cost abstractions. 
 
-We should be able to providing better performance just via a simple attribute addition!
+We should be able to provide better performance just via a simple attribute addition!
 
 # Detailed design
 [design]: #detailed-design
@@ -43,7 +43,7 @@ See discussion here: https://github.com/fsharp/fslang-design/issues/230#issuecom
 
 The current proposal is 
 
-```
+```fsharp
     [<Struct>]
     type ValueOption<'T> =
         | VNone
@@ -54,7 +54,7 @@ though alternatives are discussed.
 
 **2. FSharp.Core should have unboxed (struct) versions of the `Choice` types**
 
-TBD. Naming would follow whatever is devided for struct options.
+TBD. Naming would follow whatever is devised for struct options.
 
 **3. It should be possible to compile partial `(|A|_|)` active patterns to use struct options**
 
@@ -79,7 +79,7 @@ let (|Int|_|) str =
    | _ -> VNone
 ```
 
-You might to note in struct version different names of `Some`/`None` cases are used. This is because of we need to distinguish between struct and non-struct versions of the `option` type.
+You might to note in struct version different names of `Some`/`None` cases are used. This is because of the need to distinguish between struct and non-struct versions of the `option` type.
 
 **4. It should be possible to compile total `(|A|B|)` active patterns to use struct choices**
 
@@ -112,34 +112,44 @@ It should be compiled as function that returns struct version of `FSharpChoice<U
 **5. It should be possible to use struct options in optional parameters**
 
 This is tricky partly because of the problem of finding a good signature syntax, e.g. for boxed options we use:
-
-    static member M(?x) = 
-        let x = defaultArg x 5
-        string x
-
+```fsharp
+static member M(?x) = 
+    let x = defaultArg x 5
+    string x
+```
 and in signatures:
 
-    static member M : ?x : int -> string
+```fsharp
+static member M : ?x : int -> string
+```
 
 Today, the option type for argument `x` is applied immediately that `?x` is seen. This means we need some kind of syntax at `?x` to stop this happening, e.g. the somewhat unfortunate:
 
-    static member M([<Struct>] ?x) = 
-        let x = defaultvArg x 5
-        string x
+```fsharp
+static member M([<Struct>] ?x) = 
+    let x = defaultvArg x 5
+    string x
+```
 
 Likewise in a signature:
 
-    static member M : [<Struct>] ?x : int -> string
+```fsharp
+static member M : [<Struct>] ?x : int -> string
+```
 
 Alternatively:
 
-    static member M(struct ?x) = 
-        let x = defaultvArg x 5
-        string x
+```fsharp
+static member M(struct ?x) = 
+    let x = defaultvArg x 5
+    string x
+```
 
 Likewise in a signature:
 
-    static member M : struct ?x : int -> string
+```fsharp
+static member M : struct ?x : int -> string
+```
 
 though in both cases it's not at all clear that `struct` is sufficiently disambiguated from its use as a type (I think it is not).
 
@@ -164,7 +174,7 @@ TBD, likely to be moved to a separate RFC, but naming should be considered here.
 - Require programmers to code complex matching by hands without expressiveness of active patterns
 - Provide better inlining and optimization for active patterns. It can be _hard_ to achieve.
 
-- Add a modality for "use structness for things declaraed in this scope", e.g.
+- Add a modality for "use structness for things declared in this scope", e.g.
   * use struct representations for return results for all active pattern declared in this scope
   * use struct representations for all syntactic tuples in this assembly in this scope
   * use struct representations for all optional arguments declared in this scope
@@ -172,7 +182,7 @@ TBD, likely to be moved to a separate RFC, but naming should be considered here.
 # Compatibility
 [compatibility]: #compatibility
 
-It's not breaking change due to it doesn't require new syntax at all, just addition to FSharp.Core and changes in codegen
+It's not breaking change due to it not requiring new syntax at all, just addition to FSharp.Core and changes in codegen.
 
 # Unresolved questions
 [unresolved]: #unresolved-questions
