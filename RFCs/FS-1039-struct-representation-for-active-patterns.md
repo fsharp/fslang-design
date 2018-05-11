@@ -8,8 +8,8 @@ This RFC covers the detailed proposal starting from this suggestion and elaborat
 
 * [x] Approved in principle
 * [x] [Suggestion](https://github.com/fsharp/fslang-suggestions/issues/612)
-* [ ] Details: [under discussion](https://github.com/fsharp/FSharpLangDesign/issues/230)
-* [ ] Implementation: [Part 1](https://github.com/Microsoft/visualfsharp/pull/4837)
+* Details: [under discussion](https://github.com/fsharp/FSharpLangDesign/issues/230)
+* Implementation: [Part 1](https://github.com/Microsoft/visualfsharp/pull/4837)
 
 
 # Summary
@@ -41,16 +41,15 @@ We should be able to provide better performance just via a simple attribute addi
 
 See discussion here: https://github.com/fsharp/fslang-design/issues/230#issuecomment-386806657
 
-The current proposal is 
+The proposal is 
 
 ```fsharp
     [<Struct>]
     type ValueOption<'T> =
-        | VNone
-        | VSome of 'T
+        | ValueNone
+        | ValueSome of 'T
     and 'T voption = ValueOption<'T>
 ```
-though alternatives are discussed.
 
 **2. FSharp.Core should have unboxed (struct) versions of the `Choice` types**
 
@@ -182,11 +181,12 @@ TBD, likely to be moved to a separate RFC, but naming should be considered here.
 # Compatibility
 [compatibility]: #compatibility
 
-It's not breaking change due to it not requiring new syntax at all, just addition to FSharp.Core and changes in codegen.
+Part 1: It's not breaking change due to it not requiring new syntax at all, just addition to FSharp.Core and changes in codegen.
+
+Other parts: TBD
 
 # Unresolved questions
 [unresolved]: #unresolved-questions
 
-- We need good names for struct versions of `FSharpOptions` and `FSharpChoice`. Same for `Some`/`None` cases
-- Shouldn't we add utility functions for struct options in FSharp.Core? Like `StructOption` module with `bind` and `map`
-- Can we consider changing defaults and omitting `StructAttribute` for future major version of F#?
+Part 1: None
+Other parts: many things TBD
