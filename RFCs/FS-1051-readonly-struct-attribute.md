@@ -5,7 +5,7 @@ This RFC deals with its interaction with struct types.
 
 * [x] Approved in principle
 * Discussion: TBD
-* Implementation: TBD
+* Implementation: [In Progress](https://github.com/Microsoft/visualfsharp/pull/4888)
 
 
 # Summary
