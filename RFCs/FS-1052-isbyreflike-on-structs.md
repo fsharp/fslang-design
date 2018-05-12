@@ -12,15 +12,17 @@ This RFC deals with respecting this attribute in F#.
 [summary]: #summary
 
 .NET has a new attribute `IsByRefLike` that can be applied to struct types. It is used for the feature C# calls "ref structs".
-This RFC deals with respecting this attribute in F#.
-
-This RFC proposes to
+This RFC deals with respecting this attribute in F#. This RFC proposes to
 
 * Test adding the `IsByRefLike` attribute to structs in F# code
 * Respect the `IsByRefLike` attribute when it occurs in .NET libraries
 
 There are already ByRefLike types in F# - just a fixed collection of them.  We basically need to make this set of types extensible through the atttribute.
 
+The C# feature is described here:
+* https://blogs.msdn.microsoft.com/mazhou/2018/03/02/c-7-series-part-9-ref-structs/
+
+The `Span` type is labelled `IsByRefLike`.
 
 # Motivation
 [motivation]: #motivation
