@@ -4,8 +4,8 @@
 This RFC deals with respecting this attribute in F#.
 
 * [x] Approved in principle
-* [ ] Discussion: TBD
-* [ ] Implementation: TBD
+* Discussion: TBD
+* Implementation: [In Progress](https://github.com/Microsoft/visualfsharp/pull/4888)
 
 
 # Summary
