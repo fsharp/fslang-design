@@ -26,7 +26,9 @@ Parity with .NET/C#, better codegen, performance, interop.
 # Detailed design
 [design]: #detailed-design
 
-TBD
+* Add the `voidptr` type to represent `void*`
+* Add `NativePtr.toVoidPtr` and `NativePtr.ofVoidPtr`
+* Adjust return byrefs so that they implicitly dereference when a call such as `span.[i]` is used, unless you write `&span.[i]`
 
 # Drawbacks
 [drawbacks]: #drawbacks
