@@ -4,7 +4,7 @@
 
 
 * [x] Approved in principle
-* Discussion: TBD
+* Discussion: https://github.com/fsharp/fslang-design/issues/287
 * Implementation: [In progress](https://github.com/Microsoft/visualfsharp/pull/4888)
 
 # Summary
