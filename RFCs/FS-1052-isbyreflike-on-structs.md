@@ -4,7 +4,7 @@
 This RFC deals with respecting this attribute in F#.
 
 * [x] Approved in principle
-* Discussion: TBD
+* Discussion: https://github.com/fsharp/fslang-design/issues/287
 * Implementation: [In Progress](https://github.com/Microsoft/visualfsharp/pull/4888)
 
 
