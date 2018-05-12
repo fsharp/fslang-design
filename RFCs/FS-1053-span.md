@@ -9,9 +9,7 @@
 # Summary
 [summary]: #summary
 
-.NET has a new feature `Span`. This RFC adds support for this in F#.
-
-Span is actually built from other features, covered by these RFCs
+Span is actually built from other features, two of which covered by these RFCs
 * https://github.com/fsharp/fslang-design/blob/master/RFCs/FS-1051-readonly-struct-attribute.md
 * https://github.com/fsharp/fslang-design/blob/master/RFCs/FS-1052-isbyreflike-on-structs.md
 
@@ -29,7 +27,7 @@ There are several elements to the design.
 
 #### Add the `voidptr` type to represent `void*`
 
-Addition:
+Addition to `prim-types-preluce.fs`:
 ```
     /// <summary>Represents an untyped unmanaged pointer in F# code.</summary>
     ///
