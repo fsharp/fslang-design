@@ -217,7 +217,6 @@ TBD
 
 * There are a set of questions about how many of the constraints/conditions we check for new declarations of byref structs and explicit uses of `IsReadOnly` etc. 
 
-
 * Currently in the prototype, adding IsReadOnly to a struct is unchecked - it is an assertion that the struct can be regarded as immutable, and thus defensive copies do not need to be taken when calling operations. For your examples the attribute doesn't make any difference (with or without the PR) as the compiler has already assumed the structs to be immutable (since it doesn't know about this <- x "wholesale replacement"). With the prototype PR, a mutable struct declared ReadOnly will be treated as if it is immutable, and non defensive copies will be taken.
 
 * The main niggles left to sort out are indeed about readonly references, also ref this extension members.
@@ -237,6 +236,6 @@ type DateTime with
 ```
 If we support "byref this" C#-style extension members then you can do it, but not for extension properties etc.
 
+* ref readonly return / ref readonly locals. F# must at least be able to define ref readonly return methods
 
-
-
+* C# also added a new modifier beside out and ref: in, it acts the same as ref but ensure that the callee can't reassign the ref to a new value.
