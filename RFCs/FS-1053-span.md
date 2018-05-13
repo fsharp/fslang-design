@@ -14,19 +14,20 @@ The main aim of the RFC is to allow effective consumption of APIs using `Span`, 
 Span is actually built from several features and a library:
 * `voidptr` type
 * `NativePtr.ofVoidPtr` and `NativePtr.toVoidPtr` functions
-* `ByRefLike` structs
+* `ByRefLike` structs (including `Span` and `ReadOnlySpan`)
 * `IsReadOnly` structs
-* `IsReadOnly` parameters
-* `IsReadOnly` locals
-* `IsReadOnly` returns
+* `IsReadOnly` byref parameters
+* `IsReadOnly` byref locals
+* `IsReadOnly` byref returns
 * `byref this` extension members
-* implicit dereference of ref-returns
-* readonly byref pointers
+* implicit dereference of byref-returns
 
 # Motivation
 [motivation]: #motivation
 
-Parity with .NET/C#, better codegen, performance, interop.
+The main aim of the RFC is to allow effective consumption of APIs using `Span`, `Memory` and ref-returns.  
+
+Also, parity with .NET/C#, better codegen, performance, interop.
 
 # Detailed design
 [design]: #detailed-design
