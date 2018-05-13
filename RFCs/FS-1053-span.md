@@ -9,6 +9,8 @@
 # Summary
 [summary]: #summary
 
+The main aim of the RFC is to allow effective consumption of APIs using `Span`, `Memory` and ref-returns.  
+
 Span is actually built from several features and a library:
 * `voidptr` type
 * `NativePtr.ofVoidPtr` and `NativePtr.toVoidPtr` functions
@@ -18,7 +20,8 @@ Span is actually built from several features and a library:
 * `IsReadOnly` locals
 * `IsReadOnly` returns
 * `byref this` extension members
-*  implicit dereference of ref-returns
+* implicit dereference of ref-returns
+* readonly byref pointers
 
 # Motivation
 [motivation]: #motivation
@@ -126,7 +129,7 @@ This allows the byref return of `get_Item` to be implicitly dereferenced:
             sum
 ```
 
-#### Support for `byref this` extension members, e.g.
+#### `byref this` extension members
 
 "byref this" extension methods allow extension methods to modify the struct that is passed in.
 
@@ -151,6 +154,7 @@ Example of "ref this" extension members (assuming no special syntax is added, wh
     module UseExt = 
         let dt2 = DateTime.Now.ExtDateTime2(3) // this doesn't compile in F# 4.1, we add this
 ```
+
 
 # Examples of using `Span` and `Memory`
 
@@ -199,4 +203,40 @@ TBD
 # Unresolved questions
 [unresolved]: #unresolved-questions
 
-* An implementation needs to be done, it will flush out the issues
+* Consider if/where we really need to track readonly-ness of byref pointers.
+
+* F# structs are not always readonly/immutable.
+  1. You can declare `val mutable`.  The compiler knows about that and uses it to infer that the struct is readonly/immutable.
+  2. Mutable fields can be hidden by signature files
+  3. Structs from .NET libraries are mostly assumed to be immutable, so defensive copies aren't taken
+  4. You can do wholesale replacement of the contents of the struct through `this <- v` in a member  
+
+  In practice 2, 3 and 4 don't deeply affect the correctness of F# code, they just means that you can trick the compiler into thinking that a `let x = S(...)` binding for such an "odd" struct is immutable when it is actually mutable. This is not normally a problem in practice.
+
+  For (4) I'm not sure if we will be able to make a change to make the `this` parameter be `readonly`. We might start to emit a warning on wholesale replacement.  
+
+* There are a set of questions about how many of the constraints/conditions we check for new declarations of byref structs and explicit uses of `IsReadOnly` etc. 
+
+
+* Currently in the prototype, adding IsReadOnly to a struct is unchecked - it is an assertion that the struct can be regarded as immutable, and thus defensive copies do not need to be taken when calling operations. For your examples the attribute doesn't make any difference (with or without the PR) as the compiler has already assumed the structs to be immutable (since it doesn't know about this <- x "wholesale replacement"). With the prototype PR, a mutable struct declared ReadOnly will be treated as if it is immutable, and non defensive copies will be taken.
+
+* The main niggles left to sort out are indeed about readonly references, also ref this extension members.
+
+
+* Unfortunately F# doesn't compile
+```
+type DateTime with 
+    member x.Foo() = ...
+```
+as a "byref this" extension member where `x` is a readonly reference.  If it did writing performant extension members for F# struct types would be very easy.  Perhaps we should allow this
+
+```
+type DateTime with 
+    [<IsReadOnly>]
+    member x.Foo() = ...
+```
+If we support "byref this" C#-style extension members then you can do it, but not for extension properties etc.
+
+
+
+
