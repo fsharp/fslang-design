@@ -16,11 +16,12 @@ Span is actually built from several features and a library:
 * `NativePtr.ofVoidPtr` and `NativePtr.toVoidPtr` functions
 * `ByRefLike` structs (including `Span` and `ReadOnlySpan`)
 * `IsReadOnly` structs
-* `IsReadOnly` byref parameters
-* `IsReadOnly` byref locals
-* `IsReadOnly` byref returns
+* inref parameters
+* inref locals
+* inref returns
+* implicit dereference of byref and inref-returns
 * `byref this` extension members
-* implicit dereference of byref-returns
+* `inref this` extension members
 
 # Motivation
 [motivation]: #motivation
@@ -118,10 +119,9 @@ Question: should we add the IsReadOnly attribute automatically when an F# struct
 
 #### Implicit dereference of return byrefs
 
-F# 4.1 added return byrefs. We adjust these so that they implicitly dereference when a call such as `span.[i]` is used, unless you write `&span.[i]`
+F# 4.1 added return byrefs. We adjust these so that they implicitly dereference when a call such as `span.[i]` is used, which calls `span.get_Item(i)` method on `Span`. To avoid the implicit dereference you must write `&span.[i]`.
 
-This allows the byref return of `get_Item` to be implicitly dereferenced:
-
+For example:
 ```fsharp
         let SafeSum(bytes: Span<byte>) =
             let mutable sum = 0
@@ -130,9 +130,57 @@ This allows the byref return of `get_Item` to be implicitly dereferenced:
             sum
 ```
 
-This does not apply to:
+This does not apply to module-defined functions returning byrefs.  As a result it specifically doesn't apply to:
 * the `&` operator itself
 * `NativePtr.toByRef` which is an existing library function returning a byref
+
+#### `roref<T>` for readonly references and input reference parameters
+
+The type `roref<'T>` is defined as a special alias for `byref<'T>` to indicate a read-only byref, e.g. one that acts as an input parameter. For example:
+```fsharp
+let f (x: roref<System.DateTime>) = x.Days
+```
+
+Rules:
+* This is a type alias for `byref<T>` with some additional bespoke errors/warnings
+* A `byref<'T>` may be used where an `roref<'T>` is expected.
+* If an `outref<'T>` is used where an `roref<'T>` is expected an error is given.
+* A C# `ref readonly` return value becomes an `roref<'T>` 
+* A C# `in` parameter becomes a `roref<'T>` 
+* The F# value type `this` paramater is given type `roref<'T>` if the value type is immutable
+* Using `roref<T>` in argument position results in the automatic emit of an `[In]` attribute
+
+Semantically  `roref` means "the holder of the reference may only read". It doesn't imply that other threads or aliases don't have write access.  And it doesn't imply that the struct is immutable.
+
+#### `outref<T>` for output reference parameters
+
+The type `outref<'T>` is defined as a special alias for `byref<'T>` to indicate a write-only byref that acts as an output parameter.
+```fsharp
+let f (x:outref<System.DateTime>) = x <- System.DateTime.Now
+```
+
+Rules:
+* This is a type alias for `byref<T>` with some additional bespoke errors/warnings
+* A `byref<'T>` may be used where a `outref<'T>` is expected.
+* If an `roref<'T>` is used where a `outref<'T>` is expected an error is given.
+* Using `outref<T>` in argument position results in the automatic emit of an `[Out]` attribute
+
+
+#### Implicit address-of when calling members with parameter type `roref<'T>` 
+
+When calling a member with an argument of type `roref<T>` an implicit address-of-temporary-local operation is applied.
+```fsharp
+type C() = 
+    static member Days(x: roref<System.DateTime>) = x.Days
+
+let mutable now = System.DateTime.Now
+C.Days(&now) // allowed
+
+let now2 = System.DateTime.Now
+C.Days(now2) // allowed
+```
+This only applies when calling members, not arbitrary let-bound functions.
+
 
 #### `byref this` extension members
 
@@ -226,6 +274,7 @@ TBD
 
 * The main niggles left to sort out are indeed about readonly references, also ref this extension members.
 
+* Should implicit-dereference apply when calling arbitrary let-bound functions.  We don't normally apply this kind of implicit rule for calling such functions, it's not clear we should do it.
 
 * Unfortunately F# doesn't compile
 ```
@@ -244,3 +293,9 @@ If we support "byref this" C#-style extension members then you can do it, but no
 * ref readonly return / ref readonly locals. F# must at least be able to define ref readonly return methods
 
 * C# also added a new modifier beside out and ref: in, it acts the same as ref but ensure that the callee can't reassign the ref to a new value.
+
+* C# `in` parameters get `modreq` when used on virtual signatures, which The F# compiler may or may not cope with, we need to check:
+
+```
+instance void  V([in] int32& modreq([mscorlib]System.Runtime.InteropServices.InAttribute) a) cil managed
+```
