@@ -134,23 +134,23 @@ This does not apply to module-defined functions returning byrefs.  As a result i
 * the `&` operator itself
 * `NativePtr.toByRef` which is an existing library function returning a byref
 
-#### `roref<T>` for readonly references and input reference parameters
+#### `inref<T>` for readonly references and input reference parameters
 
-The type `roref<'T>` is defined as a special alias for `byref<'T>` to indicate a read-only byref, e.g. one that acts as an input parameter. For example:
+The type `inref<'T>` is defined as a special alias for `byref<'T>` to indicate a read-only byref, e.g. one that acts as an input parameter. For example:
 ```fsharp
-let f (x: roref<System.DateTime>) = x.Days
+let f (x: inref<System.DateTime>) = x.Days
 ```
 
 Rules:
 * This is a type alias for `byref<T>` with some additional bespoke errors/warnings
-* A `byref<'T>` may be used where an `roref<'T>` is expected.
-* If an `outref<'T>` is used where an `roref<'T>` is expected an error is given.
-* A C# `ref readonly` return value becomes an `roref<'T>` 
-* A C# `in` parameter becomes a `roref<'T>` 
-* The F# value type `this` paramater is given type `roref<'T>` if the value type is immutable
-* Using `roref<T>` in argument position results in the automatic emit of an `[In]` attribute
+* A `byref<'T>` may be used where an `inref<'T>` is expected.
+* If an `outref<'T>` is used where an `inref<'T>` is expected an error is given.
+* A C# `ref readonly` return value becomes an `inref<'T>` 
+* A C# `in` parameter becomes a `inref<'T>` 
+* The F# value type `this` paramater is given type `inref<'T>` if the value type is immutable
+* Using `inref<T>` in argument position results in the automatic emit of an `[In]` attribute
 
-Semantically  `roref` means "the holder of the reference may only read". It doesn't imply that other threads or aliases don't have write access.  And it doesn't imply that the struct is immutable.
+Semantically  `inref` means "the holder of the reference may only read". It doesn't imply that other threads or aliases don't have write access.  And it doesn't imply that the struct is immutable.
 
 #### `outref<T>` for output reference parameters
 
@@ -162,16 +162,16 @@ let f (x:outref<System.DateTime>) = x <- System.DateTime.Now
 Rules:
 * This is a type alias for `byref<T>` with some additional bespoke errors/warnings
 * A `byref<'T>` may be used where a `outref<'T>` is expected.
-* If an `roref<'T>` is used where a `outref<'T>` is expected an error is given.
+* If an `inref<'T>` is used where a `outref<'T>` is expected an error is given.
 * Using `outref<T>` in argument position results in the automatic emit of an `[Out]` attribute
 
 
-#### Implicit address-of when calling members with parameter type `roref<'T>` 
+#### Implicit address-of when calling members with parameter type `inref<'T>` 
 
-When calling a member with an argument of type `roref<T>` an implicit address-of-temporary-local operation is applied.
+When calling a member with an argument of type `inref<T>` an implicit address-of-temporary-local operation is applied.
 ```fsharp
 type C() = 
-    static member Days(x: roref<System.DateTime>) = x.Days
+    static member Days(x: inref<System.DateTime>) = x.Days
 
 let mutable now = System.DateTime.Now
 C.Days(&now) // allowed
