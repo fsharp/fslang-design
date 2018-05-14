@@ -130,6 +130,10 @@ This allows the byref return of `get_Item` to be implicitly dereferenced:
             sum
 ```
 
+This does not apply to:
+* the `&` operator itself
+* `NativePtr.toByRef` which is an existing library function returning a byref
+
 #### `byref this` extension members
 
 "byref this" extension methods allow extension methods to modify the struct that is passed in.
