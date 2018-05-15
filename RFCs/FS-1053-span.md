@@ -14,14 +14,19 @@ The main aim of the RFC is to allow effective consumption of APIs using `Span`, 
 Span is actually built from several features and a library:
 * `voidptr` type
 * `NativePtr.ofVoidPtr` and `NativePtr.toVoidPtr` functions
+* Capabilities on byref pointers (In, Out, InOut)
 * `ByRefLike` structs (including `Span` and `ReadOnlySpan`)
 * `IsReadOnly` structs
-* inref parameters
-* inref locals
-* inref returns
-* implicit dereference of byref and inref-returns
-* `byref this` extension members
-* `inref this` extension members
+* implicit dereference of byref and inref-returns from methods
+* `byref` extension members
+
+# Links
+
+* [C# 7.2 feature "ref structs"](https://blogs.msdn.microsoft.com/mazhou/2018/03/02/c-7-series-part-9-ref-structs/)
+* [C# 7.2 "read only structs"](https://blogs.msdn.microsoft.com/mazhou/2017/11/21/c-7-series-part-6-read-only-structs/)
+* One key part of the F# compiler code for ref structs is [here](https://github.com/Microsoft/visualfsharp/blob/16dd8f40fd79d46aa832c0a2417a9fd4dfc8327c/src/fsharp/TastOps.fs#L5582)
+* A related issue is https://github.com/Microsoft/visualfsharp/pull/4576 which deals with oddities in the warnings about struct mutation.
+
 
 # Motivation
 [motivation]: #motivation
@@ -49,94 +54,48 @@ by the functions in the `NativeInterop.NativePtr` module.
 
 We add these:
 ```fsharp
-        val inline toVoidPtr : address:nativeptr<'T> -> voidptr
-        val inline ofVoidPtr : voidptr -> nativeptr<'T>
+//namespace FSharp.Core
+
+module NativePtr = 
+    val toVoidPtr : address:nativeptr<'T> -> voidptr
+    val ofVoidPtr : voidptr -> nativeptr<'T>
 ```
-With implementation:
+
+#### Add `byref<'T, 'Kind>` to represent pointers with different capabilities
+
+We add this type:
 ```fsharp
-    let inline toVoidPtr (address: nativeptr<'T>) = (# "" address : voidptr #)
-    let inline ofVoidPtr (address: voidptr) = (# "" address : nativeptr<'T> #)
+//namespace FSharp.Core
+
+type byref<'T, 'Kind> 
 ```
-
-#### ByRefLike structs
-
-"ByRefLike" structs are stack-bound types with rules like `byref<_>`.
-They declare struct types that are never allocated on the heap. These are extremely
-useful for high-performance programming (and also for correctness) as you get a set of strong checks
-about the lifetimes of these values.
-
-* [C# feature](https://blogs.msdn.microsoft.com/mazhou/2018/03/02/c-7-series-part-9-ref-structs/)
-
-Checked imitations:
-* [x] Can be used stack-only. i.e. method parameters and local variables
-* [x] Cannot be static or instance members of a class or normal struct
-* [x] Cannot be method parameter of async methods or lambda expressions
-* [x] Cannot be dynamic binding, boxing, unboxing, wrapping or converting
-
-Unchecked limitations:
-* [ ] Represents a sequential struct layout (QUESTION: should we emit Sequential?)
-* [ ] Can implement ToString but you can't call it
-* [ ] They can not implement interfaces (QUESTION: should we check this)
-
-Other things to note:
-* [ ] Can make readonly byreflike structs
-
-Here is an example of what declaring a byref struct looks like in F#:
-
+For example, the type `byref<int, In>` represents a byref pointer with read capabilities.
+The following capabilities are defined:
 ```fsharp
-open System.Runtime.CompilerServices
+//namespace FSharp.Core
 
-[<IsByRefLike>]
-type S(count1: int, count2: int) = 
-    member x.Count1 = count1
-    member x.Count2 = count2
+module ByRefKinds = 
+    type In
+    type Out
+    type InOut = Choice<In, Out>
 ```
-
-Separately, C# attaches the following Obsolete attribute to these types, and presumably has special code to ignore it. We add a special case in the compiler to ignore the `Obsolete` attribute on `ByRefLike` structs.
-
-#### `IsReadOnly` on structs
-
-F# structs are normally readonly, it is quite hard to write a mutable struct. Knowing a struct is readonly gives more efficient code and fewer warnings. 
-
-* The C# 7.2 feature is described here: https://blogs.msdn.microsoft.com/mazhou/2017/11/21/c-7-series-part-6-read-only-structs/
-
-Example code:
-
+The following abbreviations are defined:
 ```fsharp
-[<IsReadOnly>]
-type S(count1: int, count2: int) = 
-    member x.Count1 = count1
-    member x.Count2 = count2
+//namespace FSharp.Core
+
+type byref<'T> = byref<'T, ByRefKinds.InOut>
+type inref<'T> = byref<'T, ByRefKinds.In>
+type outref<'T> = byref<'T, ByRefKinds.Out>
 ```
+Here `byref<'T>` is the existing F# byref type.
+A special constraint solving rule allows `ByRefKinds.InOut :> ByRefKinds.In` and `ByRefKinds.InOut :> ByRefKinds.Out` in subsumption,
+e.g. at method argument application.  This means a `byref<int>` can be passed where an `inref<int>` is expected, dropping the `Out` capability.
 
-Notes:
-
-* The key part of the F# compiler code is [here](https://github.com/Microsoft/visualfsharp/blob/16dd8f40fd79d46aa832c0a2417a9fd4dfc8327c/src/fsharp/TastOps.fs#L5582)
-
-* A related issue is https://github.com/Microsoft/visualfsharp/pull/4576 which deals with oddities in the warnings about struct mutation.
-
-Question: should we add the IsReadOnly attribute automatically when an F# struct is inferred to be readonly, or should the programmer need to make it explicit?
-
-#### Implicit dereference of return byrefs
-
-F# 4.1 added return byrefs. We adjust these so that they implicitly dereference when a call such as `span.[i]` is used, which calls `span.get_Item(i)` method on `Span`. To avoid the implicit dereference you must write `&span.[i]`.
-
-For example:
-```fsharp
-        let SafeSum(bytes: Span<byte>) =
-            let mutable sum = 0
-            for i in 0 .. bytes.Length - 1 do 
-                sum <- sum + int bytes.[i]
-            sum
-```
-
-This does not apply to module-defined functions returning byrefs.  As a result it specifically doesn't apply to:
-* the `&` operator itself
-* `NativePtr.toByRef` which is an existing library function returning a byref
+At each point the operators `&` and `NativePtr.toByRef` are used, their listed return type of `byref<T>` is expanded to `byref<T, ?Kind>` for a new type inference variable `?Kind`.
 
 #### `inref<T>` for readonly references and input reference parameters
 
-The type `inref<'T>` is defined as a special alias for `byref<'T>` to indicate a read-only byref, e.g. one that acts as an input parameter. For example:
+The type `inref<'T>` is defined as a special alias for `byref<'T, ByRefKinds.In>` to indicate a read-only byref, e.g. one that acts as an input parameter. For example:
 ```fsharp
 let f (x: inref<System.DateTime>) = x.Days
 ```
@@ -147,8 +106,8 @@ Rules:
 * If an `outref<'T>` is used where an `inref<'T>` is expected an error is given.
 * A C# `ref readonly` return value becomes an `inref<'T>` 
 * A C# `in` parameter becomes a `inref<'T>` 
-* The F# value type `this` paramater is given type `inref<'T>` if the value type is immutable
-* Using `inref<T>` in argument position results in the automatic emit of an `[In]` attribute
+* The F# value type `this` paramater is given type `inref<'T>` if the value type is immutable (has no mutable fields and no mutable sub-structs)
+* TBD: Using `inref<T>` in argument position results in the automatic emit of an `[In]` attribute (QUESTION - do we want this?)
 
 Semantically  `inref` means "the holder of the reference may only read". It doesn't imply that other threads or aliases don't have write access.  And it doesn't imply that the struct is immutable.
 
@@ -165,8 +124,29 @@ Rules:
 * If an `inref<'T>` is used where a `outref<'T>` is expected an error is given.
 * Using `outref<T>` in argument position results in the automatic emit of an `[Out]` attribute
 
+#### Implicit dereference of return byrefs
 
-#### Implicit address-of when calling members with parameter type `inref<'T>` 
+F# 4.1 added return byrefs. We adjust these so that they implicitly dereference when a call such as `span.[i]` is used, which calls `span.get_Item(i)` method on `Span`. To avoid the implicit dereference you must write `&span.[i]`.
+
+For example:
+```fsharp
+        let SafeSum(bytes: Span<byte>) =
+            let mutable sum = 0
+            for i in 0 .. bytes.Length - 1 do 
+                sum <- sum + int bytes.[i]
+            sum
+```
+
+This does not apply to module-defined functions returning byrefs.  As a result it specifically doesn't apply to:
+
+* the `&` operator itself
+
+* `NativePtr.toByRef` which is an existing library function returning a byref
+
+For these cases, the returned type `byref<T>` is expanded to `byref<T, ?Kind>` for a new type inference variable `?Kind`.
+
+
+#### TBD: Implicit address-of when calling members with parameter type `inref<'T>` 
 
 When calling a member with an argument of type `inref<T>` an implicit address-of-temporary-local operation is applied.
 ```fsharp
@@ -181,8 +161,58 @@ C.Days(now2) // allowed
 ```
 This only applies when calling members, not arbitrary let-bound functions.
 
+#### `IsReadOnly` on structs
 
-#### `byref this` extension members
+F# structs are normally readonly, it is quite hard to write a mutable struct. Knowing a struct is readonly gives more efficient code and fewer warnings. 
+
+Example code:
+
+```fsharp
+[<IsReadOnly>]
+type S(count1: int, count2: int) = 
+    member x.Count1 = count1
+    member x.Count2 = count2
+```
+
+Question: should we add the IsReadOnly attribute automatically when an F# struct is inferred to be readonly, or should the programmer need to make it explicit?
+
+
+#### ByRefLike structs
+
+"ByRefLike" structs are stack-bound types with rules like `byref<_>`.
+They declare struct types that are never allocated on the heap. These are extremely
+useful for high-performance programming (and also for correctness) as you get a set of strong checks
+about the lifetimes of these values.
+
+Checked imitations:
+* [x] Can be used stack-only. i.e. method parameters and local variables
+* [x] Cannot be static or instance members of a class or normal struct
+* [x] Cannot be method parameter of async methods or lambda expressions
+* [x] Cannot be dynamic binding, boxing, unboxing, wrapping or converting
+* [x] Can make readonly byreflike structs
+
+Unchecked limitations:
+* Represents a sequential struct layout (QUESTION: should we emit Sequential?)
+* They can not implement interfaces (QUESTION: should we check this)
+* Can implement ToString but you can't call it
+
+Here is an example of what declaring a byref struct looks like in F#:
+
+```fsharp
+open System.Runtime.CompilerServices
+
+[<IsByRefLike>]
+type S(count1: int, count2: int) = 
+    member x.Count1 = count1
+    member x.Count2 = count2
+```
+
+### Ignoring Obsolete attribute
+
+Separately, C# attaches an `Obsolete` attribute to the `Span` and `Memory` types in order to give errors in down level compilers seeing these types, and presumably has special code to ignore it. We add a corresponding special case in the compiler to ignore the `Obsolete` attribute on `ByRefLike` structs.
+
+
+#### TBD: `byref` extension members
 
 "byref this" extension methods allow extension methods to modify the struct that is passed in.
 
@@ -246,17 +276,15 @@ TBD
 # Alternatives
 [alternatives]: #alternatives
 
-TBD
+* Considered allowing implicit-dereference when calling arbitrary let-bound functions.  Hwoever we don't normally apply this kind of implicit rule for calling let-bound functions, so decided against it.
+
 
 # Compatibility
 [compatibility]: #compatibility
 
 TBD
 
-# Unresolved questions
-[unresolved]: #unresolved-questions
-
-* Consider if/where we really need to track readonly-ness of byref pointers.
+# Notes
 
 * F# structs are not always readonly/immutable.
   1. You can declare `val mutable`.  The compiler knows about that and uses it to infer that the struct is readonly/immutable.
@@ -266,35 +294,30 @@ TBD
 
   In practice 2, 3 and 4 don't deeply affect the correctness of F# code, they just means that you can trick the compiler into thinking that a `let x = S(...)` binding for such an "odd" struct is immutable when it is actually mutable. This is not normally a problem in practice.
 
-  For (4) I'm not sure if we will be able to make a change to make the `this` parameter be `readonly`. We might start to emit a warning on wholesale replacement.  
+  For (4) we make a breaking change to make the `this` parameter be `readonly` when the struct type has no mutable fields or sub-structures. We might start to emit a warning on wholesale replacement.  
+
+
+# Unresolved questions
+[unresolved]: #unresolved-questions
 
 * There are a set of questions about how many of the constraints/conditions we check for new declarations of byref structs and explicit uses of `IsReadOnly` etc. 
 
 * Currently in the prototype, adding IsReadOnly to a struct is unchecked - it is an assertion that the struct can be regarded as immutable, and thus defensive copies do not need to be taken when calling operations. For your examples the attribute doesn't make any difference (with or without the PR) as the compiler has already assumed the structs to be immutable (since it doesn't know about this <- x "wholesale replacement"). With the prototype PR, a mutable struct declared ReadOnly will be treated as if it is immutable, and non defensive copies will be taken.
-
-* The main niggles left to sort out are indeed about readonly references, also ref this extension members.
-
-* Should implicit-dereference apply when calling arbitrary let-bound functions.  We don't normally apply this kind of implicit rule for calling such functions, it's not clear we should do it.
 
 * Unfortunately F# doesn't compile
 ```
 type DateTime with 
     member x.Foo() = ...
 ```
-as a "byref this" extension member where `x` is a readonly reference.  If it did writing performant extension members for F# struct types would be very easy.  Perhaps we should allow this
+as a "byref this" extension member where `x` is a readonly reference.  If it did writing performant extension members for F# struct types would be very easy.  Perhaps we should allow somthing like this
 
 ```
 type DateTime with 
-    [<IsReadOnly>]
-    member x.Foo() = ...
+    member (x : inref<T>).Foo() = ...
 ```
 If we support "byref this" C#-style extension members then you can do it, but not for extension properties etc.
 
-* ref readonly return / ref readonly locals. F# must at least be able to define ref readonly return methods
-
-* C# also added a new modifier beside out and ref: in, it acts the same as ref but ensure that the callee can't reassign the ref to a new value.
-
-* C# `in` parameters get `modreq` when used on virtual signatures, which The F# compiler may or may not cope with, we need to check:
+* C# `in` parameters get `modreq` when used on virtual signatures. Test that the F# compiler cope with this, and emits it where needed, we need to check:
 
 ```
 instance void  V([in] int32& modreq([mscorlib]System.Runtime.InteropServices.InAttribute) a) cil managed
