@@ -145,7 +145,7 @@ This does not apply to module-defined functions returning byrefs.  It specifical
 
 As noted above, in these cases the returned type `byref<T>` is expanded to `byref<T, ?Kind>` for a new type inference variable `?Kind`.
 
-#### TBD: Implicit address-of when calling members with parameter type `inref<'T>` 
+#### Implicit address-of when calling members with parameter type `inref<'T>` 
 
 When calling a member with an argument of type `inref<T>` an implicit address-of-temporary-local operation is applied.
 ```fsharp
@@ -172,8 +172,6 @@ type S(count1: int, count2: int) =
     member x.Count1 = count1
     member x.Count2 = count2
 ```
-
-TBD: should we add the IsReadOnly attribute automatically when an F# struct is inferred to be readonly, or should the programmer need to make it explicit?
 
 
 #### ByRefLike structs
@@ -213,6 +211,7 @@ type S(count1: int, count2: int) =
 * A C# `in` parameter becomes a `inref<'T>` 
 * A C# `out` parameter becomes a `outref<'T>` 
 
+* TBD: should we add the IsReadOnly attribute automatically when an F# struct is inferred to be readonly, or should the programmer need to make it explicit?
 * TBD: Using `inref<T>` in argument position results in the automatic emit of an `[In]` attribute (QUESTION - do we want this?)
 * TBD: Using `inref<T>` in return position results in the automatic emit of an `modreq` attribute (QUESTION - do we want this?)
 * TBD: Using `outref<T>` in argument position results in the automatic emit of an `[Out]` attribute
@@ -228,32 +227,20 @@ instance void  V([in] int32& modreq([mscorlib]System.Runtime.InteropServices.InA
 Separately, C# attaches an `Obsolete` attribute to the `Span` and `Memory` types in order to give errors in down level compilers seeing these types, and presumably has special code to ignore it. We add a corresponding special case in the compiler to ignore the `Obsolete` attribute on `ByRefLike` structs.
 
 
-#### TBD: `byref` extension members
+#### `byref` extension members
 
-"byref this" extension methods allow extension methods to modify the struct that is passed in.
-
-Example of normal extension members:
+"byref" extension methods allow extension methods to modify the struct that is passed in. Here is an example of a C#-style byref extension member in F#:
 ```fsharp
+open System.Runtime.CompilerServices
+[<Extension>]
+type Ext = 
     [<Extension>]
-    type Ext = 
-        [<Extension>]
-        static member ExtDateTime(dt: DateTime, x:int) = dt.AddDays(double x)
-    
-    module UseExt = 
-        let dt = DateTime.Now.ExtDateTime(3)
+    static member ExtDateTime2(dt: inref<DateTime>, x:int) = dt.AddDays(double x)
 ```
-
-Example of "ref this" extension members (assuming no special syntax is added, which seems reasonable):
+Here is an example of using the extension member:
 ```fsharp
-    [<Extension>]
-    type Ext = 
-        [<Extension>]
-        static member ExtDateTime2([<In; IsReadOnly>] dt: byref<DateTime>, x:int) = dt.AddDays(double x)
-    
-    module UseExt = 
-        let dt2 = DateTime.Now.ExtDateTime2(3) // this doesn't compile in F# 4.1, we add this
+let dt2 = DateTime.Now.ExtDateTime2(3)
 ```
-
 
 # Examples of using `Span` and `Memory`
 
@@ -316,11 +303,11 @@ TBD
 # Unresolved questions
 [unresolved]: #unresolved-questions
 
-* see TBD noteas above
+* see TBD notes above
 
-* There are a set of questions about how many of the constraints/conditions we check for new declarations of byref structs and explicit uses of `IsReadOnly` etc.   Currently in the prototype, adding IsReadOnly to a struct is unchecked - it is an assertion that the struct can be regarded as immutable, and thus defensive copies do not need to be taken when calling operations. For your examples the attribute doesn't make any difference (with or without the PR) as the compiler has already assumed the structs to be immutable (since it doesn't know about this <- x "wholesale replacement"). With the prototype PR, a mutable struct declared ReadOnly will be treated as if it is immutable, and non defensive copies will be taken.
+* We need to decide how many of the constraints/conditions we check for new declarations of byref structs and explicit uses of `IsReadOnly` etc.   Currently in the prototype, adding IsReadOnly to a struct is unchecked - it is an assertion that the struct can be regarded as immutable, and thus defensive copies do not need to be taken when calling operations. For your examples the attribute doesn't make any difference (with or without the PR) as the compiler has already assumed the structs to be immutable (since it doesn't know about this <- x "wholesale replacement"). With the prototype PR, a mutable struct declared ReadOnly will be treated as if it is immutable, and non defensive copies will be taken.
 
-* F# doesn't compile
+* Note that F# doesn't compile
 ```
 type DateTime with 
     member x.Foo() = ...
@@ -337,5 +324,5 @@ type DateTime with
     [<SomeNewCallByRefAttribute>]
     member x.Foo() = ...
 ```
-If we support "byref this" C#-style extension members then you can do it, but not for extension properties etc.
+This makes it impossible to define byref extension properties in particular. 
 
