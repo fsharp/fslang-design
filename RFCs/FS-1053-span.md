@@ -173,33 +173,39 @@ type S(count1: int, count2: int) =
     member x.Count2 = count2
 ```
 
+`IsReadOnly` is not added to F# struct types automatically, you must add it manually.
+
+Using `IsReadOnly` attribute on a struct which has a mutable field will give an error.
 
 #### ByRefLike structs
 
-"ByRefLike" structs are stack-bound types with rules like `byref<_>`.
+"ByRefLike" structs are stack-bound types with rules like `byref<_>` and `Span<_>`.
 They declare struct types that are never allocated on the heap. These are extremely
 useful for high-performance programming (and also for correctness) as you get a set of strong checks
 about the lifetimes of these values.
 
-Checked imitations:
-* [x] Can be used stack-only. i.e. method parameters and local variables
-* [x] Cannot be static or instance members of a class or normal struct
-* [x] Cannot be method parameter of async methods or lambda expressions
-* [x] Cannot be dynamic binding, boxing, unboxing, wrapping or converting
-* [x] Can make readonly byreflike structs
+* Can be used as function parameters, method parameters, local variables, method returns
+* Cannot be static or instance members of a class or normal struct
+* Cannot be captured by any closure construct (async methods or lambda expressions)
+* Cannot be used as a generic parameter
+* Represents a sequential struct layout (TBD: should we emit Sequential?)
 
-Unchecked limitations:
-* Represents a sequential struct layout (QUESTION: should we emit Sequential?)
-* They can not implement interfaces (QUESTION: should we check this)
-* Can implement ToString but you can't call it
-
-Here is an example of what declaring a byref struct looks like in F#:
-
+Here is an example:
 ```fsharp
 open System.Runtime.CompilerServices
 
 [<IsByRefLike>]
 type S(count1: int, count2: int) = 
+    member x.Count1 = count1
+    member x.Count2 = count2
+```
+
+ByRefLike structs can have byref members, e.g.
+```fsharp
+open System.Runtime.CompilerServices
+
+[<IsByRefLike>]
+type S(count1: byref<int>, count2: byref<int>) = 
     member x.Count1 = count1
     member x.Count2 = count2
 ```
@@ -211,16 +217,10 @@ type S(count1: int, count2: int) =
 * A C# `in` parameter becomes a `inref<'T>` 
 * A C# `out` parameter becomes a `outref<'T>` 
 
-* TBD: should we add the IsReadOnly attribute automatically when an F# struct is inferred to be readonly, or should the programmer need to make it explicit?
-* TBD: Using `inref<T>` in argument position results in the automatic emit of an `[In]` attribute (QUESTION - do we want this?)
-* TBD: Using `inref<T>` in return position results in the automatic emit of an `modreq` attribute (QUESTION - do we want this?)
-* TBD: Using `outref<T>` in argument position results in the automatic emit of an `[Out]` attribute
-
-* C# `in` parameters get `modreq` when used on virtual signatures. Test that the F# compiler cope with this, and emits it where needed, we need to check:
-
-```
-instance void  V([in] int32& modreq([mscorlib]System.Runtime.InteropServices.InAttribute) a) cil managed
-```
+* Using `inref<T>` in argument position results in the automatic emit of an `[In]` attribute on the argument
+* Using `inref<T>` in return position results in the automatic emit of an `modreq` attribute on the return item
+* Using `inref<T>` in an abstract slot signature or implementation results in the automatic emit of an `modreq` attribute on an argument or return
+* Using `outref<T>` in argument position results in the automatic emit of an `[Out]` attribute on the argument
 
 ### Ignoring Obsolete attribute on `ByRefLike`
 
@@ -274,12 +274,24 @@ let TestSafeSum() =
 # Drawbacks
 [drawbacks]: #drawbacks
 
-TBD
+* The addition of pointer capabilities slightly increases the perceived complexity of the language and core library.
+
+* The addition of `IsByRefLike` types increases the perceived complexity of the language and core library.
 
 # Alternatives
 [alternatives]: #alternatives
 
-* Considered allowing implicit-dereference when calling arbitrary let-bound functions.  Hwoever we don't normally apply this kind of implicit rule for calling let-bound functions, so decided against it.
+* Considered allowing implicit-dereference when calling arbitrary let-bound functions.  
+
+  --> However we don't normally apply this kind of implicit rule for calling let-bound functions, so decide against it.
+
+* Make `inref`, `byref` and `outref` completely separate types rather than algebraically related
+
+  --> The type inference rules become much harder to specify and much more "special case".  The current rules just need a couple of extra equations added to the inference engine.
+
+* Generalize the subsumption "InOut --> In" and "InOut --> Out" to be a more general feature of F# type inference for tagged/measure/... types.
+
+   --> Thinking this over
 
 
 # Compatibility
@@ -299,20 +311,12 @@ TBD
 
   For (4) we make a change to make the `this` parameter be `readonly` when the struct type has no mutable fields or sub-structures. 
 
-
-# Unresolved questions
-[unresolved]: #unresolved-questions
-
-* see TBD notes above
-
-* We need to decide how many of the constraints/conditions we check for new declarations of byref structs and explicit uses of `IsReadOnly` etc.   Currently in the prototype, adding IsReadOnly to a struct is unchecked - it is an assertion that the struct can be regarded as immutable, and thus defensive copies do not need to be taken when calling operations. For your examples the attribute doesn't make any difference (with or without the PR) as the compiler has already assumed the structs to be immutable (since it doesn't know about this <- x "wholesale replacement"). With the prototype PR, a mutable struct declared ReadOnly will be treated as if it is immutable, and non defensive copies will be taken.
-
 * Note that F# doesn't compile
 ```
 type DateTime with 
     member x.Foo() = ...
 ```
-as a "byref this" extension member where `x` is a readonly reference.  This means a copy happens on invocation. If it did writing performant extension members for F# struct types would be very easy.  Perhaps we should allow somthing like this
+as a "byref this" extension member where `x` is a readonly reference.  Instead you have to define a C#-style byref extension method. This means a copy happens on invocation. If it did writing performant extension members for F# struct types would be very easy.  Perhaps we should allow somthing like this
 
 ```
 type DateTime with 
@@ -326,3 +330,23 @@ type DateTime with
 ```
 This makes it impossible to define byref extension properties in particular. 
 
+* Note that `IsByRefLikeAttribute` is only available in .NET 4.7.2.
+
+```fsharp
+namespace System.Runtime.CompilerServices
+    open System
+    open System.Runtime.CompilerServices
+    open System.Runtime.InteropServices
+    [<AttributeUsage(AttributeTargets.All,AllowMultiple=false); Sealed>]
+    type IsReadOnlyAttribute() =
+        inherit System.Attribute()
+
+    [<AttributeUsage(AttributeTargets.All,AllowMultiple=false); Sealed>]
+    type IsByRefLikeAttribute() =
+        inherit System.Attribute()
+```
+
+# Unresolved questions
+[unresolved]: #unresolved-questions
+
+None
