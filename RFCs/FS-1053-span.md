@@ -1,9 +1,9 @@
-# F# RFC FS-1053 - Add support for `voidptr`, `IsReadOnly`, `ByRefLike`, "return byrefs", "byref this extension members" and `Span`
+# F# RFC FS-1053 - voidptr, IsReadOnly structs, inref, outref, ByRefLike structs, byref extension members
 
 .NET has a new feature `Span`. This RFC adds support for this in F#.
 
 * [x] Approved in principle
-* [ ] Implementation: [In progress](https://github.com/Microsoft/visualfsharp/pull/4888)
+* [x] Implementation: [Near completion](https://github.com/Microsoft/visualfsharp/pull/4888)
 * Discussion: https://github.com/fsharp/fslang-design/issues/287
 
 # Summary
@@ -12,9 +12,9 @@
 The main aim of the RFC is to allow effective consumption of APIs using `Span`, `Memory` and ref-returns.  
 
 Span is actually built from several features and a library:
-* `voidptr` type
-* `NativePtr.ofVoidPtr` and `NativePtr.toVoidPtr` functions
-* Capabilities on byref pointers (In, Out, InOut)
+* The `voidptr` type
+* The `NativePtr.ofVoidPtr` and `NativePtr.toVoidPtr` functions
+* The `inref` and `outref` types via capabilities on byref pointers
 * `ByRefLike` structs (including `Span` and `ReadOnlySpan`)
 * `IsReadOnly` structs
 * implicit dereference of byref and inref-returns from methods
@@ -75,8 +75,10 @@ The following capabilities are defined:
 module ByRefKinds = 
     /// Read capability
     type In
+    
     /// Write capability
     type Out
+    
     /// Read and write capabilities
     type InOut
 ```
