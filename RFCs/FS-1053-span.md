@@ -182,15 +182,15 @@ Using `IsReadOnly` attribute on a struct which has a mutable field will give an 
 #### ByRefLike structs
 
 "ByRefLike" structs are stack-bound types with rules like `byref<_>` and `Span<_>`.
-They declare struct types that are never allocated on the heap. These are extremely
-useful for high-performance programming (and also for correctness) as you get a set of strong checks
-about the lifetimes of these values.
+They declare struct types that are never allocated on the heap. These are
+useful for high-performance programming as you get a set of strong checks
+about the lifetimes and non-capture of these values. They are also potetnially useful for correctness
+in some situations where capture must be avoided.
 
 * Can be used as function parameters, method parameters, local variables, method returns
 * Cannot be static or instance members of a class or normal struct
 * Cannot be captured by any closure construct (async methods or lambda expressions)
 * Cannot be used as a generic parameter
-* Represents a sequential struct layout (TBD: should we emit Sequential?)
 
 Here is an example:
 ```fsharp
@@ -243,6 +243,12 @@ Here is an example of using the extension member:
 ```fsharp
 let dt2 = DateTime.Now.ExtDateTime2(3)
 ```
+
+#### `this` on immutable struct members becomes `inref<StructType>`
+
+The `this` parameter on struct members is now `inref<StructType>` when the struct type has no mutable fields or sub-structures. 
+
+This makes it easier to write performant struct code which doesn't copy values.
 
 # Examples of using `Span` and `Memory`
 
@@ -299,7 +305,22 @@ let TestSafeSum() =
 # Compatibility
 [compatibility]: #compatibility
 
-TBD
+The additions are essentially backwards compatible.  There is one place where this is not the case.
+
+* "Evil struct replacement" now gives an error. e.g.
+
+```fsharp
+[<Struct>]
+type S(x: int, y: int) = 
+    member __.X = x
+    member __.Y = y
+    member this.Replace(s: S) = this <- S
+```
+Note that the struct is immutable, except for a `Replace` method.  The `this` parameter will now be considered `inref<S>` and
+an error will be reported suggesting to add a mutable field if the struc is to be mutated.
+
+Allowing this assignment was never intended in the F# design and I consider this as fixing a bug in the F# compiler now we have the
+machinery to express read-only references.
 
 # Notes
 
@@ -307,11 +328,7 @@ TBD
   1. You can declare `val mutable`.  The compiler knows about that and uses it to infer that the struct is readonly/immutable.
   2. Mutable fields can be hidden by signature files
   3. Structs from .NET libraries are mostly assumed to be immutable, so defensive copies aren't taken
-  4. You can do wholesale replacement of the contents of the struct through `this <- v` in a member  
-
-  In practice 2, 3 and 4 don't deeply affect the correctness of F# code, they just means that you can trick the compiler into thinking that a `let x = S(...)` binding for such an "odd" struct is immutable when it is actually mutable. This is not normally a problem in practice.
-
-  For (4) we make a change to make the `this` parameter be `readonly` when the struct type has no mutable fields or sub-structures. 
+  4. You can do wholesale replacement of the contents of the struct through `this <- v` in a member  (see above)
 
 * Note that F# doesn't compile
 ```
