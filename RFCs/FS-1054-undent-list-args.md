@@ -4,7 +4,7 @@ This proposes to be less stringent in enforcing indentation rules for `[` and `[
 aligning with the existing treatment of `{`.
 
 * [x] Approved in principle
-* [ ] Implementation: Near completion
+* [x] Implementation: [Near completion](https://github.com/Microsoft/visualfsharp/pull/4929)
 * Discussion: TBD
 
 # Summary
