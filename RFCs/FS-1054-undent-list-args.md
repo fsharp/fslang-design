@@ -30,7 +30,7 @@ Here the first token of `...` would normally be considered to break the indentat
 However the undentation is specifically permitted, ignoring the `SeqBlock` indentation context introduced in these cases when
 assessing tokens for offside warnings.
 
-This case is not listed in the F# Language Specification but has been present since at least F# 2.0, and is no doubt widely used.
+This case is not listed in the F# Language Specification but has been present since at least F# 2.0, and is no doubt widely used.  @dsyme has added it to the spec for clarification.
 
 This RFC proposes to allow the same undentations for expressions delimited by `[ ... ]` and `[| ... |]`. For example:
 
