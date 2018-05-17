@@ -1,4 +1,4 @@
-# F# RFC FS-1054 - permit undentation on `[` ... `]` and `[|` ... `|]`
+## F# RFC FS-1054 - permit undentation on `[` ... `]` and `[|` ... `|]`
 
 This proposes to be less stringent in enforcing indentation rules for `[` and `[|` in one particular case,
 aligning with the existing treatment of `{`.
