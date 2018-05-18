@@ -1,4 +1,4 @@
-# F# RFC FS-1055 - align subsumption for `yield` in sequence/list/array expressions with simple expressions
+# F# RFC FS-1055 -  subsumption for `yield` in sequence/list/array expressions 
 
 
 * [x] Approved in principle 
