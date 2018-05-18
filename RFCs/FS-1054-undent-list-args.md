@@ -5,7 +5,7 @@ aligning with the existing treatment of `{`.
 
 * [x] Approved in principle
 * [x] Implementation: [Near completion](https://github.com/Microsoft/visualfsharp/pull/4929)
-* Discussion: TBD
+* Discussion: https://github.com/fsharp/fslang-design/issues/300
 
 # Summary
 [summary]: #summary
