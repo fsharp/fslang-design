@@ -377,3 +377,5 @@ None
 void Deconstruct<T, U>(in this KeyValuePair<T, U> k, out T key, out U value) { .. }
 void Deconstruct<T, U>(this KeyValuePair<T, U> k, out T key, out U value) { .. }
 ```
+
+* How the overload resolution interop supposed to work between F# -> C# and C# -> F#? Original Source: See https://github.com/fsharp/fslang-suggestions/issues/648#issuecomment-390157352
