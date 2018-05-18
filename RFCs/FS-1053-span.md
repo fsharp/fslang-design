@@ -25,7 +25,9 @@ Span is actually built from several features and a library:
 * [C# 7.2 feature "ref structs"](https://blogs.msdn.microsoft.com/mazhou/2018/03/02/c-7-series-part-9-ref-structs/)
 * [C# 7.2 "read only structs"](https://blogs.msdn.microsoft.com/mazhou/2017/11/21/c-7-series-part-6-read-only-structs/)
 * One key part of the F# compiler code for ref structs is [here](https://github.com/Microsoft/visualfsharp/blob/16dd8f40fd79d46aa832c0a2417a9fd4dfc8327c/src/fsharp/TastOps.fs#L5582)
-* A related issue is https://github.com/Microsoft/visualfsharp/pull/4576 which deals with oddities in the warnings about struct mutation.
+* [C# 7.1 "readonly references"](https://github.com/dotnet/csharplang/blob/master/proposals/csharp-7.2/readonly-ref.md)
+* [C# 7.2: Compile time enforcement of safety for ref-like types.](https://github.com/dotnet/csharplang/blob/master/proposals/csharp-7.2/span-safety.md)
+* Issue https://github.com/Microsoft/visualfsharp/pull/4576 deals with oddities in the warnings about struct mutation.
 
 # Motivation
 [motivation]: #motivation
@@ -369,3 +371,9 @@ namespace System.Runtime.CompilerServices
 [unresolved]: #unresolved-questions
 
 None
+* What happens if we have two overloads, e.g. in C#
+
+```
+void Deconstruct<T, U>(in this KeyValuePair<T, U> k, out T key, out U value) { .. }
+void Deconstruct<T, U>(this KeyValuePair<T, U> k, out T key, out U value) { .. }
+```
