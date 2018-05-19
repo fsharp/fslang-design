@@ -47,7 +47,26 @@ let g2 () : System.Reflection.MemberInfo[] =
 ```
 The known type of `typeof<int> :> _` is now a type inference variable `?T1`, and the `_` is given this type.  But in F#
 an error is given if you have a coercion expression from one type inference variable directly to another. We suppress this
-error in the case of the type inference variables introduced by this RFC, we call these "FlexCompat" variables in the implementation.
+error in the case of the type inference variables introduced by this RFC, we call these "FlexCompat" variables in the implementation.  
+
+FlexCompat variables (and ones they are equated with) are never generalized to avoid making more code generic than in previous
+releases of F# (this can be a breaking change if signature files are used, or for interop purposes). For example:
+
+```fsharp
+let g3 xs : System.Reflection.MemberInfo[] = 
+    [| for x in xs do yield x |]
+```
+
+Here the type is
+
+    g3: seq<MemberInfo> -> MemberInfo[]
+
+not
+
+    g3: seq<#MemberInfo> -> MemberInfo[]
+
+* No warning is added for existing redudant casts. This could be added in a future release once a `/langlevel` flag is in place, it is a one line change to add such a warning.
+
 
 # Drawbacks
 [drawbacks]: #drawbacks
@@ -68,13 +87,4 @@ The additions are backwards compatible.
 # Unresolved questions
 [unresolved]: #unresolved-questions
 
-* Consider if there are cases where flex-compat variables get generalized (without being re-condensesed),
-  and if they should always be non-generalized. Possible example:
-
-```fsharp
-let g3 xs : System.Reflection.MemberInfo[] = 
-    [| for x in xs do yield x |]
-```
-
-Is this type `g3: seq<#MemberInfo> -> MemberInfo[]` or  `g3: seq<MemberInfo> -> MemberInfo[]`?
-
+None
