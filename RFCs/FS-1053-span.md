@@ -134,7 +134,7 @@ The type `outref<'T>` is defined as `byref<'T, ByRefKinds.Out>` to indicate a wr
 let f (x:outref<System.DateTime>) = x <- System.DateTime.Now
 ```
 
-Semantically `inref` means "the holder of the byref pointer may only use it to write". It doesn't imply that other threads or aliases don't have read access to that pointer.
+Semantically `outref` means "the holder of the byref pointer may only use it to write". It doesn't imply that other threads or aliases don't have read access to that pointer.
 
 By the type inference rules above, a `byref<'T>` may be used where an `outref<'T>` is expected.
 
