@@ -26,7 +26,7 @@ Span is actually built from several features and a library:
 |:---|:----|
 | `out int arg` | `arg: byref<int>` |
 | `out int arg` | `arg: outref<int>` |
-| `in arg` | `arg: inref<int>` |
+| `in int arg` | `arg: inref<int>` |
 | `ref readonly int` (return) | normally inferred, can use `: inref<int>` |
 | `ref` _expr_ | `&expr` |
 
