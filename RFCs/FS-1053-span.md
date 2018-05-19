@@ -20,6 +20,16 @@ Span is actually built from several features and a library:
 * implicit dereference of byref and inref-returns from methods
 * `byref` extension members
 
+# Quick Guide
+
+|C# | F# |
+|:---|:----|
+| `out int arg` | `arg: byref<int>` |
+| `out int arg` | `arg: outref<int>` |
+| `in arg` | `arg: inref<int>` |
+| `ref readonly int` (return) | normally inferred, can use `: inref<int>` |
+| `ref` _expr_ | `&expr` |
+
 # Links
 
 * [C# 7.2 feature "ref structs"](https://blogs.msdn.microsoft.com/mazhou/2018/03/02/c-7-series-part-9-ref-structs/)
