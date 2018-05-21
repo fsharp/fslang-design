@@ -236,6 +236,22 @@ type S(count1: byref<int>, count2: byref<int>) =
 * Using `inref<T>` in an abstract slot signature or implementation results in the automatic emit of an `modreq` attribute on an argument or return
 * Using `outref<T>` in argument position results in the automatic emit of an `[Out]` attribute on the argument
 
+### Overloading:
+
+When an implicit address is being taken for an `inref` parameter, an overload with an argument of type `SomeType` is preferred to an overload with an argument of type `inref<SomeType>`. For example give this:
+```
+    type C() = 
+         static member M(x: System.DateTime) = x.AddDays(1.0)
+         static member M(x: inref<System.DateTime>) = x.AddDays(2.0)
+         static member M2(x: System.DateTime, y: int) = x.AddDays(1.0)
+         static member M2(x: inref<System.DateTime>, y: int) = x.AddDays(2.0)
+    let res = System.DateTime.Now
+    let v =  C.M(res)
+    let v2 =  C.M2(res, 4)
+```
+In both cases the overload resolves to the method taking `System.DateTime` rather than the one taking `inref<System.DateTime>`.
+
+
 ### Ignoring Obsolete attribute on `ByRefLike`
 
 Separately, C# attaches an `Obsolete` attribute to the `Span` and `Memory` types in order to give errors in down level compilers seeing these types, and presumably has special code to ignore it. We add a corresponding special case in the compiler to ignore the `Obsolete` attribute on `ByRefLike` structs.
@@ -381,14 +397,3 @@ namespace System.Runtime.CompilerServices
 [unresolved]: #unresolved-questions
 
 None
-* What happens if we have two overloads, e.g. in C#
-
-```
-void Deconstruct<T, U>(in this KeyValuePair<T, U> k, out T key, out U value) { .. }
-void Deconstruct<T, U>(this KeyValuePair<T, U> k, out T key, out U value) { .. }
-```
-
-* How the overload resolution interop supposed to work between F# -> C# and C# -> F#? Original Source: See https://github.com/fsharp/fslang-suggestions/issues/648#issuecomment-390157352
-
-* [the generated IL callwith will pass the x argument with an `[<Out>]` attribute](https://github.com/fsharp/fslang-design/issues/287#issuecomment-390203219), this looks incorrect
-
