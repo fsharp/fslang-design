@@ -390,5 +390,5 @@ void Deconstruct<T, U>(this KeyValuePair<T, U> k, out T key, out U value) { .. }
 
 * How the overload resolution interop supposed to work between F# -> C# and C# -> F#? Original Source: See https://github.com/fsharp/fslang-suggestions/issues/648#issuecomment-390157352
 
-* [the generated IL callwith will pass the x argument with an [<Out>] attribute](https://github.com/fsharp/fslang-design/issues/287#issuecomment-390203219), this looks incorrect
+* [the generated IL callwith will pass the x argument with an `[<Out>]` attribute](https://github.com/fsharp/fslang-design/issues/287#issuecomment-390203219), this looks incorrect
 
