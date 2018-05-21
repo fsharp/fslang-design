@@ -13,7 +13,7 @@ When using a custom operation inside a computation expression, that operation ca
 # Motivation
 [motivation]: #motivation
 
-Computation expressions are useful to create domain specific languages. [Saturn](https://github.com/SaturnFramework/Saturn) is heavily based is gaining a lot of traction as a web development framework which implements the server-side MVC pattern. As users get familiar when using CE-based APIs, more library developers can leverage that familiarity when designing a new library.
+Computation expressions are useful to create domain specific languages. [Saturn](https://github.com/SaturnFramework/Saturn) is heavily based on them and is gaining a lot of traction as a web development framework which implements the server-side MVC pattern. As users get familiar when using CE-based APIs, more library developers can leverage that familiarity when designing a new library.
 
 Enabling overloads can be used to hide the inner working of the API. In Saturn's case, the method `set_body` could be used to set the response body from a `byte array` or a `string`.
 
