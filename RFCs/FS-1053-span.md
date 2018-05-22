@@ -396,4 +396,5 @@ namespace System.Runtime.CompilerServices
 # Unresolved questions
 [unresolved]: #unresolved-questions
 
-None
+* Does this imply [<Struct>] or do both attributes have to be specified? @jaredpar Both need to be specified. I'll add an unresolved question about what happens if one or both is absent
+
