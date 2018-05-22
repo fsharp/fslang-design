@@ -256,6 +256,7 @@ In both cases the overload resolves to the method taking `System.DateTime` rathe
 
 Separately, C# attaches an `Obsolete` attribute to the `Span` and `Memory` types in order to give errors in down level compilers seeing these types, and presumably has special code to ignore it. We add a corresponding special case in the compiler to ignore the `Obsolete` attribute on `ByRefLike` structs.
 
+The F# compiler doesn't emit these attributes when defining `ByRefLike` types.  Authoring these types in F# for consumption by down-level C# consumers will be extremely rare (if it ever happens at all). Down-level consumption by F# consumers will also never happen and if it does the consumer will discover extremely quickly that the later edition of F# is required. 
 
 #### `byref` extension members
 
@@ -392,6 +393,8 @@ namespace System.Runtime.CompilerServices
     type IsByRefLikeAttribute() =
         inherit System.Attribute()
 ```
+
+
 
 # Unresolved questions
 [unresolved]: #unresolved-questions
