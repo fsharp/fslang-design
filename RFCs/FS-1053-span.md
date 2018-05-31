@@ -224,6 +224,8 @@ type S(count1: byref<int>, count2: byref<int>) =
     member x.Count2 = count2
 ```
 
+Note that `[<ReadOnly>]` does not imply `[<Struct>]`  both attributes have to be specified.
+
 ### Interoperability
 
 * A C# `ref` return value is given type `outref<'T>` 
@@ -318,10 +320,6 @@ let TestSafeSum() =
 # Alternatives
 [alternatives]: #alternatives
 
-* Considered allowing implicit-dereference when calling arbitrary let-bound functions.  
-
-  --> However we don't normally apply this kind of implicit rule for calling let-bound functions, so decide against it.
-
 * Make `inref`, `byref` and `outref` completely separate types rather than algebraically related
 
   --> The type inference rules become much harder to specify and much more "special case".  The current rules just need a couple of extra equations added to the inference engine.
@@ -399,5 +397,18 @@ namespace System.Runtime.CompilerServices
 # Unresolved questions
 [unresolved]: #unresolved-questions
 
-* Does `[<ReadOnly>]` imply `[<Struct>]` or do both attributes have to be specified? @jaredpar Both need to be specified. I'll add an unresolved question about what happens if one or both is absent
 
+* **Implicit dereference on byref return from let-bound functions** Should we allow implicit-dereference when calling arbitrary let-bound functions.  Originally we didn't but usability feedback indicates this is a source of inconsistency
+
+* **Assignment to ref-returns**
+
+Currently this gives an error:
+
+```fsharp
+type C() = 
+    static let mutable v = System.DateTime.Now
+    static member M() = &v
+```
+
+let F1() = 
+    C.M() <-  System.DateTime.Now
