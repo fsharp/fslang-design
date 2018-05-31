@@ -408,7 +408,7 @@ Currently this gives an error:
 type C() = 
     static let mutable v = System.DateTime.Now
     static member M() = &v
-```
 
 let F1() = 
     C.M() <-  System.DateTime.Now
+```
