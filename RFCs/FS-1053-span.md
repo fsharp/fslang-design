@@ -379,7 +379,14 @@ let TestSafeSum() =
 # Compatibility
 [compatibility]: #compatibility
 
-The additions are essentially backwards compatible.  There is one place where this is not the case.
+
+The additions are not backwards compatible for two reasons:
+
+* The implementation of the RFC includes a bug fix to the design of ref-returns.  Functions, methods and properties
+  returning byrefs are now implicitly de-referenced.  An explicit use of an address-of operator
+  such as `&f(x)` or `&C.M()` is needed to access the value as a byref pointer.
+
+  An error message is used when a type annotation indicates that an implicit dereference of a ref-return is now being used.
 
 * "Evil struct replacement" now gives an error. e.g.
 
