@@ -263,6 +263,20 @@ type S(count1: byref<int>, count2: byref<int>) =
 
 Note that `[<ReadOnly>]` does not imply `[<Struct>]`  both attributes have to be specified.
 
+#### No special treatment of `stackalloc`
+
+The F# approach to `stackalloc` has always been to make it an "unsafe library function" whose use generates a "here be dragons" warning.  The C# team make it part of the language and are able to do some additional checks.
+
+In theory it would be possible to mirror those checks in F#.  However, the C# team are considerig further rule changes around `stackalloc` in any case. Thus it seems ok (or at least consistent) if we follow the existing approach for F# and don’t 
+add any specific knowledge of stackalloc to the rules.  
+
+#### Ignoring Obsolete attribute on existing `ByRefLike` definitions
+
+C# attaches an `Obsolete` attribute to the `Span` and `Memory` types in order to give errors in down level compilers seeing these types, and presumably has special code to ignore it. We add a corresponding special case in the compiler to ignore the `Obsolete` attribute on `ByRefLike` structs.
+
+The F# compiler doesn't emit these attributes when defining `ByRefLike` types.  Authoring these types in F# for consumption by down-level C# consumers will be extremely rare (if it ever happens at all). Down-level consumption by F# consumers will also never happen and if it does the consumer will discover extremely quickly that the later edition of F# is required. 
+
+
 ### Interoperability
 
 * A C# `ref` return value is given type `outref<'T>` 
@@ -275,14 +289,7 @@ Note that `[<ReadOnly>]` does not imply `[<Struct>]`  both attributes have to be
 * Using `inref<T>` in an abstract slot signature or implementation results in the automatic emit of an `modreq` attribute on an argument or return
 * Using `outref<T>` in argument position results in the automatic emit of an `[Out]` attribute on the argument
 
-#### No special treatment of `stackalloc`
-
-The F# approach to `stackalloc` has always been to make it an "unsafe library function" whose use generates a "here be dragons" warning.  The C# team make it part of the language and are able to do some additional checks.
-
-In theory it would be possible to mirror those checks in F#.  However, the C# team are considerig further rule changes around `stackalloc` in any case. Thus it seems ok (or at least consistent) if we follow the existing approach for F# and don’t 
-add any specific knowledge of stackalloc to the rules.  
-
-### Overloading:
+### Overloading
 
 When an implicit address is being taken for an `inref` parameter, an overload with an argument of type `SomeType` is preferred to an overload with an argument of type `inref<SomeType>`. For example give this:
 ```
@@ -298,13 +305,7 @@ When an implicit address is being taken for an `inref` parameter, an overload wi
 In both cases the overload resolves to the method taking `System.DateTime` rather than the one taking `inref<System.DateTime>`.
 
 
-### Ignoring Obsolete attribute on `ByRefLike`
-
-Separately, C# attaches an `Obsolete` attribute to the `Span` and `Memory` types in order to give errors in down level compilers seeing these types, and presumably has special code to ignore it. We add a corresponding special case in the compiler to ignore the `Obsolete` attribute on `ByRefLike` structs.
-
-The F# compiler doesn't emit these attributes when defining `ByRefLike` types.  Authoring these types in F# for consumption by down-level C# consumers will be extremely rare (if it ever happens at all). Down-level consumption by F# consumers will also never happen and if it does the consumer will discover extremely quickly that the later edition of F# is required. 
-
-#### `byref` extension members
+### `byref` extension members
 
 "byref" extension methods allow extension methods to modify the struct that is passed in. Here is an example of a C#-style byref extension member in F#:
 ```fsharp
@@ -319,7 +320,7 @@ Here is an example of using the extension member:
 let dt2 = DateTime.Now.ExtDateTime2(3)
 ```
 
-#### `this` on immutable struct members becomes `inref<StructType>`
+### `this` on immutable struct members becomes `inref<StructType>`
 
 The `this` parameter on struct members is now `inref<StructType>` when the struct type has no mutable fields or sub-structures. 
 
