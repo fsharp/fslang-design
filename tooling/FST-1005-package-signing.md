@@ -8,7 +8,10 @@ As per the requirements by Microsoft's Developer Division, all NuGet packages wh
 * The following package authoring:
     * **Author** includes "Microsoft".
     * **Owner** includes "Microsoft".
-    * **Copyright** is "© Microsoft Corporation. All rights reserved"
+    * **Copyright** is "© Microsoft Corporation. All rights reserved".
+    * **License URL** points to the Visual F# MIT license.
+    * **RequireLicenseAcceptance** is set to true.
+    * **Project URL** points to the Visual F# repo on GitHub.
 
 The following packages will follow this:
 
