@@ -4,7 +4,7 @@
 
 * [x] Approved in principle [suggestion](https://github.com/fsharp/fslang-suggestions/issues/648)
 * [x] Implementation: [Near completion](https://github.com/Microsoft/visualfsharp/pull/4888)
-* Discussion: https://github.com/fsharp/fslang-design/issues/287
+* [x] Discussion: https://github.com/fsharp/fslang-design/issues/287
 
 # Summary
 [summary]: #summary
@@ -275,6 +275,13 @@ Note that `[<ReadOnly>]` does not imply `[<Struct>]`  both attributes have to be
 * Using `inref<T>` in an abstract slot signature or implementation results in the automatic emit of an `modreq` attribute on an argument or return
 * Using `outref<T>` in argument position results in the automatic emit of an `[Out]` attribute on the argument
 
+#### No special treatment of `stackalloc`
+
+The F# approach to `stackalloc` has always been to make it an "unsafe library function" whose use generates a "here be dragons" warning.  The C# team make it part of the language and are able to do some additional checks.
+
+In theory it would be possible to mirror those checks in F#.  However, the C# team are considerig further rule changes around `stackalloc` in any case. Thus it seems ok (or at least consistent) if we follow the existing approach for F# and don’t 
+add any specific knowledge of stackalloc to the rules.  
+
 ### Overloading:
 
 When an implicit address is being taken for an `inref` parameter, an overload with an argument of type `SomeType` is preferred to an overload with an argument of type `inref<SomeType>`. For example give this:
@@ -317,13 +324,6 @@ let dt2 = DateTime.Now.ExtDateTime2(3)
 The `this` parameter on struct members is now `inref<StructType>` when the struct type has no mutable fields or sub-structures. 
 
 This makes it easier to write performant struct code which doesn't copy values.
-
-#### No special treatment of `stackalloc`
-
-The F# approach to `stackalloc` has always been to make it an "unsafe library function" whose use generates a "here be dragons" warning.  The C# team make it part of the language and are able to do some additional checks.
-
-In theory it would be possible to mirror those checks in F#.  However, the C# team are considerig further rule changes around `stackalloc` in any case. Thus it seems ok (or at least consistent) if we follow the existing approach for F# and don’t 
-add any specific knowledge of stackalloc to the rules.  
 
 # Examples of using `Span` and `Memory`
 
