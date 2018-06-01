@@ -151,13 +151,50 @@ let SafeSum(bytes: Span<byte>) =
     sum
 ```
 
-This does not apply to module-defined functions returning byrefs.  It specifically doesn't apply to:
+This applies to module-defined functions returning byrefs as well, e.g.
+
+```fsharp
+let mutable x = 1
+
+let f () = &x
+
+let test() = 
+    let addr : byref<int> = &f()
+    addr <- addr + 1
+```
+Hwoever it specifically doesn't apply to:
 
 * the `&` operator itself
 
 * `NativePtr.toByRef` which is an existing library function returning a byref
 
 As noted above, in these cases the returned type `byref<T>` is expanded to `byref<T, ?Kind>` for a new type inference variable `?Kind`.
+
+#### Assignment to return byrefs
+
+Direct assignment to returned byrefs is permitted:
+```fsharp
+type C() = 
+    let mutable v = System.DateTime.Now
+    member __.InstanceM() = &v
+
+let F1() = 
+    let today = System.DateTime.Now.Date
+    let c = C() 
+    c.InstanceM() <-  today.AddDays(2.0)
+```
+The same applies to properties, e.g.
+```fsharp
+type C() = 
+    let mutable v = System.DateTime.Now
+    member __.InstanceProperty = &v
+
+let F1() = 
+    let today = System.DateTime.Now.Date
+    let c = C() 
+    c.InstanceProperty <- today.AddDays(2.0)
+```
+
 
 #### Implicit address-of when calling members with parameter type `inref<'T>` 
 
@@ -281,6 +318,13 @@ The `this` parameter on struct members is now `inref<StructType>` when the struc
 
 This makes it easier to write performant struct code which doesn't copy values.
 
+#### No special treatment of `stackalloc`
+
+The F# approach to `stackalloc` has always been to make it an "unsafe library function" whose use generates a "here be dragons" warning.  The C# team make it part of the language and are able to do some additional checks.
+
+In theory it would be possible to mirror those checks in F#.  However, the C# team are considerig further rule changes around `stackalloc` in any case. Thus it seems ok (or at least consistent) if we follow the existing approach for F# and don’t 
+add any specific knowledge of stackalloc to the rules.  
+
 # Examples of using `Span` and `Memory`
 
 ```fsharp
@@ -327,6 +371,8 @@ let TestSafeSum() =
 * Generalize the subsumption "InOut --> In" and "InOut --> Out" to be a more general feature of F# type inference for tagged/measure/... types.
 
    --> Thinking this over
+
+* No implicit dereference on byref return from let-bound functions.  Originally we did not do implicit-dereference when calling arbitrary let-bound functions.  However usability feedback indicated this is a source of inconsistency
 
 
 # Compatibility
@@ -398,17 +444,4 @@ namespace System.Runtime.CompilerServices
 [unresolved]: #unresolved-questions
 
 
-* **Implicit dereference on byref return from let-bound functions** Should we allow implicit-dereference when calling arbitrary let-bound functions.  Originally we didn't but usability feedback indicates this is a source of inconsistency
-
-* **Assignment to ref-returns**
-
-Currently this gives an error:
-
-```fsharp
-type C() = 
-    static let mutable v = System.DateTime.Now
-    static member M() = &v
-
-let F1() = 
-    C.M() <-  System.DateTime.Now
-```
+None
