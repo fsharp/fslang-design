@@ -245,7 +245,7 @@ Here is an example:
 ```fsharp
 open System.Runtime.CompilerServices
 
-[<IsByRefLike>]
+[<IsByRefLike; Struct>]
 type S(count1: int, count2: int) = 
     member x.Count1 = count1
     member x.Count2 = count2
@@ -255,7 +255,7 @@ ByRefLike structs can have byref members, e.g.
 ```fsharp
 open System.Runtime.CompilerServices
 
-[<IsByRefLike>]
+[<IsByRefLike; Struct>]
 type S(count1: byref<int>, count2: byref<int>) = 
     member x.Count1 = count1
     member x.Count2 = count2
