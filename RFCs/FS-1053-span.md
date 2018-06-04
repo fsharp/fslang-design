@@ -395,7 +395,7 @@ The additions are not backwards compatible for two reasons:
 type S(x: int, y: int) = 
     member __.X = x
     member __.Y = y
-    member this.Replace(s: S) = this <- S
+    member this.Replace(s: S) = this <- s
 ```
 Note that the struct is immutable, except for a `Replace` method.  The `this` parameter will now be considered `inref<S>` and
 an error will be reported suggesting to add a mutable field if the struc is to be mutated.
