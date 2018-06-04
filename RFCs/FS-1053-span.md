@@ -405,6 +405,20 @@ machinery to express read-only references.
 
 # Notes
 
+* Implicit address-of is not applied for parameters to let-bound functions.  For example:
+
+```
+let testIn (m: inref<System.DateTime>) =
+    ()
+
+let callTestIn() =
+    testIn System.DateTime.Now
+```
+
+  The F# language does no conversions apart from subsumption at calls to let-bound functions (e.g. no F# lambda --> System.Func conversion).  While the programmer may initially expect the same conversions to take place, it is better to maintain consistency and not add this one adhoc type-directed auto-convert.  If we were to make a change here, it would be better to make a systematic change here that took into account all conversions.
+
+* No new or additional checks are made that `outref<_>` parameters are written to.  F# has already had `[<Out>]` parameters and their rarity means there's not a lot of value in adding the control-flow-based checks to implement this.
+
 * F# structs are not always readonly/immutable.
   1. You can declare `val mutable`.  The compiler knows about that and uses it to infer that the struct is readonly/immutable.
   2. Mutable fields can be hidden by signature files
