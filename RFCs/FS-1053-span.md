@@ -3,7 +3,7 @@
 .NET has a new feature `Span`. This RFC adds support for this in F#.
 
 * [x] Approved in principle [suggestion](https://github.com/fsharp/fslang-suggestions/issues/648)
-* [x] Implementation: [Near completion](https://github.com/Microsoft/visualfsharp/pull/4888)
+* [x] Implementation: [Complete](https://github.com/Microsoft/visualfsharp/pull/4888)
 * [x] Discussion: https://github.com/fsharp/fslang-design/issues/287
 
 # Summary
