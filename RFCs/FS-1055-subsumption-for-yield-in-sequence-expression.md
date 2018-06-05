@@ -2,8 +2,8 @@
 
 
 * [x] Approved in principle 
-* [x] Implementation: [Ready](https://github.com/Microsoft/visualfsharp/pull/4930)
-* Discussion: https://github.com/fsharp/fslang-design/issues/299
+* [x] Implementation: [Complete](https://github.com/Microsoft/visualfsharp/pull/4930)
+* [x] Discussion: https://github.com/fsharp/fslang-design/issues/299
 
 # Summary
 [summary]: #summary
