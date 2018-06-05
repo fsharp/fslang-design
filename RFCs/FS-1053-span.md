@@ -114,13 +114,17 @@ Capabilities assigned to pointers get solved in the usual way by type inference.
 are introduced each point the operators `&expr` and `NativePtr.toByRef` are used. In both cases their listed return
 type of `byref<T>` is expanded to `byref<T, ?Kind>` for a new type inference variable `?Kind`.
 
+NOTE: In F# 4.5, the `byref<'T, 'Kind>` type and the tags `ByRefKinds.InOut`, `ByRefKinds.In`, `ByRefKinds.Out` are not available for direct use, and are only usable in FSharp.Core.dll.
+
+
 #### `inref<T>` for readonly references and input reference parameters
 
 The type `inref<'T>` is defined as `byref<'T, ByRefKinds.In>` to indicate a read-only byref, e.g. one that acts as an input parameter. It's primary use is to pass structures more efficiently, without copying and without allowing mutation. For example:
 ```fsharp
 let f (x: inref<System.DateTime>) = x.Days
 ```
-Semantically `inref` means "the holder of the byref pointer may only use it to read". It doesn't imply that other threads or aliases don't have write access to that pointer.  And `inref<SomeStruct>` doesn't imply that the struct is immutable.
+Semantically `inref<'T>` means "the holder of the byref pointer may only use it to read". It doesn't imply that other threads or aliases don't have write access to that pointer.  And `inref<SomeStruct>` doesn't imply that the struct is immutable.  However `inref<SomeStruct>` does imply that any pointer acquired to struct fields nested within `SomeStruct` are in turn
+given type `inref<_>`.  Together with other rules this means `inref<'T>` also implies "the holder of the byref pointer may not modify the immediate contents of the memory pointed to".  
 
 By the type inference rules above, a `byref<'T>` may be used where an `inref<'T>` is expected.
 
@@ -137,6 +141,61 @@ let f (x:outref<System.DateTime>) = x <- System.DateTime.Now
 Semantically `outref` means "the holder of the byref pointer may only use it to write". It doesn't imply that other threads or aliases don't have read access to that pointer.
 
 By the type inference rules above, a `byref<'T>` may be used where an `outref<'T>` is expected.
+
+#### Relationship between `inref<T>`, `outref<T>` and `byref<T>`
+
+The following examples show code that is not permitted:
+```fsharp
+    module WriteToInRef = 
+        let f1 (x: inref<int>) = x <- 1 // not allowed
+
+    module InRefToByRef = 
+        let f1 (x: byref<'T>) = 1
+        let f2 (x: inref<'T>) = f1 &x    // not allowed 
+
+    module InRefToOutRef = 
+        let f1 (x: outref<'T>) = 1
+        let f2 (x: inref<'T>) = f1 &x     // not allowed   
+
+    module InRefToByRefClassMethod = 
+        type C() = 
+            static member f1 (x: byref<'T>) = 1
+        let f2 (x: inref<'T>) = C.f1 &x // not allowed   
+
+    module InRefToOutRefClassMethod =
+        type C() = 
+            static member f1 (x: outref<'T>) = 1 // not allowed
+        let f2 (x: inref<'T>) = C.f1 &x        
+```
+Similarly, a write to an inner struct field is not permitted:
+```fsharp
+    [<Struct>]
+    type S = 
+        [<DefaultValue(true)>]
+        val mutable X : int
+
+    module WriteToInRefStructInner = 
+        let f1 (x: inref<S>) = x.X <- 1 //not allowed
+```
+Similarly, taking the address of an inner struct field via an `inref<_>` pointer gives an `inref<_>` pointer type:
+```fsharp
+    [<Struct>]
+    type S = 
+        [<DefaultValue(true)>]
+        val mutable X : int
+
+    module WriteToInRefStructInner = 
+        let f1 (x: inref<S>) = 
+            let addr = &x.X
+            addr <- 1 //not allowed
+```
+
+However, a similar set of rules do not apply to `outref<'T>`.  This is for compatibility reasons, and the `outref<'T>` type is considered essentially equivalent to `byref<'T>`: you can both read and write from an `outref<_>` type, and no specific checks are performed to ensure definite assignment to `outref<_>`.  Further, instances of `[<Out>]` or `[out]` attributes occurring in .NET metadata or from provided types are interpreted as the type `byref<'T>`.  This means the `outref<_>`  is really for code documentation purposes only. The reason for this is compatibility: method signatures using `[out]` are already being implemented by `byref` types.  This means `outref<'T>` types are never introduced implicitly by F#.
+
+For compatibility, .NET parameters using the `[in]` attribute (e.g. `[in] int32& p`) are interpreted as type `byref<'T>` (e.g. `byref<int32>`).  This is for similar reasons to the above: .NET method signatures already exist that may use `[in]`.  This means the only place where `inref<'T>` types are introduced implicitly by F# is 
+1. For  a .NET parameter or return type that  has an `IsReadOnlyAttribute` `modreq`, see below.
+2. For the `this` pointer on a struct type that has no mutable fields, see belowif a .NET signature also has a `modreq` attribute for `IsReadOnly` on a parameter, see below.
+3. For the address of a memory location derived from another `inref<_>` pointer.
 
 #### Implicit dereference of return byrefs
 
@@ -172,7 +231,13 @@ As noted above, in these cases the returned type `byref<T>` is expanded to `byre
 
 #### Assignment to return byrefs
 
-Direct assignment to returned byrefs is permitted:
+Direct assignment to returned byrefs is permitted, e.g.
+```fsharp
+let mutable v = System.DateTime.Now
+let f() = &v
+f() <-  f().AddDays(2.0)
+```
+Likewise for byrefs returned by methods, e.g.
 ```fsharp
 type C() = 
     let mutable v = System.DateTime.Now
@@ -183,7 +248,7 @@ let F1() =
     let c = C() 
     c.InstanceM() <-  today.AddDays(2.0)
 ```
-The same applies to properties, e.g.
+And likewise for properties, e.g.
 ```fsharp
 type C() = 
     let mutable v = System.DateTime.Now
@@ -209,7 +274,7 @@ C.Days(&now) // allowed
 let now2 = System.DateTime.Now
 C.Days(now2) // allowed
 ```
-This only applies when calling members, not arbitrary let-bound functions.
+This only applies when calling members, not arbitrary let-bound functions. See "Alternatives" below.
 
 #### `IsReadOnly` on structs
 
@@ -277,7 +342,7 @@ C# attaches an `Obsolete` attribute to the `Span` and `Memory` types in order to
 The F# compiler doesn't emit these attributes when defining `ByRefLike` types.  Authoring these types in F# for consumption by down-level C# consumers will be extremely rare (if it ever happens at all). Down-level consumption by F# consumers will also never happen and if it does the consumer will discover extremely quickly that the later edition of F# is required. 
 
 
-### Interoperability
+#### Interoperability
 
 * A C# `ref` return value is given type `outref<'T>` 
 * A C# `ref readonly` return value is given type `inref<'T>`  (i.e. readonly)
@@ -289,7 +354,7 @@ The F# compiler doesn't emit these attributes when defining `ByRefLike` types.  
 * Using `inref<T>` in an abstract slot signature or implementation results in the automatic emit of an `modreq` attribute on an argument or return
 * Using `outref<T>` in argument position results in the automatic emit of an `[Out]` attribute on the argument
 
-### Overloading
+#### Overloading
 
 When an implicit address is being taken for an `inref` parameter, an overload with an argument of type `SomeType` is preferred to an overload with an argument of type `inref<SomeType>`. For example give this:
 ```
@@ -305,7 +370,7 @@ When an implicit address is being taken for an `inref` parameter, an overload wi
 In both cases the overload resolves to the method taking `System.DateTime` rather than the one taking `inref<System.DateTime>`.
 
 
-### `byref` extension members
+#### `byref` extension members
 
 "byref" extension methods allow extension methods to modify the struct that is passed in. Here is an example of a C#-style byref extension member in F#:
 ```fsharp
@@ -320,11 +385,38 @@ Here is an example of using the extension member:
 let dt2 = DateTime.Now.ExtDateTime2(3)
 ```
 
-### `this` on immutable struct members becomes `inref<StructType>`
+#### `this` on immutable struct members becomes `inref<StructType>`
 
 The `this` parameter on struct members is now `inref<StructType>` when the struct type has no mutable fields or sub-structures. 
 
 This makes it easier to write performant struct code which doesn't copy values.
+
+#### `IsByRefLike` safety checks
+
+At return expressions (i.e. the bodies of lambdas, methods and functions), checks are made that the expression being returned has a lifetime longer than the method activation or function activation. The checks are a cut-down version of [those for C#](https://github.com/dotnet/csharplang/blob/master/proposals/csharp-7.2/span-safety.md).  Specifically, checks are only made for "rvalues" and the existing checks for "lvalues" (byrefs) are not adjusted in this RFC.
+* For each expression, a boolean is computed as to whether the result of the expression is "safe to return".
+* For each `let`-bound local, a boolean is computed based on it's r.h.s.
+* A `mutable` ByRefLike-local is judged not-safe to return
+* An argument value is safe-to-return
+* Most composite expressions are safe-to-return if all its parts are safe-to-return
+
+#### Known limitations of `IsByRefLike` safety checks
+
+Because only rvalue-analysis is done for safety checks, some cases of first-class `byref` values are not accepted. For
+example:
+```
+let mutable y = 1
+type C() = 
+    static member M(x: inref<int>) = &x
+  
+let f () = 
+    let v = &C.M(&y) // v has "byref" type but is not known to be safe-to-return.
+    &v
+```
+This gives error:
+```
+stdin(7,6): error FS3228: The address of the variable 'v' or a related expression cannot be used at this point.
+```
 
 # Examples of using `Span` and `Memory`
 
@@ -354,31 +446,8 @@ let TestSafeSum() =
     SafeSum(stackSpan) |> printfn "res = %d"
 ```
 
-
-# Drawbacks
-[drawbacks]: #drawbacks
-
-* The addition of pointer capabilities slightly increases the perceived complexity of the language and core library.
-
-* The addition of `IsByRefLike` types increases the perceived complexity of the language and core library.
-
-# Alternatives
-[alternatives]: #alternatives
-
-* Make `inref`, `byref` and `outref` completely separate types rather than algebraically related
-
-  --> The type inference rules become much harder to specify and much more "special case".  The current rules just need a couple of extra equations added to the inference engine.
-
-* Generalize the subsumption "InOut --> In" and "InOut --> Out" to be a more general feature of F# type inference for tagged/measure/... types.
-
-   --> Thinking this over
-
-* No implicit dereference on byref return from let-bound functions.  Originally we did not do implicit-dereference when calling arbitrary let-bound functions.  However usability feedback indicated this is a source of inconsistency
-
-
 # Compatibility
 [compatibility]: #compatibility
-
 
 The additions are not backwards compatible for two reasons:
 
@@ -402,6 +471,27 @@ an error will be reported suggesting to add a mutable field if the struc is to b
 
 Allowing this assignment was never intended in the F# design and I consider this as fixing a bug in the F# compiler now we have the
 machinery to express read-only references.
+
+
+# Drawbacks
+[drawbacks]: #drawbacks
+
+* The addition of pointer capabilities slightly increases the perceived complexity of the language and core library.
+
+* The addition of `IsByRefLike` types increases the perceived complexity of the language and core library.
+
+# Alternatives
+[alternatives]: #alternatives
+
+* Make `inref`, `byref` and `outref` completely separate types rather than algebraically related
+
+  --> The type inference rules become much harder to specify and much more "special case".  The current rules just need a couple of extra equations added to the inference engine.
+
+* Generalize the subsumption "InOut --> In" and "InOut --> Out" to be a more general feature of F# type inference for tagged/measure/... types.
+
+   --> Thinking this over
+
+* No implicit dereference on byref return from let-bound functions.  Originally we did not do implicit-dereference when calling arbitrary let-bound functions.  However usability feedback indicated this is a source of inconsistency
 
 # Notes
 
