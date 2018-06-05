@@ -4,8 +4,8 @@ This proposes to be less stringent in enforcing indentation rules for `[` and `[
 aligning with the existing treatment of `{`.
 
 * [x] Approved in principle
-* [x] Implementation: [Near completion](https://github.com/Microsoft/visualfsharp/pull/4929)
-* Discussion: https://github.com/fsharp/fslang-design/issues/300
+* [x] Implementation: [Complete](https://github.com/Microsoft/visualfsharp/pull/4929)
+* [x] Discussion: https://github.com/fsharp/fslang-design/issues/300
 
 # Summary
 [summary]: #summary
