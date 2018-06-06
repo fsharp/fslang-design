@@ -25,19 +25,68 @@ Further, the existing `FuncConvert` API doesn't accept `Func<A,B>` nor `Action<A
 
 Instead, in this RFC we add new APIs:
 
-        static member FromAction: action:Action -> (unit -> unit)
-        static member FromAction: action:Action<'T> -> ('T -> unit)
-        static member FromAction: action:Action<'T1,'T2> -> ('T1 -> 'T2 -> unit)
-        static member FromAction: action:Action<'T1,'T2,'T3> -> ('T1 -> 'T2 -> 'T3 -> unit)
-        static member FromAction: action:Action<'T1,'T2,'T3,'T4> -> ('T1 -> 'T2 -> 'T3 -> 'T4 -> unit)
-        static member FromAction: action:Action<'T1,'T2,'T3,'T4,'T5> -> ('T1 -> 'T2 -> 'T3 -> 'T4 -> 'T5 -> unit)
+```fsharp
+/// <summary>Convert the given Action delegate object to an F# function value</summary>
+/// <param name="func">The input Action delegate.</param>
+/// <returns>The F# function.</returns>
+static member  inline FromAction       : action:Action          -> (unit -> unit)
 
-        static member FromFunc: func:Func<'T> -> (unit -> 'T)
-        static member FromFunc: func:Func<'T,'U> -> ('T -> 'U)
-        static member FromFunc: func:Func<'T1,'T2,'U> -> ('T1 -> 'T2 -> 'U)
-        static member FromFunc: func:Func<'T1,'T2,'T3,'U> -> ('T1 -> 'T2 -> 'T3 -> 'U)
-        static member FromFunc: func:Func<'T1,'T2,'T3,'T4,'U> -> ('T1 -> 'T2 -> 'T3 -> 'T4 -> 'U)
-        static member FromFunc: func:Func<'T1,'T2,'T3,'T4,'T5,'U> -> ('T1 -> 'T2 -> 'T3 -> 'T4 -> 'T5 -> 'U)
+/// <summary>Convert the given Action delegate object to an F# function value</summary>
+/// <param name="func">The input Action delegate.</param>
+/// <returns>The F# function.</returns>
+static member  inline FromAction       : action:Action<'T>          -> ('T -> unit)
+
+/// <summary>Convert the given Action delegate object to an F# function value</summary>
+/// <param name="func">The input Action delegate.</param>
+/// <returns>The F#funcfunction.</returns>
+static member  inline FromAction       : action:Action<'T1,'T2>          -> ('T1 -> 'T2 -> unit)
+
+/// <summary>Convert the given Action delegate object to an F# function value</summary>
+/// <param name="func">The input Action delegate.</param>
+/// <returns>The F# function.</returns>
+static member  inline FromAction       : action:Action<'T1,'T2,'T3>          -> ('T1 -> 'T2 -> 'T3 -> unit)
+
+/// <summary>Convert the given Action delegate object to an F# function value</summary>
+/// <param name="func">The input Action delegate.</param>
+/// <returns>The F# function.</returns>
+static member  inline FromAction       : action:Action<'T1,'T2,'T3,'T4>          -> ('T1 -> 'T2 -> 'T3 -> 'T4 -> unit)
+
+/// <summary>Convert the given Action delegate object to an F# function value</summary>
+/// <param name="func">The input Action delegate.</param>
+/// <returns>The F# function.</returns>
+static member  inline FromAction       : action:Action<'T1,'T2,'T3,'T4,'T5>          -> ('T1 -> 'T2 -> 'T3 -> 'T4 -> 'T5 -> unit)
+
+/// <summary>Convert the given Func delegate object to an F# function value</summary>
+/// <param name="func">The input Func delegate.</param>
+/// <returns>The F# function.</returns>
+static member  inline FromFunc       : func:Func<'T>          -> (unit -> 'T)
+
+/// <summary>Convert the given Func delegate object to an F# function value</summary>
+/// <param name="func">The input Func delegate.</param>
+/// <returns>The F# function.</returns>
+static member  inline FromFunc       : func:Func<'T,'U>          -> ('T -> 'U)
+
+/// <summary>Convert the given Func delegate object to an F# function value</summary>
+/// <param name="func">The input Func delegate.</param>
+/// <returns>The F#funcfunction.</returns>
+static member  inline FromFunc       : func:Func<'T1,'T2,'U>          -> ('T1 -> 'T2 -> 'U)
+
+/// <summary>Convert the given Func delegate object to an F# function value</summary>
+/// <param name="func">The input Func delegate.</param>
+/// <returns>The F# function.</returns>
+static member  inline FromFunc       : func:Func<'T1,'T2,'T3,'U>          -> ('T1 -> 'T2 -> 'T3 -> 'U)
+
+/// <summary>Convert the given Func delegate object to an F# function value</summary>
+/// <param name="func">The input Func delegate.</param>
+/// <returns>The F# function.</returns>
+static member  inline FromFunc       : func:Func<'T1,'T2,'T3,'T4,'U>          -> ('T1 -> 'T2 -> 'T3 -> 'T4 -> 'U)
+
+/// <summary>Convert the given Func delegate object to an F# function value</summary>
+/// <param name="func">The input Func delegate.</param>
+/// <returns>The F# function.</returns>
+static member  inline FromFunc       : func:Func<'T1,'T2,'T3,'T4,'T5,'U>          -> ('T1 -> 'T2 -> 'T3 -> 'T4 -> 'T5 -> 'U)
+
+```
 
 # Motivation
 [motivation]: #motivation
