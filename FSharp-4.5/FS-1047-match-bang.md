@@ -1,13 +1,13 @@
 # F# RFC FS-1047 - (match! syntactic sugar in computational expressions)
 
 The design suggestion [match! syntactic sugar](https://github.com/fsharp/fslang-suggestions/issues/572) has been marked "approved in principle".
+
 This RFC covers the detailed proposal for this suggestion.
 
 * [x] Approved in principle
-* [ ] [Suggestion](https://github.com/fsharp/fslang-suggestions/issues/572)
-* [ ] Details: [under discussion](https://github.com/fsharp/fslang-design/issues/255)
-* [ ] Implementation: [Complete](https://github.com/Microsoft/visualfsharp/pull/4427)
-
+* [x] [Suggestion](https://github.com/fsharp/fslang-suggestions/issues/572)
+* [x] Details: [under discussion](https://github.com/fsharp/fslang-design/issues/255)
+* [x] Implementation: [Complete](https://github.com/Microsoft/visualfsharp/pull/4427)
 
 # Summary
 [summary]: #summary
@@ -17,31 +17,40 @@ There should be a syntatic sugar, called `match!`, that is equivalent to `let!` 
 # Motivation
 [motivation]: #motivation
 
-An oft-repeated idiom in monadic code (especially `async`s) entails binding a monadic expression, then immediately pattern matching over the result. This happens over and over. For example:
+An oft-repeated idiom in monadic code (especially `async` workflows) entails binding a monadic expression, then immediately pattern matching over the result. This happens over and over. For example:
 
-    async {
-      let! x = myAsyncFunction ()
-      match x with
-      | ... }
-      
+```fsharp
+async {
+    let! x = myAsyncFunction ()
+    match x with
+    | Case1 -> ...
+    | Case2 -> ...
+}
+```
 
 # Detailed design
 [design]: #detailed-design
 
-`match!` should a simple addition to the F# parser and parser, and should be treated as an equivalent `let!` and `match`. Meaning, this code:
-      
-    async {
-      match! myAsyncFunction () with
-      | Some x -> printfn "%A" x
-      | None -> printfn "Function returned None!" }
-      
-would be compiled as if it were written as follows:
+`match!` is a simple addition to the F# parser, and should be treated as an equivalent `let!` and `match`. Meaning, this code:
 
-    async {
-      let! x = myAsyncFunction ()
-      match x with
-      | Some x -> printfn "%A" x
-      | None -> printfn "Function returned None!" }
+```fsharp
+async {
+    match! myAsyncFunction() with
+    | Some x -> printfn "%A" x
+    | None -> printfn "Function returned None!"
+}
+```
+      
+Would be compiled as if it were written as follows:
+
+```fsharp
+async {
+    let! x = myAsyncFunction ()
+    match x with
+    | Some x -> printfn "%A" x
+    | None -> printfn "Function returned None!"
+}
+```
 
 # Drawbacks
 [drawbacks]: #drawbacks
@@ -61,4 +70,4 @@ This is a completely backwards compatible change, and will only require changes 
 # Unresolved questions
 [unresolved]: #unresolved-questions
 
-N/A.
+None.

@@ -2,7 +2,7 @@
 
 The design suggestion [Struct representation for active patterns](https://github.com/fsharp/fslang-suggestions/issues/612) has been marked "approved in principle".
 
-Likewise, the idea of have a struct option type is implied by this suggestion and has also been approved.
+Likewise, the idea of a struct option type is implied by this suggestion and has also been approved.
 
 * [x] Approved in principle
 * [x] [Suggestion](https://github.com/fsharp/fslang-suggestions/issues/612)
@@ -23,7 +23,6 @@ Additionally, in situations where a struct can provide a benefit over a referenc
 
 # Detailed design
 [design]: #detailed-design
-
 
 An unboxed (struct) version of the `Option` type:
 
@@ -77,7 +76,7 @@ Not adding anything.
 # Compatibility
 [compatibility]: #compatibility
 
-It's not breaking change due to it not requiring new syntax at all, just addition to FSharp.Core and changes in codegen.
+It's not breaking change due to it not requiring new syntax at all, just addition to FSharp.Core and changes in code generation.
 
 # Unresolved questions
 [unresolved]: #unresolved-questions

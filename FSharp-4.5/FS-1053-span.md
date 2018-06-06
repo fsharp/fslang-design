@@ -12,6 +12,7 @@
 The main aim of the RFC is to allow effective consumption of APIs using `Span`, `Memory` and ref-returns.  
 
 Span is actually built from several features and a library:
+
 * The `voidptr` type
 * The `NativePtr.ofVoidPtr` and `NativePtr.toVoidPtr` functions
 * The `inref` and `outref` types via capabilities on byref pointers
@@ -42,9 +43,12 @@ Span is actually built from several features and a library:
 # Motivation
 [motivation]: #motivation
 
-The main aim of the RFC is to allow effective consumption of APIs using `Span`, `Memory` and ref-returns.  
+The main aim of the RFC is to allow effective consumption of APIs using `Span`, `Memory`, and ref-returns. This helps all of:
 
-Also, parity with .NET/C#, better codegen, performance, interop.
+* Parity with .NET Core 2.1 and C#
+* Proper interoperability with current and future .NET/C# APIs which use `Span` and `Memory` heavily
+* Better code generation
+* Better performance for F# when used to produce code that is performance-critical.
 
 # Detailed design
 [design]: #detailed-design

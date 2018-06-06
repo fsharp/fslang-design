@@ -5,12 +5,10 @@ This proposes to add a `TryGetValue` method on the `FSharp.Collections.Map` type
 * [x] Approved in principle
 * [x] Implementation: [Ready](https://github.com/Microsoft/visualfsharp/pull/4827)
 
-
 # Summary
 [summary]: #summary
 
 The `Map` type currently supports the `TryFind` member returning an `Option`. This adds the performance-friendly `TryGetValue` member to avoid any need for an allocation on return.
-
 
 # Motivation
 [motivation]: #motivation
@@ -42,20 +40,19 @@ match mp.TryGetValue "doot" with
 # Drawbacks
 [drawbacks]: #drawbacks
 
-There may be confusion  for newcomers about which lookup technique to use.
+There may be confusion for newcomers about which lookup technique to use.
 
 # Alternatives
 [alternatives]: #alternatives
 
-* Add a new method returning a struct option.  But it is better to support the standard .NET method name and pattern.
+Add a new method returning a struct option. But it is better to support the standard .NET method name and pattern.
 
 # Compatibility
 [compatibility]: #compatibility
 
-Not abreaking change.
+Not a breaking change.
 
 # Unresolved questions
 [unresolved]: #unresolved-questions
 
-None
-.
+None.
