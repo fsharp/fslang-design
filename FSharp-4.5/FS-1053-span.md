@@ -295,6 +295,8 @@ type S(count1: int, count2: int) =
 
 `IsReadOnly` is not added to F# struct types automatically, you must add it manually.
 
+Note that `[<IsReadOnly>]` does not imply `[<Struct>]`  both attributes have to be specified.
+
 Using `IsReadOnly` attribute on a struct which has a mutable field will give an error.
 
 #### ByRefLike structs
@@ -320,17 +322,17 @@ type S(count1: int, count2: int) =
     member x.Count2 = count2
 ```
 
-ByRefLike structs can have byref members, e.g.
+ByRefLike structs can have IsByRefLike members, e.g.
 ```fsharp
 open System.Runtime.CompilerServices
 
 [<IsByRefLike; Struct>]
-type S(count1: byref<int>, count2: byref<int>) = 
+type S(count1: Span<int>, count2: Span<int>) = 
     member x.Count1 = count1
     member x.Count2 = count2
 ```
 
-Note that `[<ReadOnly>]` does not imply `[<Struct>]`  both attributes have to be specified.
+Note that `[<IsByRefLike>]` does not imply `[<Struct>]`  both attributes have to be specified.
 
 #### No special treatment of `stackalloc`
 
