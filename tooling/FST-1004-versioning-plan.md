@@ -12,7 +12,7 @@ We have strong motivation to decouple versioning of the F# compiler and tools fr
 ## Table of versions
 
 | Visual Studio version | 15.5 (current) | 15.6 | 15.7 | 15.8 | vNext |
-|------------|----------:|-----:|------:|------:|
+|------------|----------:|-----:|------:|------:|------:|
 | **F# language version** | 4.1 | 4.1 | 4.1 | 4.5 | 4.x |
 | **FSharp.Core version** | 4.4.1.0 | 4.4.3.w | 4.4.3.w | 4.5.w.0 | 4.n.w.0 |
 | **FSharp.Core NuGet package version** | 4.2.x | 4.3.x | 4.3.x | 4.5.x | 4.n.x |
