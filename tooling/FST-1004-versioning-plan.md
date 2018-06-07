@@ -11,18 +11,18 @@ We have strong motivation to decouple versioning of the F# compiler and tools fr
 
 ## Table of versions
 
-| Visual Studio version | 15.5 (current) | 15.6 | 15.7 | vNext |
+| Visual Studio version | 15.5 (current) | 15.6 | 15.7 | 15.8 | vNext |
 |------------|----------:|-----:|------:|------:|
-| **F# language version** | 4.1 | 4.1 | 4.5 | 4.x |
-| **FSharp.Core version** | 4.4.1.0 | 4.4.3.w | 4.5.w.0 | 4.n.w.0 |
-| **FSharp.Core NuGet package version** | 4.2.x | 4.3.x | 4.5.x | 4.n.x |
-| **F# compiler banner** | F# Compiler 4.1 | F# Compiler 10.a.b for F# 4.1 | F# Compiler 11.a.b for F# 4.5 | F# Compiler XX.a.b for F# 4.n |
-| **VS product Name** | Visual F# 4.1 | Visual F# 10.a.b for F# 4.1 | Visual F# 11.a.b for F# 4.5 | Visual F# XX.a.b for F# 4.n |
-| **VS product details** | Microsoft Visual F# 4.1 | Microsoft Visual F# 10.a.b for F# 4.1 | Microsoft Visual F# 11.a.b for F# 4.5 | Microsoft Visual F# XX.a.b for F# 4.n |
-| **F# SDK version** | 4.1 | 10.a | 11.a | ZZ.a |
-| **F# Compiler .dll version** | 4.4.1.0 | 10.a.b.c | 11.a.b.c | WW.a.b.c |
-| **FSharp.Compiler.Tools version** | 4.1.x | 10.a.b for F# 4.1 | 11.a.b for F# 4.5 | XX.a.b for F# 4.n |
-| **VS Assembly versions** | 15.4.x.y | 15.6.e.f | 15.7.e.f | vNext.e.f |
+| **F# language version** | 4.1 | 4.1 | 4.1 | 4.5 | 4.x |
+| **FSharp.Core version** | 4.4.1.0 | 4.4.3.w | 4.4.3.w | 4.5.w.0 | 4.n.w.0 |
+| **FSharp.Core NuGet package version** | 4.2.x | 4.3.x | 4.3.x | 4.5.x | 4.n.x |
+| **F# compiler banner** | F# Compiler 4.1 | F# Compiler 10.0.a for F# 4.1 | F# Compiler 10.1.a for F# 4.1 |F# Compiler 11.a.b for F# 4.5 | F# Compiler XX.a.b for F# 4.n |
+| **VS product Name** | Visual F# 4.1 | Visual F# 10.0.a for F# 4.1 | Visual F# 10.1.a for F# 4.1 | Visual F# 11.a.b for F# 4.5 | Visual F# XX.a.b for F# 4.n |
+| **VS product details** | Microsoft Visual F# 4.1 | Microsoft Visual F# 10.0.a for F# 4.1 | Microsoft Visual F# 10.1.a for F# 4.1 | Microsoft Visual F# 11.a.b for F# 4.5 | Microsoft Visual F# XX.a.b for F# 4.n |
+| **F# SDK version** | 4.1 | 10.0.a | 10.1.a | 11.a | ZZ.a |
+| **F# Compiler .dll version** | 4.4.1.0 | 10.0.a.b | 10.1.a.b | 11.a.b.c | WW.a.b.c |
+| **FSharp.Compiler.Tools version** | 4.1.x | 10.0.a for F# 4.1 | 10.1.a for F# 4.1 | 11.a.b for F# 4.5 | XX.a.b for F# 4.n |
+| **VS Assembly versions** | 15.4.x.y | 15.6.e.f | 15.7.e.f | 15.8.e.f | vNext.e.f |
 
 Where:
 
