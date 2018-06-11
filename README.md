@@ -2,7 +2,15 @@
 
 RFCs and docs related to the F# language design process. 
 
-* [Open F# Language RFCs (including candidates for F# 4.5)](https://github.com/fsharp/fslang-design/blob/master/RFCs)
+* [Open F# Language RFCs (including candidates for F# vNext)](https://github.com/fsharp/fslang-design/blob/master/RFCs)
+
+* [RFCs implemented in F# 4.5](https://github.com/fsharp/fslang-design/blob/master/FSharp-4.5)
+
+* [RFCs implemented in FSharp.Core 4.4.5.0](https://github.com/fsharp/fslang-design/tree/master/FSharp.Core-4.4.5.0)
+
+* [RFCs implemented in F# 4.1 update](https://github.com/fsharp/fslang-design/blob/master/FSharp-4.1b)
+
+* [RFCs implemented in FSharp.Core 4.4.3.0](https://github.com/fsharp/fslang-design/tree/master/FSharp.Core-4.4.3.0)
 
 * [RFCs implemented in F# 4.1](https://github.com/fsharp/fslang-design/blob/master/FSharp-4.1)
 
