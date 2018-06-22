@@ -400,9 +400,6 @@ This makes it easier to write performant struct code which doesn't copy values.
 #### `IsByRefLike` safety checks
 
 At return expressions (i.e. the bodies of lambdas, methods and functions), checks are made that the expression being returned has a lifetime longer than the method activation or function activation. The checks are a cut-down version of [those for C#](https://github.com/dotnet/csharplang/blob/master/proposals/csharp-7.2/span-safety.md).  Specifically, checks are only made for "rvalues" and the existing checks for "lvalues" (byrefs) are not adjusted in this RFC.
-* For each expression, a boolean is computed as to whether the result of the expression is "safe to return".
-* For each `let`-bound local, a boolean is computed based on it's r.h.s.
-* A `mutable` ByRefLike-local is judged not-safe to return
 * An argument value is safe-to-return
 * Most composite expressions are safe-to-return if all its parts are safe-to-return
 
