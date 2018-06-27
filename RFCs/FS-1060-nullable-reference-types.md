@@ -52,7 +52,7 @@ The following principles guide all further considerations and the design of this
 ## Detailed design
 [design]: #detailed-design
 
-## Metadata
+#### Metadata
 
 Nullable reference types are emitted as a reference type with an assembly-level attribute in C# 8.0. That is, the following code:
 
@@ -79,7 +79,7 @@ F# will be aware of and respect this attribute, treating reference types as null
 
 F# will also emit this attribute when it produces a nullable reference type for other languages to consume.
 
-## F# concept and syntax
+### F# concept and syntax
 
 Nullable reference types can conceptually be thought of a union between a reference type and `null`. For example, `string` in F# 4.5 or C# 7.3 is implicitly either a `string` or `null`. More concretely, they are a special case of [Erased type-tagged anonymous union types](https://github.com/fsharp/fslang-suggestions/issues/538).
 
@@ -126,7 +126,7 @@ The syntax accomplishes two goals:
 
 Because it is a design goal to flow **non-null** reference types, and **avoid** flowing nullable reference types unless absolutely necessary, it is considered a feature that the syntax can get a bit unweildy.
 
-### Nullable reference type declarations in F\#
+#### Nullable reference type declarations in F\#
 
 There will be no way to declare an F# type as follows:
 
@@ -134,11 +134,11 @@ There will be no way to declare an F# type as follows:
 type (NotSupportedAtAll | null)() = class end
 ```
 
-## Checking of nullable references
+### Checking of nullable references
 
 There are a few common ways that F# programmers check for null today. Unless explicitly mentioned as unsupported, support for flow analysis is under consideration for certain null-checking patterns.
 
-### Likely supported: Pattern matching with alias
+#### Likely supported: Pattern matching with alias
 
 ```fsharp
 let len (str: string | null) =
@@ -149,7 +149,7 @@ let len (str: string | null) =
 
 This is by far the most common pattern in F# programming. In the previous code sample, `str` is of type `string | null`, but `s` is now of type `string`. This is because we know that based on the `null` has been accounted for by the `null` pattern.
 
-### Possibly supported: Pattern matching with wildcard
+##### Possibly supported: Pattern matching with wildcard
 
 ```fsharp
 let len (str: string | null) =
@@ -160,7 +160,7 @@ let len (str: string | null) =
 
 A slight riff that is less common is treating `str` differently when in a wildcard pattern's scope. To reach that code path, `str` must indeed by non-null, so this could potentially be supported.
 
-### Possibly supported: If check
+#### Possibly supported: If check
 
 ```fsharp
 let len (str: string | null) =
@@ -172,7 +172,7 @@ let len (str: string | null) =
 
 Although less common, this is a valid way to check for `null` and could be enabled by the compiler. We know for certain that `str` is a `string` in the `else` branch. The inverse check is also true.
 
-### Possibly supported: After null check within boolean expression
+#### Possibly supported: After null check within boolean expression
 
 ```fsharp
 let len (str: string | null) =
@@ -184,7 +184,7 @@ let len (str: string | null) =
 
 Note that the reverse (`str.Length > 0 && str <> null`) would give a warning, because we attempt to dereference before the `null` check. This would only hold with AND checks. More generally, if the boolean expression to the left of the dereference involves a `x <> null` check, then the dereference is safe.
 
-### Likely unsupported: isNull
+#### Likely unsupported: isNull
 
 ```fsharp
 let len (str: string | null) =
@@ -207,7 +207,7 @@ let len (str: string | null) =
 
 There is no telling what `someCondition` would evaluate to, so we cannot guarantee that `str` will be `string` in the `else` clause.
 
-### Likely unsupported: boolean-based checks for null
+#### Likely unsupported: boolean-based checks for null
 
 Generally speaking, beyond highly-specialized cases, we cannot guarantee non-nullability that is checked via a boolean. Consider the following:
 
@@ -223,7 +223,7 @@ let len (str: string | null) =
 
 Although this simple example could potentially work, it could quickly get out of hand and complicate the compiler. Also, other languages that support nullable reference types (C# 8.0, Scala, Kotlin, Swift, TypeScript) do not do this. Instead, non-nullability is asserted when the programmer knows something will not be `null`.
 
-### Likely unsupported: nested functions accessing outer scopes
+#### Likely unsupported: nested functions accessing outer scopes
 
 ```fsharp
 let len (str: string | null) =
@@ -239,7 +239,7 @@ Although `doWork()` is called in a place where `str` would be non-null, this may
 
 **Note:** C# supports the equivalent of this with local functions.
 
-### Asserting non-nullability
+#### Asserting non-nullability
 
 To get around scenarios where flow analysis cannot establish a non-null situation, a programmer can use `!` to assert non-nullability:
 
@@ -253,7 +253,7 @@ let len (str: string | null) =
 
 This will not generate a warning, but it is unsafe and can be the cause of a `NullReferenceException` if the reference was indeed `null` under some condition.
 
-### Warnings
+#### Warnings
 
 In all other situations not covered by flow analysis, a warning is emitted by the compiler if a nullable reference is dereferenced or casted to a non-null type:
 
@@ -271,9 +271,9 @@ A warning is given when casting from `'S[]` to `('T | null)[]` and from `('S | n
 
 A warning is given when casting from `C<'S>` to `C<'T | null>` and from `C<'S | null>` to `C<'T>`.
 
-## Checking of non-null references
+### Checking of non-null references
 
-### Null assignment and passing
+#### Null assignment and passing
 
 A warning is given if `null` is assigned to a non-null value or passed as a parameter where a non-null reference type is expected:
 
@@ -287,19 +287,7 @@ let f (s: string) = ()
 f null // WARNING
 ```
 
-### Nullable parameterization
-
-A warning is given if a nullable reference type `P` is used to parameterize another type `C` that  does not accept nullable reference types:
-
-```fsharp
-type CNullParam<'T>() = class end
-
-let c1 = C<string | null> // WARNING
-```
-
-Today, it is already a compile error if all fields in an F# class are not initialized by constructor calls. This behavior is unchanged. See [Compatibility with Microsoft.FSharp.Core.DefaultValueAttribute](FS-1060-nullable-reference-types.md#compatibility-with-microsoft.fsharp.core.defaultValueAttribute) for considerations about code that uses `[<DefaultValue>]` with reference types today, which produces `null`.
-
-### F# Collection initialization
+#### F# Collection initialization
 
 A warning is given if `null` is used in an F# array/list/seq expression, where the type is already annotated to be non-nullable:
 
@@ -309,58 +297,206 @@ let ys: string list = [ ""; ""; null ] // WARNING
 let zs: seq<string> = seq { yield ""; yield ""; yield null } // WARNING
 ```
 
-### Unchecked.defaultOf<'T>
+#### Unchecked.defaultOf<'T>
 
 Today, `Unchecked.defaultof<'T>` will generate `null` when `'T` is a reference type. Given this, it is reasonable to do either of the following:
 
 * The return type of `Unchecked.defaultof<'T>` is now `'T | null`. Calling `Unchecked.defaultof<'T | null>` produces the same output.
 * Give a warning when `Unchecked.defaultof<'T>` is called when `'T` is a non-nullable reference type, indicating that you must call `Unchecked.defaultof<'T | null>`.
 
-### Array.zeroCreate<'T>
+#### Array.zeroCreate<'T>
 
 Today, `Array.zeroCreate<'T>` will generate `null`s when `'T` is a reference type. Given this, it is reasonable to do either of the following:
 
 * The return type of `Array.zeroCreate<'T>` is now `('T | null) []`. Calling `Array.zeroCreate<'T | null>` produces the same output.
 * Give a warning when `Array.zeroCreate<'T>` is called where `'T` is a non-nullable reference type, indicating that you must call `Array.zeroCreate<'T | null>`.
 
-## Type inference
+#### Constructor initialization
 
-### F# Collection initialization
+Today, it is already a compile error if all fields in an F# class are not initialized by constructor calls. This behavior is unchanged. See [Compatibility with Microsoft.FSharp.Core.DefaultValueAttribute](FS-1060-nullable-reference-types.md#compatibility-with-microsoft.fsharp.core.defaultValueAttribute) for considerations about code that uses `[<DefaultValue>]` with reference types today, which produces `null`.
 
-Using `null` will "infect"
+### Generics
 
-## Tooling considerations
+A type parameter is assumed to have non-nullable constraints when declared "normally":
 
-### F# tooltips
+```fsharp
+type C<'T>() = // 'T is non-nullable
+class end
+```
 
-TODO
+A warning is given if a nullable reference type is used to parameterize another type `C` that  does not accept nullable reference types:
 
-### Signatures in FSI
+```fsharp
+type C<'T>() = class end
 
-TODO
+let c = C<string | null> // WARNING
+```
 
-### F# scripting
+#### Constraints
 
-TODO
+Today, there are two relevant constraints in F# - `null` and `not struct`:
 
-## Breaking changes
+```fsharp
+type C1<'T when 'T: null>() = class end
+type C2<'T when 'T: not struct>() = class end
+```
 
-There are two forms of breaking changes with this feature:
+Both are actually the same thing for interoperation purposes, as they emit `class` as a constraint. See [Unresolved questions](nullable-reference-types.md#unresolved-questions) for more.
 
-* Non-null warnings (i.e., not checking for `null`) on a `string | null` type
-* Nullable warnings
+If an F# class `B` has nullability as a constraint, then an inheriting class `D` also inherits this constraint, as per existing inheritance rules:
 
-TODO
+```fsharp
+type B<'T | null>() = class end
+type D<'T | null>()
+    inherit B<'T>
+```
+
+That is, nullabulity constraints propagate via inheritance.
+
+### Type inference
+
+Nullability is propagated through type inference:
+
+```fsharp
+let makeTupleWithNull (a)
+// Inferred signature:
+//
+// val makeNullIfEmpty : str:string -> string | null
+let makeNullIfEmpty (str: string) =
+    match str with
+    | "" -> null
+    | _ -> str
+
+ // val xs : (string | null) list
+let xs = [ ""; ""; null ]
+
+// val ys : (string | null) []
+let ys = [| ""; null; "" |]
+
+// val zs : seq<string | null>
+let zs = seq { yield ""; yield null }
+
+// val x : 'a | null
+let x = null
+
+// val s : string
+let mutable s = "hello"
+
+// s is now (s | null), despite the warning
+s <- null
+```
+
+This includes function composition:
+
+```fsharp
+// val f1 : 'a -> 'a
+let f1 s = s
+
+// val f2 : string -> (string | null)
+let f2 s = if s <> "" then "hello" else null
+
+// val f3 : string -> string
+let f3 (s: string) =
+    match s with
+    | null -> ""
+    | _ -> s
+
+// val pipeline : string -> (string | null)
+let pipeline = f1 >> f2 >> f3 // WARNING - flowing possible null into non-null parameter
+```
+
+Existing nullability rules for F# types hold (i.e., you cannot suddenly assign `null` to an F# record).
+
+### Tooling considerations
+
+To remain in line our first principle:
+
+> On the surface, F# is "almost" as simple to use as it is today. In practice, it must feel simpler due to nullability of types like `string` being explicit rather than implicit.
+
+We'll consider careful suppression of nullability in F# tooling so that the extra information doesn't appear overwhelming. For example, imagine the following signature in tooltips:
+
+```fsharp
+member Join : source2: (Expression<seq<string | null> | null> | null) * key1:(Expression<Func<(string | null), T | null> | null> | null)) * key2:(Expression<Func<(string | null), T | null> | null> | null))
+```
+
+AGH! This signature is challenging enough already, but now nullability has made it significantly worse.
+
+#### F# tooltips
+
+In QuickInfo tooltips today, we reduce the length of generic signatures with a section below the signature. We can do a similar thing for saying if something is nullable:
+
+```
+member Foo : source: (seq<'T>) * predicate: ('T -> 'U- > bool) * item: 'U
+
+    where 'T, 'U are nullable
+
+Generic parameters:
+'T is string
+'U is int
+```
+
+Although this uses more vertical space in the tooltip, it reduces the length of the signature, which can already difficult to parse for many members in .NET.
+
+In Signature Help tooltips today, we embed the concrete type for a generic type parameter in the tooltip. We may consider doing a similar thing as with QuickInfo, where nullability is expressed separately from the signature. However, this would also likely require a change where we factor out concrete types from the type signature at the parameter site. For example:
+
+```
+List(System.Collections.Generics.IEnumerable<'T>)
+
+    where 'T is (string | null)
+
+Initializes an instance of a [...]
+```
+
+#### Signatures in F# Interactive
+
+To have parity with F# signatures (note: not tooltips), signatures printed in F# interactive will have nullability expression as if it were in code:
+
+```
+> let s: string | null = "hello";;
+>
+> val s : string | null = "hello"
+```
+
+#### F# scripting
+
+F# scripts will now also give warnings when using the compiler that implements this feature. This also necessitates a new feature for F# scripting that allows you to specify a language version so that you can opt-out of any nullability warnings. Example:
+
+```fsharp
+#langlevel "4.5"
+
+let s: string = null // OK, since 4.5 doesn't implement nullable references
+```
+
+By default, F# scripts that use a newer compiler via F# interactive will understand nullability.
+
+### Breaking changes and tunability
+
+Non-null warnings are an obvious breaking change with existing code, and thus will be opt-in for existing projects. New projects will have non-null warnings be on by default.
+
+Type inference will infer a reference type to be nullable in cases where it can be the result of an F# expression. This will generate warnings for existing code utilizing type inference. It will obviously also do so when dereferencing a reference type inferred to be nullable. Thus, warnings for nullability must be off by default for existing projects and on by default for new ones.
+
+Additionally, adding nullable annotations to an API will be a breaking change for users who have opted into warnings when they upgrade a library to use the new API. This also warrants the ability to turn off warnings.
+
+Finally, F# code in particular is quite aggressive with respect to non-null today. It is expected that a lot of F# users would like these warnings to actually be errors, independently of turning all warnings into errors. This should also be possible.
+
+In summary:
+
+| Warning kind | Existing projects | New projects | Tun into an error? |
+|--------------|-------------------|--------------|--------------------|
+| Nullable warnings | Off by default | On by default | Yes |
+| Non-nullable warnings | Off by default | On by default | Yes |
+| Warnings from other files | Off by default | On by default | Yes |
+| Warnings from other assemblies | Off by default | On by default | Yes |
+
+
 
 ## Drawbacks
 [drawbacks]: #drawbacks
 
-Why should we *not* do this?
+Although it could be argued that this simplifies reference types by making the fact that they could be `null` explicit
 
 ## Alternatives
 [alternatives]: #alternatives
-
-What other designs have been considered? What is the impact of not doing this?
 
 ### Syntax
 
@@ -441,7 +577,7 @@ The following class `D`:
 type D<'T when 'T: null>() = class end
 ```
 
-will compile into this:
+Is equivalent to this:
 
 ```csharp
 [Serializable]
@@ -463,7 +599,41 @@ However, this will be highly confusing in C# 8.0 as per the [C# 8.0 proposal](ht
 
 What this means is that F# syntax that declares a type as accepting only types that have `null` as a proper value as type parameters actually accepts _only_ non-nullable types! This behavior is the exact opposite of what programmers likely believe what this syntax does, and is not compatible with a world where nullable reference types exist.
 
-## Compatibility with Microsoft.FSharp.Core.DefaultValueAttribute
+**Recommendation:** Change to emit as a nullable reference type constraint.
+
+### Compatibility with existing not struct constraint
+
+The existing `not struct` constraint for generic types requires the parameterizing type to be a .NET referennce type.
+
+The following class `C`:
+
+```fsharp
+type C<'T when 'T : not struct>() = class end
+```
+
+Is equivalent to this:
+
+```csharp
+[Serializable]
+[CompilationMapping(SourceConstructFlags.ObjectType)]
+public class C2<T> where T : class
+{
+    public C2()
+        : this()
+    {
+    }
+}
+```
+
+Which is fine in today's world. However, the `class` constraint will now mean **non-null** reference type in C# 8.0:
+
+> The `class` constraint is **non-null**. We can consider whether `class?` should be a valid nullable constraint denoting "nullable reference type".
+
+Although it's true that "not struct" still maps to **non-null** reference type, this might be unexpected.
+
+**Recommendation:** Change to emit to a nullable reference type constraint.
+
+### Compatibility with Microsoft.FSharp.Core.DefaultValueAttribute
 
 Today, the `[<DefaultValue>]` attribute is required on explicit fields in classes that have a primary constructor. These fields must support zero-initialization, which in the case of reference types, is `null`.
 
@@ -473,7 +643,7 @@ Consider the following code:
 type C() =
     [<DefaultValue>]
     val mutable Whoops : string
-    
+
 printfn "%d" (C().Whoops.Length)
 ```
 
