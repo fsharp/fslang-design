@@ -1,6 +1,6 @@
 # F# Language Design RFCs 
 
-RFCs and docs related to the F# language design process. 
+RFCs (requests for comments) and docs related to the F# language design process. 
 
 * [Open F# Language RFCs (including candidates for F# vNext)](https://github.com/fsharp/fslang-design/blob/master/RFCs)
 
