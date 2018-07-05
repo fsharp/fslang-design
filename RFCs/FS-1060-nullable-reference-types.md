@@ -552,7 +552,7 @@ Issues:
 * `None` already emits `null`, but it's a distinct case and not erased at compile time
 * References and Nullable references are fundamentally the same thing, just one has an assembly-level attribute. This is simply not the same as an optional type.
 
-### Assering non-nullability
+### Asserting non-nullability syntax
 
 **`!!` postfix operator?**
 
