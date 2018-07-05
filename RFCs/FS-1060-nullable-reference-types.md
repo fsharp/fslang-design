@@ -52,7 +52,7 @@ The following principles guide all further considerations and the design of this
 ## Detailed design
 [design]: #detailed-design
 
-#### Metadata
+### Metadata
 
 Nullable reference types are emitted as a reference type with an assembly-level attribute in C# 8.0. That is, the following code:
 
@@ -79,11 +79,21 @@ F# will be aware of and respect this attribute, treating reference types as null
 
 F# will also emit this attribute when it produces a nullable reference type for other languages to consume.
 
+#### Nullability obliviousness
+
+It is desireable for some assemblies to declare themselves as nullability-oblivious, even if they were compiled with a compiler that has this as a concept. This is a top-level attribute that will be respected by the C# compiler. F# should also respect this as an attribute.
+
+#### Handling nullability
+
+C# 8.0 will also respect a new attribute that can mark a method as "handling null". This is to get around the non-determinism in checking if any arbitrary method call (and its calls) check for `null` and do not re-assign it somehow.
+
+This attribute (we'll call it `[<HandlesNull>]`) will also be respected by F#, so that obvious calls such as `String.IsNullorEmpty` that wrap a dereference don't trigger a warning.
+
+This attribute can be abused, since you can attach it to something that absolutely does not check for `null`.
+
 ### F# concept and syntax
 
-Nullable reference types can conceptually be thought of a union between a reference type and `null`. For example, `string` in F# 4.5 or C# 7.3 is implicitly either a `string` or `null`. More concretely, they are a special case of [Erased type-tagged anonymous union types](https://github.com/fsharp/fslang-suggestions/issues/538).
-
-This concept is lifted into syntax:
+Nullable reference types can conceptually be thought of a union between a reference type and `null`. For example, `string` in F# 4.5 or C# 7.3 is implicitly either a `string` or `null`. This concept is lifted into syntax:
 
 ```
 reference-type | null
@@ -124,7 +134,7 @@ The syntax accomplishes two goals:
 1. Makes the distinction that a nullable reference type can be `null` clear in syntax.
 2. Becomes a bit unweildy when nullability is used a lot, particularly with nested types.
 
-Because it is a design goal to flow **non-null** reference types, and **avoid** flowing nullable reference types unless absolutely necessary, it is considered a feature that the syntax can get a bit unweildy.
+Because it is a design goal to flow **non-null** reference types, and **avoid** flowing nullable reference types unless absolutely necessary, it is considered a feature that the syntax can get a bit unweildy if used everywhere. That is, we want to discourage the use of `null` unless it is absolutely necessary.
 
 #### Nullable reference type declarations in F\#
 
@@ -232,7 +242,7 @@ let len (str: string | null) =
 
     match str with
     | null -> -1
-    | _ -> doWork()
+    | _ -> doWork() // But after this line is written it's fine?
 ```
 
 Although `doWork()` is called in a place where `str` would be non-null, this may too complex to implement properly.
@@ -297,20 +307,6 @@ let ys: string list = [ ""; ""; null ] // WARNING
 let zs: seq<string> = seq { yield ""; yield ""; yield null } // WARNING
 ```
 
-#### Unchecked.defaultOf<'T>
-
-Today, `Unchecked.defaultof<'T>` will generate `null` when `'T` is a reference type. Given this, it is reasonable to do either of the following:
-
-* The return type of `Unchecked.defaultof<'T>` is now `'T | null`. Calling `Unchecked.defaultof<'T | null>` produces the same output.
-* Give a warning when `Unchecked.defaultof<'T>` is called when `'T` is a non-nullable reference type, indicating that you must call `Unchecked.defaultof<'T | null>`.
-
-#### Array.zeroCreate<'T>
-
-Today, `Array.zeroCreate<'T>` will generate `null`s when `'T` is a reference type. Given this, it is reasonable to do either of the following:
-
-* The return type of `Array.zeroCreate<'T>` is now `('T | null) []`. Calling `Array.zeroCreate<'T | null>` produces the same output.
-* Give a warning when `Array.zeroCreate<'T>` is called where `'T` is a non-nullable reference type, indicating that you must call `Array.zeroCreate<'T | null>`.
-
 #### Constructor initialization
 
 Today, it is already a compile error if all fields in an F# class are not initialized by constructor calls. This behavior is unchanged. See [Compatibility with Microsoft.FSharp.Core.DefaultValueAttribute](FS-1060-nullable-reference-types.md#compatibility-with-microsoft.fsharp.core.defaultValueAttribute) for considerations about code that uses `[<DefaultValue>]` with reference types today, which produces `null`.
@@ -354,6 +350,8 @@ type D<'T | null>()
 That is, nullabulity constraints propagate via inheritance.
 
 If an unconstrained type parameter comes from an older C# assembly, it is assumed to be nullable, and warnings are given when non-nullability is assumed. If it comes from F# and it does not have the `null` constraint, then it is assumed to be non-nullable. If it does, then it is assumed to be nullable.
+
+Additionally, C# will introduce the `class?` constraint. This syntax sugar will compile into the `class` constraint, but the class itself will be decorated with an attribute that tells consumers that the `'T` is a nullable reference type. This attribute will need to be respected by the F# compiler so that C#
 
 ### Interaction between older and newer projects
 
@@ -637,11 +635,13 @@ However, this will be highly confusing in C# 8.0 as per the [C# 8.0 proposal](ht
 
 What this means is that F# syntax that declares a type as accepting only types that have `null` as a proper value as type parameters actually accepts _only_ non-nullable types! This behavior is the exact opposite of what programmers likely believe what this syntax does, and is not compatible with a world where nullable reference types exist.
 
-**Recommendation:** Change to emit as a nullable reference type constraint.
+Additionally, C# 8.0 will introduce the `class?` constraint. This is syntax sugar for an attribute that will decorate the class, informing consumers that `T` is a nullable reference type. So `class` and `class?` are distinctly different things in C# now.
+
+**Recommendation:** Change to emit as a `class` constraint but with the same attribute decorating the class that C# uses.
 
 #### Compatibility with existing not struct constraint
 
-The existing `not struct` constraint for generic types requires the parameterizing type to be a .NET referennce type.
+The existing `not struct` constraint for generic types requires the parameterizing type to be a .NET reference type.
 
 The following class `C`:
 
@@ -667,9 +667,9 @@ Which is fine in today's world. However, the `class` constraint will now mean **
 
 > The `class` constraint is **non-null**. We can consider whether `class?` should be a valid nullable constraint denoting "nullable reference type".
 
-Although it's true that "not struct" still maps to **non-null** reference type, this might be unexpected.
+Today in F# you cannot assign `null` as a proper value to `C` when it is constrained with `not struct` within F#. So it is already semantically similar to how things will work in C# 8.0. What this does mean is that C# 8.0 code that consumes this class will see `T` as a non-nullable reference type. This is consistent with the changes being made to constraints in C# 8.0.
 
-**Recommendation:** Change to emit to a nullable reference type constraint.
+**Recommendation:** Make no change.
 
 #### Compatibility with Microsoft.FSharp.Core.DefaultValueAttribute
 
@@ -685,4 +685,21 @@ type C() =
 printfn "%d" (C().Whoops.Length)
 ```
 
-Today, this produces a `NullReferenceException` at runtime. This means that `Whoops` is actually a nullable reference type, but it will be annotated as if it were a non-nullable reference type. It is the presence of the attribute that changes this, which we'll have to rationalize somehow.
+Today, this produces a `NullReferenceException` at runtime.
+
+`Whoops` is annotated as a reference type, but it is actuall a nullable reference type due to being decorated with the attribute. This means that we'll either have to:
+
+(a) Do nothing and leave this as a confusing thing that emits a warning at the call site, but not at the declaration site
+(b) Emit a warning saying that we're calling a nullable reference type a non-nullable reference type
+
+Either way, we'll need to respect the `[<DefaultValue>]` attribute.
+
+#### Unchecked.defaultOf<'T>
+
+Today, `Unchecked.defaultof<'T>` will generate `null` when `'T` is a reference type. However, `'T` is non-null, and we'll want to support a `'T | null` being passed in as well. Given this, the signature could be changed to `'T | null`. This could compile down to be an assembly-level attribute, so older F# compilers consuming a newer FSharp.Core wouldn't see the constraint.
+
+However, would this still work for value types being passed in? It has to.
+
+#### Array.zeroCreate<'T>
+
+The same question for `Unchecked.defaultof<'T>` exists for `Array.zeroCreate<'T>`. We'll want to make it clear that `'T` is nullable, but this has to be fully backwards-compatible. And older compilers should still be able to use this function from a newer FSharp.Core.
