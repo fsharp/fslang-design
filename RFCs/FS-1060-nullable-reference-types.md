@@ -533,8 +533,6 @@ type C() =
     member __.M(?x: string?) = "BLEGH"
 ```
 
-But it is a lot easier to implement since it doesn't require ad-hoc, structurally-typed unions.
-
 #### Nullref<'T>
 
 Have a wrapper type for any reference type `'T` that could be null.
