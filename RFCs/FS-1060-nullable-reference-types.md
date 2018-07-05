@@ -159,6 +159,20 @@ let len (str: string | null) =
 
 This is by far the most common pattern in F# programming. In the previous code sample, `str` is of type `string | null`, but `s` is now of type `string`. This is because we know that based on the `null` has been accounted for by the `null` pattern.
 
+#### Likely supported: isNull and others using null-handling annotation
+
+```fsharp
+let len (str: string | null) =
+    if isNull str then
+        -1
+    else
+        str.Length // OK
+```
+
+The `isNull` function is considered to be a good way to check for `null`. We can annotate it in FSharp.Core with the attribute used for functions handling null (we'll call it `[<HandlesNull>]`).
+
+Similarly, CoreFX will annotate methods like `String.IsNullOrEmpty` as handling `null`. This means that the most common of null-checking methods can be respected by flow analysis and reduce the amount of nullability annotations.
+
 ##### Possibly supported: Pattern matching with wildcard
 
 ```fsharp
@@ -194,30 +208,7 @@ let len (str: string | null) =
 
 Note that the reverse (`str.Length > 0 && str <> null`) would give a warning, because we attempt to dereference before the `null` check. This would only hold with AND checks. More generally, if the boolean expression to the left of the dereference involves a `x <> null` check, then the dereference is safe.
 
-#### Likely unsupported: isNull
-
-```fsharp
-let len (str: string | null) =
-    if isNull str then
-        -1
-    else
-        str.Length // WARNING: could be null
-```
-
-The `isNull` function is considered to be a good way to check for `null`. Unfortunately, because it is a function that returns `bool`, the logic needed to support this is deeply foreign to F# and troublesome to implement. For example, consider the following:
-
-```fsharp
-let len (str: string | null) =
-    let someCondition = getCondition()
-    if isNull str && someCondition then
-        -1
-    else
-        str.Length // WARNING: could be null
-```
-
-There is no telling what `someCondition` would evaluate to, so we cannot guarantee that `str` will be `string` in the `else` clause.
-
-#### Likely unsupported: boolean-based checks for null
+#### Likely unsupported: boolean-based checks for null that lack an annotation
 
 Generally speaking, beyond highly-specialized cases, we cannot guarantee non-nullability that is checked via a boolean. Consider the following:
 
@@ -231,7 +222,7 @@ let len (str: string | null) =
         str.Length // WARNING: could be null
 ```
 
-Although this simple example could potentially work, it could quickly get out of hand and complicate the compiler. Also, other languages that support nullable reference types (C# 8.0, Scala, Kotlin, Swift, TypeScript) do not do this. Instead, non-nullability is asserted when the programmer knows something will not be `null`.
+Although this simple example could potentially work, it could quickly get out of hand. Also, other languages that support nullable reference types (C# 8.0, Scala, Kotlin, Swift, TypeScript) do not do this. Instead, non-nullability is asserted when the programmer knows something will not be `null`.
 
 #### Likely unsupported: nested functions accessing outer scopes
 
@@ -245,7 +236,7 @@ let len (str: string | null) =
     | _ -> doWork() // But after this line is written it's fine?
 ```
 
-Although `doWork()` is called in a place where `str` would be non-null, this may too complex to implement properly.
+Although `doWork()` is called only in a scope where `str` would be non-null, this may too complex to implement properly.
 
 **Note:** C# supports the equivalent of this with local functions.
 
