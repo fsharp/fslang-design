@@ -353,7 +353,7 @@ type D<'T | null>()
 
 That is, nullabulity constraints propagate via inheritance.
 
-If an unconstrained type parameter comes from an older F# or C# assembly, it is assumed to be nullable, and warnings are given when non-nullability is assumed.
+If an unconstrained type parameter comes from an older C# assembly, it is assumed to be nullable, and warnings are given when non-nullability is assumed. If it comes from F# and it does not have the `null` constraint, then it is assumed to be non-nullable. If it does, then it is assumed to be nullable.
 
 ### Interaction between older and newer projects
 
@@ -506,13 +506,13 @@ These kinds of warnings should be individually tunable on a per-project basis.
 
 Although it could be argued that this simplifies reference types by making the fact that they could be `null` explicit, it does give programmers another thing that must explicitly account for. Although it fits within the "spirit" of F# to make nullability of reference types explicit, it's arguable that F# programmers need to account for enough things already.
 
-This is also a very complicated feature, with lots of edge cases, that has significantly reduces utilitity if any of the following are true:
+This is also a very complicated feature, with lots of edge cases, that has significantly reduced utility if any of the following are true:
 
 * There is insufficient flow analysis such that F# programmers are asserting non-nullability all over the place just to avoid unnecessary warnings
-* Existing, working code is somehow infected without the programmer explicitly opting into this new behavior (indeed, this would be horrible)
+* Existing, working code is infected without the programmer explicitly opting into this new behavior
 * The rest of the .NET ecosystem simply does not adopt non-nullability, thus making adornments the new normal
 
-Although we cannot control the third point, ensuring that the implement is complete and up to spec with respect to what C# also does (while accounting for F#-isms) is the only way to do our part in helping the ecosystem produce less nulls.
+Although we cannot control the third point, ensuring that the implementation is complete and up to spec with respect to what C# also does (while accounting for F#-isms) is the only way to do our part in helping the ecosystem produce less nulls.
 
 Additionally, we now have the following possible things to account for with respect to accessing underlying data:
 
@@ -541,12 +541,12 @@ Issue: looks horrible with F# optional parameters
 
 ```fsharp
 type C() = 
-    memeber __.M(?x: string?) = "BLEGH"
+    member __.M(?x: string?) = "BLEGH"
 ```
 
 But it is a lot easier to implement since it doesn't require ad-hoc, structurally-typed unions.
 
-#### Nulref<'T>
+#### Nullref<'T>
 
 Have a wrapper type for any reference type `'T` that could be null.
 
