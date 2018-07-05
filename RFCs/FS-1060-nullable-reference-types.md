@@ -159,7 +159,7 @@ let len (str: string | null) =
 
 This is by far the most common pattern in F# programming. In the previous code sample, `str` is of type `string | null`, but `s` is now of type `string`. This is because we know that based on the `null` has been accounted for by the `null` pattern.
 
-#### Likely supported: isNull and others using null-handling annotation
+#### Likely supported: isNull and others using null-handling decoration
 
 ```fsharp
 let len (str: string | null) =
@@ -171,7 +171,7 @@ let len (str: string | null) =
 
 The `isNull` function is considered to be a good way to check for `null`. We can annotate it in FSharp.Core with the attribute used for functions handling null (we'll call it `[<HandlesNull>]`).
 
-Similarly, CoreFX will annotate methods like `String.IsNullOrEmpty` as handling `null`. This means that the most common of null-checking methods can be respected by flow analysis and reduce the amount of nullability annotations.
+Similarly, CoreFX will annotate methods like `String.IsNullOrEmpty` as handling `null`. This means that the most common of null-checking methods can be respected by flow analysis and reduce the amount of nullability assertions.
 
 ##### Possibly supported: Pattern matching with wildcard
 
@@ -208,7 +208,7 @@ let len (str: string | null) =
 
 Note that the reverse (`str.Length > 0 && str <> null`) would give a warning, because we attempt to dereference before the `null` check. This would only hold with AND checks. More generally, if the boolean expression to the left of the dereference involves a `x <> null` check, then the dereference is safe.
 
-#### Likely unsupported: boolean-based checks for null that lack an annotation
+#### Likely unsupported: boolean-based checks for null that lack handlesnull decoration
 
 Generally speaking, beyond highly-specialized cases, we cannot guarantee non-nullability that is checked via a boolean. Consider the following:
 
