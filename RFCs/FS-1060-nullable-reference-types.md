@@ -249,8 +249,10 @@ Although `doWork()` is called only in a scope where `str` would be non-null, thi
 To get around scenarios where flow analysis cannot establish a non-null situation, a programmer can use `!` to assert non-nullability:
 
 ```fsharp
+let myIsNull item = isNull item
+
 let len (str: string | null) =
-    if isNull str then
+    if myIsNull str then
         -1
     else
         str!.Length // OK: 'str' is asserted to be 'null'
