@@ -365,7 +365,6 @@ All reference types consumped from a newer project are "normal" reference types 
 Nullability is propagated through type inference:
 
 ```fsharp
-let makeTupleWithNull (a)
 // Inferred signature:
 //
 // val makeNullIfEmpty : str:string -> string | null
