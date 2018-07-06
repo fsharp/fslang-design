@@ -462,12 +462,12 @@ To have parity with F# signatures (note: not tooltips), signatures printed in F#
 
 #### F# scripting
 
-F# scripts will now also give warnings when using the compiler that implements this feature. This also necessitates a new feature for F# scripting that allows you to specify a language version so that you can opt-out of any nullability warnings. Example:
+F# scripts will now also give warnings when using the compiler that implements this feature. This also necessitates a new feature for F# scripting that allows you to opt-out of any nullability warnings. Example:
 
 ```fsharp
-#langlevel "4.5"
+#nullability "false"
 
-let s: string = null // OK, since 4.5 doesn't implement nullable references
+let s: string = null // OK, since we don't track nullability warnings
 ```
 
 By default, F# scripts that use a newer compiler via F# interactive will understand nullability.
@@ -594,6 +594,8 @@ c2 <- null // OK
 
 This behavior is quite similar to nullable reference types, but is unfortunately a bit of a cleaver when all you need is a paring knife. It's arguable that the value of nullability for F# programmers is _ad-hoc_ in nature, which is something that is squarely accomplished with nullable reference types. Instead, `[<AllowNullLiteral>]` sort of "pollutes" things by making any instantiation a nullable instantiation.
 
+**Recommendation**: Relax this restriction from an error to a warning, and then treat any reference to types decorated with `[<AllowNullLiteral>]` as if they were nullable reference types. This is not a breaking change, but it does mean that F#-declared reference types are now a bit different once this feature is in place.
+
 #### Compatibility with existing null constraint
 
 The existing `null` constraint for generic types prevents programmers from parameterizing a type with an F# reference type that does not have `null` as a proper value (i.e., decorated with `[<AllowNullLiteral>]`).
@@ -678,12 +680,12 @@ printfn "%d" (C().Whoops.Length)
 
 Today, this produces a `NullReferenceException` at runtime.
 
-`Whoops` is annotated as a reference type, but it is actuall a nullable reference type due to being decorated with the attribute. This means that we'll either have to:
+`Whoops` is annotated as a reference type, but it is actually a nullable reference type due to being decorated with the attribute. This means that we'll either have to:
 
 (a) Do nothing and leave this as a confusing thing that emits a warning at the call site, but not at the declaration site
-(b) Emit a warning saying that we're calling a nullable reference type a non-nullable reference type
+(b) Emit a warning saying that decoration with `[<DefaultValue>]` means that the type annotation is incorrect
 
-Either way, we'll need to respect the `[<DefaultValue>]` attribute.
+Either way, we'll need to respect the `[<DefaultValue>]` attribute generating a `null` to remain compatible with existing code.
 
 #### Unchecked.defaultOf<'T>
 
