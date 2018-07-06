@@ -17,9 +17,11 @@ Conceptually, reference types can be thought of as having two forms:
 * Normal reference types
 * Nullable reference types
 
-These will be distinguished via syntax, type signatures, and tools. Additionally, there will be flow analysis to allow you to determine when a nullable reference type is non-null and can be "viewed" as a reference type.
+These will be distinguished via syntax, type signatures, and tools. Additionally, there will be flow analysis to allow you to determine when a nullable reference type is non-null and can be treated as a reference type.
 
 Warnings are emitted when reference and nullable reference types are not used according with their intent, and these warnings are tunable as errors.
+
+For the purposes of this document, the terms "reference type" and "non-nullable reference type" may be used interchangeably. They refer to the same thing.
 
 ## Motivation
 [motivation]: #motivation
