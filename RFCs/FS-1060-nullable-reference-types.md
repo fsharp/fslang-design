@@ -144,6 +144,8 @@ There will be no way to declare an F# type as follows:
 type (NotSupportedAtAll | null)() = class end
 ```
 
+And in existing F# today, the only way to declare an F# reference type that could be `null` in F# code is to use `[<AllowNullLiteral>]`. This would not change with this proposal; that is, the only way to declare a reference type in F# that could have `null` as a value in F# code is `[<AllowNullLiteral>]`.
+
 ### Checking of nullable references
 
 There are a few common ways that F# programmers check for null today. Unless explicitly mentioned as unsupported, support for flow analysis is under consideration for certain null-checking patterns.
