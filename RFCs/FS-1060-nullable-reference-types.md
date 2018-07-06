@@ -348,7 +348,7 @@ That is, nullabulity constraints propagate via inheritance.
 
 If an unconstrained type parameter comes from an older C# assembly, it is assumed to be nullable, and warnings are given when non-nullability is assumed. If it comes from F# and it does not have the `null` constraint, then it is assumed to be non-nullable. If it does, then it is assumed to be nullable.
 
-Additionally, C# will introduce the `class?` constraint. This syntax sugar will compile into the `class` constraint, but the class itself will be decorated with an attribute that tells consumers that the `'T` is a nullable reference type. This attribute will need to be respected by the F# compiler so that C#
+Additionally, C# will introduce the `class?` constraint. This syntax sugar will compile into the `class` constraint, but the class itself will be decorated with an attribute that tells consumers that the `'T` is a nullable reference type. This attribute will need to be respected by the F# compiler.
 
 ### Interaction between older and newer projects
 
