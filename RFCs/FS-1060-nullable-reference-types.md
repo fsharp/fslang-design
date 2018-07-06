@@ -242,7 +242,7 @@ let len (str: string | null) =
 
 Although `doWork()` is called only in a scope where `str` would be non-null, this may too complex to implement properly.
 
-**Note:** C# supports the equivalent of this with local functions.
+**Note:** C# supports the equivalent of this with local functions. TypeScript does not support this.
 
 #### Asserting non-nullability
 
