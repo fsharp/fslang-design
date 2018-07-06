@@ -682,8 +682,8 @@ Today, this produces a `NullReferenceException` at runtime.
 
 `Whoops` is annotated as a reference type, but it is actually a nullable reference type due to being decorated with the attribute. This means that we'll either have to:
 
-(a) Do nothing and leave this as a confusing thing that emits a warning at the call site, but not at the declaration site
-(b) Emit a warning saying that decoration with `[<DefaultValue>]` means that the type annotation is incorrect
+* Do nothing and leave this as a confusing thing that emits a warning at the call site, but not at the declaration site
+* Emit a warning saying that decoration with `[<DefaultValue>]` means that the type annotation is incorrect
 
 Either way, we'll need to respect the `[<DefaultValue>]` attribute generating a `null` to remain compatible with existing code.
 
