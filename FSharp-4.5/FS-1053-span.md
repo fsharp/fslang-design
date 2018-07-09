@@ -264,21 +264,34 @@ let F1() =
     c.InstanceProperty <- today.AddDays(2.0)
 ```
 
+#### Scoping for byrefs
 
-#### Implicit address-of when calling members with parameter type `inref<'T>` 
+The general idea is that a let-bound value cannot have its reference escape the scope from which it was declared, effectively its visibility. For example:
 
-When calling a member with an argument of type `inref<T>` an implicit address-of-temporary-local operation is applied.
 ```fsharp
-type C() = 
-    static member Days(x: inref<System.DateTime>) = x.Days
-
-let mutable now = System.DateTime.Now
-C.Days(&now) // allowed
-
-let now2 = System.DateTime.Now
-C.Days(now2) // allowed
+let test () =
+    let x =
+        let y = 1
+        &y
+    ()
 ```
-This only applies when calling members, not arbitrary let-bound functions. See "Alternatives" below.
+`&y` will now receive an error describing that it's escaping its local scope.
+
+Another example:
+```fsharp
+let test () =
+    let z = 1
+    let x =
+        let y = 1
+        if true then
+            &y
+        else
+            &z
+    ()
+```
+`&y` will also give the same error.
+
+The rationale behind this is not just for soundness reasons, but for gaurantees in the optimizer that local values like this will not escape in such a manner.
 
 #### `IsReadOnly` on structs
 
@@ -498,7 +511,7 @@ machinery to express read-only references.
 
 # Notes
 
-* Implicit address-of is not applied for parameters to let-bound functions.  For example:
+* Implicit address-of was intially implemented for member methods but was taken out due to scoping rationale. Currently it is **not implemented**. If it was done again, it wouldn't be applied for parameters to let-bound functions. For example:
 
 ```
 let testIn (m: inref<System.DateTime>) =
