@@ -553,9 +553,8 @@ Find a way to make this work with the existing Option type.
 
 Issues:
 
-* Could this even work in the first place?
-* `None` already emits `null`, but it's a distinct case and not erased at compile time
-* References and Nullable references are fundamentally the same thing, just one has an assembly-level attribute. This is simply not the same as an optional type.
+* Massively breaking change for any F# code consuming existing reference types. In many cases, this break is so severe that entire routines would need to be rewritten.
+* Massively breaking change for any C# code consuming F# option types. This simply breaks C# consumers no matter which way you swing it.
 
 ### Asserting non-nullability syntax
 
@@ -699,3 +698,52 @@ However, would this still work for value types being passed in? It has to.
 #### Array.zeroCreate<'T>
 
 The same question for `Unchecked.defaultof<'T>` exists for `Array.zeroCreate<'T>`. We'll want to make it clear that `'T` is nullable, but this has to be fully backwards-compatible. And older compilers should still be able to use this function from a newer FSharp.Core.
+
+#### Format specifiers
+
+Today, the following specifiers work with reference types:
+
+* `%s`, for strings
+* `%O`, which calls `ToString()`
+* `%A`/`%+A`, for anything, using reflection to find values to print
+* `%a` and `%t`, which work with `System.IO.TextWriter`
+
+Making these work with non-nullable reference types would be a breaking change, so it's likely that the underlying type be the appropriate `T | null` for each specifier. For example, `%s` would work with `string | null`.
+
+**Recommendation:** These now operate assuming incoming types are nullable reference types.
+
+#### Emitting F# options types for C# consumption
+
+F# options types emit `None` as `null`. For example, considering the following public F# API:
+
+```fsharp
+type C() =
+    member __.M(doot) = if doot then Some "doot" else None
+```
+
+This is equivalent to the following C# 7.x code:
+
+```csharp
+[Serializable]
+[CompilationMapping(SourceConstructFlags.ObjectType)]
+public class C
+{
+    public C()
+    {
+        ((object)this)..ctor();
+    }
+
+    public FSharpOption<string> M(bool doot)
+    {
+        if (doot)
+        {
+            return FSharpOption<string>.Some("doot");
+        }
+        return null;
+    }
+}
+```
+
+This means that `FSharpOption` is a nullable reference type if it were to be consumed by C# 8.0. Indeed, there is definitely C# code out there that checks for `null` when consuming an F# option type to account for the `None` case. This is because there is no other way to safely extract the underlying value in C#!
+
+**Recommendation:** ROLL INTO A BALL AND CRY
