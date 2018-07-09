@@ -287,7 +287,7 @@ F# structs are normally readonly, it is quite hard to write a mutable struct. Kn
 Example code:
 
 ```fsharp
-[<IsReadOnly>]
+[<IsReadOnly; Struct>]
 type S(count1: int, count2: int) = 
     member x.Count1 = count1
     member x.Count2 = count2
@@ -295,7 +295,7 @@ type S(count1: int, count2: int) =
 
 `IsReadOnly` is not added to F# struct types automatically, you must add it manually.
 
-Note that `[<IsReadOnly>]` does not imply `[<Struct>]`  both attributes have to be specified.
+Note that `[<IsReadOnly>]` does not imply `[<Struct>]`. Both attributes have to be specified.
 
 Using `IsReadOnly` attribute on a struct which has a mutable field will give an error.
 
