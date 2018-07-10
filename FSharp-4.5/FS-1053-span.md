@@ -291,7 +291,7 @@ let test () =
 ```
 `&y` will also give the same error.
 
-The rationale behind this is not just for soundness reasons, but for gaurantees in the optimizer that local values like this will not escape in such a manner.
+The rationale behind this is not just for soundness reasons, but for guarantees in the optimizer that local values like this will not escape in such a manner.
 
 #### `IsReadOnly` on structs
 
@@ -509,9 +509,25 @@ machinery to express read-only references.
 
 * No implicit dereference on byref return from let-bound functions.  Originally we did not do implicit-dereference when calling arbitrary let-bound functions.  However usability feedback indicated this is a source of inconsistency
 
+* Implicit address-of for `inref<'T>` arguments on member methods. While this is part of the corresponding C# design, it has a specific scoping issue:
+```fsharp
+let x = &M(1)
+```
+The AST from that is translated into this:
+```fsharp
+let x =
+    let tmp = 1
+    &M(&tmp)
+```
+Because `M` returns a `byref`, we have to assume its scope will escape on return because it was passed a `byref` from a local defined within the scope of the call. `tmp` is narrow in scope.
+
+One option to resolve this issue is to force explicit address-of on arguments for member methods that return a `byref`. Everything else can be implicit.
+
+   --> Will try to bring this in for F# 5.0. We might start seeing APIs use `inref<'T>` more that warrant this feature coming back.
+
 # Notes
 
-* Implicit address-of was intially implemented for member methods but was taken out due to scoping rationale. Currently it is **not implemented**. If it was done again, it wouldn't be applied for parameters to let-bound functions. For example:
+* Implicit address-of is not applied for parameters to let-bound functions.  For example:
 
 ```
 let testIn (m: inref<System.DateTime>) =
