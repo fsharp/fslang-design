@@ -521,7 +521,7 @@ let x =
 ```
 Because `M` returns a `byref`, we have to assume its scope will escape on return because it was passed a `byref` from a local defined within the scope of the call. `tmp` is narrow in scope.
 
-One option to resolve this issue is to force explicit address-of on arguments for member methods that return a `byref`. Everything else can be implicit.
+One option to resolve this issue is to force explicit address-of for arguments on member methods that return a `byref`. Everything else can be implicit.
 
    --> Will try to bring this in for F# 5.0. We might start seeing APIs use `inref<'T>` more that warrant this feature coming back.
 
