@@ -3,7 +3,7 @@
 The design suggestion [Add non-nullable instantiations of nullable types, and interop with proposed C# 8.0 non-nullable reference types](https://github.com/fsharp/fslang-suggestions/issues/577) has been marked "approved in principle". This RFC covers the detailed proposal for this suggestion.
 
 * [x] Approved in principle
-* [ ] [Suggestion](https://github.com/fsharp/fslang-suggestions/issues/577)
+* [x] [Suggestion](https://github.com/fsharp/fslang-suggestions/issues/577)
 * [ ] Details: [TODO](https://github.com/fsharp/fslang-design/issues/FILL-ME-IN)
 * [ ] Implementation: [TODO](https://github.com/Microsoft/visualfsharp/pull/FILL-ME-IN)
 
@@ -350,16 +350,6 @@ If an unconstrained type parameter comes from an older C# assembly, it is assume
 
 Additionally, C# will introduce the `class?` constraint. This syntax sugar will compile into the `class` constraint, but the class itself will be decorated with an attribute that tells consumers that the `'T` is a nullable reference type. This attribute will need to be respected by the F# compiler.
 
-### Interaction between older and newer projects
-
-#### New consuming old
-
-All reference types from older projects are assumed to be nullable until they are compiled with a newer F# compiler. That is, including a newer project into an older system should not "infect" those older projects.
-
-### Old consuming new
-
-All reference types consumped from a newer project are "normal" reference types as far as the older project is considered. Because the older version of the F# compiler does not respect the `[Nullable]` attribute, there is no difference from the view of that project.
-
 ### Type inference
 
 Nullability is propagated through type inference:
@@ -475,6 +465,40 @@ let s: string = null // OK, since we don't track nullability warnings
 
 By default, F# scripts that use a newer compiler via F# interactive will understand nullability.
 
+### Interaction model
+
+The following details how an F# compiler with nullable reference types will behave when interacting with different kinds of components.
+
+#### F# 5.0 consuming non-F# assemblies that do not have nullability
+
+All non-F# assemblies built with a compiler that does not understand nullability are treated such that all of their reference types are nullable.
+
+Example: a `.dll` coming from a NuGet package built with C# 7.1 will be interpreted as if all reference types are nullable, including constraints, generics, etc.
+
+This means that warnings will be emitted when `null` is not properly accounted for. Additionally, when older non-F# components are eventually recompiled with C# 8.0, it will likely be an API-breaking change that will force new F# code to go back and do away with any redundant `null` checks.
+
+#### F# 5.0 consuming F# assemblies that do not have nullability
+
+All F# assemblies built with a previous F# compiler will be treated as such:
+
+* All reference types that are _not_ declared in F# are nullable.
+* All F#-declared reference types that have `null` as a proper value are treated as if they are nullable.
+* All F#-declared reference types that do not have `null` as a proepr value are treated as non-nullable reference types.
+
+#### Ignoring F# 5.0 assemblies that do have nullability
+
+Users may want to progressively work through `null` warnings by treating a given assembly as "nullability obliviousness". To respect this, F# 5.0 will have to ignore any potentially unsafe dereference of `null` until sucha  time that "nullability obliviousness" is turned off for that assembly.
+
+**Potential issue:** How are these types annotated in code? `string` or `string | null`, with the latter simply not triggering any warnings?
+
+#### Older F# components consuming non-F# assemblies that do have nullability
+
+Because the nullability attribute is only understood by F# 5.0, their presence has no impact on existing F# codebases. Nothing is different.
+
+#### Older F# components consuming F# assemblies that do have nullability
+
+F# components are no different than non-F# components when it comes to being consumed by an older F# codebase. The nullability attribute is simply ignored.
+
 ### Breaking changes and tunability
 
 Non-null warnings are an obvious breaking change with existing code, and thus will be opt-in for existing projects. New projects will have non-null warnings be on by default.
@@ -556,7 +580,7 @@ Issues:
 * Massively breaking change for any F# code consuming existing reference types. In many cases, this break is so severe that entire routines would need to be rewritten.
 * Massively breaking change for any C# code consuming F# option types. This simply breaks C# consumers no matter which way you swing it.
 
-### Asserting non-nullability syntax
+### Asserting non-nullability
 
 **`!!` postfix operator?**
 
@@ -570,12 +594,31 @@ No idea if this could even work.
 
 Not possible with current plan of emitting warnings with casting.
 
+**New keyword with a scope?**
+
+Something like this may be considered:
+
+```console
+notnull { expr }
+```
+
+Where `notnull` returns the type of `expr`. But this may be viewed as too complicated when compared with a postfix operator, especially since a postfix operator is already a standard established by C#, Kotlin, TypeScript, and Swift.
+
+**Not have it?**
+
+This is untenable, unless we also implement [the ability to disable a warning just in one place within a file](https://github.com/fsharp/fslang-suggestions/issues/278). Otherwise, users will either:
+
+* Have a nonzero number of warnings they cannot disable via a non-nullability assertion
+* Ignore all warnings in a file
+
+Both options will likely be considered unacceptable by F# programmers.
+
 ### Unresolved questions
 [unresolved]: #unresolved-questions
 
 #### Handling warnings
 
-What about the ability to turn off nullability warnings when annotations are coming from a particular file?
+What about the ability to turn off nullability warnings when annotations are coming from a particular file? Or only have nullability warnings on a per-file basis? Answer: that would be weird.
 
 #### Compatibility with existing F# nullability features
 
@@ -596,7 +639,7 @@ c2 <- null // OK
 
 This behavior is quite similar to nullable reference types, but is unfortunately a bit of a cleaver when all you need is a paring knife. It's arguable that the value of nullability for F# programmers is _ad-hoc_ in nature, which is something that is squarely accomplished with nullable reference types. Instead, `[<AllowNullLiteral>]` sort of "pollutes" things by making any instantiation a nullable instantiation.
 
-**Recommendation**: Relax this restriction from an error to a warning, and then treat any reference to types decorated with `[<AllowNullLiteral>]` as if they were nullable reference types. This is not a breaking change, but it does mean that F#-declared reference types are now a bit different once this feature is in place.
+**Recommendation**: Relax this restriction from an error to a warning in F# 5.0 only, and then treat any reference to types decorated with `[<AllowNullLiteral>]` as if they were nullable reference types. This is not a breaking change, but it does mean that F#-declared reference types are now a bit different once this feature is in place.
 
 #### Compatibility with existing null constraint
 
@@ -632,7 +675,7 @@ What this means is that F# syntax that declares a type as accepting only types t
 
 Additionally, C# 8.0 will introduce the `class?` constraint. This is syntax sugar for an attribute that will decorate the class, informing consumers that `T` is a nullable reference type. So `class` and `class?` are distinctly different things in C# now.
 
-**Recommendation:** Change to emit as a `class` constraint but with the same attribute decorating the class that C# uses.
+**Recommendation:** Change this in F# 5.0 to emit as a `class` constraint but with the same attribute decorating the class that C# uses.
 
 #### Compatibility with existing not struct constraint
 
@@ -664,7 +707,7 @@ Which is fine in today's world. However, the `class` constraint will now mean **
 
 Today in F# you cannot assign `null` as a proper value to `C` when it is constrained with `not struct` within F#. So it is already semantically similar to how things will work in C# 8.0. What this does mean is that C# 8.0 code that consumes this class will see `T` as a non-nullable reference type. This is consistent with the changes being made to constraints in C# 8.0.
 
-**Recommendation:** Make no change.
+**Recommendation:** Make no change for F# 5.0
 
 #### Compatibility with Microsoft.FSharp.Core.DefaultValueAttribute
 
@@ -691,13 +734,20 @@ Either way, we'll need to respect the `[<DefaultValue>]` attribute generating a 
 
 #### Unchecked.defaultOf<'T>
 
-Today, `Unchecked.defaultof<'T>` will generate `null` when `'T` is a reference type. However, `'T` is non-null, and we'll want to support a `'T | null` being passed in as well. Given this, the signature could be changed to `'T | null`. This could compile down to be an assembly-level attribute, so older F# compilers consuming a newer FSharp.Core wouldn't see the constraint.
+Today, `Unchecked.defaultof<'T>` will generate `null` when `'T` is a reference type. However, `'T` means non-null, and it's obvious that this will return `null` when parameterized with a .NET reference type such as `string`. We have some options:
 
-However, would this still work for value types being passed in? It has to.
+* Keep the existing signature, despite being a bit confusing, and have it act as an unconstrained generic function that will return `null` for reference types that have `null` as a proper value
+* Create a variant of this function that works in terms of nullable reference types, and somehow convey that you need to call this for reference types, and the existing function for non-reference types
+
+The latter option is terrible, so the former is probably better.
 
 #### Array.zeroCreate<'T>
 
-The same question for `Unchecked.defaultof<'T>` exists for `Array.zeroCreate<'T>`. We'll want to make it clear that `'T` is nullable, but this has to be fully backwards-compatible. And older compilers should still be able to use this function from a newer FSharp.Core.
+The same issue for `Unchecked.defaultof<'T>` exists for `Array.zeroCreate<'T>`.
+
+#### typeof<'T> and typedefof<'T>
+
+We cannot actually guarantee that the underlying `System.Type` derived from `'T` is nullable or not. This is due to there being no mechanism in reflection today to understand the nullability attribute. This represents an inherent unsoundness of the nullability feature unless some approach for dealing with this is derived.
 
 #### Format specifiers
 
