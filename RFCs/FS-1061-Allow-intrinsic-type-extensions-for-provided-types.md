@@ -5,7 +5,7 @@ This RFC covers the detailed proposal for this suggestion.
 
 * [x] Approved in principle
 * [x] [Suggestion](https://github.com/fsharp/fslang-suggestions/issues/509)
-* [ ] Details: [under discussion](https://github.com/fsharp/fslang-design/issues/FILL-ME-IN)
+* [x] Details: [under discussion](https://github.com/fsharp/fslang-design/issues/323)
 * [ ] Implementation: TODO
 
 
