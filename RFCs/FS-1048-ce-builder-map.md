@@ -86,8 +86,8 @@ builder.Bind(xexpr, fun x ->
 This should be able to use the `MapReturn` construct for *both* of these, with a little rearranging:
 
 ```fsharp
-builder.Combine(builder.Map(fun x -> f x),
-                builder.Map(fun y -> g y))
+builder.Combine(builder.MapReturn(fun x -> f x),
+                builder.MapReturn(fun y -> g y))
 ```
 
 This should also work with longer chains of `let!` + `return`s, as in this code:
