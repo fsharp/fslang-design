@@ -264,21 +264,34 @@ let F1() =
     c.InstanceProperty <- today.AddDays(2.0)
 ```
 
+#### Scoping for byrefs
 
-#### Implicit address-of when calling members with parameter type `inref<'T>` 
+The general idea is that a let-bound value cannot have its reference escape the scope from which it was declared, effectively its visibility. For example:
 
-When calling a member with an argument of type `inref<T>` an implicit address-of-temporary-local operation is applied.
 ```fsharp
-type C() = 
-    static member Days(x: inref<System.DateTime>) = x.Days
-
-let mutable now = System.DateTime.Now
-C.Days(&now) // allowed
-
-let now2 = System.DateTime.Now
-C.Days(now2) // allowed
+let test () =
+    let x =
+        let y = 1
+        &y
+    ()
 ```
-This only applies when calling members, not arbitrary let-bound functions. See "Alternatives" below.
+`&y` will now receive an error describing that it's escaping its local scope.
+
+Another example:
+```fsharp
+let test () =
+    let z = 1
+    let x =
+        let y = 1
+        if true then
+            &y
+        else
+            &z
+    ()
+```
+`&y` will also give the same error.
+
+The rationale behind this is not just for soundness reasons, but for guarantees in the optimizer that local values like this will not escape in such a manner.
 
 #### `IsReadOnly` on structs
 
@@ -495,6 +508,22 @@ machinery to express read-only references.
    --> Thinking this over
 
 * No implicit dereference on byref return from let-bound functions.  Originally we did not do implicit-dereference when calling arbitrary let-bound functions.  However usability feedback indicated this is a source of inconsistency
+
+* Implicit address-of for `inref<'T>` arguments on member methods. While this is part of the corresponding C# design, it has a specific scoping issue:
+```fsharp
+let x = &M(1)
+```
+The AST from that is translated into this:
+```fsharp
+let x =
+    let tmp = 1
+    &M(&tmp)
+```
+Because `M` returns a `byref`, we have to assume its scope will escape on return because it was passed a `byref` from a local defined within the scope of the call. `tmp` is narrow in scope.
+
+One option to resolve this issue is to force explicit address-of for arguments on member methods that return a `byref`. Everything else can be implicit.
+
+   --> Will try to bring this in for F# 5.0. We might start seeing APIs use `inref<'T>` more that warrant this feature coming back.
 
 # Notes
 
