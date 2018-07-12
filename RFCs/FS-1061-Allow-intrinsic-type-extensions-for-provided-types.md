@@ -104,7 +104,7 @@ type ViewController(handle : IntPtr) =
 
 This has several drawbacks that makes the user facing code more complex and unweidy than it should be with additions mentioned in the RFC.
 
-## Attributes have to be defined on outward facing type
+### Attributes have to be defined on outward facing type
 
 Many frameworks require the generation of attributes to be applied to generated type, Xamarin.iOS is such an example.  The `Register` attribute has to be applied to `ViewControllers` to supply the mapping between a user class and the storyboard name.  As attributes do not propagate with inheritance you cannot generate them on the base or abstract type.  The best option available to a type provider designer is to provide a helper to be generated that the consumer has to learn how to apply, of course this can be detailed in documentation but its an example of unnecessary work.  You can see this in the iOS UI provider above:
 
@@ -113,7 +113,7 @@ Many frameworks require the generation of attributes to be applied to generated 
 type ViewController(handle : IntPtr) =  
 ```
 
-## Inheritance required
+### Inheritance required
 
 The generated type **has** to be sub-classed to apply method overloads which are required by certain framework, iOS being the example again. Xamarin.iOS requires that the users custom `ViewController` to inherit from `UIViewController` or a derivative, these base types had a multitude of methods that can be overridden such as `ViewDidLoad` and `DidReceiveMemoryWarning` in the example above.  This means any constructors present on the type must also be detailed using the inherit syntax:
 
@@ -137,7 +137,7 @@ type MyView =
         { inherit container2(context, attr) } then x.Initialise()
 ```
 
-All of the duplicated constructor propagation can be avoided by allowing intrinsic type extensions  to occur on generative type providers.
+All of the duplicated constructor propagation can be avoided by allowing intrinsic type extensions to occur on generative type providers.
 
 Method overloads are applied in the usual manner but if they could be applied as part of the 
 ```fsharp
@@ -146,7 +146,7 @@ Method overloads are applied in the usual manner but if they could be applied as
         base.ViewDidLoad()
 ```
 
-If this RFC was implemented the iOS type provider would look like this instead:
+If this RFC was implemented the usage of the iOS type provider would look like this instead:
 
 ```fsharp
 type container = Xamarin.UIProvider 
