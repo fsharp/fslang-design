@@ -235,7 +235,7 @@ As noted above, in these cases the returned type `byref<T>` is expanded to `byre
 
 #### Implicit dereference of byrefs in `for..in` expressions
 
-Iterating over a collection using a `for..in` expression that returns a byref as its item, that item will be implicitly dereferenced.
+When iterating over a collection using a `for..in` expression that returns a byref as its item, that item will be implicitly dereferenced.
 
 For example:
 ```fsharp
