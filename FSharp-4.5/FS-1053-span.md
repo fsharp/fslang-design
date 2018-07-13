@@ -233,6 +233,18 @@ Hwoever it specifically doesn't apply to:
 
 As noted above, in these cases the returned type `byref<T>` is expanded to `byref<T, ?Kind>` for a new type inference variable `?Kind`.
 
+#### Implicit dereference of byrefs in `for..in` expressions
+
+Iterating over a collection in a `for..in` expression that returns a byref as its item, that item will be implicitly dereferenced.
+
+For example:
+```fsharp
+let test (s: Span<int>) =
+    for x in s do
+        ()
+```
+`x` is of type `int` because the item returned from Span is implicitly dereferenced at that point.
+
 #### Assignment to return byrefs
 
 Direct assignment to returned byrefs is permitted, e.g.
@@ -524,6 +536,16 @@ Because `M` returns a `byref`, we have to assume its scope will escape on return
 One option to resolve this issue is to force explicit address-of for arguments on member methods that return a `byref`. Everything else can be implicit.
 
    --> Will try to bring this in for F# 5.0. We might start seeing APIs use `inref<'T>` more that warrant this feature coming back.
+   
+* No implicit dereference of byrefs in `for..in` expressions when using `&` syntax.
+
+For example:
+```fsharp
+let test (s: Span<int>) =
+    for &x in s do
+        x <- 5
+```
+`x` is now of type `byref<int>` because it is not implicitly dereferenced due to using `&`. Because `&x` is a pattern, this might be quite tricky to get right.
 
 # Notes
 
