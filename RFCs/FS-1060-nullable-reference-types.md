@@ -91,7 +91,7 @@ C# 8.0 will also respect a new attribute that can mark a method as "handling nul
 
 This attribute (we'll call it `[<HandlesNull>]`) will also be respected by F#, so that obvious calls such as `String.IsNullorEmpty` that wrap a dereference don't trigger a warning.
 
-This attribute can be abused, since you can attach it to something that absolutely does not check for `null`.
+It's worth noting that this attribute could be abused.
 
 ### F# concept and syntax
 
@@ -143,7 +143,8 @@ Because it is a design goal to flow **non-null** reference types, and **avoid** 
 There will be no way to declare an F# type as follows:
 
 ```fsharp
-type (NotSupportedAtAll | null)() = class end
+// This will not be possible!
+type (SomeClass | null)() = class end
 ```
 
 And in existing F# today, the only way to declare an F# reference type that could be `null` in F# code is to use `[<AllowNullLiteral>]`. This would not change with this proposal; that is, the only way to declare a reference type in F# that could have `null` as a value in F# code is `[<AllowNullLiteral>]`.
@@ -522,6 +523,8 @@ These kinds of warnings should be individually tunable on a per-project basis.
 ## Drawbacks
 [drawbacks]: #drawbacks
 
+### Complexity
+
 Although it could be argued that this simplifies reference types by making the fact that they could be `null` explicit, it does give programmers another thing that must explicitly account for. Although it fits within the "spirit" of F# to make nullability of reference types explicit, it's arguable that F# programmers need to account for enough things already.
 
 This is also a very complicated feature, with lots of edge cases, that has significantly reduced utility if any of the following are true:
@@ -542,8 +545,22 @@ Additionally, we now have the following possible things to account for with resp
 
 These are a lot of ways to send data to various parts of the system, and there is a danger that people could use nullable reference types for more than just the boundary levels of their system.
 
+### Unsoundness
+
+This feature is inherently unsound. For starters, warnings don't prevent people from flowing `null` through their code like errors do. Compare this with the F# option type, which offers zero way to attempt to coerce `None` into a `Some x`.
+
+More subtly, there is no way to extract nullability information with reflection today without a change in the .NET runtime. This means that it can be impossible to know, at least by reflection, if the type of something is actually nullable or non-nullable. This means that reflection-based libraries (such as JSON.NET) may be able to define a contract that they cannot fulfill; i.e., make an API's return type a `'T` when it could still be `null`.
+
+Finally, the "handles null" attribute can be trivially abused, and it may be likely that the F# compiler could be "tricked" into thinking something will no longer be `null`.
+
+All of this means that this feature is entrusting acting in good faith on the greater .NET ecosystem, rather than preventing acting in bad faith with compile-time guarantees.
+
 ## Alternatives
 [alternatives]: #alternatives
+
+The primary alternative is to simply not do this.
+
+That said, it will become quite evident that this feature is necessary if F# is to continue advancing on the .NET platform. Despite originating as a C# feature, this is fundamentally a **platform-level shift** for .NET, and in a few years, will result in .NET looking very different than it is today.
 
 ### Syntax
 
