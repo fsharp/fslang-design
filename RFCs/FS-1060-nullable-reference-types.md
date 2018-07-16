@@ -579,6 +579,13 @@ type C() =
     member __.M(?x: string?) = "BLEGH"
 ```
 
+Issue: how to rationalize this with dynamic lookup
+
+```fsharp
+// This will look confusing
+let y: NullableDynamicMember? = Something?SomeDynamicMember
+```
+
 #### Nullref<'T>
 
 Have a wrapper type for any reference type `'T` that could be null.
