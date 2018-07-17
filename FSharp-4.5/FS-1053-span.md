@@ -428,24 +428,6 @@ At return expressions (i.e. the bodies of lambdas, methods and functions), check
 * An argument value is safe-to-return
 * Most composite expressions are safe-to-return if all its parts are safe-to-return
 
-#### Known limitations of `IsByRefLike` safety checks
-
-Because only rvalue-analysis is done for safety checks, some cases of first-class `byref` values are not accepted. For
-example:
-```
-let mutable y = 1
-type C() = 
-    static member M(x: inref<int>) = &x
-  
-let f () = 
-    let v = &C.M(&y) // v has "byref" type but is not known to be safe-to-return.
-    &v
-```
-This gives error:
-```
-stdin(7,6): error FS3228: The address of the variable 'v' or a related expression cannot be used at this point.
-```
-
 # Examples of using `Span` and `Memory`
 
 ```fsharp
