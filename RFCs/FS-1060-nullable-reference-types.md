@@ -10,7 +10,7 @@ The design suggestion [Add non-nullable instantiations of nullable types, and in
 ## Summary
 [summary]: #summary
 
-The main goal of this feature is to address the pains of dealing with implicitly nullable reference types by providing syntax and behavior that distinguishes between nullable and non-nullable reference types. This will be done in lockstep with C# 8.0, which will also have this as a feature, and F# will interoperate with C# by respecting and emitting the same metadata that C# emits.
+The main goal of this feature is to address the pains of dealing with implicitly nullable reference types by providing syntax and behavior that distinguishes between nullable and non-nullable reference types.
 
 Conceptually, reference types can be thought of as having two forms:
 
@@ -21,18 +21,25 @@ These will be distinguished via syntax, type signatures, and tools. Additionally
 
 Warnings are emitted when reference and nullable reference types are not used according with their intent, and these warnings are tunable as errors.
 
+This will be done in lockstep with C# 8.0, which will also have this as a feature, and F# will interoperate with C# by respecting and emitting the same metadata that C# emits.
+
 For the purposes of this document, the terms "reference type" and "non-nullable reference type" may be used interchangeably. They refer to the same thing.
 
 ## Motivation
 [motivation]: #motivation
 
-Today, any reference type (e.g., `string`) could be `null`, forcing developers to account for this with special checks at the top-level of their functions or methods. Especially in F#, where types are almost always assumed to be non-null, this is a pain that can often be forgotten. Moreover, one of the primary benefits in working with F# is working with immutable and **non-null** data. By this statement alone, nullable reference types are in line with the general goals of F#.
+A dramatic shift is about to occur in the .NET ecosystem. Starting with C# 8.0, C# will distinguish between explicitly nullable reference types and reference types that cannot be `null`. That is, `string` will not be implicitly `null` in C# 8.0 or higher, and attempting to make it `null` will be a warning.
 
-The `[<AllowNullLiteral>]` attribute allows you to declare F# reference types as nullable, but this "infects" any place where the type might be used. In practice, F# types are not normally checked for `null`, which could mean that there is a lot of code out there that does not account for `null` when using a type that is decorated with `[<AllowNullLiteral>]`.
+This problem with reference types in .NET - that they are _implicitly_ `null` - is a longstanding tension between the non-null nature of F# programming. Now that the most-used language in .NET will emit information indicating explicit nullability, this tension has the possibility of being eased considerably for F# programmers. Explicit representation of `null` is very much in line with general F# programming for two primary reasons:
 
-Additionally, nullable reference types is a headlining feature of C# 8.0 that will have a dramatic impact on .NET and its ecosystem. It is vital that we interoperate with this change smoothly and can emit the appropriate information so that C# consumers of F# components can consume things as if they were also C# 8.0 components.
+1. The explicit representation of critical information in types, with the compiler enforcing this representation, is very much the "F# way" of doing things. Although backwards-compatible explicit nullability is not sound in the same way that F# options are (read on to find out why), it is nonetheless in the spirit of how F# does things.
+2. One of the goals of F# programmers is to evict `null` values as early as possible from the edges of their system. Although there are some scenarios where this cannot be done, and `null` values must flow through a program, these scenarios are usually few and far between, or avoided entirely. When nullability is explicit, it is harder to "forget" that an incoming type may carry a `null` value. This makes it easier to evict `null` values from the rest of an F# program.
+3. Another goal of F# programmers is to ensure that they do not produce `null` values unless it is absolutely necessary in the context in which they are working. When nullability as a concept is explicit, an F# programmer must do more work to produce a `null` value. When it is an annoyance to produce `null` values (especially of the implicit variety), then programmers will try to avoid producing them.
+4. A variant of (3) is that it is possible to accidentaly produce a `null` value in F# code. With explicit nullability as a concept, this accidental behavior can be recognized by a compiler and a warning can be given to let the F# programmer know that they may not have intended sending `null` somewhere.
 
-The desired outcome over time is that significantly less `NullReferenceException`s are produced by code at runtime. This feature should allow F# programmers to more safely eject `null` from their concerns when interoperating with other .NET components, and make it more explicit when `null` could be a problem.
+F# has some existing mitigations against `null`, including that F#-declared reference types cannot be `null` unless explicitly decorated with `[<AllowNullLiteral>]`. This is useful for when an F# programmers absolutely must flow `null` into a component. However, this action "infects" any other place where the type might be used, forcing those places to also account for `null`. This is rarely what F# programmers desire.
+
+The desired outcome over time is that significantly less `NullReferenceException`s are produced by code at runtime when itneroperating with C# libraries and other F# components that declare reference types as capable of having `null` as a proper value. This feature should allow F# programmers to more safely eject `null` from their concerns when interoperating with other .NET components, and make it more explicit when `null` could be a problem.
 
 ## Principles
 
@@ -48,23 +55,57 @@ The following principles guide all further considerations and the design of this
 8. F# non-nullness is reasonably "strong and trustworthy" today for F#-defined types and routine F# coding. This includes the explicit use of `option` types to represent the absence of information. No compile-time guarantees today will be "lowered" to account for this feature.
 9. The F# compiler will strive to provide flow analysis such that common null-check scenarios guarantee null-safety when working with nullable reference types.
 10. This feature is useful for F# in other contexts, such as interoperation with `string` in JavaScript via [Fable](http://fable.io/).
-11. F# programmers can start to phase out their use of `[<AllowNullLiteral>]` and the `null` type constraint when they need ad-hoc nullability for reference types declared in F#.
+11. F# programmers may be able to start to phase out their use of `[<AllowNullLiteral>]`, `Unchecked.defaultof<_>`, and the `null` type constraint when they need ad-hoc nullability for reference types declared in F#.
 12. Syntax for the feature feels "baked in" to the type system, and should not be horribly unpleasant to use.
 
 ## Detailed design
 [design]: #detailed-design
 
-### Metadata
+### .NET Metadata
 
-Nullable reference types are emitted as a reference type with an assembly-level attribute in C# 8.0. That is, the following code:
+To remain backwards-compatible with existing codebases and interoperate with other .NET languages that support nullability as a concept, F# will emit and respect .NET metadata that concers to the following:
+
+* If a type is a nullable reference type
+* If an assembly has nullability as a concept (regardless of what it was compiled with)
+* If a generic type constraint is nullable
+* If a given method/function "handles null", such as `String.IsNullOrWhiteSpace`
+
+C# 8.0 will emit and respect metadata for these scenarios, with a well-known set of names for each attribute. These attributes will also be what F# uses, though the behavior of F# in the face of these attributes is not necessarily identical to how C# 8.0 behaves in the face of these attributes.
+
+#### Representing nullable types
+
+The following attribute will be used to represent a type that is marked as nullable:
 
 ```csharp
-public class D {
+namespace System.Runtime.CompilerServices
+{
+    [AttributeUsage(
+        AttributeTargets.Class |
+        AttributeTargets.GenericParameter |
+        AttributeTargets.Event |
+        AttributeTargets.Field |
+        AttributeTargets.Property |
+        AttributeTargets.Parameter |
+        AttributeTargets.ReturnValue,
+        AllowMultiple = false)]
+    public sealed class NullableAttribute : Attribute
+    {
+        public NullableAttribute() { }
+        public NullableAttribute(bool[] b) { }
+    }
+}
+```
+
+For example, the following code:
+
+```csharp
+public class D
+{
     public void M(string? s) {}
 }
 ```
 
-Is the same as the following:
+Is the same as:
 
 ```csharp
 public class D
@@ -77,13 +118,58 @@ public class D
 
 Languages that are unaware of this attribute will see `M` as a method that takes in a `string`. That is, to be unaware of and failing to respect this attribute means that you will view incoming reference types exactly as before.
 
-F# will be aware of and respect this attribute, treating reference types as nullable reference types if they have this attribute. If they do not, then those reference types will be non-nullable.
+F# will be aware of and respect this attribute, treating reference types as nullable reference types if they have this attribute. If they do not, then those reference types will be treated as non-nullable.
 
 F# will also emit this attribute when it produces a nullable reference type for other languages to consume.
 
+### Representing nullability as a concept
+
+As descibed in the [Interaction Model](FS-1060-nullable-reference-types.md#interaction-model), there are certain behaviors involved in how to work with assemblies that may or may not express nullability.
+
+C# 8.0 code will emit the `[NonUllTypes(true|false)]` attribute:
+
+```csharp
+namespace System.Runtime.CompilerServices
+{
+    [AttributeUsage(AttributeTargets.Class |
+                    AttributeTargets.Constructor |
+                    AttributeTargets.Delegate |
+                    AttributeTargets.Enum |
+                    AttributeTargets.Event |
+                    AttributeTargets.Field |
+                    AttributeTargets.Interface |
+                    AttributeTargets.Method |
+                    AttributeTargets.Module |
+                    AttributeTargets.Property |
+                    AttributeTargets.Struct,
+                    AllowMultiple = false)]
+    public sealed class NonNullTypesAttribute : Attribute
+    {
+        public NonNullTypesAttribute(bool enabled = true) { }
+    }
+}
+```
+From the C# spec on this:
+
+> Unannotated reference types are non-nullable or [null-oblivious](FS-1060-nullable-reference-types.md#nullability-obliviousness)) depending on whether the containing scope includes `[NonNullTypes(true|false)]`.
+>
+> `[NonNullTypes(true|false)]` is not synthesized by the compiler. If the attribute is used explicitly in source, the type declaration must be provided explicitly to the compilation.
+
+In other words, this attribute specifies a way to mark a class, constructor, delegate, enum, event, field, interface, method, module, property, or struct as having nullability expressable or not in a containing scope.
+
+This attribute could potentially be used in F# to allow for opt-in/opt-out nullability at a fine-grained level.
+
+F# will respect this attribute, with the `true` caseindicating that the scope distinguishes between nullable and non-nullable reference types.
+
+F# will treat scopes with the `false` case as if its contained reference types are all nullable reference types.
+
+In other words, if we cannot be sure that a given reference type is non-nullable, we assume it is nullable.
+
 #### Nullability obliviousness
 
-It is desireable for some assemblies to declare themselves as nullability-oblivious, even if they were compiled with a compiler that has this as a concept. This is a top-level attribute that will be respected by the C# compiler. F# should also respect this as an attribute.
+Nullability obliviousness is a concept that C# 8.0 has. A null-oblivious type is one that no assumptions can be made about. Once assigned to a nullable or non-nullable variable, it is treated as if it is nullable or non-nullable, respectively.
+
+**F# will not have this concept. Reference types we cannot determine to be non-nullable will be assumed to be nullable.**
 
 #### Handling nullability
 
