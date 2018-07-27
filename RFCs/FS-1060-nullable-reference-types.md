@@ -165,19 +165,38 @@ F# will treat scopes with the `false` case as if its contained reference types a
 
 In other words, if we cannot be sure that a given reference type is non-nullable, we assume it is nullable.
 
-#### Nullability obliviousness
+As a final note, this attribute _can_ be abused. For example, if a method is annotated with `[NonNullTypes(true)]`
+
+#### Null obliviousness
 
 Nullability obliviousness is a concept that C# 8.0 has. A null-oblivious type is one that no assumptions can be made about. Once assigned to a nullable or non-nullable variable, it is treated as if it is nullable or non-nullable, respectively.
 
 **F# will not have this concept. Reference types we cannot determine to be non-nullable will be assumed to be nullable.**
 
-#### Handling nullability
+This is slightly controversial, because we are making an assumption about code that we do not really know about:
 
-C# 8.0 will also respect a new attribute that can mark a method as "handling null". This is to get around the non-determinism in checking if any arbitrary method call (and its calls) check for `null` and do not re-assign it somehow.
+* The code could not be handling `null` at all, and thus could either produce a `NullReferenceException` or produce a value that is nullable
+* The code could be handling `null` just fine, and could pass back a reference type that can never be `null`
+* We have no way to tell if any of the previous two points are true
 
-This attribute (we'll call it `[<HandlesNull>]`) will also be respected by F#, so that obvious calls such as `String.IsNullorEmpty` that wrap a dereference don't trigger a warning.
+To remain "true" to the original code, we could conceivably introduce null obliviousness and thus treat the value coming out of a component as either nullable or non-nullable, depending on how we assign it.
 
-It's worth noting that this attribute could be abused.
+However, this is not actually possible in F#, because the majority of F# code uses type inference to infer a type. Null obliviousness would require explicit type annotations to work as we intend it! So we must assume nullability to remain safe.
+
+Additionally, treating all components we cannot guarantee as non-nullable as nullable is, we feel, "in the spirit of F#", which mandates safety and non-nullness wherever possible.
+
+#### Marking methods as handling null
+
+There will be several attributes C# 8.0 code can emit:
+
+* `[NotNullWhenTrue]` - Indicates a method handles `null` if the result is `true`, e.g., a `TryGetValue` call.
+* `[NotNullWhenFalse]` - Indicates a method handles `null` fi the result is `false`, e.g., a `string.IsNullOrEmpty` call.
+* `[EnsuresNotNull]` - Indicates that the program cannot continue if a value is `null`, for example, a `ThrowIfNull` call.
+* `[AssertsTrue]` and `[AssertsFalse]` - Used in assertion cases where `null` is concerned.
+
+These attributes can be used to aid in checking if `null` is properly accounted for in the body of a function or method. Common .NET methods and F#-specific functions can be annotated with these attributes. Respecting these attributes will be necessary to accurately and efficiently determine if `null` is properly accounted for before someone attempts to dereference a reference type.
+
+It is worth noting that these attributes can be abused and accidentally misused by applying them to something that does not account for `null` somehow, which can result in a `NullReferenceException` despite the compiler not indicating that it could be possible. That makes them dangerous, and third-party authors will need to be careful in applying them to their code. However, they do enable a class of checking that would otherwise be too computationally complex to do.
 
 ### F# concept and syntax
 
@@ -187,7 +206,9 @@ Nullable reference types can conceptually be thought of a union between a refere
 reference-type | null
 ```
 
-Examples in F# code:
+What this syntax means is that `reference-type` is non-null.
+
+Some examples in F# code:
 
 ```fsharp
 // Parameter to a function
@@ -203,28 +224,20 @@ let findOrNull (index: int) (list: 'T list) : 'T | null =
     | None -> null
 
 // Declared type at let-binding
-let maybeAValue : int | null = hopefullyGetAnInteger()
-
-// Generic type parameter
-type IMyInterface<'T | null, > =
-    abstract DoStuff<'T | null> : unit -> 'T | null
+let maybeAValue : string | null = hopefullyGetAString()
 
 // Array type signature
-let f (arr: (float | null) []) = ()
-
-// Nullable types with nullable generic types
-type C<'T | null>() =
-    member __.M(param1: List<List<'T | null> | null> | null) = ()
+let f (arr: (string | null) []) = ()
 ```
 
 The syntax accomplishes two goals:
 
 1. Makes the distinction that a nullable reference type can be `null` clear in syntax.
-2. Becomes a bit unweildy when nullability is used a lot, particularly with nested types.
+2. Becomes a bit unwieldy when nullability is used a lot, particularly with nested types.
 
-Because it is a design goal to flow **non-null** reference types, and **avoid** flowing nullable reference types unless absolutely necessary, it is considered a feature that the syntax can get a bit unweildy if used everywhere. That is, we want to discourage the use of `null` unless it is absolutely necessary.
+Because it is a design goal to support the use of non-null reference types by default, we want to encourage the programmer to **avoid** using nullable reference types unless absolutely necessary.
 
-#### Nullable reference type declarations in F\#
+#### No Nullable reference type declarations in F\#
 
 There will be no way to declare an F# type as follows:
 
