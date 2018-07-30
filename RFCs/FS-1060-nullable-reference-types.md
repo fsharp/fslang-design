@@ -273,20 +273,9 @@ let len (str: string | null) =
         str.Length // OK
 ```
 
-The `isNull` function is considered to be a good way to check for `null`. We can annotate it in FSharp.Core with the attribute used for functions handling null (we'll call it `[<HandlesNull>]`).
+The `isNull` function is considered to be a good way to check for `null`. We can annotate it in FSharp.Core with `[<NotNullWhenTrue>]`.
 
-Similarly, CoreFX will annotate methods like `String.IsNullOrEmpty` as handling `null`. This means that the most common of null-checking methods can be respected by flow analysis and reduce the amount of nullability assertions.
-
-##### Possibly supported: Pattern matching with wildcard
-
-```fsharp
-let len (str: string | null) =
-    match str with
-    | null -> -1
-    | _ -> str.Length // OK - 'str' is string
-```
-
-A slight riff that is less common is treating `str` differently when in a wildcard pattern's scope. To reach that code path, `str` must indeed by non-null, so this could potentially be supported.
+Similarly, CoreFX will annotate methods like `String.IsNullOrEmpty` as handling `null`. This means that the most common of null-checking methods can be respected by the compiler.
 
 #### Possibly supported: If check
 
@@ -298,7 +287,7 @@ let len (str: string | null) =
         str.Length // OK - 'str' is a string
 ```
 
-Although less common, this is a valid way to check for `null` and could be enabled by the compiler. We know for certain that `str` is a `string` in the `else` branch. The inverse check is also true.
+More generally, `value = null` or `value <> null`, where `value` is an F# expression that is a nullable reference type, is a pattern that will likely be expected to be respected. Although less common, `=` and `<>` are valid way to check for `null`, after all. Logically, we know for certain that `value` is either null (`=`) or non-null (`<>`).
 
 #### Possibly supported: After null check within boolean expression
 
@@ -310,9 +299,38 @@ let len (str: string | null) =
         -1
 ```
 
-Note that the reverse (`str.Length > 0 && str <> null`) would give a warning, because we attempt to dereference before the `null` check. This would only hold with AND checks. More generally, if the boolean expression to the left of the dereference involves a `x <> null` check, then the dereference is safe.
+Note that the reverse (`str.Length > 0 && str <> null`) would give a warning, because we attempt to dereference before the `null` check. This would only hold with AND checks and if the value is immutable (thus cannot be assigned to in an expression). More generally, if the boolean expression to the left of the dereference involves a `x <> null` check, then the dereference is safe.
 
-#### Likely unsupported: boolean-based checks for null that lack handlesnull decoration
+##### Likely unsupported: Pattern matching with wildcard
+
+```fsharp
+let len (str: string | null) =
+    match str with
+    | null -> -1
+    | _ -> str.Length // OK - 'str' is string
+```
+
+A slight riff that is less common is treating `str` differently when in a wildcard pattern's scope. To reach that code path, `str` must indeed by non-null, so this could potentially be supported.
+
+This would actually inconsistent with typing rules today, so this may not be supported. For example, the following is a compile error
+
+```fsharp
+let f (x: obj) =
+    match x with
+    | :? string -> x.Length // Error, as 'length' is not defined on obj
+```
+
+You must give it a different name to get the code to compile:
+
+```fsharp
+let f (x: obj) =
+    match x with
+    | :? string as s -> s.Length // OK
+```
+
+Breaking this rule for F# would be inconsistent with behavior that already exists.
+
+#### Likely unsupported: boolean-based checks for null that lack an appropriate well-known attribute
 
 Generally speaking, beyond highly-specialized cases, we cannot guarantee non-nullability that is checked via a boolean. Consider the following:
 
@@ -326,27 +344,27 @@ let len (str: string | null) =
         str.Length // WARNING: could be null
 ```
 
-Although this simple example could potentially work, it could quickly get out of hand. Also, other languages that support nullable reference types (C# 8.0, Scala, Kotlin, Swift, TypeScript) do not do this. Instead, non-nullability is asserted when the programmer knows something will not be `null`.
+Although this trivial example could certainly be done, it could quickly get out of hand. Also, other languages that support nullable reference types (C# 8.0, Scala, Kotlin, Swift, TypeScript) do not do this. An annotation for `myIsNull` is needed, otherwise a programmer will have to rewrite their code or assert non-nullability and risk a `NullReferenceException`.
 
 #### Likely unsupported: nested functions accessing outer scopes
 
 ```fsharp
 let len (str: string | null) =
     let doWork() =
-        str.Length // WARNING: maybe too complicated?
+        str.Length // WARNING: maybe too complicated? Doesn't feel natural to F#?
 
     match str with
     | null -> -1
-    | _ -> doWork() // But after this line is written it's fine?
+    | _ -> doWork() // But after this line is written it's fine? Not natural to F# though.
 ```
 
 Although `doWork()` is called only in a scope where `str` would be non-null, this may too complex to implement properly.
 
-**Note:** C# supports the equivalent of this with local functions. TypeScript does not support this.
+**Note:** C# supports the equivalent of this with local functions. TypeScript does not support this. There is no precedent for this kind of support to further motivate the work.
 
 #### Asserting non-nullability
 
-To get around scenarios where flow analysis cannot establish a non-null situation, a programmer can use `!` to assert non-nullability:
+To get around scenarios where compiler analysis cannot establish a non-null situation, a programmer can use `!` to assert non-nullability:
 
 ```fsharp
 let myIsNull item = isNull item
@@ -360,9 +378,11 @@ let len (str: string | null) =
 
 This will not generate a warning, but it is unsafe and can be the cause of a `NullReferenceException` if the reference was indeed `null` under some condition.
 
+This sort of feature is inherently unsafe, and is by definition not something being enthusiastically considered. But it may be a necessity if the compiler cannot analyze code well enough.
+
 #### Warnings
 
-In all other situations not covered by flow analysis, a warning is emitted by the compiler if a nullable reference is dereferenced or casted to a non-null type:
+In all other situations not covered by compiler analysis, a warning is emitted by the compiler if a nullable reference is dereferenced or cast to a non-null type:
 
 ```fsharp
 let f (ns: string | null) =
@@ -558,7 +578,7 @@ To have parity with F# signatures (note: not tooltips), signatures printed in F#
 F# scripts will now also give warnings when using the compiler that implements this feature. This also necessitates a new feature for F# scripting that allows you to opt-out of any nullability warnings. Example:
 
 ```fsharp
-#nullability "false"
+#nowarn "nullness"
 
 let s: string = null // OK, since we don't track nullability warnings
 ```
@@ -674,7 +694,7 @@ type C<'T?>() = class end
 Issue: looks horrible with F# optional parameters
 
 ```fsharp
-type C() = 
+type C() =
     member __.M(?x: string?) = "BLEGH"
 ```
 
@@ -703,7 +723,7 @@ Issues:
 * Massively breaking change for any F# code consuming existing reference types. In many cases, this break is so severe that entire routines would need to be rewritten.
 * Massively breaking change for any C# code consuming F# option types. This simply breaks C# consumers no matter which way you swing it.
 
-### Asserting non-nullability
+### Non-nullability Assertions
 
 **`!!` postfix operator?**
 
