@@ -63,9 +63,9 @@ The following principles guide all further considerations and the design of this
 
 ### .NET Metadata
 
-To remain backwards-compatible with existing codebases and interoperate with other .NET languages that support nullability as a concept, F# will emit and respect .NET metadata that concers to the following:
+To remain backwards-compatible with existing codebases and interoperate with other .NET languages that support nullability as a concept, F# will emit and respect .NET metadata that concerns to the following:
 
-* If a type is a nullable reference type
+* If a type is a nullable reference type (**NOTE:** C# has no notion of this, so an assembly-level marker would be pending discussion)
 * If an assembly has nullability as a concept (regardless of what it was compiled with)
 * If a generic type constraint is nullable
 * If a given method/function "handles null", such as `String.IsNullOrWhiteSpace`
@@ -167,7 +167,7 @@ F# will treat scopes with the `false` case as if its contained reference types a
 
 In other words, if we cannot be sure that a given reference type is non-nullable, we assume it is nullable.
 
-As a final note, this attribute _can_ be abused. For example, if a method is annotated with `[NonNullTypes(true)]`
+As a final note, this attribute _can_ be abused. For example, if a method is annotated with `[NonNullTypes(true)]` and does not actually perform a `null` check, further code can still produce a `NullReferenceException` and not have a warning associated with it.
 
 #### Null obliviousness
 
@@ -183,7 +183,7 @@ This is slightly controversial, because we are making an assumption about code t
 
 To remain "true" to the original code, we could conceivably introduce null obliviousness and thus treat the value coming out of a component as either nullable or non-nullable, depending on how we assign it.
 
-However, this is not actually possible in F#, because the majority of F# code uses type inference to infer a type. Null obliviousness would require explicit type annotations to work as we intend it! So we must assume nullability to remain safe.
+However, this is not actually possible in F#, because the majority of F# code uses type inference to infer a type. Null obliviousness would require explicit type annotations to work as we intend it! Failing the propagation of a null-oblivous type through type inference (see [Type Inferece](FS-1060-nullabl-reference-types.md#type-inference)), we must assume nullability to remain safe. (**NOTE:** this is also under discussion for C# with `var x = ...`).
 
 Additionally, treating all components we cannot guarantee as non-nullable as nullable is, we feel, "in the spirit of F#", which mandates safety and non-nullness wherever possible.
 
@@ -368,11 +368,11 @@ Although `doWork()` is called only in a scope where `str` would be non-null, thi
 
 #### Asserting non-nullability
 
-To get around scenarios where compiler analysis cannot establish a non-null situation, a programmer can use the `notNull` function to convert a nullable reference type to a non-nullable reference type:
+To get around scenarios where compiler analysis cannot establish a non-null situation, a programmer can use the `Unchecked.notNull` function to convert a nullable reference type to a non-nullable reference type:
 
 ```fsharp
 let len (ns: string | null) =
-    let s = notNull(ns) // unsafe, but lets you avoid a warning
+    let s = Unchecked.notNull(ns) // unsafe, but lets you avoid a warning
     s.Length
 ```
 
@@ -412,6 +412,10 @@ let s2: string = null // WARNING
 
 let f (s: string) = ()
 f null // WARNING
+
+let g (s: string) = if s.Length > 0 then s else null
+
+let x: string = g "Hello" // WARNING
 ```
 
 #### F# Collection initialization
@@ -553,6 +557,26 @@ Nullness like this will likely be checked through standard type inference, so wa
 
 Existing nullability rules for F# types hold, and ad-hoc assignment of `null` to a type that does not have `null` as a proper value is not suddenly possible.
 
+Note that asserting non-nullability may be required in some situations where types are inferred to be nullable. For example:
+
+```fsharp
+let neverNull (str: string) =
+    match str with
+    | "" -> ""
+    | _ -> makeNullIfEmpty str // val makeNullIfEmpty: 'T -> ('T | null)
+```
+
+We know that this will never be `null` because the empty string is accounted for, but the compiler may well infer `neverNull` to return a `(string | null)`. To get around this, asserting non-nullability may be required:
+
+```fsharp
+let neverNull (str: string) =
+    match str with
+    | "" -> ""
+    | _ -> 
+        makeNullIfEmpty str
+         |> Unchecked.notNull
+```
+
 ### Tooling considerations
 
 To remain in line our first principle:
@@ -644,7 +668,7 @@ All non-F# assemblies built with a compiler that does not understand nullability
 
 Example: a `.dll` coming from a NuGet package built with C# 7.1 will be interpreted as if all reference types are nullable, including constraints, generics, etc.
 
-This means that warnings will be emitted when `null` is not properly accounted for. Additionally, when older non-F# components are eventually recompiled with C# 8.0, it will likely be an API-breaking change that will force new F# code to go back and do away with any redundant `null` checks.
+This means that warnings will be emitted when `null` is not properly accounted for. Additionally, when older non-F# components are eventually recompiled with C# 8.0, `null`-safe code may be doing redundant `null` checks. It may be worth calling that out as a warning.
 
 #### F# 5.0 consuming F# assemblies that do not have nullability
 
@@ -652,7 +676,7 @@ All F# assemblies built with a previous F# compiler will be treated as such:
 
 * All reference types that are _not_ declared in F# are nullable.
 * All F#-declared reference types that have `null` as a proper value are treated as if they are nullable.
-* All F#-declared reference types that do not have `null` as a proepr value are treated as non-nullable reference types.
+* All F#-declared reference types that do not have `null` as a proper value are treated as non-nullable reference types.
 
 #### Ignoring F# 5.0 assemblies that do have nullability
 
