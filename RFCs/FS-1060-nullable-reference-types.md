@@ -615,6 +615,25 @@ let s: string = null // OK, since we don't track nullability warnings
 
 By default, F# scripts that use a newer compiler via F# interactive will understand nullability.
 
+#### Project configurability
+
+There are a few concerns here described further in the [Interaction Model](FS-1060-nullable-reference-types.md#interaction-model). When working in an IDE such as visual studio, I may wish to adopt this feature with any of the following configuration toggles:
+
+1. Turn off nullability globally
+2. Turn off nullability on a per-project basis
+3. Turn off nullability for a given assembly (e.g., a package reference)
+4. Turn off warnings for checking of nullable references
+5. Turn off warnings for checking of non-nullable references
+6. Make checking of nullable references an error, separately from `warnaserror`
+7. Make checking of non-nullable references an error, separately from `warnaserror`
+8. Make all nullability warnings an error, separately from `warnaserror`
+
+This implies that there are toggles in the tooling to support this.
+
+* The project properties page for F# projects will require toggles for 2, 4, 5, 6, 7, and 8.
+* There will need to be a right-click gesture that you can use to turn off nullability for a referenced assembly.
+* Turning it off globally is not something that we can control, so (1) is TBD until we can arrive at a tooling solution for all languages.
+
 ### Interaction model
 
 The following details how an F# compiler with nullable reference types will behave when interacting with different kinds of components.
