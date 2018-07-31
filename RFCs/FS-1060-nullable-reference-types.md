@@ -368,21 +368,17 @@ Although `doWork()` is called only in a scope where `str` would be non-null, thi
 
 #### Asserting non-nullability
 
-To get around scenarios where compiler analysis cannot establish a non-null situation, a programmer can use `!` to assert non-nullability:
+To get around scenarios where compiler analysis cannot establish a non-null situation, a programmer can use the `notNull` function to convert a nullable reference type to a non-nullable reference type:
 
 ```fsharp
-let myIsNull item = isNull item
-
-let len (str: string | null) =
-    if myIsNull str then
-        -1
-    else
-        str!.Length // OK: 'str' is asserted to be 'null'
+let len (ns: string | null) =
+    let s = notNull(ns) // unsafe, but lets you avoid a warning
+    s.Length
 ```
 
-This will not generate a warning, but it is unsafe and can be the cause of a `NullReferenceException` if the reference was indeed `null` under some condition.
+This function has a signature of `('T | null -> 'T)`. It will throw a `NullReferenceException` at runtime if the input is `null`.
 
-This sort of feature is inherently unsafe, and is by definition not something being enthusiastically considered. But it may be a necessity if the compiler cannot analyze code well enough.
+This sort of feature is inherently unsafe, and is by definition not something being enthusiastically considered. But it will be a necessity for when the compiler cannot analyze code well enough.
 
 #### Warnings
 
@@ -731,8 +727,6 @@ That said, it will become quite evident that this feature is necessary if F# is 
 
 ```fsharp
 let ns: string? = "hello"
-
-type C<'T?>() = class end
 ```
 
 Issue: looks horrible with F# optional parameters
@@ -742,7 +736,7 @@ type C() =
     member __.M(?x: string?) = "BLEGH"
 ```
 
-Issue: how to rationalize this with dynamic lookup
+Issue: dynamic member lookup
 
 ```fsharp
 // This will look confusing
@@ -755,7 +749,7 @@ Have a wrapper type for any reference type `'T` that could be null.
 
 Issues:
 
-* Really ugly nesting is going to happen
+* Really, really ugly nesting is going to happen
 * No syntax for this makes F# seen as "behind" C# for such a cornerstone feature of the .NET ecosystem
 
 #### Option or ValueOption
@@ -769,13 +763,27 @@ Issues:
 
 ### Non-nullability Assertions
 
+**`!` operator?**
+
+```fsharp
+let myIsNull item = isNull item
+
+let len (str: string | null) =
+    if myIsNull str then
+        -1
+    else
+        str!.Length // OK: 'str' is asserted to be 'null'
+```
+
+Specialized syntax for this sort of thing is not really the F# way.
+
 **`!!` postfix operator?**
 
 Why two `!` when one could suffice?
 
 **`.get()` member?**
 
-No idea if this could even work.
+No idea if this could even work. Probably not.
 
 **Explicit cast required?**
 
@@ -789,7 +797,7 @@ Something like this may be considered:
 notnull { expr }
 ```
 
-Where `notnull` returns the type of `expr`. But this may be viewed as too complicated when compared with a postfix operator, especially since a postfix operator is already a standard established by C#, Kotlin, TypeScript, and Swift.
+Where `notnull` returns the type of `expr`. But this may be viewed as too complicated when compared with a function postfix operator, especially since a postfix operator is already a standard established by C#, Kotlin, TypeScript, and Swift.
 
 **Not have it?**
 
@@ -919,6 +927,26 @@ Today, this produces a `NullReferenceException` at runtime.
 
 Either way, we'll need to respect the `[<DefaultValue>]` attribute generating a `null` to remain compatible with existing code.
 
+Additionally, we'll want to consider the issue: [DefaultValue attribute should require 'mutable' when used in classes and records](https://github.com/fsharp/fslang-suggestions/issues/484), as the existing `[<DefaultValue>]` can be used with immutable values, meaning that checking is imperfect and the attribute is a source of unchecked `null` values. This design bug could be rectified, and we can warn on using it with an immutable value.
+
+#### CLIMutable attribute
+
+Today, `CLIMutable` is typically used to decorate F# record types so that the labels can be "filled in" by .NET libraries that cannot normally work with immutable data. One such set of libraries are ORMs, which require the mutation to be able to do change tracking.
+
+However, the following code is perfectly valid today and can produce `null`:
+
+```fsharp
+[<CLIMutable>]
+type R = { StringVal: string }
+```
+
+It is very likely that `StringVal` can be given a `null` value. But with this feature, the type of `StringVal` is a non-nullable string! Similar to `[<DefaultValue>]`, this once valid code is now nonsense. This means we'll have to either:
+
+* Do nothing and leave this slightly confusing signature as-is, warning at the call site when you attempt to dereference `StringVal`.
+* Warn at the declaration site, saying that type annotation for `StringVal` needs to be a nullable reference type.
+
+We will continue to respect the fact that `[<CLIMutable>]` can result in `null` values.
+
 #### Unchecked.defaultOf<'T>
 
 Today, `Unchecked.defaultof<'T>` will generate `null` when `'T` is a reference type. However, `'T` means non-null, and it's obvious that this will return `null` when parameterized with a .NET reference type such as `string`. We have some options:
@@ -983,4 +1011,4 @@ public class C
 
 This means that `FSharpOption` is a nullable reference type if it were to be consumed by C# 8.0. Indeed, there is definitely C# code out there that checks for `null` when consuming an F# option type to account for the `None` case. This is because there is no other way to safely extract the underlying value in C#!
 
-**Recommendation:** ROLL INTO A BALL AND CRY
+**Recommendation:** ROLL INTO A BALL AND CRY - ...and discuss further with the C# team to see if something can be done about this.
