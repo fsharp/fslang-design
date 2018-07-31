@@ -118,6 +118,8 @@ public class D
 
 Languages that are unaware of this attribute will see `M` as a method that takes in a `string`. That is, to be unaware of and failing to respect this attribute means that you will view incoming reference types exactly as before.
 
+C# 8.0 will also [distinguish between nullable and non-nullable constraints](https://github.com/dotnet/roslyn/blob/features/NullableReferenceTypes/docs/features/nullable-reference-types.md#type-parameters). This is accomplished with the same attribute.
+
 F# will be aware of and respect this attribute, treating reference types as nullable reference types if they have this attribute. If they do not, then those reference types will be treated as non-nullable.
 
 F# will also emit this attribute when it produces a nullable reference type for other languages to consume.
@@ -330,6 +332,8 @@ let f (x: obj) =
 
 Breaking this rule for F# would be inconsistent with behavior that already exists.
 
+Instead, we could offer a warning that suggests giving the type a new name. This would improve the existing error message today, so it's probably worth doing with this feature.
+
 #### Likely unsupported: boolean-based checks for null that lack an appropriate well-known attribute
 
 Generally speaking, beyond highly-specialized cases, we cannot guarantee non-nullability that is checked via a boolean. Consider the following:
@@ -424,26 +428,34 @@ let ys: string list = [ ""; ""; null ] // WARNING
 let zs: seq<string> = seq { yield ""; yield ""; yield null } // WARNING
 ```
 
+When types are not annotated, rules for [Type Inference](FS-1060-nullable-reference-types.md#type-inference) are applied.
+
 #### Constructor initialization
 
 Today, it is already a compile error if all fields in an F# class are not initialized by constructor calls. This behavior is unchanged. See [Compatibility with Microsoft.FSharp.Core.DefaultValueAttribute](FS-1060-nullable-reference-types.md#compatibility-with-microsoft.fsharp.core.defaultValueAttribute) for considerations about code that uses `[<DefaultValue>]` with reference types today, which produces `null`.
 
 ### Generics
 
-A type parameter is assumed to have non-nullable constraints when declared "normally":
+Unconstrainted types follow existing nullability rules today.
 
 ```fsharp
 type C<'T>() = // 'T is non-nullable
 class end
 ```
 
-A warning is given if a nullable reference type is used to parameterize another type `C` that  does not accept nullable reference types:
+Giving a reference type that could be `null` is fine and in accordance with existing code:
 
 ```fsharp
 type C<'T>() = class end
 
-let c = C<string | null> // WARNING
+let c1 = C<string | null>() // OK
+
+type B() = class end
+
+let c2 = C<B>() // OK
 ```
+
+The same holds for generic function types.
 
 #### Constraints
 
@@ -454,13 +466,13 @@ type C1<'T when 'T: null>() = class end
 type C2<'T when 'T: not struct>() = class end
 ```
 
-Both are actually the same thing for interoperation purposes, as they emit `class` as a constraint. See [Unresolved questions](nullable-reference-types.md#unresolved-questions) for more.
+Both are actually the same thing for interoperation purposes today, as they emit `class` as a constraint. See [Unresolved questions](nullable-reference-types.md#unresolved-questions) for more. C# 8.0 will interpret the `class` constraint as a non-nullable reference type, so we will have to change that in F#.
 
 If an F# class `B` has nullability as a constraint, then an inheriting class `D` also inherits this constraint, as per existing inheritance rules:
 
 ```fsharp
-type B<'T | null>() = class end
-type D<'T | null>()
+type B<'T when 'T: null>() = class end
+type D<'T when 'T: null>()
     inherit B<'T>
 ```
 
@@ -468,11 +480,25 @@ That is, nullabulity constraints propagate via inheritance.
 
 If an unconstrained type parameter comes from an older C# assembly, it is assumed to be nullable, and warnings are given when non-nullability is assumed. If it comes from F# and it does not have the `null` constraint, then it is assumed to be non-nullable. If it does, then it is assumed to be nullable.
 
-Additionally, C# will introduce the `class?` constraint. This syntax sugar will compile into the `class` constraint, but the class itself will be decorated with an attribute that tells consumers that the `'T` is a nullable reference type. This attribute will need to be respected by the F# compiler.
+Additionally, C# will introduce the `class?` constraint, which is sugar for an application of the `[<Nullable>]` attribute (see [Metadata](FS-1060-nullable-reference-types.md#net-metadata) for more).
+
+### A note on nullability and fundamental F# type representations
+
+Although the concept of nullability will surface as syntax and generate warnings, these annotations are ignored for all other purposes. For example:
+
+* Nullable annotations are ignored when deciding type equivalents, though warnings are emitted for mismatches.
+* Nullable annotations are ignored when deciding type subsumption, though warnings are emitted for mismatches.
+* Nullable annotations are ignored when deciding method overload resolution, though warnings are emitted for mismatches in argument and return types once an overload is committed.
+* Nullable annotations are ignored for abstract slot inference, though warnings are emitted for mismatches.
+* Nullable annotations are ignored when checking for duplicate methods.
+
+To re-iterate: nullable reference types are about separating distinguishing the implicit `null` from a reference type, but they are not a new _kind_ of reference type. They are still the same reference type and, despite warnings, can still compile when a nullability rule is violated.
 
 ### Type inference
 
-Nullability is propagated through type inference:
+Nullability should be propagated through type inference. Today, it will currently not be, so we will need to create a "nullness type variable" to represent the uncertainty, then unify it away as more information becomes available. These would be ignored for most purposes (just like nullability annotations) and would not be generalizable (i.e., committed to non-null in the absence of other information.
+
+Some examples:
 
 ```fsharp
 // Inferred signature:
@@ -505,23 +531,31 @@ s <- null
 This includes function composition:
 
 ```fsharp
+// At the time of writing this function:
+//
 // val f1 : 'a -> 'a
 let f1 s = s
 
+// At the time of writing this function:
+//
 // val f2 : string -> (string | null)
 let f2 s = if s <> "" then "hello" else null
 
+// At the time of writing this function:
+//
 // val f3 : string -> string
 let f3 (s: string) =
     match s with
-    | null -> ""
+    | "" -> "Empty"
     | _ -> s
 
-// val pipeline : string -> (string | null)
-let pipeline = f1 >> f2 >> f3 // WARNING - flowing possible null as input to function that assumes a non-null input
+// val pipeline : string -> string
+let pipeline = f1 >> f2 >> f3 // Warning: nullness mismatch. The type ... did not match the type ...
 ```
 
-Existing nullability rules for F# types hold (i.e., you cannot suddenly assign `null` to an F# record).
+Nullness like this will likely be checked through standard type inference, so warnings will come out of that.
+
+Existing nullability rules for F# types hold, and ad-hoc assignment of `null` to a type that does not have `null` as a proper value is not suddenly possible.
 
 ### Tooling considerations
 
@@ -682,6 +716,16 @@ The primary alternative is to simply not do this.
 That said, it will become quite evident that this feature is necessary if F# is to continue advancing on the .NET platform. Despite originating as a C# feature, this is fundamentally a **platform-level shift** for .NET, and in a few years, will result in .NET looking very different than it is today.
 
 ### Syntax
+
+### Overall approach to nullability
+
+* Design a fully sound (apart from runtime casts/reflection, akin to F# units of measure) and fully checked non-nullness system for F# (which gives errors rather than warnings), then interoperate with C# (giving warnings around the edges for interop).
+
+---------> Possibly, though there may be compatibility concerns.
+
+* Allow code to be generic w.r.t nullness. For example, so you can express, "if you give me a `null` in, I might give you a `null` back; if you give me a non-`null` in, I will give you a non-`null` back".
+
+---------> Questions about usability arise, and if we do something similar to null obliviousness.
 
 #### Question mark nullability annotation
 
