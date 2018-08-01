@@ -557,7 +557,7 @@ Nullness like this will likely be checked through standard type inference, so wa
 
 Existing nullability rules for F# types hold, and ad-hoc assignment of `null` to a type that does not have `null` as a proper value is not suddenly possible.
 
-Note that asserting non-nullability may be required in some situations where types are inferred to be nullable. For example:
+Note that asserting non-nullability may be required in some situations where types are inferred to be nullable. Consider the following (confusing) function that does not do what its name says it does:
 
 ```fsharp
 let neverNull (str: string) =
@@ -590,7 +590,7 @@ So, FSharp.Core will also need to be selective annotated, applying nullability t
 * Apply `[<EnsuresNotNull>]` if applicable to anything that may throw on `null` (if that exists)
 * Apply `[<AssertsTrue>]` and/or `[<AssertsFalse>]` if applicable to anything that may assert
 
-This also means that some internal helper functions could be done away with. For example, [`String.emptyIfNull`](https://github.com/Microsoft/visualfsharp/blob/master/src/fsharp/FSharp.Core/string.fs#L16) is not publically consumable, and is effectively a way to enforce that incoming `string` types aren't `null`. This would make all `String.` functions now only accept non-nullable strings.
+This also means that some internal helper functions could be done away with. For example, [`String.emptyIfNull`](https://github.com/Microsoft/visualfsharp/blob/master/src/fsharp/FSharp.Core/string.fs#L16) is not publically consumable, and is effectively a way to enforce that incoming `string` types aren't `null`. This would make all `String.` functions now only accept non-nullable strings (should such a decision be made).
 
 This will be a nontrivial effort, not unlike efforts to selectively annotate CoreFX libraries.
 
