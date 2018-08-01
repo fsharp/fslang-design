@@ -577,6 +577,25 @@ let neverNull (str: string) =
          |> Unchecked.notNull
 ```
 
+### FSharp.Core
+
+Although we do not officially support forwards-compatibility, we do strive to ensure that older compilers can reference newer versions and "use the new features". At the same time, if something like `String.replicate` were to return a nullable string, that would be bad and antithetical to the spirit of F#.
+
+So, FSharp.Core will also need to be selective annotated, applying nullability to things only when we actually intend `null` values to be accepted or come out of a function. Specifically, we can:
+
+* Apply `[<NonNullTypes(true)>]` at the module level for the assembly
+* Apply `[<Nullable>]` on every input type we wish to accept `null` values for
+* Apply `[<Nullable>]` on every output type (this implies we may need to explicitly annotate a function)
+* Apply `[<NotNullWhenTrue>]` and/or `[<NotNullWhenFalse>]` on public functions that test for `null`
+* Apply `[<EnsuresNotNull>]` if applicable to anything that may throw on `null` (if that exists)
+* Apply `[<AssertsTrue>]` and/or `[<AssertsFalse>]` if applicable to anything that may assert
+
+This also means that some internal helper functions could be done away with. For example, [`String.emptyIfNull`](https://github.com/Microsoft/visualfsharp/blob/master/src/fsharp/FSharp.Core/string.fs#L16) is not publically consumable, and is effectively a way to enforce that incoming `string` types aren't `null`. This would make all `String.` functions now only accept non-nullable strings.
+
+This will be a nontrivial effort, not unlike efforts to selectively annotate CoreFX libraries.
+
+We need to take care that doing this does not affect binary compatibility in any way. It shouldn't, since the attributes being applied will just be ignored by an earlier compiler, but this still needs to be verified.
+
 ### Tooling considerations
 
 To remain in line our first principle:
