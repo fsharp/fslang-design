@@ -17,9 +17,9 @@ Conceptually, reference types can be thought of as having two forms:
 * Normal reference types
 * Nullable reference types
 
-These will be distinguished via syntax, type signatures, and tools. Additionally, there will be flow analysis to allow you to determine when a nullable reference type is non-null and can be treated as a reference type.
+These will be distinguished via syntax, type signatures, and tools. Additionally, there will be analysis run by the compiler to determine the `null`-safety of your code when it works with reference types.
 
-Warnings are emitted when reference and nullable reference types are not used according with their intent, and these warnings are tunable as errors.
+Warnings are emitted when reference types and nullable reference types are not used according with their intent, and these warnings are tunable as errors.
 
 This will be done in lockstep with C# 8.0, which will also have this as a feature, and F# will interoperate with C# by respecting and emitting the same metadata that C# emits.
 
@@ -30,7 +30,11 @@ For the purposes of this document, the terms "reference type" and "non-nullable 
 
 A dramatic shift is about to occur in the .NET ecosystem. Starting with C# 8.0, C# will distinguish between explicitly nullable reference types and reference types that cannot be `null`. That is, `string` will not be implicitly `null` in C# 8.0 or higher, and attempting to make it `null` will be a warning.
 
+<<<<<<< HEAD
 This problem with reference types in .NET - that they are _implicitly_ `null` - is a longstanding tension between the non-null nature of F# programming. Now that the most-used language in .NET will emit information indicating explicit nullability, this tension has the possibility of being eased considerably for F# programmers. Explicit representation of `null` is very much in line with general F# programming for four primary reasons:
+=======
+This problem with reference types in .NET - that they are _implicitly_ `null` - is a longstanding tension between the non-null nature of F# programming and the .NET ecosystem. Now that the most-used language in .NET will emit information indicating explicit nullability, this tension has the possibility of being eased considerably for F# programmers. Explicit representation of `null` is very much in line with general F# programming for two primary reasons:
+>>>>>>> 1bfa407dfc38445e0fa5e2fc4cd9ade94c2b6c6d
 
 1. The explicit representation of critical information in types, with the compiler enforcing this representation, is very much the "F# way" of doing things. Although backwards-compatible explicit nullability is not sound in the same way that F# options are (read on to find out why), it is nonetheless in the spirit of how F# does things.
 2. One of the goals of F# programmers is to evict `null` values as early as possible from the edges of their system. Although there are some scenarios where this cannot be done, and `null` values must flow through a program, these scenarios are usually few and far between, or avoided entirely. When nullability is explicit, it is harder to "forget" that an incoming type may carry a `null` value. This makes it easier to evict `null` values from the rest of an F# program.
@@ -632,6 +636,18 @@ type R = { Whoopsie: string }
 
 As a note, the previous example demonstrates that despite having contradicting declared types, usage of the declared types can still emit warnings. Intent-based warnings should not keep usage of these types from producing other nullability warnings. 
 
+### Language oddities
+
+#### Some null
+
+Today, you can write this perfectly valid F# expression, which is sure to elicit a few laughs:
+
+```fsharp
+let x = Some null
+```
+
+This will be a warning now.
+
 ### Tooling considerations
 
 To remain in line our first principle:
@@ -723,7 +739,7 @@ All non-F# assemblies built with a compiler that does not understand nullability
 
 Example: a `.dll` coming from a NuGet package built with C# 7.1 will be interpreted as if all reference types are nullable, including constraints, generics, etc.
 
-This means that warnings will be emitted when `null` is not properly accounted for. Additionally, when older non-F# components are eventually recompiled with C# 8.0, `null`-safe code may be doing redundant `null` checks. It may be worth calling that out as a warning.
+This means that warnings will be emitted when `null` is not properly accounted for.
 
 #### F# 5.0 consuming F# assemblies that do not have nullability
 
@@ -735,7 +751,9 @@ All F# assemblies built with a previous F# compiler will be treated as such:
 
 #### Ignoring F# 5.0 assemblies that do have nullability
 
-Users may want to progressively work through `null` warnings by treating a given assembly as "nullability obliviousness". To respect this, F# 5.0 will have to ignore any potentially unsafe dereference of `null` until sucha  time that "nullability obliviousness" is turned off for that assembly.
+Users may want to progressively work through `null` warnings by treating a given assembly as "nullability obliviousness". To respect this, F# 5.0 will have to ignore any potentially unsafe dereference of `null` until such a time that "nullability obliviousness" is turned off for that assembly.
+
+Note: redundant `null` checks should not produce a warning.
 
 **Potential issue:** How are these types annotated in code? `string` or `string | null`, with the latter simply not triggering any warnings?
 
