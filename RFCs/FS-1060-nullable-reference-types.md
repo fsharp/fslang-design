@@ -30,7 +30,7 @@ For the purposes of this document, the terms "reference type" and "non-nullable 
 
 A dramatic shift is about to occur in the .NET ecosystem. Starting with C# 8.0, C# will distinguish between explicitly nullable reference types and reference types that cannot be `null`. That is, `string` will not be implicitly `null` in C# 8.0 or higher, and attempting to make it `null` will be a warning.
 
-This problem with reference types in .NET - that they are _implicitly_ `null` - is a longstanding tension between the non-null nature of F# programming. Now that the most-used language in .NET will emit information indicating explicit nullability, this tension has the possibility of being eased considerably for F# programmers. Explicit representation of `null` is very much in line with general F# programming for two primary reasons:
+This problem with reference types in .NET - that they are _implicitly_ `null` - is a longstanding tension between the non-null nature of F# programming. Now that the most-used language in .NET will emit information indicating explicit nullability, this tension has the possibility of being eased considerably for F# programmers. Explicit representation of `null` is very much in line with general F# programming for four primary reasons:
 
 1. The explicit representation of critical information in types, with the compiler enforcing this representation, is very much the "F# way" of doing things. Although backwards-compatible explicit nullability is not sound in the same way that F# options are (read on to find out why), it is nonetheless in the spirit of how F# does things.
 2. One of the goals of F# programmers is to evict `null` values as early as possible from the edges of their system. Although there are some scenarios where this cannot be done, and `null` values must flow through a program, these scenarios are usually few and far between, or avoided entirely. When nullability is explicit, it is harder to "forget" that an incoming type may carry a `null` value. This makes it easier to evict `null` values from the rest of an F# program.
@@ -126,9 +126,9 @@ F# will also emit this attribute when it produces a nullable reference type for 
 
 ### Representing nullability as a concept
 
-As descibed in the [Interaction Model](FS-1060-nullable-reference-types.md#interaction-model), there are certain behaviors involved in how to work with assemblies that may or may not express nullability.
+As descibed in the [Interaction Model](FS-1060-nullable-reference-types.md#interaction-model), there are certain behaviors involved in how to work with assemblies that may or may not express nullability. The most flexible system for this is one in which a given scope is defined to have nullability as a concept. This is quite granular, but in practice will be at the assembly module level, making it mostly as if it were a per-project configuration.
 
-C# 8.0 code will emit the `[NonUllTypes(true|false)]` attribute:
+C# 8.0 code will emit the `[NonNullTypes(true|false)]` attribute:
 
 ```csharp
 namespace System.Runtime.CompilerServices
@@ -173,26 +173,28 @@ As a final note, this attribute _can_ be abused. For example, if a method is ann
 
 Nullability obliviousness is a concept that C# 8.0 has. A null-oblivious type is one that no assumptions can be made about. Once assigned to a nullable or non-nullable variable, it is treated as if it is nullable or non-nullable, respectively.
 
-**F# will not have this concept. Reference types we cannot determine to be non-nullable will be assumed to be nullable.**
+**F# may not have this concept. Reference types we cannot determine to be non-nullable will be assumed to be nullable.**
 
-This is slightly controversial, because we are making an assumption about code that we do not really know about:
+This is controversial, because we are making an assumption about code that we do not really know about:
 
 * The code could not be handling `null` at all, and thus could either produce a `NullReferenceException` or produce a value that is nullable
 * The code could be handling `null` just fine, and could pass back a reference type that can never be `null`
 * We have no way to tell if any of the previous two points are true
 
+In practice, this could mean emitting thousands of warnings for a single project. Although emitting warnings for unsafe null usage is a feature, if the number of warnings gets too high, people will find it invasive.
+
 To remain "true" to the original code, we could conceivably introduce null obliviousness and thus treat the value coming out of a component as either nullable or non-nullable, depending on how we assign it.
 
 However, this is not actually possible in F#, because the majority of F# code uses type inference to infer a type. Null obliviousness would require explicit type annotations to work as we intend it! Failing the propagation of a null-oblivous type through type inference (see [Type Inferece](FS-1060-nullabl-reference-types.md#type-inference)), we must assume nullability to remain safe. (**NOTE:** this is also under discussion for C# with `var x = ...`).
 
-Additionally, treating all components we cannot guarantee as non-nullable as nullable is, we feel, "in the spirit of F#", which mandates safety and non-nullness wherever possible.
+Additionally, treating all components we cannot guarantee as non-nullable as nullable is, we feel, "in the spirit of F#", which mandates safety and non-nullness wherever possible. This point may well be revisited if early usage indicates that lack of null obliviousness is too invasive.
 
 #### Marking methods as handling null
 
 There will be several attributes C# 8.0 code can emit:
 
 * `[NotNullWhenTrue]` - Indicates a method handles `null` if the result is `true`, e.g., a `TryGetValue` call.
-* `[NotNullWhenFalse]` - Indicates a method handles `null` fi the result is `false`, e.g., a `string.IsNullOrEmpty` call.
+* `[NotNullWhenFalse]` - Indicates a method handles `null` if the result is `false`, e.g., a `string.IsNullOrEmpty` call.
 * `[EnsuresNotNull]` - Indicates that the program cannot continue if a value is `null`, for example, a `ThrowIfNull` call.
 * `[AssertsTrue]` and `[AssertsFalse]` - Used in assertion cases where `null` is concerned.
 
@@ -295,7 +297,7 @@ More generally, `value = null` or `value <> null`, where `value` is an F# expres
 
 ```fsharp
 let len (str: string | null) =
-    if (str <> null && str.Length > 0) then // OK - `str` must be null
+    if (str <> null && str.Length > 0) then // OK - `str` must be non-null
         str.Length // OK here too
     else
         -1
@@ -595,6 +597,40 @@ This also means that some internal helper functions could be done away with. For
 This will be a nontrivial effort, not unlike efforts to selectively annotate CoreFX libraries.
 
 We need to take care that doing this does not affect binary compatibility in any way. It shouldn't, since the attributes being applied will just be ignored by an earlier compiler, but this still needs to be verified.
+
+### Intent-based warnings
+
+The `[<DefaultValue>]` and `[<CLIMutable>]` attributes can be used to great utility today, but can also result in declared code that is nonsensical with this feature:
+
+```fsharp
+// Nonsense one:
+type C() =
+    [<DefaultValue>]
+    val mutable Whoops : string
+
+printfn "%d" (C().Whoops.Length)
+
+// Nonsense two:
+[<CLIMutable>]
+type R = { Whoopsie: string }
+```
+
+Both of these declarations are saying conflicting things. The attribute implies nullability, because the default value for a reference type is `null` (at least prior to F# 5.0). However, they are declared with type `string`, which is non-null with `[<NonNullTypes(true)>]`! This is a contradiction.
+
+Because there is no way to interpret those declarations correctly, a warning is emitted. This is an **Intent-based warning**. Warning strings that follow are an example, not necessarily what will be emitted:
+
+```fsharp
+type C() =
+    [<DefaultValue>] // WARNING - DefaultValue implies nullability, but 'Whoops' is declared as non-null. Consider a null annotation.
+    val mutable Whoops : string
+
+printfn "%d" (C().Whoops.Length) // WARNING - possible null dereference
+
+[<CLIMutable>] // WARNING - CLIMutable implies nullability, but 'Whoopsie' is declared as non-null. Consider a null annotation.
+type R = { Whoopsie: string }
+```
+
+As a note, the previous example demonstrates that despite having contradicting declared types, usage of the declared types can still emit warnings. Intent-based warnings should not keep usage of these types from producing other nullability warnings. 
 
 ### Tooling considerations
 
