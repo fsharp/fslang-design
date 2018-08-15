@@ -12,7 +12,7 @@ This RFC covers the detailed proposal for this suggestion.
 # Summary
 [summary]: #summary
 
-There should be a syntatic sugar, called `match!`, that is equivalent to `let!` followed by `match`.
+There should be a syntactic sugar, called `match!`, that is equivalent to `let!` followed by `match`.
 
 # Motivation
 [motivation]: #motivation
