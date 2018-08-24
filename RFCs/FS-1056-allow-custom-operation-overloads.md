@@ -40,19 +40,24 @@ type InputOptions =
     Validators : (string -> bool) array }
 
 type InputBuilder() =
+
     member t.Yield(_) = 
       { Label = None
         Kind = Text None
         Validators = [||] }
+        
     [<CustomOperation("text")>]
     member this.Text(io,?placeholder) =
         { io with Kind = Text placeholder }
+        
     [<CustomOperation("password")>]
     member this.Password(io,?placeholder) =
         { io with Kind = Password placeholder }
+        
     [<CustomOperation("label")>]
     member this.Label(io,label) = 
         { io with Label = Some label }
+        
     [<CustomOperation("with_validators")>]
     member this.Validators(io, [<ParamArray>] validators) =
         { io with Validators = validators }
@@ -69,7 +74,8 @@ let name =
     label "Name"
     text
     with_validators
-        (String.IsNullOrWhiteSpace >> not)}
+        (String.IsNullOrWhiteSpace >> not)
+  }
         
 let email =
   input {
@@ -77,7 +83,8 @@ let email =
     text "Your email"
     with_validators
         (String.IsNullOrWhiteSpace >> not)
-        (fun s -> s.Contains "@")}
+        (fun s -> s.Contains "@")
+  }
         
 let password =
   input {
@@ -86,7 +93,8 @@ let password =
     with_validators
         (String.exists Char.IsUpper)
         (String.exists Char.IsDigit)
-        (fun s -> s.Length >= 6)}
+        (fun s -> s.Length >= 6)
+  }
 ```
 
 
@@ -100,6 +108,7 @@ After removing the protections that prevents the compilation of computation expr
 ```fsharp
 type Builder() =
     member __.Yield(_) = ()
+    
     [<CustomOperation("method")>]
     member __.Method(state, ...arguments) = ...
 
@@ -118,6 +127,9 @@ builder.Method((builder.Yield()), a, b, c, d, e, f)
 
 The same rules as calling this code will apply for the computation expressions.
 
+The restriction of having a 1:1 match on the method and keyword names for the overloads is kept as it keeps the intent clear. Howevere the overloads don't need to be marked with `[<CustomOperation>]` again.
+
+
 # Drawbacks
 [drawbacks]: #drawbacks
 
@@ -126,17 +138,15 @@ Error messages gets more generic as it will give the same error as it would when
 # Alternatives
 [alternatives]: #alternatives
 
-TBD
+The main alternative is not doing this at all.
+
 
 # Compatibility
 [compatibility]: #compatibility
 
 This is not a breaking change.
 
-
 # Unresolved questions
 [unresolved]: #unresolved-questions
 
-On the current implementation, I kept the restriction of having a 1:1 match on the method and keyword names for the overloads as it keeps the intent clear, but the overloads don't need to be marked with `[<CustomOperation>]` again.
-
-* Should the compiler only consider the overloads that are marked or just having the same method name be enough?
+None
