@@ -192,7 +192,7 @@ Additionally, treating all components we cannot guarantee as non-nullable as nul
 There will be several attributes C# 8.0 code can emit:
 
 * `[NotNullWhenTrue]` - Indicates a method handles `null` if the result is `true`, e.g., a `TryGetValue` call.
-* `[NotNullWhenFalse]` - Indicates a method handles `null` fi the result is `false`, e.g., a `string.IsNullOrEmpty` call.
+* `[NotNullWhenFalse]` - Indicates a method handles `null` if the result is `false`, e.g., a `string.IsNullOrEmpty` call.
 * `[EnsuresNotNull]` - Indicates that the program cannot continue if a value is `null`, for example, a `ThrowIfNull` call.
 * `[AssertsTrue]` and `[AssertsFalse]` - Used in assertion cases where `null` is concerned.
 
