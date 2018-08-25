@@ -96,6 +96,8 @@ namespace System.Runtime.CompilerServices
 }
 ```
 
+Note: the `bool[]` is used to represent nested types. So `ResizeArray<string | null>` would be represented with `[| false; true |]`, where `ResizeArray` is non-null, but `string | null` is `null`.
+
 For example, the following code:
 
 ```csharp
@@ -126,7 +128,7 @@ F# will also emit this attribute when it produces a nullable reference type for 
 
 ### Representing nullability as a concept
 
-As descibed in the [Interaction Model](FS-1060-nullable-reference-types.md#interaction-model), there are certain behaviors involved in how to work with assemblies that may or may not express nullability. The most flexible system for this is one in which a given scope is defined to have nullability as a concept. This is quite granular, but in practice will be at the assembly module level, making it mostly as if it were a per-project configuration.
+As described in the [Interaction Model](FS-1060-nullable-reference-types.md#interaction-model), there are certain behaviors involved in how to work with assemblies that may or may not express nullability. The most flexible system for this is one in which a given scope is defined to have nullability as a concept. This is quite granular, but in practice will be at the assembly module level, making it mostly as if it were a per-project configuration.
 
 C# 8.0 code will emit the `[NonNullTypes(true|false)]` attribute:
 
@@ -173,19 +175,15 @@ As a final note, this attribute _can_ be abused. For example, if a method is ann
 
 Nullability obliviousness is a concept that C# 8.0 has. A null-oblivious type is one that no assumptions can be made about. Once assigned to a nullable or non-nullable variable, it is treated as if it is nullable or non-nullable, respectively.
 
-**F# may not have this concept. Reference types we cannot determine to be non-nullable will be assumed to be nullable.**
+For example, imagine a C# 8.0 project consuming an older assembly that was compiled with an older C# compiler that has no notion of nullability, or it was compiled such that reference types are defined in a scope where `NonNullTypes(false)`. The C# behavior in this circumstance is, "we cannot say whether or not this is nullable or not, so we cannot assign nullability or non-nullability". Once assigned to a variable, the type it is assigned to dictates if it is nullable or not.
 
-This is controversial, because we are making an assumption about code that we do not really know about:
+**F# may not have this concept due to type inference.**
 
-* The code could not be handling `null` at all, and thus could either produce a `NullReferenceException` or produce a value that is nullable
-* The code could be handling `null` just fine, and could pass back a reference type that can never be `null`
-* We have no way to tell if any of the previous two points are true
+This is controversial, because we are making an assumption about code that we do not really know about because the code could be handling `null` just fine, and could pass back a reference type that can never be `null`, but we'd still force the programmer to account for `null`.
 
-In practice, this could mean emitting thousands of warnings for a single project. Although emitting warnings for unsafe null usage is a feature, if the number of warnings gets too high, people will find it invasive.
+This could mean emitting thousands of warnings for a single project. Although emitting warnings for unsafe null usage is a feature, if the number of warnings gets too high, people will find it invasive.
 
-To remain "true" to the original code, we could conceivably introduce null obliviousness and thus treat the value coming out of a component as either nullable or non-nullable, depending on how we assign it.
-
-However, this is not actually possible in F#, because the majority of F# code uses type inference to infer a type. Null obliviousness would require explicit type annotations to work as we intend it! Failing the propagation of a null-oblivous type through type inference (see [Type Inferece](FS-1060-nullabl-reference-types.md#type-inference)), we must assume nullability to remain safe. (**NOTE:** this is also under discussion for C# with `var x = ...`).
+To remain "true" to the original code, we could introduce null obliviousness as a "state" that a reference type could be in. However, this is not practically possible in F#, because the majority of F# code uses type inference to infer a type, and null obliviousness would require explicit type annotations to work properly!
 
 Additionally, treating all components we cannot guarantee as non-nullable as nullable is, we feel, "in the spirit of F#", which mandates safety and non-nullness wherever possible. This point may well be revisited if early usage indicates that lack of null obliviousness is too invasive.
 
