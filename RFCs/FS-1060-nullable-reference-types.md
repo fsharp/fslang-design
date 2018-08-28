@@ -163,7 +163,7 @@ In other words, this attribute specifies a way to mark a class, constructor, del
 
 This attribute could potentially be used in F# to allow for opt-in/opt-out nullability at a fine-grained level.
 
-F# will respect this attribute, with the `true` case indicating that the scope distinguishes between nullable and non-nullable reference types. If `false` is used, then nullability is not a concept and F# behaves in accordance with [Null obliviousness](FS-1060-nullable-reference-types.md#null-obliviousness).
+F# will respect this attribute, with the `true` case indicating that the scope distinguishes between nullable and non-nullable reference types. If `false` is used, then nullability is not a concept and F# treats the reference types exactly as previous versions of the language would (i.e., not complain on unsafe dereference).
 
 Additionally, the F# compiler will likely have to synthesize/embed this attribute upon usage. See a note from the C# team:
 
