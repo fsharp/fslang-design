@@ -159,15 +159,15 @@ From the C# spec on this:
 >
 > `[NonNullTypes(true|false)]` is not synthesized by the compiler. If the attribute is used explicitly in source, the type declaration must be provided explicitly to the compilation.
 
-In other words, this attribute specifies a way to mark a class, constructor, delegate, enum, event, field, interface, method, module, property, or struct as having nullability expressable or not in a containing scope.
+In other words, this attribute specifies a way to mark a class, constructor, delegate, enum, event, field, interface, method, module, property, or struct as having nullability expressible or not in a containing scope.
 
 This attribute could potentially be used in F# to allow for opt-in/opt-out nullability at a fine-grained level.
 
-F# will respect this attribute, with the `true` caseindicating that the scope distinguishes between nullable and non-nullable reference types.
+F# will respect this attribute, with the `true` case indicating that the scope distinguishes between nullable and non-nullable reference types. If `false` is used, then nullability is not a concept and F# behaves in accordance with [Null obliviousness](FS-1060-nullable-reference-types.md#null-obliviousness).
 
-F# will treat scopes with the `false` case as if its contained reference types are all nullable reference types.
+Additionally, the F# compiler will likely have to synthesize/embed this attribute upon usage. See a note from the C# team:
 
-In other words, if we cannot be sure that a given reference type is non-nullable, we assume it is nullable.
+> FYI, we’re currently working to have the C# compiler embed this attribute whenever it is used in source. As a result, we do not plan to include that attribute into frameworks. That means the F# compiler will likely have to synthesize/embed this attribute upon usage as well.
 
 As a final note, this attribute _can_ be abused. For example, if a method is annotated with `[NonNullTypes(true)]` and does not actually perform a `null` check, further code can still produce a `NullReferenceException` and not have a warning associated with it.
 
