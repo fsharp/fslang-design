@@ -26,7 +26,7 @@ It would be useful to have this to extract the name of expressions, like:
 
 ```fsharp
 let add x y =
-    if x < 0 then raise (ArgumentOutOfRangeException(nameof(x)))
+    if x < 0 then raise (ArgumentOutOfRangeException(nameof(x))
     x + y
 ```
 
