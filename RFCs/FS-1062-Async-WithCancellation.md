@@ -1,6 +1,6 @@
 # F# RFC FS-1062 - (Add Async.WithCancellation)
 
-The design suggestion [FILL ME IN](https://github.com/fsharp/fslang-suggestions/issues/685) has been marked "approved in principle".
+The design suggestion [Add Async.withCancellation](https://github.com/fsharp/fslang-suggestions/issues/685) has been marked "approved in principle".
 This RFC covers the detailed proposal for this suggestion.
 
 * [x] Approved in principle
@@ -12,13 +12,12 @@ This RFC covers the detailed proposal for this suggestion.
 # Summary
 [summary]: #summary
 
-
-This feature would add `Async.WithCancellation`.  This would allow using outside CancellationToken, such as the [RequestAborted](https://docs.microsoft.com/en-us/dotnet/api/microsoft.aspnetcore.http.httpcontext.requestaborted?view=aspnetcore-2.1) from `HttpContext`.  The problem with [Async.Start](https://msdn.microsoft.com/en-us/visualfsharpdocs/conceptual/async.start-method-%5Bfsharp%5D?f=255&MSPPError=-2147217396) is it does not provide a way to return a value.
+This feature would add `Async.WithCancellation`.  
 
 # Motivation
 [motivation]: #motivation
 
-The motivation behind this RFC is there currently is no built in way to pass in external cancellation tokens.  The code below is not difficult to implement but should be built into the standard library for consumers to use easily. 
+The motivation behind this RFC is there currently is no built in way to pass in external cancellation tokens. This would allow using outside CancellationToken, such as the [RequestAborted](https://docs.microsoft.com/en-us/dotnet/api/microsoft.aspnetcore.http.httpcontext.requestaborted?view=aspnetcore-2.1) from `HttpContext`.  The problem with [Async.Start](https://msdn.microsoft.com/en-us/visualfsharpdocs/conceptual/async.start-method-%5Bfsharp%5D?f=255&MSPPError=-2147217396) is it does not provide a way to return a value. The code below is not difficult to implement but should be built into the standard library for consumers to use easily. 
 
 # Detailed design
 [design]: #detailed-design
@@ -45,9 +44,23 @@ let withCancellation (ct:CancellationToken) (a:Async<'a>) : Async<'a> = async {
   return! tcs.Task |> Async.AwaitTask }
 ```
 
-Since all methods on `Async` are implemented as `static members` we should continue that pattern with the proposed signature. 
+Since all methods on `Async` are implemented as `static members`, that pattern should continue to be used with the proposed signature. 
 
-`static member WithCancellation(a : Async<'a>, cancellationToken : CancellationToken)`
+```fsharp
+static member WithCancellation(a : Async<'a>, cancellationToken : CancellationToken) = async {
+  let! ct2 = Async.CancellationToken
+  use cts = CancellationTokenSource.CreateLinkedTokenSource (ct, ct2)
+  let tcs = new TaskCompletionSource<'a>()
+  use _reg = cts.Token.Register (fun () -> tcs.TrySetCanceled() |> ignore)
+  let a = async {
+    try
+      let! a = a
+      tcs.TrySetResult a |> ignore
+    with ex ->
+      tcs.TrySetException ex |> ignore }
+  Async.Start (a, cts.Token)
+  return! tcs.Task |> Async.AwaitTask }
+```
 
 with the same body as shown above.
 
@@ -56,7 +69,7 @@ with the same body as shown above.
 # Drawbacks
 [drawbacks]: #drawbacks
 
-I do no see any drawbacks to adding this feature.
+There is a drawback to adding more members like this, as it does move more towards having a paradox of choice.
 
 # Alternatives
 [alternatives]: #alternatives
@@ -72,12 +85,23 @@ Please address all necessary compatibility questions:
 No
 
 * What happens when previous versions of the F# compiler encounter this design addition as source code?
+
+It will not compile.
+
 * What happens when previous versions of the F# compiler encounter this design addition in compiled binaries?
+
+It will be binary compatible.
+
 * If this is a change or extension to FSharp.Core, what happens when previous versions of the F# compiler encounter this construct?
+
+It should not be an issue.
+
 
 
 # Unresolved questions
 [unresolved]: #unresolved-questions
 
 What parts of the design are still TBD?
+
+None
 
