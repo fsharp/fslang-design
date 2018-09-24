@@ -80,7 +80,7 @@ To be accepted as an applicative computation expression (CE), the CE must be of 
 
 This may sound very constrained, but it is for good reason. The structure imposed by this rule forces the CE to be in a canonical form ([McBride & Paterson](http://www.staff.city.ac.uk/~ross/papers/Applicative.html)):
 
-> Any expression built from the Applicative combinators can be transformed to a canonical form in which a single pure function is ‘applied’ to the effectful parts in depth-first order:  
+> Any expression built from the Applicative combinators can be transformed to a canonical form in which a single pure function is "applied" to the effectful parts in depth-first order:  
 `pure f <*> arg1 <*> ... <*> argN`  
 This canonical form captures the essence of Applicative programming: computations have a fixed structure, given by the pure function, and a sequence of subcomputations, given by the effectful arguments.
 
@@ -405,9 +405,7 @@ The new applicative computation expressions are quite constrained, and as has be
 
 This change should be backwards compatible.
 
-* Uses of `let!` without `and!` should still desugar to use `Bind`. See [the discussion of `let! ... return ...`](#singlelet) computation expressions for more details.
-
-* Existing computation expression builders with an `Apply` method should not change in behaviour, since usages of the builder would still need to add the new `let! ... and! ...` syntax to activate it.
+Existing computation expression builders with an `Apply` method should not change in behaviour, since usages of the builder would still need to add the new `let! ... and! ...` syntax to activate it. In particular, in the case of `let! ... return ...`, we will continue to only pick bind, [as mentioned earlier](#singlelet).
 
 ## What happens when previous versions of the F# compiler encounter this design addition as source code?
 
