@@ -603,7 +603,6 @@ ce.Apply(
 ```
 
 ## Ambiguities surrounding a `let! .. return ...`
-[singlelet]: #singlelet
 
 Some CEs could be desugared in multiple ways, depending on which methods are implemented on a builder (and assuming the implementations follow the standard laws relating these functions).
 
@@ -701,7 +700,7 @@ Thanks to [nickcowle](https://github.com/nickcowle) for providing this example.
 
 This change should be backwards compatible.
 
-Existing computation expression builders with an `Apply` method should not change in behaviour, since usages of the builder would still need to add the new `let! ... and! ...` syntax to activate it. In particular, in the case of `let! ... return ...`, we will continue to only pick bind, [as mentioned earlier](#singlelet).
+Existing computation expression builders with an `Apply` method should not change in behaviour, since usages of the builder would still need to add the new `let! ... and! ...` syntax to activate it. In particular, in the case of `let! ... return ...`, we will continue to only pick bind, as mentioned earlier.
 
 ## What happens when previous versions of the F# compiler encounter this design addition as source code?
 
@@ -720,7 +719,7 @@ Since the syntax is desugared into a method call on the builder object, after co
 
 Is `anduse!` an acceptable keyword for when `and!` must also imply a call to `Using`? Are there sensible alternatives?
 
-There are various ways of desugaring `let! ... return ...` via one of `Map`, `Apply` or `Bind`. [The above](#singlelet) assumes that we are aiming for backward compatibility and hence doesn't consider desugaring to `Apply` at all. Is this the best choice? Alternatives include:
+There are various ways of desugaring `let! ... return ...` via one of `Map`, `Apply` or `Bind`. This RFC currently assumes that we are aiming for backward compatibility and hence doesn't consider desugaring to `Apply` at all. Is this the best choice? Alternatives include:
 
 * Using `Apply` in preference to `Bind` for `let! ... return` whenever `Apply` is defined (on the basis that that any reasonable `Apply` implementation will be functionally equivalent, but more efficient than the corresponding `Bind`)
 * Subsuming [the RFC for desugaring this to `Map`](https://github.com/fsharp/fslang-design/blob/master/RFCs/FS-1048-ce-builder-map.md) and defining a hierarchy between `Map`, `Apply` and `Bind` and some attributes for those methods to allow the creators of builders to opt-in to "optimisations" that pick the least general (and hence hopefully most efficient) desugaring.
