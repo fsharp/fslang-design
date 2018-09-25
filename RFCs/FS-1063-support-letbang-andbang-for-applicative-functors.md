@@ -36,7 +36,7 @@ observable {
 
 If we consider `Bind : M<'T> * ('T -> M<'U>) -> M<'U>`, we can see that the second element of the input is a function that requires a value to create the resulting "wrapped value". This means the argument to `Bind` has the power to completely change the context of the result based on the value seen (e.g. to create and destroy `Observable` subscriptions), but it also means that the expression builder can predict much less about what the given function will decide to do, and hence has fewer outcomes that it can rule out and potentially optimise away.
 
-In contrast, `Apply : M<'T -> 'U> * M<'T> -> M<'U>` only needs a wrapped function, which is something we have whilst building our computation and not something that can be controlled by the values at come later. This means from the moment an applicative computation is constructed, the fundamental context of the computation is fixed. This removes some flexibility to drastically alter the shape of the context in response to later events, but means that the computation expression builder now knows much more about what can or cannot happen after construction, and hence can make intelligent decisions off the back of that (e.g. to avoid unsubscribing only to immediately resubscribe, or to perhaps run two operations in parallel because it knows there can be no dependencies between them).
+In contrast, `Apply : M<'T -> 'U> * M<'T> -> M<'U>` only needs a wrapped function, which is something we have whilst building our computation and not something that can be controlled by the values at come later. This removes some flexibility to drastically alter the shape of the context in response to values seen later, but means that the computation expression builder now knows much more about what can or cannot happen after construction, and hence can make intelligent decisions off the back of that (e.g. to avoid unsubscribing only to immediately resubscribe, or to perhaps run two operations in parallel because it knows there can be no dependencies between them).
 
 So, importantly, applicatives allow us the power to use functions which are "wrapped up" inside a functor, but [preserve our ability to analyse the structure of the computation](https://paolocapriotti.com/assets/applicative.pdf). This is a critical distinction which can have a huge impact on performance, and indeed on what is possible to construct at all, so has very tangible implications.
 
@@ -284,7 +284,9 @@ This syntax may sound very constrained, but it is for good reason. The structure
 `pure f <*> arg1 <*> ... <*> argN`  
 This canonical form captures the essence of Applicative programming: computations have a fixed structure, given by the pure function, and a sequence of subcomputations, given by the effectful arguments.
 
-In our case, the expression to the right of `return` (i.e. `pure`) becomes the body of a lambda, whose parameters are introduced by the `let! ... and! ...` preceding it. This leads to a very straightforward desugaring of the syntax, which therefore ensures both using and understanding the feature is only as complex as is inherently required by the abstraction.
+In our case, the expression to the right of `return` (i.e. `pure`) becomes the body of a lambda, whose parameters are introduced by the `let! ... and! ...` preceding it.
+
+Similarly, the canonical form of `let! ... and! ... return ...` in F# makes should make it clear that what we are really doing it calling the function given to `return` with the arguments introduced by `let! ... and! ...`, but in a special context determined by the CE builder.
 
 Despite requiring the canonical form, there are still many ways to build more complex and useful expressions from this syntax. The rest of this section aims to give a tour around these various features.
 
