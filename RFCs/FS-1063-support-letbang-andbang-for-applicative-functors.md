@@ -57,7 +57,7 @@ formlet {
 }
 ```
 
-[Pauan's comment about Observables](https://github.com/fsharp/fslang-suggestions/issues/579#issuecomment-310799948) (mentioned earlier) points out that applicatives allow us to avoid frequent resubscriptions to `Observable` values because we know precisely how they'll be hooked up ahead of time, and that it won't change within the lifetime of the applicative.
+[Pauan's comment about Observables](https://github.com/fsharp/fslang-suggestions/issues/579#issuecomment-310799948) (mentioned [earlier](#motivation)) points out that applicatives allow us to avoid frequent resubscriptions to `Observable` values because we know precisely how they'll be hooked up ahead of time, and that it won't change within the lifetime of the applicative.
 
 ```fsharp
 // Outputs a + b, which is recomputed every time foo or bar outputs a new value,
@@ -605,7 +605,7 @@ ce.Apply(
 ## Ambiguities surrounding a `let! .. return ...`
 [singlelet]: #singlelet
 
-Some CEs could be validly desugared in multiple ways, depending on which methods are implemented on a builder (assuming the implementations follow the standard laws relating these functions).
+Some CEs could be desugared in multiple ways, depending on which methods are implemented on a builder (and assuming the implementations follow the standard laws relating these functions).
 
 For example:
 
@@ -616,7 +616,7 @@ ce {
  }
 ```
 
-Can be desugared via `Bind`:
+Can be desugared via `Bind` and `Return`:
 
 ```fsharp
 ce.Bind(
@@ -624,7 +624,7 @@ ce.Bind(
     foo)
 ```
 
-Or via `Apply`:
+Or via `Apply` and `Return`:
 
 ```fsharp
 ce.Apply(
@@ -632,7 +632,7 @@ ce.Apply(
     foo)
 ```
 
-This is because the operation is really equivalent to a `Map`, something which can be implemented in terms of `Return` and either `Bind` or `Apply`. We mentioned that these functions were in some sense more powerful than a plain functor's `Map`, and we are seeing an example of that here.
+This is because the operation is really equivalent to a `Map`, something which can be implemented in terms of `Return` and either `Bind` or `Apply`. We mentioned that these functions were in some sense more flexible than a plain functor's `Map`, and we are seeing an example of that here.
 
 In order to avoid breaking backwards compatibility, the default resolution is to desugar via `Bind`, _failing if it is not defined on the builder_ (even though, conceptually, it should be implemented via `Apply`). This is consistent with in previous F# versions. [Later work on supporting `Map`](https://github.com/fsharp/fslang-design/blob/master/RFCs/FS-1048-ce-builder-map.md) can then make the choice about how to resolve this in a way which works with that in mind too.
 
