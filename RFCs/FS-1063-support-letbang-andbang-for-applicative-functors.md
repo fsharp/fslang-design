@@ -113,7 +113,7 @@ ce {
  }
 ```
 
-⇒
+becomes
 
 ```fsharp
 ce.Apply(
@@ -306,7 +306,7 @@ ce {
  }
 ```
 
-⇒
+becomes
 
 ```fsharp
 ce.Apply(
@@ -348,7 +348,7 @@ ce {
 }
 ```
 
-⇒
+becomes
 
 ```fsharp
 ce.Bind(
@@ -473,7 +473,7 @@ ce {
 }
 ```
 
-⇒
+becomes
 
 ```fsharp
 ce.Combine(
@@ -533,7 +533,7 @@ ce {
  }
 ```
 
-⇒
+becomes
 
 ```fsharp
 ce.Apply(
