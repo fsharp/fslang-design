@@ -128,11 +128,155 @@ ce.Apply(
                     )
                 )),
             foo),
-        bar), 
+        bar),
     baz)
 ```
 
-To be accepted as an applicative computation expression (CE), the CE must be of the form `let! ... and! ... return ...` (with one or more `and!`s). This means, for example, no `let!`s after an `and!` in the same CE, no normal `let`s in between the `let!` and `and!`s, and no usages of `yield` in place of `return`. Similarly, `do!` and `match!` are not valid in an applicative builder, although we allow `use!` and related keywords, which will be covered later.
+## Rules on Keywords in Applicative Computation Expressions
+
+To be accepted as an applicative computation expression (CE), the CE must be of the form `let! ... and! ... return ...`:
+
+* There must be at least one `and!`s after the `let!`, but there is no hard upper-limit on the number of `and!`s
+* No `let!`s may appear after an `and!` in the same applicative CE
+* No normal `let`s in between the `let!` and `and!`s
+* No usage of `yield` in place of `return`
+* `do!`, `match!` and other CE keywords are also not valid in an applicative CE
+* `use!` and `anduse!` may replace `let!` and `and!`, respectively, to indicate a resource that needs to be managed by the CE builder
+
+### Valid Syntax
+
+Only one `and!`:
+```fsharp
+ce {
+    let! x = foo
+    and! y = bar ✔️
+    return x + y
+ }
+```
+
+Many `and!`s:
+```fsharp
+ce {
+    let! w = foo
+    and! x = bar ✔️
+    and! y = baz ✔️
+    and! z = qux ✔️
+    return w + x + y + z
+ }
+```
+
+`let`-binding inside the `return`:
+```fsharp
+ce {
+    let! x = foo
+    and! y = bar
+    and! z = baz️
+    return (let w = x + y in w + z) ✔️
+ }
+```
+
+Function call inside the `return`:
+```fsharp
+ce {
+    let! x = foo
+    and! y = bar
+    and! z = baz
+    return sprintf "x = %d, y = %d, z = %d" x y z ✔️
+ }
+```
+
+The `let!` is replaced by `use!`:
+```fsharp
+ce {
+    use! x = foo ✔️
+    and! y = bar
+    return x + y
+ }
+```
+
+An arbitrary `and!` is replaced by `anduse!`:
+```fsharp
+ce {
+    let!    w = foo
+    and!    x = bar
+    anduse! y = baz ✔️
+    and!    z = qux
+    return w + x + y + z
+ }
+```
+
+The `let! ... and! ...` form is replaced entirely by its resource-tracking equivalent:
+```fsharp
+ce {
+    use!    x = foo ✔️
+    anduse! y = bar ✔️
+    anduse! z = qux ✔️
+    return x + y + z
+ }
+```
+
+### Invalid Syntax
+
+A `let!` after an `and!`:
+```fsharp
+ce {
+    let! x = foo
+    and! y = bar
+    let! z = baz ❌
+    return x + y + z
+ }
+```
+
+A `let` interrupting the `let! ... and! ...` block:
+```fsharp
+ce {
+    let! x = foo
+    let  z = x / 3 ❌
+    and! y = bar
+    return x + y + z
+ }
+```
+
+A `let` after the `and!`s:
+```fsharp
+ce {
+    let! x = foo
+    and! y = bar
+    let z = y * 2 ❌
+    return x + y + z
+ }
+```
+
+A `yield` instead of a `return`:
+```fsharp
+ce {
+    let! x = foo
+    and! y = bar
+    yield x + y ❌
+ }
+```
+
+Multiple `return`s:
+```fsharp
+ce {
+    let! x = foo
+    and! y = bar
+    return x + y
+    return (x + y) * 2 ❌
+ }
+```
+
+Other CE keywords anywhere in the expression:
+```fsharp
+ce {
+    let! x = foo
+    and! y = bar
+    do! webRequest x y ❌
+    return x + y
+ }
+```
+
+## Rationale for Strong Constraints
 
 This may sound very constrained, but it is for good reason. The structure imposed by this rule forces the CE to be in a canonical form ([McBride & Paterson](http://www.staff.city.ac.uk/~ross/papers/Applicative.html)):
 
