@@ -632,7 +632,7 @@ ce.Apply(
     foo)
 ```
 
-This is because the operation is really equivalent to a `Map`, something which can be implemented in terms of `Return` and either `Bind` or `Apply`. We mentioned that these functions were in some sense more flexible than a plain functor's `Map`, and we are seeing an example of that here.
+This is because the operation is really equivalent to a `Map`, something which can be implemented in terms of `Return` and either `Bind` or `Apply`. We mentioned that these functions were in some sense more general than a plain functor's `Map`, and we are seeing an example of that here.
 
 In order to avoid breaking backwards compatibility, the default resolution is to desugar via `Bind`, _failing if it is not defined on the builder_ (even though, conceptually, it should be implemented via `Apply`). This is consistent with in previous F# versions. [Later work on supporting `Map`](https://github.com/fsharp/fslang-design/blob/master/RFCs/FS-1048-ce-builder-map.md) can then make the choice about how to resolve this in a way which works with that in mind too.
 
@@ -723,5 +723,5 @@ Is `anduse!` an acceptable keyword for when `and!` must also imply a call to `Us
 There are various ways of desugaring `let! ... return ...` via one of `Map`, `Apply` or `Bind`. [The above](#singlelet) assumes that we are aiming for backward compatibility and hence doesn't consider desugaring to `Apply` at all. Is this the best choice? Alternatives include:
 
 * Using `Apply` in preference to `Bind` for `let! ... return` whenever `Apply` is defined (on the basis that that any reasonable `Apply` implementation will be functionally equivalent, but more efficient than the corresponding `Bind`)
-* Subsuming [the RFC for desugaring this to `Map`](https://github.com/fsharp/fslang-design/blob/master/RFCs/FS-1048-ce-builder-map.md) and defining a hierarchy between `Map`, `Apply` and `Bind` and some attributes for those methods to allow the creators of builders to opt-in to "optimisations" that pick the least powerful (and hence hopefully most efficient) desugaring.
+* Subsuming [the RFC for desugaring this to `Map`](https://github.com/fsharp/fslang-design/blob/master/RFCs/FS-1048-ce-builder-map.md) and defining a hierarchy between `Map`, `Apply` and `Bind` and some attributes for those methods to allow the creators of builders to opt-in to "optimisations" that pick the least general (and hence hopefully most efficient) desugaring.
 * Using `Apply` in place of `Bind` only in those instances where `Bind` is not defined (no existing code should break, but this goes somewhat to the contrary of the previous proposal, which we may want to consider in the future)
