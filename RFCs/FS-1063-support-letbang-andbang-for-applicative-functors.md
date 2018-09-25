@@ -1,4 +1,4 @@
-# F# RFC FS-1063 - Support let! .. and... for applicative functors
+ F# RFC FS-1063 - Support let! .. and... for applicative functors
 
 The design suggestion [Support let! .. and... for applicative functors](https://github.com/fsharp/fslang-suggestions/issues/579) has been marked "approved in principle".
 This RFC covers the detailed proposal for this suggestion.
@@ -20,13 +20,15 @@ Applicative functors (or just "applicatives", for short) have been growing in po
 
 With an applicative computation expressions, we can write more computations than before (there are more contexts which meet the requirements for applicative computation expressions than the existing monadic ones), and we can write more efficient computations (the requirements of applicatives rule out needing to support some potentially expensive operations).
 
-For example, [Pauan points out](https://github.com/fsharp/fslang-suggestions/issues/579#issuecomment-310799948) that we can write a computation expression for `Observable`s that [avoid unnecessary resubscriptions](https://github.com/fsharp/fslang-suggestions/issues/579#issuecomment-310854419):
+For example, [Pauan points out](https://github.com/fsharp/fslang-suggestions/issues/579#issuecomment-310799948) that we can write a computation expression for `Observable`s that [avoids unnecessary resubscriptions](https://github.com/fsharp/fslang-suggestions/issues/579#issuecomment-310854419):
 
 ```fsharp
+// Outputs a + b, which is recomputed every time foo or bar outputs a new value,
+// avoiding any unnecessary resubscriptions
 observable {
   let! a = foo
   and! b = bar
-  return a + b // outputs a + b, which is recomputed every time foo or bar outputs a new value
+  return a + b
 }
 ```
 
@@ -55,7 +57,7 @@ formlet {
 }
 ```
 
-[Pauan's comment about Observables](https://github.com/fsharp/fslang-suggestions/issues/579#issuecomment-310799948) points out that applicatives allow us to avoid frequent resubscriptions to `Observable` values because we know precisely how they'll be hooked up ahead of time, and that it won't change within the lifetime of the applicative.
+[Pauan's comment about Observables](https://github.com/fsharp/fslang-suggestions/issues/579#issuecomment-310799948) (mentioned earlier) points out that applicatives allow us to avoid frequent resubscriptions to `Observable` values because we know precisely how they'll be hooked up ahead of time, and that it won't change within the lifetime of the applicative.
 
 ```fsharp
 // Outputs a + b, which is recomputed every time foo or bar outputs a new value,
