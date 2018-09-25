@@ -32,13 +32,13 @@ observable {
 
 ## Why Applicatives?
 
-[Applicative functors](https://en.wikipedia.org/wiki/Applicative_functor) sit, in terms of power, somewhere between [functors](https://en.wikipedia.org/wiki/Functor#Computer_implementations) (i.e. types which support `Map`), and [monads](https://en.wikipedia.org/wiki/Monad_(functional_programming)) (i.e. types which support `Bind`).
+[Applicative functors](https://en.wikipedia.org/wiki/Applicative_functor) sit, on the spectrum of flexibility vs. predictability, somewhere between [functors](https://en.wikipedia.org/wiki/Functor#Computer_implementations) (i.e. types which support `Map`), and [monads](https://en.wikipedia.org/wiki/Monad_(functional_programming)) (i.e. types which support `Bind`, which currently underpin computation expressions).
 
-If we consider `Bind : M<'T> * ('T -> M<'U>) -> M<'U>`, we can see that the second element of the input is a function that requires a value to create the resulting "wrapped value".
+If we consider `Bind : M<'T> * ('T -> M<'U>) -> M<'U>`, we can see that the second element of the input is a function that requires a value to create the resulting "wrapped value". This means the argument to `Bind` has the power to completely change the context of the result based on the value seen (e.g. to create and destroy `Observable` subscriptions), but it also means that the expression builder can predict much less about what the given function will decide to do, and hence has fewer outcomes that it can rule out and potentially optimise away.
 
-In contrast, `Apply : M<'T -> 'U> * M<'T> -> M<'U>` only needs a wrapped function, which is something we have whilst building our computation.
+In contrast, `Apply : M<'T -> 'U> * M<'T> -> M<'U>` only needs a wrapped function, which is something we have whilst building our computation and not something that can be controlled by the values at come later. This means from the moment an applicative computation is constructed, the fundamental context of the computation is fixed. This removes some flexibility to drastically alter the shape of the context in response to later events, but means that the computation expression builder now knows much more about what can or cannot happen after construction, and hence can make intelligent decisions off the back of that (e.g. to avoid unsubscribing only to immediately resubscribe, or to perhaps run two operations in parallel because it knows there can be no dependencies between them).
 
-So, importantly, applicatives allow us the power to use functions which are "wrapped up" inside a functor, but [preserve our ability to analyse the structure of the computation](https://paolocapriotti.com/assets/applicative.pdf) - and hence allow for the introduction of optimisations or alternative interpretations - without any values present. This is a critical distinction which can have a huge impact on performance, and indeed on what is possible to construct at all, so has very tangible implications.
+So, importantly, applicatives allow us the power to use functions which are "wrapped up" inside a functor, but [preserve our ability to analyse the structure of the computation](https://paolocapriotti.com/assets/applicative.pdf). This is a critical distinction which can have a huge impact on performance, and indeed on what is possible to construct at all, so has very tangible implications.
 
 ## Examples of Useful Applicatives
 
