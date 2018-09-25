@@ -644,10 +644,10 @@ The new applicative computation expressions are quite constrained, and as has be
 
 [Tomas Petricek's Joinads](http://tomasp.net/blog/fsharp-variations-joinads.aspx/) offered a superset of the features proposed here, but was [rejected](https://github.com/fsharp/fslang-suggestions/issues/172) due to its complexity. This RFC is of much smaller scope, so should be a much less risky change.
 
-Various attempts have been made to attempt to get the benefits of applicatives within the existing syntax, but most end up involving writing  confusing boilerplate and do not support naming the values as a way of tying arguments to the function to be applied.
+Various attempts have been made to attempt to get the benefits of applicatives within the existing syntax, but most end up involving writing confusing boilerplate and make it easy to provide arguments in the wrong order because they cannot be named (in contrast to `let! ... and! ... return ...` which forces each argument to be named in order to be used inside the `return`).
 
 <details>
-  <summary><a href="https://github.com/nickcowle">Nick Cowle</a> Offers An Example of Trying to Simulate Applicatives Using the Existing Syntax</summary>
+  <summary>An Example of Trying to Simulate Applicatives Using the Existing CE Syntax</summary>
   <p>
 
 ```fsharp
@@ -687,6 +687,8 @@ let test =
         into (fun i b f s -> if i > 3 && b then s else "Nope")
     }
 ```
+
+Thanks to [nickcowle](https://github.com/nickcowle) for providing this example.
 
 </p></details>
 
