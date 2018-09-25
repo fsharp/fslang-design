@@ -520,7 +520,7 @@ ce.Combine(
 
 If this syntax feels a bit heavy, remember that the `yield` keyword is not required, and the new syntax can be mixed with other styles (e.g. a custom `<|>` alternation operator) to strike an appropriate balance as each situation requires.
 
-## Using
+## Managing Resources
 
 Just as monads support `Using` via `use!`, applicatives supports it via `use! ... anduse! ...`. Each binding can be either `and!` or `anduse!` (unless it is the first, in which case it must be either `let!` or `use!`), i.e. you can mix-and-match to describe which bindings should be covered by a call to `Using`:
 
