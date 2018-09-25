@@ -113,7 +113,7 @@ ce {
  }
 ```
 
-?
+⇒
 
 ```fsharp
 ce.Apply(
@@ -375,7 +375,7 @@ ce.Bind(
 )
 ```
 
-## Monoids
+## Using Monoids
 
 The existing `let!` CE syntax allows us to use `Combine` (typically in conjunction with `yield`) to define [monad plus](https://hackage.haskell.org/package/monadplus/docs/Control-Monad-Plus.html) instances (i.e. also interpret the type as a [monoid](https://en.wikipedia.org/wiki/Monoid)). [Just as monad plus is to a monad, alternatives are to applicatives](https://en.wikibooks.org/wiki/Haskell/Alternative_and_MonadPlus), so we can do a similar thing for our applicative CE syntax. One motivation for this might be the command line argument example from earlier, where alternatives allow parsing discriminated unions in a way that translates to something akin to "try this case, else try this case, else try this case, ...".
 
@@ -533,7 +533,7 @@ ce {
  }
 ```
 
-?
+⇒
 
 ```fsharp
 ce.Apply(
