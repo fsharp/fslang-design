@@ -377,9 +377,29 @@ ce.Bind(
 
 ## Using Monoids
 
-The existing `let!` CE syntax allows us to desugar sequenced statements into a compound expression via a call to `Combine`. A builder with both `Bind`, `Return` and `Combine` together define a [monad plus](https://hackage.haskell.org/package/monadplus/docs/Control-Monad-Plus.html) instance (i.e. something that is simultaneously a monad and a [monoid](https://en.wikipedia.org/wiki/Monoid)). [Just as a monad plus is to a monad, alternatives are to applicatives](https://en.wikibooks.org/wiki/Haskell/Alternative_and_MonadPlus), so we can do a similar thing for our applicative CE syntax. One motivation for this might be the command line argument example from earlier, where alternatives allow parsing discriminated unions in a way that translates to something akin to "try this case, else try this case, else try this case, ...".
+The existing `let!` CE syntax allows us to desugar sequenced statements into a compound expression via a call to `Combine`. One common example of this is `seq { }` computation expressions:
 
-One might assume that the syntax would be something such as:
+```fsharp
+// Generates the sequence { 1; 2; 3 }
+seq {
+    yield 1
+    yield 2
+    yield 3
+}
+```
+
+The `yield` keyword is used to signify that each element is yielded as the resulting sequence is iterated, but strictly speaking there are two steps going on here:
+
+1. `yield` takes the value on the left and wraps it up in the appropriate context by calling the `Yield` method on the builder.
+2. The sequencing of the expressions by placing them each on a new line (or by separating them with a `;`) results in the expressions being tied together via nested calls to `Combine` on the builder.
+
+> As an aside, `return` desugars to a call to `Return` on the builder, just as is the case for `yield`. In fact, the two generally have the same type signature and do the same thing, the difference being that `yield` is used to emphasise this idea of logically appending to a sequence.
+
+A builder with `Bind`, `Yield` and `Combine` (and the addition of `Zero` for handling the "empty" case) defines a [monad plus](https://hackage.haskell.org/package/monadplus/docs/Control-Monad-Plus.html) instance. In other words, something that simultaneously carries a context (a monad) and allows the combining or appending of values (a [monoid](https://en.wikipedia.org/wiki/Monoid))).
+
+We can define [a similar construct for applicatives](https://en.wikibooks.org/wiki/Haskell/Alternative_and_MonadPlus), so it would make sense to support `Combine` (and therefore `yield`, or a more aptly named custom keyword) for our applicative CEs. One motivation for this might be the command line argument parser example from earlier, where alternatives via `Combine` allow parsing discriminated unions in a way that translates to something akin to "try this case, else try this case, else try this case, ...".
+
+One might assume that the syntax could be extended to something such as:
 
 ```fsharp
 ce {
