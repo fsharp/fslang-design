@@ -276,9 +276,9 @@ ce {
  }
 ```
 
-## Rationale for Strong Constraints
+## Rationale for Strong Syntax Constraints
 
-This may sound very constrained, but it is for good reason. The structure imposed by this rule forces the CE to be in a canonical form ([McBride & Paterson](http://www.staff.city.ac.uk/~ross/papers/Applicative.html)):
+This syntax may sound very constrained, but it is for good reason. The structure imposed by this rule forces the CE to be in a canonical form ([McBride & Paterson](http://www.staff.city.ac.uk/~ross/papers/Applicative.html)):
 
 > Any expression built from the Applicative combinators can be transformed to a canonical form in which a single pure function is "applied" to the effectful parts in depth-first order:  
 `pure f <*> arg1 <*> ... <*> argN`  
