@@ -42,17 +42,60 @@ So, importantly, applicatives allow us the power to use functions which are "wra
 
 ## Examples of Useful Applicatives
 
-The examples below all make use of types which are applicatives, but explicitly _not_ monads, to allow a powerful model for building a particular kind of computation, whilst preserving enough constraints to offer useful guarantees.
+The examples below all make use of types which are applicatives, but explicitly _not_ monads, to allow a powerful model for building a particular kind of computation, whilst preserving enough constraints to offer useful guarantees. Each example includes a sample code snippet using the new syntax.
 
 [Tomas Petricek's formlets blog post](http://tomasp.net/blog/formlets-in-linq.aspx/) introduces the idea that we can use applicatives to build web forms. The guarantee of a static structure of the formlet applicative is used to render forms, but its powerful behaviours still allow useful processing of requests.
 
+```fsharp
+// One computation expression gives both the behaviour of the form and its structure
+formlet {
+    let! name = Formlet.textBox
+    and! gender = Formlet.dropDown ["Male"; "Female"]
+    return name + " is " + gender
+}
+```
+
 [Pauan's comment about Observables](https://github.com/fsharp/fslang-suggestions/issues/579#issuecomment-310799948) points out that applicatives allow us to avoid frequent resubscriptions to `Observable` values because we know precisely how they'll be hooked up ahead of time, and that it won't change within the lifetime of the applicative.
 
-[McBride & Paterson's paper](http://www.staff.city.ac.uk/~ross/papers/Applicative.html) introduces a type very much like F#'s `Result<'T,'TError>` which can be used to stitch together functions and values which might fail, but conveniently accumulating up all of the errors which can then be helpfully presented at once, as opposed to immediately presenting the first error. This allows you to take [Scott Wlaschin's Railway Oriented Programming](https://fsharpforfunandprofit.com/rop/) to the next level!
+```fsharp
+// Outputs a + b, which is recomputed every time foo or bar outputs a new value,
+// avoiding any unnecessary resubscriptions
+observable {
+  let! a = foo
+  and! b = bar
+  return a + b
+}
+```
 
-[Capriotti & Kaposi's paper](https://paolocapriotti.com/assets/applicative.pdf) introduces an example of creating an command line argument parser, where a single applicative can both statically generate help text for the parser, and dynamically parse options given to an application.
+[McBride & Paterson's paper](http://www.staff.city.ac.uk/~ross/papers/Applicative.html) introduces a type very much like F#'s `Result<'T,'TError>` which can be used to stitch together functions and values which might fail, but conveniently accumulating up all of the errors which can then be helpfully presented at once, as opposed to immediately presenting the first error. This allows you to take [Scott Wlaschin's Railway Oriented Programming](https://fsharpforfunandprofit.com/rop/) to the next level by not just bailing out when things go wrong, but automatically collecting up a useful description of all of the different issues that occurred that resulted in the failure.
 
-More advanced usages include self-adjusting computations, such as [Jane Street's Incremental](https://blog.janestreet.com/introducing-incremental/) (written in OCaml), but with even greater opportunity for efficiencies via the careful balance of power and guarantees that applicatives give (such as the ability to optimise the computation, and avoid recreating the rest of the computation every time a `Bind` is reached.
+```fsharp
+// If both reading from the database or the file go wrong, the computation
+// can collect up the errors into a list to helpfully present to the user,
+// rather than just immediately showing the first error and obscuring the
+// second error
+result {
+  let! users = readUsersFromDb()
+  and! birthdays = readUserBirthdaysFromFile(filename)
+  return updateBirthdays users birthdays
+}
+```
+
+[Capriotti & Kaposi's paper](https://paolocapriotti.com/assets/applicative.pdf) introduces an example of creating an command line argument parser, where a single applicative can both statically generate help text for the parser, and dynamically parse options given to an application. [eulerfx](https://github.com/fsharp/fslang-suggestions/issues/579#issuecomment-309764738) has imagined an F# interpretation of that:
+
+```fsharp
+// One computation expression gives both the behaviour of the parser (
+// in terms of how to parse each element of it, what their defaults should
+// be, etc.) and the information needed to generate its help text
+opt {
+  let! username = Opt("username", (Some ""), Some)
+  and! fullname = Opt("fullname", None, Some)
+  and! id = Opt("id", None, readInt)
+  return User(username, fullname, id)
+}
+```
+
+With all of these examples, we can nest the applicative computation expressions inside other computation expressions to build larger and larger descriptions that cleanly separate the pure computation from its context.
 
 # Detailed design
 [design]: #detailed-design
