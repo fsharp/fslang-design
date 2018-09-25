@@ -718,7 +718,7 @@ Since the syntax is desugared into a method call on the builder object, after co
 # Unresolved questions
 [unresolved]: #unresolved-questions
 
-Is `anduse!` an acceptable keyword for when `and!` must also imply a call to `Using`?
+Is `anduse!` an acceptable keyword for when `and!` must also imply a call to `Using`? Are there sensible alternatives?
 
 There are various ways of desugaring `let! ... return ...` via one of `Map`, `Apply` or `Bind`. [The above](#singlelet) assumes that we are aiming for backward compatibility and hence doesn't consider desugaring to `Apply` at all. Is this the best choice? Alternatives include:
 
