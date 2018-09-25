@@ -491,7 +491,7 @@ ce.Combine(
 )
 ```
 
-*N.B.* the size of the desugared expression grows with the product of the number of bindings introduced by the `let! ... and! ...` syntax and the number calls to `Combine` implied by the alternative cases.
+**N.B.** the size of the desugared expression grows with the product of the number of bindings introduced by the `let! ... and! ...` syntax and the number calls to `Combine` implied by the alternative cases.
 
 An attempt at a very smart desugaring which tries to cut down the resulting expression might, on the face of it, seem like a reasonable option. However, beyond the cost of analysing which values which are introduced by `let! ... and! ...` actually go on to be used, we must also consider the right-hand sides of the `let! ... and! ...` bindings and the pattern matching: Do we evaluated these once up front? Or recompute them in each alternative case at the leaf of the tree of calls to `Combine`? What if the expressions on the right-hand sides have side-effects, or the left-hand side utilises active patterns with side-effects? At that point we either make complex, unintuitive rules, or force the CE writer to be explicit.
 
@@ -564,7 +564,7 @@ ce.Combine(
 )
 ```
 
-*N.B.* this syntax forces the writer to be explicit about how many times `Apply` should be called, and with which arguments, for each call to `Combine`, since they create a new applicative computation for each combined case. Notice also how the right-hand sides are copied for each case in order to keep the occurrence of potential side-effects from evaluating them predictable, and also occur before the pattern matching _each time_ a new alternative case is explored.
+**N.B.** this syntax forces the writer to be explicit about how many times `Apply` should be called, and with which arguments, for each call to `Combine`, since they create a new applicative computation for each combined case. Notice also how the right-hand sides are copied for each case in order to keep the occurrence of potential side-effects from evaluating them predictable, and also occur before the pattern matching _each time_ a new alternative case is explored.
 
 ## Managing Resources
 
