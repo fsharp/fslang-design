@@ -644,6 +644,52 @@ The new applicative computation expressions are quite constrained, and as has be
 
 [Tomas Petricek's Joinads](http://tomasp.net/blog/fsharp-variations-joinads.aspx/) offered a superset of the features proposed here, but was [rejected](https://github.com/fsharp/fslang-suggestions/issues/172) due to its complexity. This RFC is of much smaller scope, so should be a much less risky change.
 
+Various attempts have been made to attempt to get the benefits of applicatives within the existing syntax, but most end up involving writing  confusing boilerplate and do not support naming the values as a way of tying arguments to the function to be applied.
+
+<details>
+  <summary><a href="https://github.com/nickcowle">Nick Cowle</a> Offers An Example of Trying to Simulate Applicatives Using the Existing Syntax</summary>
+  <p>
+
+```fsharp
+type 'a Foo = private Foo of 'a
+
+[<RequireQualifiedAccess>]
+module Foo =
+
+    let ofValue (a : 'a) : 'a Foo = Foo a
+
+    let apply ((Foo f) : ('a -> 'b) Foo) ((Foo a) : 'a Foo) : 'b Foo =
+        Foo (f a)
+
+
+type FooBuilder () =
+
+    member __.Yield (_ : unit) =
+        id
+
+    [<CustomOperation("apply")>]
+    member __.Apply (f : 'a Foo -> ('b -> 'c) Foo, foo : 'b Foo) : 'a Foo -> 'c Foo =
+        f >> (fun ff -> Foo.apply ff foo)
+
+    [<CustomOperation("into")>]
+    member __.Into (f : 'a Foo -> 'b Foo, a : 'a) : 'b Foo =
+        a |> Foo.ofValue |> f
+
+
+let foo = FooBuilder ()
+
+let test =
+    foo {
+        apply (Foo.ofValue 5)
+        apply (Foo.ofValue true)
+        apply (Foo.ofValue 12.34)
+        apply (Foo.ofValue "Hello")
+        into (fun i b f s -> if i > 3 && b then s else "Nope")
+    }
+```
+
+</p></details>
+
 # Compatibility
 [compatibility]: #compatibility
 
