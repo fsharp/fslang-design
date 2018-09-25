@@ -375,7 +375,37 @@ ce.Bind(
 )
 ```
 
-## Using Monoids
+## Using Yield
+
+The `yield` keyword can be used to tie together a series of applicative computation expressions, but the rules about the canonical form of applicatives still apply, so we just need to use the same trick as with additional `let!`s and leave the scope of the canonical applicative syntax (and therefore leave the additional constraints it places upon us):
+
+```fsharp
+ce {
+    yield
+        ce {
+            let! x = foo
+            and! y = bar
+            and! z = baz
+            return x + y + z
+        }
+    yield
+        ce {
+            let! x = foo
+            and! y = bar
+            return x + y
+        }
+    yield
+        ce {
+            let! x = foo
+            and! y = bar
+            return y + z
+        }
+}
+```
+
+If this syntax feels a bit heavy or confusing, remember that the new syntax can be mixed with other styles (e.g. a custom `<|>` alternation operator or custom CE keywords) to find the right solution for the problem at hand.
+
+### Why Yield Works this Way
 
 The existing `let!` CE syntax allows us to desugar sequenced statements into a compound expression via a call to `Combine`. One common example of this is `seq { }` computation expressions:
 
@@ -388,16 +418,12 @@ seq {
 }
 ```
 
-The `yield` keyword is used to signify that each element is yielded as the resulting sequence is iterated, but strictly speaking there are two steps going on here:
+The `yield` keyword is used to signify that each element is yielded as the resulting sequence is iterated, but strictly speaking there are two steps taking place here:
 
 1. `yield` takes the value on the left and wraps it up in the appropriate context by calling the `Yield` method on the builder.
 2. The sequencing of the expressions by placing them each on a new line (or by separating them with a `;`) results in the expressions being tied together via nested calls to `Combine` on the builder.
 
 > As an aside, `return` desugars to a call to `Return` on the builder, just as is the case for `yield`. In fact, the two generally have the same type signature and do the same thing, the difference being that `yield` is used to emphasise this idea of logically appending to a sequence.
-
-A builder with `Bind`, `Yield` and `Combine` (and the addition of `Zero` for handling the "empty" case) defines a [monad plus](https://hackage.haskell.org/package/monadplus/docs/Control-Monad-Plus.html) instance. In other words, something that simultaneously carries a context (a monad) and allows the combining or appending of values (a [monoid](https://en.wikipedia.org/wiki/Monoid))).
-
-We can define [a similar construct for applicatives](https://en.wikibooks.org/wiki/Haskell/Alternative_and_MonadPlus), so it would make sense to support `Combine` (and therefore `yield`, or a more aptly named custom keyword) for our applicative CEs. One motivation for this might be the command line argument parser example from earlier, where alternatives via `Combine` allow parsing discriminated unions in a way that translates to something akin to "try this case, else try this case, else try this case, ...".
 
 One might assume that the syntax could be extended to something such as:
 
@@ -465,9 +491,9 @@ ce.Combine(
 
 *N.B.* the size of the desugared expression grows with the product of the number of bindings introduced by the `let! ... and! ...` syntax and the number calls to `Combine` implied by the alternative cases.
 
-An attempt at a very smart desugaring which tries to cut down the resulting expression might, on the face of it, seem like a reasonable option. However, beyond the cost of analysing which values which are introduced by `let! ... and! ...` actually go on to be used, we must also consider the right-hand sides of the `let! ... and! ...` bindings and the pattern matching: Do we evaluated these once up front? Or recompute them in each alternative case at the leaf of the tree of calls to `Combine`? What if the expressions on the right-hand sides have side-effects, or the left-hand side utilises active patterns with side-effects? At that point we either make complex, unintuitive rules, or force the CE writer to be explicit. Continuing in the spirit of CEs generally being straightforward desugarings, we choose the latter make make the writer clearly state their desire.
+An attempt at a very smart desugaring which tries to cut down the resulting expression might, on the face of it, seem like a reasonable option. However, beyond the cost of analysing which values which are introduced by `let! ... and! ...` actually go on to be used, we must also consider the right-hand sides of the `let! ... and! ...` bindings and the pattern matching: Do we evaluated these once up front? Or recompute them in each alternative case at the leaf of the tree of calls to `Combine`? What if the expressions on the right-hand sides have side-effects, or the left-hand side utilises active patterns with side-effects? At that point we either make complex, unintuitive rules, or force the CE writer to be explicit.
 
-In order to keep things simple, then, we keep the canonical form introduced earlier, which forces precisely one `return` after a `let! ... and! ...`. However, we can still express alternative applicatives when using the `let! ... and! ...` syntax, we just need to use the same trick as with additional `let!`s and leave the scope of the canonical applicative syntax and therefore leave the additional constraints it places upon us:
+Continuing in the spirit of CEs generally being straightforward desugarings, we therefore choose to make make the CE writer clearly state their desire, and hence wholly separate the notion of sequencing from the applicative syntax:
 
 ```fsharp
 ce {
@@ -493,7 +519,7 @@ ce {
 }
 ```
 
-becomes
+then desugars to
 
 ```fsharp
 ce.Combine(
@@ -536,9 +562,7 @@ ce.Combine(
 )
 ```
 
-*N.B.* this syntax forces the writer to be explicit about how many times `Apply` should be called, and with which arguments, for each call to `Combine`. Notice also how the right-hand sides are still repeated for each alternative case in order to keep the occurrence of potential side-effects from evaluating them predictable, and also occur before the pattern matching _each time_ a new alternative case is explored.
-
-If this syntax feels a bit heavy, remember that the `yield` keyword is not required, and the new syntax can be mixed with other styles (e.g. a custom `<|>` alternation operator) to strike an appropriate balance as each situation requires.
+*N.B.* this syntax forces the writer to be explicit about how many times `Apply` should be called, and with which arguments, for each call to `Combine`, since they create a new applicative computation for each combined case. Notice also how the right-hand sides are copied for each case in order to keep the occurrence of potential side-effects from evaluating them predictable, and also occur before the pattern matching _each time_ a new alternative case is explored.
 
 ## Managing Resources
 
