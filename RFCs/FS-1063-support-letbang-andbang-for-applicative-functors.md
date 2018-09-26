@@ -398,8 +398,8 @@ ce {
         }
     yield
         ce {
-            let! x = foo
-            and! y = bar
+            let! y = bar
+            and! z = baz
             return y + z
         }
 }
