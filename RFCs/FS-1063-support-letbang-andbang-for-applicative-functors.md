@@ -568,13 +568,15 @@ ce.Combine(
 
 ## Managing Resources
 
-Just as monads support `Using` via `use!`, applicatives supports it via `use! ... anduse! ...`. Each binding can be either `and!` or `anduse!` (unless it is the first, in which case it must be either `let!` or `use!`), i.e. you can mix-and-match to describe which bindings should be covered by a call to `Using`:
+Just as monads support `Using` via `use!`, applicatives support `MapUsing` via `use! ... anduse! ...` to help manage resources.
+
+In the applicative CE syntax, a binding can be either `and!` or `anduse!` (unless it is the first, in which case it must be either `let!` or `use!`), i.e. you can mix-and-match to describe which bindings should be covered by a call to `MapUsing`:
 
 ```fsharp
 ce {
-     use! x    = foo // x is wrapped in a call to ce.Using(...)
-     and! y    = bar // y is _not_ wrapped in a call to ce.Using(...)
-     anduse! z = baz // z is wrapped in a call to ce.Using(...)
+     use! x    = foo // x is wrapped in a call to ce.MapUsing(...)
+     and! y    = bar // y is _not_ wrapped in a call to ce.MapUsing(...)
+     anduse! z = baz // z is wrapped in a call to ce.MapUsing(...)
      return x + y + z
  }
 ```
@@ -587,19 +589,31 @@ ce.Apply(
         ce.Apply(
             ce.Return(
                 (fun x ->
-                    ce.Using(x, fun x ->
-                        (fun y ->                    // <- N.B. No ce.Using(...) call here because we used `and!`
+                    ce.MapUsing(x, fun x ->
+                        (fun y ->                    // <- N.B. No ce.MapUsing(...) call here because we used `and!`
                             (fun z ->                // instead of `anduse!` for `y` in the CE. Similarly, we
-                                ce.Using(z, fun z -> // could have chose to use `let!` instead of `use!` for the
+                                ce.MapUsing(z, fun z -> // could have chose to use `let!` instead of `use!` for the
                                     x + y + z        // first binding to avoid a call to Using
                                 )
                             )
                         )
                     )
                 )),
-            foo), 
+            foo),
         bar),
     baz)
+```
+
+The new `MapUsing` builder method is very much like the existing `Using`, but it does not require wrapping the given value in a context:
+
+```fsharp
+Using : 'T * ('T -> M<'U>) -> M<'U> when 'U :> IDisposable
+```
+
+in comparison to
+
+```fsharp
+MapUsing : 'T * ('T -> 'U) -> 'U when 'U :> IDisposable
 ```
 
 ## Ambiguities surrounding a `let! .. return ...`
