@@ -589,11 +589,15 @@ ce.Apply(
         ce.Apply(
             ce.Return(
                 (fun x ->
-                    ce.MapUsing(x, fun x ->
-                        (fun y ->                    // <- N.B. No ce.MapUsing(...) call here because we used `and!`
-                            (fun z ->                // instead of `anduse!` for `y` in the CE. Similarly, we
-                                ce.MapUsing(z, fun z -> // could have chose to use `let!` instead of `use!` for the
-                                    x + y + z        // first binding to avoid a call to Using
+                    ce.MapUsing(x,
+                        (fun x ->
+                            (fun y ->                  // <- N.B. No ce.MapUsing(...) call here because we used `and!`
+                                (fun z ->              // instead of `anduse!` for `y` in the CE. Similarly, we
+                                    ce.MapUsing(z,     // could have chose to use `let!` instead of `use!` for the
+                                        (fun z ->      // first binding to avoid a call to Using
+                                            x + y + z
+                                        )
+                                    )
                                 )
                             )
                         )
