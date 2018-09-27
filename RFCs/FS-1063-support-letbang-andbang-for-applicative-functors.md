@@ -514,8 +514,8 @@ ce {
         }
     yield
         ce {
-            let! x = foo
-            and! y = bar
+            let! y = bar
+            and! z = baz
             return y + z
         }
 }
@@ -589,15 +589,17 @@ ce.Apply(
         ce.Apply(
             ce.Return(
                 (fun x ->
-                    ce.MapUsing(x,
-                        (fun x ->
-                            (fun y ->                  // <- N.B. No ce.MapUsing(...) call here because we used `and!`
-                                (fun z ->              // instead of `anduse!` for `y` in the CE. Similarly, we
-                                    ce.MapUsing(z,     // could have chose to use `let!` instead of `use!` for the
-                                        (fun z ->      // first binding to avoid a call to Using
-                                            x + y + z
-                                        )
-                                    )
+                    (fun y ->
+                        (fun z ->
+                            // Only once all arguments have been applied in, we make sure
+                            // disposal happens via ce.MapUsing. Exceptions in ce.Apply,
+                            // for example, could mean resources are leaked, (similarly
+                            // to the existing weakness for ce.Bind)
+                            ce.MapUsing(x, fun x ->
+                                                            // <- N.B. No ce.MapUsing(...) call here because we used `and!`
+                                    ce.MapUsing(z, fun z -> // instead of `anduse!` for `y` in the CE. Similarly, we
+                                        x + y + z           // could have chose to use `let!` instead of `use!` for the
+                                    )                       // first binding to avoid a call to Using
                                 )
                             )
                         )
