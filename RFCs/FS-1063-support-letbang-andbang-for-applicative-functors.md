@@ -574,9 +574,9 @@ In the applicative CE syntax, a binding can be either `and!` or `anduse!` (unles
 
 ```fsharp
 ce {
-     use! x    = foo // x is wrapped in a call to ce.MapUsing(...)
-     and! y    = bar // y is _not_ wrapped in a call to ce.MapUsing(...)
-     anduse! z = baz // z is wrapped in a call to ce.MapUsing(...)
+     use! x    = foo // x is wrapped in a call to ce.MapUsing
+     and! y    = bar // y is _not_ wrapped in a call to ce.MapUsing
+     anduse! z = baz // z is wrapped in a call to ce.MapUsing
      return x + y + z
  }
 ```
@@ -596,10 +596,10 @@ ce.Apply(
                             // for example, could mean resources are leaked, (similarly
                             // to the existing weakness for ce.Bind)
                             ce.MapUsing(x, fun x ->
-                                                            // <- N.B. No ce.MapUsing(...) call here because we used `and!`
+                                                            // <- N.B. No ce.MapUsing call here because we used `and!`
                                     ce.MapUsing(z, fun z -> // instead of `anduse!` for `y` in the CE. Similarly, we
-                                        x + y + z           // could have chose to use `let!` instead of `use!` for the
-                                    )                       // first binding to avoid a call to Using
+                                        x + y + z           // could have chosen to use `let!` instead of `use!` for the
+                                    )                       // first binding to avoid a call to ce.MapUsing
                                 )
                             )
                         )
