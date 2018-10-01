@@ -622,7 +622,7 @@ in comparison to
 MapUsing : 'T * ('T -> 'U) -> 'U when 'U :> IDisposable
 ```
 
-Just as with the existing monadic `use!` syntax, the left-hand side of an applicative binding
+Just as with the existing monadic `use!` syntax, the left-hand side of an applicative binding is constrained to being a variable. It cannot be a pattern that deconstructs a value.
 
 ## Ambiguities surrounding a `let! .. return ...`
 
