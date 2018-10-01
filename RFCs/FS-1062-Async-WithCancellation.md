@@ -86,7 +86,7 @@ No
 
 * What happens when previous versions of the F# compiler encounter this design addition as source code?
 
-It will not compile.
+N/A
 
 * What happens when previous versions of the F# compiler encounter this design addition in compiled binaries?
 
