@@ -766,4 +766,4 @@ There are various ways of desugaring `let! ... return ...` via one of `Map`, `Ap
 
 What alternative names are there for `MapUsing : 'T * ('T -> 'U) -> 'U when 'U :> IDisposable`? The prefix "Map" is wrong because we're not inside some context given by a type here. If anything, I'd say this should be called `Using` and the existing thing should be `BindUsing` but since we can't realistically change that, we'll need a new name.
 
-Should we support `do!` in place of a `let! _ = ...` or `and! _ = ...`? My default position is no, since `do!` implies side-effects and hence ordering which I don't think match the intention of applicatives in a way that they do for monads. The nice thing about leaving this out for now is that it can be discussed separately and added later quite safely.
+Should we support `do!` (`anddo!`?) in place of a `let! _ = ...` or `and! _ = ...`? My default position is no, since `do!` implies side-effects and hence ordering which I don't think match the intention of applicatives in a way that they do for monads. The nice thing about leaving this out for now is that it can be discussed separately and added later quite safely.
