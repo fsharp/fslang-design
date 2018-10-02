@@ -682,7 +682,7 @@ The new applicative computation expressions are quite constrained, and as has be
 # Alternative Designs
 [alternative-designs]: #alternative-designs
 
-We chose not to support `do!` (or `anddo!`) in place of a `let! _ = ...` or `and! _ = ...`, since `do!` implies side-effects and hence sequencing in a way that applicatives explicitly aim to avoid (see the parallelism example earlier). These keywords and their corresponding translations could be introduced in a later addition to the language, if the community's position changed on the matter.
+We chose not to support `do!` or `anddo!` in place of a `let! _ = ...` or `and! _ = ...` (respectively), since `do!` implies side-effects and hence sequencing in a way that applicatives explicitly aim to avoid (see the parallelism example earlier). These keywords and their corresponding translations could be introduced in a later addition to the language, if the community's position changed on the matter.
 
 [Tomas Petricek's Joinads](http://tomasp.net/blog/fsharp-variations-joinads.aspx/) offered a superset of the features proposed here, but was [rejected](https://github.com/fsharp/fslang-suggestions/issues/172) due to its complexity. This RFC is of much smaller scope, so should be a much less risky change.
 
