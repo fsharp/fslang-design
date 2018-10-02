@@ -684,7 +684,7 @@ The new applicative computation expressions are quite constrained, and as has be
 
 [Tomas Petricek's Joinads](http://tomasp.net/blog/fsharp-variations-joinads.aspx/) offered a superset of the features proposed here, but was [rejected](https://github.com/fsharp/fslang-suggestions/issues/172) due to its complexity. This RFC is of much smaller scope, so should be a much less risky change.
 
-Various attempts have been made to attempt to get the benefits of applicatives within the existing syntax, but most end up involving writing confusing boilerplate and make it easy to provide arguments in the wrong order because they cannot be named (in contrast to `let! ... and! ... return ...` which forces each argument to be named in order to be used inside the `return`). It tends to be the case that even the authors of these experiments consider them abuses of the existing language features and recommend against them.
+Various attempts have been made to attempt to get the benefits of applicatives within the existing syntax, but most end up involving confusing boilerplate, and make it easy to provide arguments in the wrong order because they cannot be named (in contrast to `let! ... and! ... return ...` which forces each argument to be named right next to its value in order to be used inside the `return`). It tends to be the case that even the authors of these experiments consider them abuses of the existing language features and recommend against them.
 
 <details>
   <summary>Expand: An Example of Trying to Simulate Applicatives Using the Existing CE Syntax</summary>
@@ -735,25 +735,25 @@ Thanks to [nickcowle](https://github.com/nickcowle) for providing this example.
 # Compatibility
 [compatibility]: #compatibility
 
-## Is this a breaking change?
+## Is this a Breaking Change?
 
 This change should be backwards compatible.
 
 Existing computation expression builders with an `Apply` method should not change in behaviour, since usages of the builder would still need to add the new `let! ... and! ...` syntax to activate it. In particular, in the case of `let! ... return ...`, we will continue to only pick bind, as mentioned earlier.
 
-## What happens when previous versions of the F# compiler encounter this design addition as source code?
+## What Happens when Previous Versions of the F# Compiler Encounter this Design Addition as Source Code?
 
-Previous compiler versions reject the new `and!` keyword:
+Previous compiler versions reject the new `and!` and `anduse!` keywords:
 
 ```
 error FS1141: Identifiers followed by '!' are reserved for future use
 ```
 
-## What happens when previous versions of the F# compiler encounter this design addition in compiled binaries?
+## What Happens when Previous Versions of the F# Compiler Encounter this Design Addition in Compiled Binaries?
 
 Since the syntax is desugared into a method call on the builder object, after compilation usages of this feature will be usable with previous compiler versions.
 
-# Unresolved questions
+# Unresolved Questions
 [unresolved]: #unresolved-questions
 
 Is `anduse!` an acceptable keyword for when `and!` must also imply a call to `Using`? Are there sensible alternatives?
