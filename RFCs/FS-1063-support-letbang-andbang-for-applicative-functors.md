@@ -18,7 +18,7 @@ Extend computation expressions to support applicative functors via a new `let! .
 
 Applicative functors (or just "applicatives", for short) have been growing in popularity as a way to build applications and model certain domains over the last decade or so, since McBride and Paterson published [Applicative Programming with Effects](http://www.staff.city.ac.uk/~ross/papers/Applicative.html). Applicatives are now reaching a level of popularity within the community that supporting them with a convenient and readable syntax, as we do for monads, makes sense.
 
-With applicative computation expressions, we can write more computations than before (there are more contexts which meet the requirements for applicative computation expressions than the existing monadic ones), and we can write more efficient computations (the requirements of applicatives rule out needing to support some potentially expensive operations).
+With applicative computation expressions, we can write more computations with this convenient syntax than before (there are more contexts which meet the requirements for applicative computation expressions than the existing monadic ones), and we can write more efficient computations (the requirements of applicatives rule out needing to support some potentially expensive operations).
 
 For example, [Pauan points out](https://github.com/fsharp/fslang-suggestions/issues/579#issuecomment-310799948) that we can write a computation expression for `Observable`s that [avoids unnecessary resubscriptions](https://github.com/fsharp/fslang-suggestions/issues/579#issuecomment-310854419):
 
@@ -45,6 +45,19 @@ So, importantly, applicatives allow us the power to use functions which are "wra
 ## Examples of Useful Applicatives
 
 The examples below all make use of types which are applicatives, but explicitly _not_ monads, to allow a powerful model for building a particular kind of computation, whilst preserving enough constraints to offer useful guarantees. Each example includes a sample code snippet using the new syntax.
+
+[Marlow et al.](https://dl.acm.org/citation.cfm?id=2628144) discuss the fact that the independence of arguments to an applicative allow us to conveniently introduce massive parallelism when, for example, reading data.
+
+```fsharp
+// Unlike with monads, applicatives don't imply an ordering over operations, so
+// arguments introduced with the new syntax can be conveniently parallelised
+parallel {
+    let! x = slowRequestX()
+    and! y = slowRequestY()
+    and! z = slowRequestZ()
+    return f x y z
+}
+```
 
 [Tomas Petricek's formlets blog post](http://tomasp.net/blog/formlets-in-linq.aspx/) introduces the idea that we can use applicatives to build web forms. The guarantee of a static structure of the formlet applicative is used to render forms, but its powerful behaviours still allow useful processing of requests.
 
