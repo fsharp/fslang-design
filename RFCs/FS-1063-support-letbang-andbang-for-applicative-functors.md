@@ -47,11 +47,10 @@ So, importantly, applicatives allow us the power to use functions which are "wra
 
 The examples below all make use of types which are applicatives, but explicitly _not_ monads, to allow a powerful model for building a particular kind of computation, whilst preserving enough constraints to offer useful guarantees. Each example includes a sample code snippet using the new syntax.
 
-[Marlow et al.](https://dl.acm.org/citation.cfm?id=2628144) discuss the fact that the independence of arguments to an applicative allow us to conveniently introduce massive parallelism when, for example, reading data.
+[Marlow et al.](https://dl.acm.org/citation.cfm?id=2628144) discuss the fact that the independence of arguments to an applicative (as opposed to the implied sequencing of monads) allow us to conveniently introduce parallelism.
 
 ```fsharp
-// Unlike with monads, applicatives don't imply an ordering over operations, so
-// arguments introduced with the new syntax can be conveniently parallelised
+// Reads the values of x, y and z concurrently, then applies f to them
 parallel {
     let! x = slowRequestX()
     and! y = slowRequestY()
