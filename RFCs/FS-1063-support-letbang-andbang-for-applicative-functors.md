@@ -670,6 +670,10 @@ This is because the operation is really equivalent to a `Map`, something which c
 
 In order to avoid breaking backwards compatibility, the default resolution is to desugar via `Bind`, _failing if it is not defined on the builder_ (even though, conceptually, it could be implemented via `Apply`). This is consistent with in previous F# versions. [Later work on supporting `Map`](https://github.com/fsharp/fslang-design/blob/master/RFCs/FS-1048-ce-builder-map.md) can then make the choice about how to resolve this in a way which works with that in mind too.
 
+## The Proposed Desugaring is Purely Syntactical
+
+The proposed change acts purely as a syntactic rewriting of a computation expression to calls to methods on a builder. As such, whilst the change is largely motivated by the theory of applicatives, the desugaring can be used to call methods of different types to those suggested above. This attribute is in line with the existing semantics of computation expression translation (note how [the MSDN docs](https://docs.microsoft.com/en-us/dotnet/fsharp/language-reference/computation-expressions#creating-a-new-type-of-computation-expression) talk in terms of "typical signature(s)").
+
 # Drawbacks
 [drawbacks]: #drawbacks
 
