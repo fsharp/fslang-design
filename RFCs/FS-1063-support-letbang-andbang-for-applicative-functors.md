@@ -33,7 +33,7 @@ observable {
 }
 ```
 
-## Why Applicatives?
+## Why applicatives?
 
 [Applicative functors](https://en.wikipedia.org/wiki/Applicative_functor) sit, on the spectrum of flexibility vs. predictability, somewhere between [functors](https://en.wikipedia.org/wiki/Functor#Computer_implementations) (i.e. types which support `Map`), and [monads](https://en.wikipedia.org/wiki/Monad_(functional_programming)) (i.e. types which support `Bind`, which currently underpin computation expressions).
 
@@ -43,7 +43,7 @@ In contrast, `Apply : M<'T -> 'U> * M<'T> -> M<'U>` only needs a wrapped functio
 
 So, importantly, applicatives allow us the power to use functions which are "wrapped up" inside a functor, but [preserve our ability to analyse the structure of the computation](https://paolocapriotti.com/assets/applicative.pdf). This is a critical distinction which can have a huge impact on performance, and indeed on what is possible to construct at all, so has very tangible implications.
 
-## Examples of Useful Applicatives
+## Examples of useful applicatives
 
 The examples below all make use of types which are applicatives, but explicitly _not_ monads, to allow a powerful model for building a particular kind of computation, whilst preserving enough constraints to offer useful guarantees. Each example includes a sample code snippet using the new syntax.
 
@@ -147,7 +147,7 @@ ce.Apply(
     baz)
 ```
 
-## Rules on Keywords in Applicative Computation Expressions
+## Rules on keywords in applicative computation expressions
 
 To be accepted as an applicative computation expression (CE), the CE must be of the form `let! ... and! ... return ...`:
 
@@ -158,7 +158,7 @@ To be accepted as an applicative computation expression (CE), the CE must be of 
 * `do!`, `match!` and other CE keywords are also not valid in an applicative CE
 * `use!` and `anduse!` may replace `let!` and `and!`, respectively, to indicate a resource that needs to be managed by the CE builder
 
-### Valid Syntax
+### Valid syntax
 
 Only one `and!`:
 ```fsharp
@@ -230,7 +230,7 @@ ce {
  }
 ```
 
-### Invalid Syntax
+### Invalid syntax
 
 A `let!` after an `and!`:
 ```fsharp
@@ -291,7 +291,7 @@ ce {
  }
 ```
 
-## Rationale for Strong Syntax Constraints
+## Rationale for strong syntax constraints
 
 This syntax may sound very constrained, but it is for good reason. The structure imposed by this rule forces the CE to be in a canonical form ([McBride & Paterson](http://www.staff.city.ac.uk/~ross/papers/Applicative.html)):
 
@@ -305,7 +305,7 @@ Similarly, the canonical form of `let! ... and! ... return ...` in F# makes shou
 
 Despite requiring the canonical form, there are still many ways to build more complex and useful expressions from this syntax. The rest of this section aims to give a tour around these various features.
 
-## Pattern Matching
+## Pattern matching
 
 ```fsharp
 let (|Quad|) (i : int) =
@@ -342,7 +342,7 @@ ce.Apply(
 
 Pattern matching on the left-hand side of of a `let! ... and! ...` binding is valid, and desugars into the same pattern, but now as part of the lambda corresponding to that binding.
 
-## Using Monadic and Applicative Styles Simultaneously
+## Using the monadic and applicative styles simultaneously
 
 Recall that `let! ... and! ... return ...` syntax precludes an additional `let!` anywhere in the CE. In the case where your applicative happens also to be a monad, and you want to leverage the benefits of an applicative in some places (e.g. for performance reasons) but also use a `let!` (e.g. for convenience, or to do something a pure applicative doesn't support), you must do so inside a different CE context, e.g.:
 
@@ -390,7 +390,7 @@ ce.Bind(
 )
 ```
 
-## Using Yield
+## Using yield
 
 The `yield` keyword can be used to tie together a series of applicative computation expressions, but the rules about the canonical form of applicatives still apply, so we just need to use the same trick as with additional `let!`s and leave the scope of the canonical applicative syntax (and therefore leave the additional constraints it places upon us):
 
@@ -420,7 +420,7 @@ ce {
 
 If this syntax feels a bit heavy or confusing, remember that the new syntax can be mixed with other styles (e.g. a custom `<|>` alternation operator or custom CE keywords) to find the right solution for the problem at hand.
 
-### Why Yield Works this Way
+### Why yield works this way
 
 The existing `let!` CE syntax allows us to desugar sequenced statements into a compound expression via a call to `Combine`. One common example of this is `seq { }` computation expressions:
 
@@ -579,7 +579,7 @@ ce.Combine(
 
 **N.B.** this syntax forces the writer to be explicit about how many times `Apply` should be called, and with which arguments, for each call to `Combine`, since they create a new applicative computation for each combined case. Notice also how the right-hand sides are copied for each case in order to keep the occurrence of potential side-effects from evaluating them predictable, and also occur before the pattern matching _each time_ a new alternative case is explored.
 
-## Managing Resources
+## Managing resources
 
 Just as monads support `Using` via `use!`, applicatives support `MapUsing` via `use! ... anduse! ...` to help manage resources.
 
@@ -670,7 +670,7 @@ This is because the operation is really equivalent to a `Map`, something which c
 
 In order to avoid breaking backwards compatibility, the default resolution is to desugar via `Bind`, _failing if it is not defined on the builder_ (even though, conceptually, it could be implemented via `Apply`). This is consistent with in previous F# versions. [Later work on supporting `Map`](https://github.com/fsharp/fslang-design/blob/master/RFCs/FS-1048-ce-builder-map.md) can then make the choice about how to resolve this in a way which works with that in mind too.
 
-## The Proposed Desugaring is Purely Syntactical
+## The proposed desugaring is purely syntactical
 
 The proposed change acts purely as a syntactic rewriting of a computation expression to calls to methods on a builder. As such, whilst the change is largely motivated by the theory of applicatives, the desugaring can be used to call methods of different types to those suggested above. This attribute is in line with the existing semantics of computation expression translation (note how [the MSDN docs](https://docs.microsoft.com/en-us/dotnet/fsharp/language-reference/computation-expressions#creating-a-new-type-of-computation-expression) talk in terms of "typical signatures").
 
@@ -737,13 +737,13 @@ Thanks to [nickcowle](https://github.com/nickcowle) for providing this example.
 # Compatibility
 [compatibility]: #compatibility
 
-## Is this a Breaking Change?
+## Is this a breaking change?
 
 This change should be backwards compatible.
 
 Existing computation expression builders with an `Apply` method should not change in behaviour, since usages of the builder would still need to add the new `let! ... and! ...` syntax to activate it. In particular, in the case of `let! ... return ...`, we will continue to only pick bind, as mentioned earlier.
 
-## What Happens when Previous Versions of the F# Compiler Encounter this Design Addition as Source Code?
+## What happens when previous versions of the F# compiler encounter this design addition as source code?
 
 Previous compiler versions reject the new `and!` and `anduse!` keywords:
 
@@ -751,7 +751,7 @@ Previous compiler versions reject the new `and!` and `anduse!` keywords:
 error FS1141: Identifiers followed by '!' are reserved for future use
 ```
 
-## What Happens when Previous Versions of the F# Compiler Encounter this Design Addition in Compiled Binaries?
+## What happens when previous versions of the F# compiler encounter this design addition in compiled binaries?
 
 Since the syntax is desugared into a method call on the builder object, after compilation usages of this feature will be usable with previous compiler versions.
 
