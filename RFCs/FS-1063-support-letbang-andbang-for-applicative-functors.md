@@ -99,8 +99,8 @@ result {
 [Capriotti & Kaposi's paper](https://paolocapriotti.com/assets/applicative.pdf) introduces an example of creating an command line argument parser, where a single applicative can both statically generate help text for the parser, and dynamically parse options given to an application. [eulerfx](https://github.com/fsharp/fslang-suggestions/issues/579#issuecomment-309764738) has imagined an F# interpretation of that:
 
 ```fsharp
-// One computation expression gives both the behaviour of the parser (
-// in terms of how to parse each element of it, what their defaults should
+// One computation expression gives both the behaviour of the parser
+// (in terms of how to parse each element of it, what their defaults should
 // be, etc.) and the information needed to generate its help text
 opt {
   let! username = Opt("username", (Some ""), Some)
