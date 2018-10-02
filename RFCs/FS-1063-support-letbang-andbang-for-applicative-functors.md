@@ -20,15 +20,16 @@ Applicative functors (or just "applicatives", for short) have been growing in po
 
 With applicative computation expressions, we can write more computations with this convenient syntax than before (there are more contexts which meet the requirements for applicative computation expressions than the existing monadic ones), and we can write more efficient computations (the requirements of applicatives rule out needing to support some potentially expensive operations).
 
-For example, [Pauan points out](https://github.com/fsharp/fslang-suggestions/issues/579#issuecomment-310799948) that we can write a computation expression for `Observable`s that [avoids unnecessary resubscriptions](https://github.com/fsharp/fslang-suggestions/issues/579#issuecomment-310854419):
+For example, [Pauan points out](https://github.com/fsharp/fslang-suggestions/issues/579#issuecomment-310799948) that we can write a convenient and readable computation expression for `Observable`s that [avoids unnecessary resubscriptions](https://github.com/fsharp/fslang-suggestions/issues/579#issuecomment-310854419) and syntactically scales nicely with the number of arguments:
 
 ```fsharp
-// Outputs a + b, which is recomputed every time foo or bar outputs a new value,
+// Outputs a + b + c, which is recomputed every time foo or bar outputs a new value,
 // avoiding any unnecessary resubscriptions
 observable {
   let! a = foo
   and! b = bar
-  return a + b
+  and! c = baz
+  return a + b + c
 }
 ```
 
