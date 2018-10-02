@@ -684,7 +684,7 @@ The new applicative computation expressions are quite constrained, and as has be
 
 We chose not to support `do!` or `anddo!` in place of a `let! _ = ...` or `and! _ = ...` (respectively), since `do!` implies side-effects and hence sequencing in a way that applicatives explicitly aim to avoid (see the parallelism example earlier). These keywords and their corresponding translations could be introduced in a later addition to the language, if the community's position changed on the matter.
 
-[Tomas Petricek's Joinads](http://tomasp.net/blog/fsharp-variations-joinads.aspx/) offered a superset of the features proposed here, but was [rejected](https://github.com/fsharp/fslang-suggestions/issues/172) due to its complexity. This RFC is of much smaller scope, so should be a much less risky change.
+[Tomas Petricek's Joinads](http://tomasp.net/blog/fsharp-variations-joinads.aspx/) offered a superset of the features proposed in this RFC, but was [rejected](https://github.com/fsharp/fslang-suggestions/issues/172) due to its complexity. The above proposal is of much smaller scope, so should be a much less risky change.
 
 Various attempts have been made to attempt to get the benefits of applicatives within the existing syntax, but most end up involving confusing boilerplate, and make it easy to provide arguments in the wrong order because they cannot be named (in contrast to `let! ... and! ... return ...` which forces each argument to be named right next to its value in order to be used inside the `return`). It tends to be the case that even the authors of these experiments consider them abuses of the existing language features and recommend against them.
 
