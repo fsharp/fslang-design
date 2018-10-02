@@ -112,7 +112,7 @@ opt {
 
 With all of these examples, we can nest the applicative computation expressions inside other computation expressions to build larger and larger descriptions that cleanly separate the pure computation from its context.
 
-# Detailed design
+# Detailed Design
 [design]: #detailed-design
 
 This RFC introduces a desugaring for applicative computation expressions, much like that which exists for monads and related constructs.
