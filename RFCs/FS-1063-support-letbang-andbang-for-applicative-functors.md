@@ -13,16 +13,31 @@ This RFC covers the detailed proposal for this suggestion.
 
 Extend computation expressions to support applicative functors via a new `let! ... and! ... return ...` syntax.
 
-With this new syntax, [Pauan points out](https://github.com/fsharp/fslang-suggestions/issues/579#issuecomment-310799948) that we can write a convenient and readable computation expression for `Observable`s that [avoids unnecessary resubscriptions](https://github.com/fsharp/fslang-suggestions/issues/579#issuecomment-310854419) and syntactically scales nicely with the number of arguments:
+With this new syntax, [Pauan points out](https://github.com/fsharp/fslang-suggestions/issues/579#issuecomment-310799948) that we can write a convenient and readable computation expression for `Observable`s that acts similarly to [`Observable.zip`](http://fsprojects.github.io/FSharp.Control.Reactive/tutorial.html#Observable-Module), but [avoids unnecessary resubscriptions and other overheads associated with `Bind`](https://github.com/fsharp/fslang-suggestions/issues/579#issuecomment-310854419) and syntactically scales nicely with the number of arguments whilst admitting arguments of different types:
 
 ```fsharp
-// Outputs a + b + c, which is recomputed every time foo or bar outputs
+// Outputs a + b, which is recomputed every time foo or bar outputs
 // a new value, avoiding any unnecessary resubscriptions
 observable {
     let! a = foo
     and! b = bar
-    and! c = baz
-    return a + b + c
+    return a + b
+}
+```
+
+Whilst applicative computation expressions can be very simple, they can also do many of the extra things you might expect:
+
+```fsharp
+observable {
+    use! a = foo             // Makes sure `a` is disposed
+    and! (b,_) = bar         // Allows pattern matching
+    and! c =
+        observable {         // Supports nesting
+            let! e = quux
+            and! f = corge
+            return e * f
+        }
+    return a.Count() + b / c // Can return with arbitrarily complex expressions
 }
 ```
 
@@ -316,7 +331,7 @@ In our case, the expression to the right of `return` (i.e. `pure`) becomes the b
 
 Similarly, the canonical form of `let! ... and! ... return ...` in F# makes should make it clear that what we are really doing it calling the function given to `return` with the arguments introduced by `let! ... and! ...`, but in a special context determined by the CE builder.
 
-Despite requiring the canonical form, there are still many ways to build more complex and useful expressions from this syntax. The rest of this section aims to give a tour around these various features.
+Despite requiring the canonical form, there are still many ways to build more complex and useful expressions from this syntax. The rest of this section will detail these.
 
 ## Pattern matching
 
