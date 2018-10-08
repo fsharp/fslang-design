@@ -153,7 +153,7 @@ opt {
 }
 ```
 
-With all of these examples, we can nest the applicative computation expressions inside other computation expressions to build larger and larger descriptions that cleanly separate the pure computation from its context.
+With all of these examples, we can nest the applicative computation expressions inside other computation expressions to build larger descriptions that cleanly separate the pure computation from its context.
 
 # Detailed Design
 [design]: #detailed-design
