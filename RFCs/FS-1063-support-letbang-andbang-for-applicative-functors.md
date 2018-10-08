@@ -161,6 +161,7 @@ To be accepted as an applicative computation expression (CE), the CE must be of 
 ### Valid syntax
 
 Only one `and!`:
+
 ```fsharp
 ce {
     let! x = foo
@@ -170,6 +171,7 @@ ce {
 ```
 
 Many `and!`s:
+
 ```fsharp
 ce {
     let! w = foo
@@ -181,6 +183,7 @@ ce {
 ```
 
 `let`-binding inside the `return`:
+
 ```fsharp
 ce {
     let! x = foo
@@ -191,6 +194,7 @@ ce {
 ```
 
 Function call inside the `return`:
+
 ```fsharp
 ce {
     let! x = foo
@@ -201,6 +205,7 @@ ce {
 ```
 
 The `let!` is replaced by `use!`:
+
 ```fsharp
 ce {
     use! x = foo ✔️
@@ -210,6 +215,7 @@ ce {
 ```
 
 An arbitrary `and!` is replaced by `anduse!`:
+
 ```fsharp
 ce {
     let!    w = foo
@@ -221,6 +227,7 @@ ce {
 ```
 
 The `let! ... and! ...` form is replaced entirely by its resource-tracking equivalent:
+
 ```fsharp
 ce {
     use!    x = foo ✔️
@@ -233,6 +240,7 @@ ce {
 ### Invalid syntax
 
 A `let!` after an `and!`:
+
 ```fsharp
 ce {
     let! x = foo
@@ -243,6 +251,7 @@ ce {
 ```
 
 A `let` interrupting the `let! ... and! ...` block:
+
 ```fsharp
 ce {
     let! x = foo
@@ -253,6 +262,7 @@ ce {
 ```
 
 A `let` after the `and!`s:
+
 ```fsharp
 ce {
     let! x = foo
@@ -263,6 +273,7 @@ ce {
 ```
 
 A `yield` instead of a `return`:
+
 ```fsharp
 ce {
     let! x = foo
@@ -272,6 +283,7 @@ ce {
 ```
 
 Multiple `return`s:
+
 ```fsharp
 ce {
     let! x = foo
@@ -282,6 +294,7 @@ ce {
 ```
 
 Other CE keywords anywhere in the expression:
+
 ```fsharp
 ce {
     let! x = foo
@@ -418,7 +431,7 @@ ce {
 }
 ```
 
-If this syntax feels a bit heavy or confusing, remember that the new syntax can be mixed with other styles (e.g. a custom `<|>` alternation operator or custom CE keywords) to find the right solution for the problem at hand.
+If this syntax feels a bit heavy or confusing, remember that the new syntax can be mixed with other styles (e.g. a custom `<|>` alternation operator or custom CE keywords) to find the right solution for the problem at hand. In either case, the same complications and trade-offs detailed below apply for `let! ... and! ... return ...` blocks combined with `yield`, as with these alternatives.
 
 ### Why yield works this way
 
