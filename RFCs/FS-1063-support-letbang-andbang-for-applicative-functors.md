@@ -16,8 +16,8 @@ Extend computation expressions to support applicative functors via a new `let! .
 With this new syntax, [Pauan points out](https://github.com/fsharp/fslang-suggestions/issues/579#issuecomment-310799948) that we can write a convenient and readable computation expression for `Observable`s that [avoids unnecessary resubscriptions](https://github.com/fsharp/fslang-suggestions/issues/579#issuecomment-310854419) and syntactically scales nicely with the number of arguments:
 
 ```fsharp
-// Outputs a + b + c, which is recomputed every time foo or bar outputs a new value,
-// avoiding any unnecessary resubscriptions
+// Outputs a + b + c, which is recomputed every time foo or bar outputs
+// a new value, avoiding any unnecessary resubscriptions
 observable {
     let! a = foo
     and! b = bar
