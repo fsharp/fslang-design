@@ -261,6 +261,7 @@ ce {
     let! z = baz ❌
     return x + y + z
  }
+// Example.fsx(4,5): error FS3243: Expecting 'and!', 'anduse!' or 'return' but saw something else. Applicative computation expressions must be of the form 'let! <pat1> = <expr2> and! <pat2> = <expr2> and! ... and! <patN> = <exprN> return <exprBody>'.
 ```
 
 A `let` interrupting the `let! ... and! ...` block:
@@ -274,7 +275,7 @@ ce {
  }
 ```
 
-A `let` after the `and!`s:
+A `let` after the `and!`s but before `return`:
 
 ```fsharp
 ce {
@@ -283,6 +284,7 @@ ce {
     let z = y * 2 ❌
     return x + y + z
  }
+// Example.fsx(4,5): error FS3243: Expecting 'and!', 'anduse!' or 'return' but saw something else. Applicative computation expressions must be of the form 'let! <pat1> = <expr2> and! <pat2> = <expr2> and! ... and! <patN> = <exprN> return <exprBody>'.
 ```
 
 A `yield` instead of a `return`:
@@ -315,6 +317,7 @@ ce {
     do! webRequest x y ❌
     return x + y
  }
+// Example.fsx(4,5): error FS3243: Expecting 'and!', 'anduse!' or 'return' but saw something else. Applicative computation expressions must be of the form 'let! <pat1> = <expr2> and! <pat2> = <expr2> and! ... and! <patN> = <exprN> return <exprBody>'.
 ```
 
 ### Rationale for strong syntax constraints
