@@ -13,7 +13,9 @@ This RFC covers the detailed proposal for this suggestion.
 
 Extend computation expressions to support applicative functors via a new `let! ... and! ... return ...` syntax.
 
-With this new syntax, [Pauan points out](https://github.com/fsharp/fslang-suggestions/issues/579#issuecomment-310799948) that we can write a convenient and readable computation expression for `Observable`s that acts similarly to [`Observable.zip`](http://fsprojects.github.io/FSharp.Control.Reactive/tutorial.html#Observable-Module), but [avoids unnecessary resubscriptions and other overheads associated with `Bind`](https://github.com/fsharp/fslang-suggestions/issues/579#issuecomment-310854419) and syntactically scales nicely with the number of arguments whilst admitting arguments of different types:
+With this new syntax, [Pauan points out](https://github.com/fsharp/fslang-suggestions/issues/579#issuecomment-310799948) that we can write a convenient and readable computation expression for `Observable`s that acts similarly to [`Observable.zip`](http://fsprojects.github.io/FSharp.Control.Reactive/tutorial.html#Observable-Module), but [avoids unnecessary resubscriptions and other overheads associated with `Bind`](https://github.com/fsharp/fslang-suggestions/issues/579#issuecomment-310854419) and syntactically scales nicely with the number of arguments whilst admitting arguments of different types.
+
+Applicative computation expression form:
 
 ```fsharp
 // Outputs a + b, which is recomputed every time foo or bar outputs
@@ -25,7 +27,33 @@ observable {
 }
 ```
 
-Whilst applicative computation expressions can be very simple, they can also do many of the extra things you might expect:
+As opposed to the monadic computation expression form:
+
+```fsharp
+observable {
+    let! a = foo
+    let! b = bar // A second let! implies a resubscription every time foo outputs a new value
+    return a + b
+}
+```
+
+Or using `Observable.zip`:
+
+```fsharp
+Observable.zip foo bar (fun a b -> a + b) // Less readable, awkward to have more than two observables
+```
+
+Or using a zip-like custom operation in a query expression:
+
+```fsharp
+rxquery {
+    for a in foo do
+    zip b in bar
+    select (a + b) // Harder to map into a general monadic form - syntax implies a collection-like construct
+}
+```
+
+And whilst applicative computation expressions can be very simple, they can also still do many of the extra things you might expect:
 
 ```fsharp
 observable {
