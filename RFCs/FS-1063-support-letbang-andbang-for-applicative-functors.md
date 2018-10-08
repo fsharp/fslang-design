@@ -168,8 +168,8 @@ To be accepted as an applicative computation expression (CE), the CE must be of 
 * No `let!`s may appear after an `and!` in the same applicative CE
 * No normal `let`s in between the `let!` and `and!`s
 * No usage of `yield` in place of `return`
-* `do!`, `match!` and other CE keywords are also not valid in an applicative CE
 * `use!` and `anduse!` may replace `let!` and `and!`, respectively, to indicate a resource that needs to be managed by the CE builder
+* `do!`, `match!`, `return!` and other remaining CE keywords are also not valid in an applicative CE
 
 ### Valid syntax
 
