@@ -158,39 +158,9 @@ With all of these examples, we can nest the applicative computation expressions 
 # Detailed Design
 [design]: #detailed-design
 
-This RFC introduces a desugaring for applicative computation expressions, much like that which exists for monads and related constructs.
+This RFC introduces the syntax and desugaring for applicative computation expressions, much like that which exists for monads and related constructs.
 
-Example desugaring:
-
-```fsharp
-ce {
-    let! x = foo
-    and! y = bar
-    and! z = baz
-    return x + y + z
- }
-```
-
-becomes
-
-```fsharp
-ce.Apply(
-    ce.Apply(
-        ce.Apply(
-            ce.Return(
-                (fun x ->
-                    (fun y ->
-                        (fun z ->
-                            x + y + z
-                        )
-                    )
-                )),
-            foo),
-        bar),
-    baz)
-```
-
-## Rules on keywords in applicative computation expressions
+## Syntax
 
 To be accepted as an applicative computation expression (CE), the CE must be of the form `let! ... and! ... return ...`:
 
@@ -347,7 +317,7 @@ ce {
  }
 ```
 
-## Rationale for strong syntax constraints
+### Rationale for strong syntax constraints
 
 This syntax may sound very constrained, but it is for good reason. The structure imposed by this rule forces the CE to be in a canonical form ([McBride & Paterson](http://www.staff.city.ac.uk/~ross/papers/Applicative.html)):
 
@@ -361,7 +331,41 @@ Similarly, the canonical form of `let! ... and! ... return ...` in F# makes shou
 
 Despite requiring the canonical form, there are still many ways to build more complex and useful expressions from this syntax. The rest of this section will detail these.
 
-## Pattern matching
+## Desugaring
+
+Computation expressions are provided meaning via [translation to method calls on a builder class](https://docs.microsoft.com/en-us/dotnet/fsharp/language-reference/computation-expressions#creating-a-new-type-of-computation-expression).
+
+An example desugaring of a basic applicative computation expression:
+
+```fsharp
+ce {
+    let! x = foo
+    and! y = bar
+    and! z = baz
+    return x + y + z
+ }
+```
+
+becomes
+
+```fsharp
+ce.Apply(
+    ce.Apply(
+        ce.Apply(
+            ce.Return(
+                (fun x ->
+                    (fun y ->
+                        (fun z ->
+                            x + y + z
+                        )
+                    )
+                )),
+            foo),
+        bar),
+    baz)
+```
+
+### Pattern matching
 
 ```fsharp
 let (|Quad|) (i : int) =
@@ -398,7 +402,7 @@ ce.Apply(
 
 Pattern matching on the left-hand side of of a `let! ... and! ...` binding is valid, and desugars into the same pattern, but now as part of the lambda corresponding to that binding.
 
-## Using the monadic and applicative styles simultaneously
+### Using the monadic and applicative styles simultaneously
 
 Recall that `let! ... and! ... return ...` syntax precludes an additional `let!` anywhere in the CE. In the case where your applicative happens also to be a monad, and you want to leverage the benefits of an applicative in some places (e.g. for performance reasons) but also use a `let!` (e.g. for convenience, or to do something a pure applicative doesn't support), you must do so inside a different CE context, e.g.:
 
@@ -446,7 +450,7 @@ ce.Bind(
 )
 ```
 
-## Using yield
+### Using yield
 
 The `yield` keyword can be used to tie together a series of applicative computation expressions, but the rules about the canonical form of applicatives still apply, so we just need to use the same trick as with additional `let!`s and leave the scope of the canonical applicative syntax (and therefore leave the additional constraints it places upon us):
 
@@ -476,7 +480,7 @@ ce {
 
 If this syntax feels a bit heavy or confusing, remember that the new syntax can be mixed with other styles (e.g. a custom `<|>` alternation operator or custom CE keywords) to find the right solution for the problem at hand. In either case, the same complications and trade-offs detailed below apply for `let! ... and! ... return ...` blocks combined with `yield`, as with these alternatives.
 
-### Why yield works this way
+#### Why yield works this way
 
 The existing `let!` CE syntax allows us to desugar sequenced statements into a compound expression via a call to `Combine`. One common example of this is `seq { }` computation expressions:
 
@@ -635,7 +639,7 @@ ce.Combine(
 
 **N.B.** this syntax forces the writer to be explicit about how many times `Apply` should be called, and with which arguments, for each call to `Combine`, since they create a new applicative computation for each combined case. Notice also how the right-hand sides are copied for each case in order to keep the occurrence of potential side-effects from evaluating them predictable, and also occur before the pattern matching _each time_ a new alternative case is explored.
 
-## Managing resources
+### Managing resources
 
 Just as monads support `Using` via `use!`, applicatives support `MapUsing` via `use! ... anduse! ...` to help manage resources.
 
@@ -693,7 +697,7 @@ MapUsing : 'T * ('T -> 'U) -> 'U when 'U :> IDisposable
 
 Just as with the existing monadic `use!` syntax, the left-hand side of an applicative binding is constrained to being a variable. It cannot be a pattern that deconstructs a value.
 
-## Ambiguities surrounding a `let! .. return ...`
+### Ambiguities surrounding a `let! .. return ...`
 
 Some CEs could be desugared in multiple ways, depending on which methods are implemented on a builder (and assuming the implementations follow the standard laws relating these functions).
 
@@ -726,7 +730,7 @@ This is because the operation is really equivalent to a `Map`, something which c
 
 In order to avoid breaking backwards compatibility, the default resolution is to desugar via `Bind`, _failing if it is not defined on the builder_ (even though, conceptually, it could be implemented via `Apply`). This is consistent with in previous F# versions. [Later work on supporting `Map`](https://github.com/fsharp/fslang-design/blob/master/RFCs/FS-1048-ce-builder-map.md) can then make the choice about how to resolve this in a way which works with that in mind too.
 
-## The proposed desugaring is purely syntactical
+### The proposed desugaring is purely syntactical
 
 The proposed change acts purely as a syntactic rewriting of a computation expression to calls to methods on a builder. As such, whilst the change is largely motivated by the theory of applicatives, the desugaring can be used to call methods of different types to those suggested above. This attribute is in line with the existing semantics of computation expression translation (note how [the MSDN docs](https://docs.microsoft.com/en-us/dotnet/fsharp/language-reference/computation-expressions#creating-a-new-type-of-computation-expression) talk in terms of "typical signatures").
 
