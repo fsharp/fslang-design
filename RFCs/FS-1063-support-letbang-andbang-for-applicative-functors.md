@@ -488,7 +488,7 @@ ce {
 }
 ```
 
-In order to aid readability, it may be more appropriate to pull out each `yield` argument and name it outside the parent CE, an that is supported too:
+In order to aid readability, it may be more appropriate to pull out each `yield` argument and name it outside the parent CE, and that is supported too:
 
 ```fsharp
 let xyz =
