@@ -488,7 +488,7 @@ ce {
 }
 ```
 
-If this example feels a bit heavy or confusing, remember that a more natural way to write this might be to pull out each argument to a `yield` and name it outside the parent CE:
+In order to aid readability, it may be more appropriate to pull out each `yield` argument and name it outside the parent CE, an that is supported too:
 
 ```fsharp
 let xyz =
