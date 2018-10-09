@@ -914,4 +914,4 @@ Since the syntax is desugared into a standard method call on the builder object,
 # Unresolved Questions
 [unresolved]: #unresolved-questions
 
-None. (TODO: Detail new resolutions - `ApplyUsing`, `let! ... return ...` disambiguation)
+None. (**TODO**: Detail new resolutions - `ApplyUsing`, `let! ... return ...` disambiguation)
