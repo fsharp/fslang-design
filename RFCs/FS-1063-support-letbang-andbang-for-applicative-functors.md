@@ -227,6 +227,17 @@ ce {
  }
 ```
 
+Using `()` or `_` on the left-hand side of a binding:
+
+```fsharp
+ce {
+    let! x  = foo
+    and! () = performOperation() ✔️
+    and! y  = bar
+    return x + y
+ }
+```
+
 An arbitrary `and!` is replaced by `anduse!`:
 
 ```fsharp
