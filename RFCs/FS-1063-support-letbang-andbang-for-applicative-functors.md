@@ -227,7 +227,7 @@ ce {
  }
 ```
 
-Using `()` or `_` on the left-hand side of a binding:
+Constant and wildcard patterns:
 
 ```fsharp
 ce {
@@ -235,6 +235,17 @@ ce {
     and! () = performOperation() ✔️
     and! y  = bar
     return x + y
+ }
+```
+
+Variable patterns: 
+
+```fsharp
+ce {
+    let! ActivePattern(x) = foo ✔️
+    and! (y,_)            = bar ✔️
+    and! (SingleCaseDu z) = baz ✔️
+    return x + y + z
  }
 ```
 
