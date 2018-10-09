@@ -53,7 +53,7 @@ rxquery {
 }
 ```
 
-And whilst applicative computation expressions can be very simple, they can also still do many of the extra things you might expect:
+Whilst applicative computation expressions can be very simple, they can also still do many of the extra things you might expect:
 
 ```fsharp
 observable {
