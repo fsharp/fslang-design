@@ -914,12 +914,4 @@ Since the syntax is desugared into a method call on the builder object, after co
 # Unresolved Questions
 [unresolved]: #unresolved-questions
 
-Is `anduse!` an acceptable keyword for when `and!` must also imply a call to `Using`? Are there sensible alternatives?
-
-There are various ways of desugaring `let! ... return ...` via one of `Map`, `Apply` or `Bind`. This RFC currently assumes that we are aiming for backward compatibility and hence doesn't consider desugaring to `Apply` at all. Is this the best choice? Alternatives include:
-
-* Using `Apply` in preference to `Bind` for `let! ... return` whenever `Apply` is defined (on the basis that that any reasonable `Apply` implementation will be functionally equivalent, but more efficient than the corresponding `Bind`)
-* Subsuming [the RFC for desugaring this to `Map`](https://github.com/fsharp/fslang-design/blob/master/RFCs/FS-1048-ce-builder-map.md) and defining a hierarchy between `Map`, `Apply` and `Bind` and some attributes for those methods to allow the creators of builders to opt-in to "optimisations" that pick the least general (and hence hopefully most efficient) desugaring (i.e. pick `Map` if it is defined, else `Apply`, else `Bind`).
-* Using `Apply` in place of `Bind` only in those instances where `Bind` is not defined (no existing code should break, but this goes somewhat to the contrary of the previous proposal, which we may want to consider in the future)
-
-What alternative names are there for `MapUsing : 'T * ('T -> 'U) -> 'U when 'U :> IDisposable`? The prefix "Map" is wrong because we're not inside some context given by a type here. If anything, I'd say this should be called `Using` and the existing thing should be `BindUsing` but since we can't realistically change that, we'll need a new name. Perhaps `ApplyUsing`, but this method isn't intrinsically linked to `Apply` in that we could equally use it for `Bind` if things desugared differently.
+None.
