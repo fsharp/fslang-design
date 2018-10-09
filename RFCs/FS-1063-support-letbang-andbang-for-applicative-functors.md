@@ -488,7 +488,39 @@ ce {
 }
 ```
 
-If this syntax feels a bit heavy or confusing, remember that the new syntax can be mixed with other styles (e.g. a custom `<|>` alternation operator or custom CE keywords) to find the right solution for the problem at hand. In either case, the same complications and trade-offs detailed below apply for `let! ... and! ... return ...` blocks combined with `yield`, as with these alternatives.
+If this example feels a bit heavy or confusing, remember that a more natural way to write this might be to pull out each argument to a `yield` and name it outside the parent CE:
+
+```fsharp
+let xyz =
+    ce {
+        let! x = foo
+        and! y = bar
+        and! z = baz
+        return x + y + z
+    }
+
+let xy =
+    ce {
+        let! x = foo
+        and! y = bar
+        return x + y
+    }
+
+let yz =
+    ce {
+        let! y = bar
+        and! z = baz
+        return y + z
+    }
+
+ce {
+    yield xyz
+    yield xy
+    yield yz
+}
+```
+
+The new syntax can also be mixed with other styles (e.g. a custom `<|>` alternation operator or custom CE keywords) to find the right solution for the problem at hand. In either case, the same complications and trade-offs detailed below apply for `let! ... and! ... return ...` blocks combined with `yield`, as with these alternatives.
 
 #### Why yield works this way
 
