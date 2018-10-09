@@ -233,6 +233,7 @@ Constant and wildcard patterns:
 ce {
     let! x  = foo
     and! () = performOperation() ✔️
+    and! _  = getSomethingToIgnore() ✔️
     and! y  = bar
     return x + y
  }
