@@ -338,6 +338,13 @@ Despite requiring the canonical form, there are still many ways to build more co
 
 Computation expressions are provided meaning via [translation to method calls on a builder class](https://docs.microsoft.com/en-us/dotnet/fsharp/language-reference/computation-expressions#creating-a-new-type-of-computation-expression).
 
+The new builder methods are as follows:
+
+|Method       |Typical Signature|Description|
+|-------------|---------------|------------|
+|Apply        |M<'T -> 'U> * M<'T> -> M<'U>|Called for `let!`, `use!`, `and!` and `anduse!` to allow function application in the context of the CE|
+|MapUsing     |'T * ('T -> 'U) |Called in addition to `Apply` for `use!` and `anduse!` to manage resources|
+
 An example desugaring of a basic applicative computation expression:
 
 ```fsharp
