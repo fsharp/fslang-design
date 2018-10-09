@@ -791,7 +791,7 @@ We chose not to support `do!` or `anddo!` in place of a `let! _ = ...` or `and! 
 Various attempts have been made to attempt to get the benefits of applicatives within the existing syntax, but most end up involving confusing boilerplate, and make it easy to provide arguments in the wrong order because they cannot be named (in contrast to `let! ... and! ... return ...` which forces each argument to be named right next to its value in order to be used inside the `return`). It tends to be the case that even the authors of these experiments consider them abuses of the existing language features and recommend against them.
 
 <details>
-  <summary>Expand: An Example of Trying to Simulate Applicatives Using the Existing CE Syntax</summary>
+  <summary>Expand: An example of trying to simulate applicatives using the existing CE syntax</summary>
   <p>
 
 ```fsharp
