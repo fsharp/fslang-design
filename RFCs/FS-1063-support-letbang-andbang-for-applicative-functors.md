@@ -239,7 +239,7 @@ ce {
  }
 ```
 
-Variable patterns: 
+Variable patterns:
 
 ```fsharp
 ce {
