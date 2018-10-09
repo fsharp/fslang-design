@@ -320,6 +320,16 @@ ce {
 // Example.fsx(4,5): error FS3243: Expecting 'and!', 'anduse!' or 'return' but saw something else. Applicative computation expressions must be of the form 'let! <pat1> = <expr2> and! <pat2> = <expr2> and! ... and! <patN> = <exprN> return <exprBody>'.
 ```
 
+Pattern matching in conjunction with `use!` or `anduse!`:
+```fsharp
+ce {
+    use! (_,x) = foo
+    anduse! y  = bar
+    return x + y
+ }
+// Example.fsx(2,10): error FS3244: Pattern matching is not allowed on the left-hand side of the equals. 'use! ... anduse! ...' bindings must be of the form 'use! <var> = <expr>' or 'anduse! <var> = <expr>'.
+```
+
 ### Rationale for strong syntax constraints
 
 This syntax may sound very constrained, but it is for good reason. The structure imposed by this rule forces the CE to be in a canonical form ([McBride & Paterson](http://www.staff.city.ac.uk/~ross/papers/Applicative.html)):
@@ -737,7 +747,7 @@ in comparison to
 MapUsing : 'T * ('T -> 'U) -> 'U when 'U :> IDisposable
 ```
 
-Just as with the existing monadic `use!` syntax, the left-hand side of an applicative binding is constrained to being a variable. It cannot be a pattern that deconstructs a value.
+Just as with the existing monadic `use!` syntax, the left-hand side of an applicative binding is constrained to being a variable. It cannot be a pattern that deconstructs a value because that makes things much more complicated: What if multiple names are bound, should they all be disposed? What if it is not the case that they are all disposable? Is the intention to dispose the bound variable, or the structure being pattern matched upon?
 
 ### Ambiguities surrounding a `let! .. return ...`
 
