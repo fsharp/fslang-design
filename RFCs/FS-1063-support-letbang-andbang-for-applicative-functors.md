@@ -308,6 +308,15 @@ ce {
  }
 ```
 
+No `return` at all:
+
+```fsharp
+ce {
+    let! x = foo
+    and! y = bar
+ } ❌
+```
+
 Other CE keywords anywhere in the expression:
 
 ```fsharp
