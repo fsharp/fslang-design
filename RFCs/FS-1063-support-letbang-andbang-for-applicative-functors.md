@@ -331,6 +331,18 @@ ce {
  }
 ```
 
+Additional expressions sequenced after the `return`:
+
+```fsharp
+ce {
+    let! x = foo
+    and! y = bar
+    return x + y
+    let w = 42 ❌
+    let z = w - 6 ❌
+ }
+```
+
 No `return` at all:
 
 ```fsharp
