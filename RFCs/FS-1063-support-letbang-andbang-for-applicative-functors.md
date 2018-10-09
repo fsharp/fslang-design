@@ -540,7 +540,7 @@ The `yield` keyword is used to signify that each element is yielded as the resul
 1. `yield` takes the value on the left and wraps it up in the appropriate context by calling the `Yield` method on the builder.
 2. The sequencing of the expressions by placing them each on a new line (or by separating them with a `;`) results in the expressions being tied together via nested calls to `Combine` on the builder.
 
-> As an aside, `return` desugars to a call to `Return` on the builder, just as is the case for `yield`. In fact, the two generally have the same type signature and do the same thing, the difference being that `yield` is used to emphasise this idea of logically appending to a sequence.
+> As an aside, `return` desugars to a call to `Return` on the builder, just as is the case for `yield` desugaring to `Yield`. In fact, the two generally have the same type signature and do the same thing, the difference being that `yield` is used to emphasise this idea of logically appending to a sequence.
 
 One might assume that the syntax could be extended to something such as:
 
