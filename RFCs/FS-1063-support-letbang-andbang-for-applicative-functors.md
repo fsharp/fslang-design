@@ -774,7 +774,7 @@ In order to avoid breaking backwards compatibility, the default resolution is to
 
 ### The proposed desugaring is purely syntactical
 
-The proposed change acts purely as a syntactic rewriting of a computation expression to calls to methods on a builder. As such, whilst the change is largely motivated by the theory of applicatives, the desugaring can be used to call methods of different types to those suggested above. This attribute is in line with the existing semantics of computation expression translation (note how [the MSDN docs](https://docs.microsoft.com/en-us/dotnet/fsharp/language-reference/computation-expressions#creating-a-new-type-of-computation-expression) talk in terms of "typical signatures").
+The proposed change acts purely as a syntactic rewriting of a computation expression to calls to methods on a builder. As such, whilst the change is largely motivated by the theory of applicatives, the desugaring can be used to call methods of different types to those suggested above. This attribute is in line with the existing semantics of computation expression translation (note how [the MSDN docs](https://docs.microsoft.com/en-us/dotnet/fsharp/language-reference/computation-expressions#creating-a-new-type-of-computation-expression) talk in terms of "_typical_ signatures").
 
 # Drawbacks
 [drawbacks]: #drawbacks
