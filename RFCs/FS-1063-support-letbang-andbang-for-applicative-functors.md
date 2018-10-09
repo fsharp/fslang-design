@@ -909,7 +909,7 @@ error FS1141: Identifiers followed by '!' are reserved for future use
 
 ## What happens when previous versions of the F# compiler encounter this design addition in compiled binaries?
 
-Since the syntax is desugared into a method call on the builder object, after compilation usages of this feature will be usable with previous compiler versions.
+Since the syntax is desugared into a standard method call on the builder object, after compilation, usages of this feature will be usable with previous compiler versions.
 
 # Unresolved Questions
 [unresolved]: #unresolved-questions
