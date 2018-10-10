@@ -826,6 +826,44 @@ This is because the operation is really equivalent to a `Map`, something which c
 
 In order to avoid breaking backwards compatibility, the default resolution is to desugar via `Bind`, _failing if it is not defined on the builder_ (even though, conceptually, it could be implemented via `Apply`). This is consistent with in previous F# versions. [Later work on supporting `Map`](https://github.com/fsharp/fslang-design/blob/master/RFCs/FS-1048-ce-builder-map.md) can then make the choice about how to resolve this in a way which works with that in mind too.
 
+### Run and Delay support
+
+When a computation expression builder implements a `Run` or `Delay` method (or both), the desugared computation expression in wrapped in further calls corresponding to what is defined on the builder. This is true for both monadic and applicative computation expressions.
+
+For example, if `Run` and `Delay` are both defined on the `ce` builder:
+
+```fsharp
+ce {
+    let! x = foo
+    and! y = bar
+    and! z = baz
+    return x + y + z
+ }
+```
+
+becomes
+
+```fsharp
+builder.Run(
+    builder.Delay(fun () ->
+        ce.Apply(
+            ce.Apply(
+                ce.Apply(
+                    ce.Return(
+                        (fun x ->
+                            (fun y ->
+                                (fun z ->
+                                    x + y + z
+                                )
+                            )
+                        )),
+                    foo),
+                bar),
+            baz)
+    )
+)
+```
+
 ### The proposed desugaring is purely syntactical
 
 The proposed change acts purely as a syntactic rewriting of a computation expression to calls to methods on a builder. As such, whilst the change is largely motivated by the theory of applicatives, the desugaring can be used to call methods of different types to those suggested above. This attribute is in line with the existing semantics of computation expression translation (note how [the MSDN docs](https://docs.microsoft.com/en-us/dotnet/fsharp/language-reference/computation-expressions#creating-a-new-type-of-computation-expression) talk in terms of "_typical_ signatures").
