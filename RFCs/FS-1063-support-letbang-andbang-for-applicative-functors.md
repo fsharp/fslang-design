@@ -828,7 +828,7 @@ In order to avoid breaking backwards compatibility, the default resolution is to
 
 ## Run and Delay support
 
-When a computation expression builder implements a `Run` or `Delay` method (or both), the desugared computation expression is wrapped in further calls corresponding to what is defined on the builder. Since applicative computations are required to follow the canonical form (exactly one `return`, etc.), an applicative computation expression will have precisely one `Run` and one `Delay` (when they are defined on the builder).
+When a computation expression builder implements a `Run` or `Delay` method (or both), the desugared computation expression is wrapped in further calls corresponding to what is defined on the builder. Since applicative computations are required to follow the canonical form (exactly one `return`, etc.), an applicative computation expression will have precisely one `Run` method call (if it is defined) and one `Delay` method call (if it is defined).
 
 For example, if `Run` and `Delay` are both defined on the `ce` builder:
 
