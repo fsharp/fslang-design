@@ -826,7 +826,7 @@ This is because the operation is really equivalent to a `Map`, something which c
 
 In order to avoid breaking backwards compatibility, the default resolution is to desugar via `Bind`, _failing if it is not defined on the builder_ (even though, conceptually, it could be implemented via `Apply`). This is consistent with in previous F# versions. [Later work on supporting `Map`](https://github.com/fsharp/fslang-design/blob/master/RFCs/FS-1048-ce-builder-map.md) can then make the choice about how to resolve this in a way which works with that in mind too.
 
-## Run and Delay support
+## Run and Delay
 
 When a computation expression builder implements a `Run` or `Delay` method (or both), the desugared computation expression is wrapped in further calls corresponding to what is defined on the builder. Since applicative computations are required to follow the canonical form (exactly one `return`, etc.), an applicative computation expression will have precisely one `Run` method call (if it is defined) and one `Delay` method call (if it is defined).
 
