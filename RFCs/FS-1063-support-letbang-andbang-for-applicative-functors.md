@@ -353,6 +353,15 @@ Other, unsupported, CE keywords anywhere in the expression:
 ce {
     let! x = foo
     and! y = bar
+    return! f x y ❌
+ }
+// Example.fsx(4,5): error FS3245: 'return!' is not valid in this position in an applicative computation expression. Did you mean 'return' instead?
+```
+
+```fsharp
+ce {
+    let! x = foo
+    and! y = bar
     do! webRequest z ❌
     return x + y
  }
