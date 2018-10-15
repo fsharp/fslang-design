@@ -27,7 +27,7 @@ observable {
 }
 ```
 
-Or using `Observable.zip`:
+In comparison to using `Observable.zip`:
 
 ```fsharp
 Observable.zip foo bar (fun a b -> a + b) // Less readable, awkward to have more than two observables
@@ -286,6 +286,7 @@ ce {
     and! y = bar
     return x + y + z
  }
+// Example.fsx(4,5): error FS0010: Unexpected keyword 'and!' in expression
 ```
 
 A `let` after the `and!`s but before `return`:
@@ -308,6 +309,7 @@ ce {
     and! y = bar
     yield x + y ❌
  }
+// Example.fsx(4,5): error FS3245: 'yield' is not valid in this position in an applicative computation expression. Did you mean 'return' instead?
 ```
 
 Multiple `return`s:
@@ -319,6 +321,7 @@ ce {
     return x + y
     return (x + y) * 2 ❌
  }
+// Example.fsx(5,5): error FS3247: Saw unexpected expression sequenced after 'return'. Applicative computation expressions must be terminated with a single 'return'.
 ```
 
 Additional expressions sequenced after the `return`:
@@ -331,6 +334,7 @@ ce {
     let w = 42 ❌
     let z = w - 6 ❌
  }
+// Example.fsx(5,5): error FS3247: Saw unexpected expression sequenced after 'return'. Applicative computation expressions must be terminated with a single 'return'.
 ```
 
 No `return` at all:
@@ -340,15 +344,26 @@ ce {
     let! x = foo
     and! y = bar
  } ❌
+// Example.fsx(2,5): error FS3246: No body given after the applicative bindings. Expected a 'return' to terminate this applicative computation expression.
 ```
 
-Other CE keywords anywhere in the expression:
+Other, unsupported, CE keywords anywhere in the expression:
 
 ```fsharp
 ce {
     let! x = foo
     and! y = bar
-    do! webRequest x y ❌
+    do! webRequest z ❌
+    return x + y
+ }
+// Example.fsx(4,5): error FS3243: Expecting 'and!', 'anduse!' or 'return' but saw something else. Applicative computation expressions must be of the form 'let! <pat1> = <expr2> and! <pat2> = <expr2> and! ... and! <patN> = <exprN> return <exprBody>'.
+```
+
+```fsharp
+ce {
+    let! x = foo
+    and! y = bar
+    for elem in z do printfn "Elem: %+A" elem ❌
     return x + y
  }
 // Example.fsx(4,5): error FS3243: Expecting 'and!', 'anduse!' or 'return' but saw something else. Applicative computation expressions must be of the form 'let! <pat1> = <expr2> and! <pat2> = <expr2> and! ... and! <patN> = <exprN> return <exprBody>'.
