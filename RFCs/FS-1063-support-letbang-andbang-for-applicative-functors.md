@@ -27,16 +27,6 @@ observable {
 }
 ```
 
-As opposed to the monadic computation expression form:
-
-```fsharp
-observable {
-    let! a = foo
-    let! b = bar // A second let! implies a resubscription every time foo outputs a new value
-    return a + b
-}
-```
-
 Or using `Observable.zip`:
 
 ```fsharp
