@@ -47,14 +47,19 @@ let withCancellation (ct:CancellationToken) (a:Async<'a>) : Async<'a> = async {
 Since all methods on `Async` are implemented as `static members`, that pattern should continue to be used with the proposed signature. 
 
 ```fsharp
-static member WithCancellation(a : Async<'a>, cancellationToken : CancellationToken) = async {
+/// <summary>Creates a new async computation that allows cancellation with a provided CancellationToken.</summary>
+///
+/// <param name="computation">The computation to run. </param>
+/// <param name="cancellationToken">The CancellationToken to be associated with the computation.</param>
+
+static member WithCancellation(computation : Async<'a>, cancellationToken : CancellationToken) = async {
   let! ct2 = Async.CancellationToken
   use cts = CancellationTokenSource.CreateLinkedTokenSource (ct, ct2)
   let tcs = new TaskCompletionSource<'a>()
   use _reg = cts.Token.Register (fun () -> tcs.TrySetCanceled() |> ignore)
   let a = async {
     try
-      let! a = a
+      let! a = computation
       tcs.TrySetResult a |> ignore
     with ex ->
       tcs.TrySetException ex |> ignore }
