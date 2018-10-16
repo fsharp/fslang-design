@@ -1154,3 +1154,15 @@ IMPORTANT: Types that use `UseNullAsTrueValue` may *not* be made nullable, so `o
 
 Additionally the semantics of type tests are adjusted slightly to account for the possibility that `null` is a legitimate value, e.g. so that `match None with :? int option -> true | _ -> false` returns `true`.  Here `None` is represented as `null`. This is done through helpers `TypeTestGeneric` and `TypeTestFast`. We should consider whether this needs documenting or adjusting in the same way as `UnboxGeneric` and `UnboxFast`, though on first glance I don't believe it does.
 
+
+### Interaction with default values
+
+F# does some analysis related to whether types have default values or not.  This is used to
+1. determine if a field can be left uninitialized after being annotated with `DefaultValue`
+2. determine if a type containing a field of this type itself has a default value
+3. determine if the default struct constructor can be called, e.g. `DateTime()`.  For F#-defined types this can only be called if 
+   the struct type has a default value
+4. For struct types, to determine if the `'T when 'T : (new : unit -> 'T)` is satisfied.
+   
+Historically .NET reference types have always been considered to have default values. We should consider whether `string` is now considered to have a default value, or more dpecifically whether we should report optional nullability warnings when there is a difference between the cases of old and new-nullability rules.
+
