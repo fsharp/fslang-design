@@ -1141,4 +1141,16 @@ That is, the meaning of `unbox` in F# depends on whether the type carries a null
 
 The problem of course is that once (3) is allowed we have an issue - using the slow helper is now no longer correct and will raise an exception, i.e. `unbox<C?>(null)` will raise an exception.
 
-I'll add this to the notes in the RFC
+### Interaction with `UseNullAsTrueValue`
+
+F# option types use the obscure attribute `UseNullAsTrueValue` to ensure that `None` gets compiled as `null`.  This was a design choice made early in F# and has been problematic for many reasons, e.g. `None.ToString()` raises an exception, and baroque special compilation rules are needed for `opt.HasValue`.  However, this choice has been made and we must live with it.
+
+In theory the `UseNullAsTrueValue` attribute can be used with other F#' option types subject to limitations, e.g. this error message:
+```
+1196,tcInvalidUseNullAsTrueValue,"The 'UseNullAsTrueValue' attribute flag may only be used with union types that have one nullary case and at least one non-nullary case"
+```
+
+IMPORTANT: Types that use `UseNullAsTrueValue` may *not* be made nullable, so `option<int> | null` is **not** allowed.
+
+Additionally the semantics of type tests are adjusted slightly to account for the possibility that `null` is a legitimate value, e.g. so that `match None with :? int option -> true | _ -> false` returns `true`.  Here `None` is represented as `null`. This is done through helpers `TypeTestGeneric` and `TypeTestFast`. We should consider whether this needs documenting or adjusting in the same way as `UnboxGeneric` and `UnboxFast`, though on first glance I don't believe it does.
+
