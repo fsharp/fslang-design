@@ -1122,3 +1122,23 @@ public class C
 This means that `FSharpOption` is a nullable reference type if it were to be consumed by C# 8.0. Indeed, there is definitely C# code out there that checks for `null` when consuming an F# option type to account for the `None` case. This is because there is no other way to safely extract the underlying value in C#!
 
 **Recommendation:** ROLL INTO A BALL AND CRY - ...and discuss further with the C# team to see if something can be done about this.
+
+
+
+### Meaning of `unbox`
+
+Here's something tricky.  For an F# type C consider
+1. `unbox<C>(s)`
+2. `unbox<string>(s)`
+3. `unbox<C?>(s)`
+4. `unbox<string?>(s)`
+
+There are two unbox helpers - [`UnboxGeneric`](https://github.com/Microsoft/visualfsharp/blob/92247b886e4c3f8e637948de84b6d10f97b2b894/src/fsharp/FSharp.Core/prim-types.fs#L613) and [`UnboxFast`](https://github.com/Microsoft/visualfsharp/blob/92247b886e4c3f8e637948de84b6d10f97b2b894/src/fsharp/FSharp.Core/prim-types.fs#L620). Normally `unbox(s)` just gets inlined to become `UnboxGeneric`, e.g. this is what (1) becomes.  However the F# optimizer converts calls to `UnboxFast` for (2), see [here](https://github.com/Microsoft/visualfsharp/blob/99c667b0ee24f18775d4250a909ee5fdb58e2fae/src/fsharp/Optimizer.fs#L2576)
+
+`UnboxGeneric` guards against the input being `null` and refuses to unbox a `null` value to `C` for example.   It uses a runtime lookup on typeof<T> to do this
+
+That is, the meaning of `unbox` in F# depends on whether the type carries a null value or not.  If the target type *doesn't* carry null and is not a value type (i.e. is an F# reference type), the *slower* helper is used to do an early guard against a null value leaking in.  If the target type *does* carry null, the *fast* helper is used (since null can leak through ok).  For generic code the slow helper is used
+
+The problem of course is that once (3) is allowed we have an issue - using the slow helper is now no longer correct and will raise an exception, i.e. `unbox<C?>(null)` will raise an exception.
+
+I'll add this to the notes in the RFC
