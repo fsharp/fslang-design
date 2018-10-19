@@ -4,7 +4,7 @@ The design suggestion [Add non-nullable instantiations of nullable types, and in
 
 * [x] Approved in principle
 * [x] [Suggestion](https://github.com/fsharp/fslang-suggestions/issues/577)
-* [ ] Details: [TODO](https://github.com/fsharp/fslang-design/issues/FILL-ME-IN)
+* [x] Discussion: [here](https://github.com/fsharp/fslang-design/issues/339)
 * [ ] Implementation: [TODO](https://github.com/Microsoft/visualfsharp/pull/FILL-ME-IN)
 
 ## Summary
