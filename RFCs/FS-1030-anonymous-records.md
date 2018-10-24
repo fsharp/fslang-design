@@ -3,9 +3,10 @@
 The design suggestion [Anonymous Records](https://github.com/fsharp/fslang-suggestions/issues/207) has been marked "approved in principle".
 
 * [x] Approved in principle
-* [x] Details: [under discussion](https://github.com/fsharp/fslang-design/issues/170)
-* [x] Implementation: [ready](https://github.com/Microsoft/visualfsharp/pull/4499)
 
+* [x] Details: [under discussion](https://github.com/fsharp/fslang-design/issues/170)
+
+* [x] Implementation: [ready](https://github.com/Microsoft/visualfsharp/pull/4499)
 
 # Summary
 [summary]: #summary
@@ -22,15 +23,17 @@ let result = data.X + data.Y.Length
 let newData = {| data with Z = data.X + 5 |}
 ```
 
-
-
 # Motivation/Background
 [motivation]: #motivation
 
 1. Writing named record types is painful in F#, especially when
+
    * the records are used ephemerally in functions, and/or 
+   
    * the records are in return values from functions, and/or
+   
    * the return types are easily entirely inferred, and/or
+   
    * the types are needed when interoperating with C# code
 
 2. There is evidence a lot of pain around converting C# code that uses C# 3.0 "anonymous objects" into F# code ([List courtesy of @jpierson](https://github.com/fsharp/fslang-suggestions/issues/207#issuecomment-282570213)).
@@ -312,8 +315,11 @@ Copy and update expressions for anonymous records are like those for normal reco
 For example:
 
 ```fsharp
+
 let data = {| X = 1 |}               // gives {| X = 1 |}
+
 let data2 = {| data with Y = "1" |}  // gives {| X = 1; Y = "1" |}
+
 let data4 = {| data2 with X = "3" |} // gives {| X = "3"; Y = "1" |}
 ```
 
@@ -361,7 +367,8 @@ and
 
 ```fsharp
 let f (x : struct {| A: int; B : int |})  = x.A + y.B
-f {| A = 1; B = 3 |}
+
+f {| A = 1; B = 3 |} // the structness of the anonymous record is inferred here
 ```
 
 ## Examples: Basic anonymous records  
@@ -428,18 +435,44 @@ Straight-forward additions are made to the FCS symbols API, see the PR for detai
 ## Tooling
 
 The following features flow naturally from the implementation
-* Mouse-hover ver labels reports the instantiated type of the label
-* Anonymous record types are formatted and displayed in type info
-* Go-to-definition on a label `x.P` takes you to one of the declaration sites responsible for the declaration of `P`
-* Find-all-uses finds uses of labels when they are associated with the same anonymous record type
 
+* Mouse-hover labels reports the instantiated type of the label
+
+* Anonymous record types are formatted and displayed in type info
+
+* Go-to-definition on a label `x.P` takes you to one of the declaration sites responsible for the declaration of `P`
+
+* Find-all-uses finds uses of labels when they are associated with the same anonymous record type
 
 # Unresolved questions
 [unresolved]: #unresolved-questions
 
-1. Can records be created using implied field names ``{| x.Name; Age = 31 |}`` instead of `` {| Name=x.Name; Age=31 |}``. 
-1. Is pattern matching supported. 
-1. Should `[<CLIMutable>]` be supported to allow usage in more scenarios? 
+None
+
+# Future extensions
+
+There are several possible future extensions that are compatible with this RFC:
+
+1. Records using implied field names ``{| x.Name; Age = 31 |}`` instead of `` {| Name=x.Name; Age=31 |}``. 
+
+1. Supporting pattern matching, e.g. `match x with {| Y = y |} -> ...`
+
+1. Allowing the use of `[<CLIMutable>]` on anonynous record values
+
+1. Interaction between nominal record types and anonymous record types:
+
+       type R = { X : int; Y: int; Z: int }
+       let data = {| X = 1; Y = 2 |}
+       let data2 : R = { data with Z = 3 }
+
+   As mentioned in the RFC this breaks the principle of "easy nominalization" since the following is not allowed:
+
+       type R = { X : int; Y: int; Z: int }
+       type Data = { X : int; Y: int }
+       let data = { X = 1; Y = 2 }
+       let data2 : R = { data with Z = 3 }
+
+   because the last line constrains "data" and "data2" to be the same type.  However in the presence of enough type annotations like above we could lift this restriction.
 
 
 # Drawbacks
@@ -507,10 +540,15 @@ However it does have some downsides.  For example, when using anonymous record d
 #### Alternative: Various alternatives aroud copy-and-update
 
 Copy-and-update could be design differently:
+
 * In the design, F# records _can_ be used as the starting expression for copy-and-update.
+
 * Other object types could also be allowed, but what properties would be used as the starting selection?  Better to require `{| x.Name, x.Foo |}` explicitly.  
+
 * Other whacky alternatives are possible, e.g. `{|  x.Foo* with A = 1 |}`
+
 * `{| x |}` without any `with` bindings is not allowed.  In theory it could be allowed.
+
 * `{| x |} : SomeOtherAnonymousRecordType` is not allowed, but in theory could be, where the fields to be selected out are determined by `SomeOtherAnonymousRecordType`
 
 
@@ -519,15 +557,19 @@ Copy-and-update could be design differently:
 It would be possible to imagine an implicit conversion being applied whenever a value of one anonymous record type is used with a known type of another anonymous record type.  This is not done as this kind of implicit conversion is rarely used in the F# design.  
 
 Equally, such a conversion could either 
+
 1. be in a special function, e.g. `conv x` that "knows" about a whole range of conversions
+
 2. be applied at member application (i.e. in places where such conversions are already applied today
 
 #### Alternative: Use a dynamic representation
 
 Alternative:
+
 > Kind A values do not support any runtime metadata for field names - it has been erased.  This begs the question whether "Kind A" records would be better off using a dynamically typed representation at runtime, in the sense of ``Map<string, obj>``.
 
 Response:
+
 > It's just too deeply flawed - it neither gives performance, nor interop, nor reflection metadata. We can't leave such a huge performance hole lying around F#.
 
 ### Alternative: syntax ``type {| i = 1 |}``
@@ -539,18 +581,20 @@ Response: This is one of a number of alternatives trying imply "this value has r
 The original version of this RFC supported both Kind A and Kind B types
 ```
 {| X = 1 |} //  Kind A
+
 new {| X = 1 |} //  Kind B
 ```
-
 
 The problem is that the distinction between Kind A and Kind B is very subtle, as is the lack of reflection metadata on Kind A. See discussion:
 
     https://github.com/fsharp/fslang-design/issues/170#issuecomment-288394546
 
 Description:
+
 > Passing "Kind A" records to any reflection-based serializer will cause the value to be serialized like a tuple. "Kind B" exists to address these types of concerns, but "Kind A" may be violating expectations. This may be an avenue for serious bugs, incorrectly writing to a database because somebody forgot to put a new keyword before the record declaration.
 
 In response: 
+
 > Creating objects to hand off to reflection operations is indeed one use case - though it's not the only one. The feature is useful enough simply to avoid writing out record types for transient data within F#-to-F# code.
 > 
 > C# 7.0 tuples are very much exposed to this -  it's even worse there because there is more reliance in C# on .NET metadata, and not much of a tradition of erased information. Many C# people will try to go and mine the metadata, e.g. by looking at the calling method, cracking the IL etc. However this information is often completely erased so they will be frustrated at how hard it is to do, and in most cases just give up.
