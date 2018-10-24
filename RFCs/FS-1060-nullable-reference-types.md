@@ -60,7 +60,7 @@ Some existing mitigations include:
 
 5. F# does some analysis related to whether types have default values or not, covered below.
 
-6. The `null` literal may only be used with types that support it,
+6. The `null` literal may only be used with types that support it.
 
 ## Principles
 
@@ -208,17 +208,15 @@ As a final note, this attribute _can_ be abused. For example, if a method is ann
 
 #### Null obliviousness
 
-Nullability obliviousness is a concept that C# 8.0 has. A null-oblivious type is one that no assumptions can be made about. Once assigned to a nullable or non-nullable variable, it is treated as if it is nullable or non-nullable, respectively.
+There is an additional scenario: consuming an assembly that does not have `NonNullTypes` specified. This is considered null-oblivious: there is no data to indicate nullability or non-nullability.
 
-For example, imagine a C# 8.0 project consuming an older assembly that was compiled with an older C# compiler that has no notion of nullability, or it was compiled such that reference types are defined in a scope where `NonNullTypes(false)`. The C# behavior in this circumstance is, "we cannot say whether or not this is nullable or not, so we cannot assign nullability or non-nullability". Once assigned to a variable, the type it is assigned to dictates if it is nullable or not.
+In the null-oblivous case, F# will assume that all reference types are nullable. The reason is that this may not be practical for F# programs due to ubiquitous and heavy reliance upon type inference. After all, if code relies on the compiler to infer a type, but the compler explicitly doesn't infer a type, then the code lacks meaning! Additionally, treating all components we cannot guarantee as non-nullable as nullable is, we feel, "in the spirit of F#", which mandates safety and non-nullness wherever possible.
 
-This is controversial, because we are making an assumption about code that we do not really know about because the code could be handling `null` just fine, and could pass back a reference type that can never be `null`, but we'd still force the programmer to account for `null`.
+This is controversial, because we are making an assumption about an assembly that we do not really know about. The lack of `NonNullTypes` doesn't logically imply nullability, it just means there is no information. In C# 8.0, null obliviousness is an explicitly supported concept. In C# 8.0, a null-oblivous type will be treated as either nullable or non-nullable depending on how it is assigned. This is a point where the F# design diverges considerable.
 
-This could mean emitting thousands of warnings for a single project. Although emitting warnings for unsafe null usage is a feature, if the number of warnings gets too high, people will find it invasive.
+The downside to this decision is that F# 5.0 could potentially emit thousands of warnings for projects with many null-oblivious types. Although emitting warnings for things we can't guarantee are `null`-safe is a feature, if the number of warnings get too higher, people will likely find it invasive. This point my be revisted if early usage indicates that handling of null obliviousness is required.
 
-To remain "true" to the original code, we could introduce null obliviousness as a "state" that a reference type could be in. However, this is not practically possible in F#, because the majority of F# code uses type inference to infer a type, and null obliviousness would require explicit type annotations to work properly!
-
-Additionally, treating all components we cannot guarantee as non-nullable as nullable is, we feel, "in the spirit of F#", which mandates safety and non-nullness wherever possible. This point may well be revisited if early usage indicates that lack of null obliviousness is too invasive.
+This point may well be revisited if early usage indicates that lack of null obliviousness is too invasive.
 
 #### Marking methods as handling null
 
@@ -699,7 +697,7 @@ Generic parameters:
 'U is int
 ```
 
-Although this uses more vertical space in the tooltip, it reduces the length of the signature, which can already difficult to parse for many members in .NET.
+Although this uses more vertical space in the tooltip, it reduces the length of the signature, which can already be difficult to parse for many members in .NET today.
 
 In Signature Help tooltips today, we embed the concrete type for a generic type parameter in the tooltip. We may consider doing a similar thing as with QuickInfo, where nullability is expressed separately from the signature. However, this would also likely require a change where we factor out concrete types from the type signature at the parameter site. For example:
 
@@ -735,9 +733,9 @@ By default, F# scripts that use a newer compiler via F# interactive will underst
 
 #### Project configurability
 
-There are a few concerns here described further in the [Interaction Model](FS-1060-nullable-reference-types.md#interaction-model). When working in an IDE such as visual studio, I may wish to adopt this feature with any of the following configuration toggles:
+There are a few concerns here described further in the [Interaction Model](FS-1060-nullable-reference-types.md#interaction-model). When working in an IDE such as visual studio, someone may wish to adopt this feature with any of the following configuration toggles:
 
-1. Turn off nullability globally
+1. Turn off nullability for an entire solution
 2. Turn off nullability on a per-project basis
 3. Turn off nullability for a given assembly (e.g., a package reference)
 4. Turn off warnings for checking of nullable references
@@ -749,8 +747,8 @@ There are a few concerns here described further in the [Interaction Model](FS-10
 This implies that there are toggles in the tooling to support this.
 
 * The project properties page for F# projects will require toggles for 2, 4, 5, 6, 7, and 8.
-* There will need to be a right-click gesture that you can use to turn off nullability for a referenced assembly.
-* Turning it off globally is not something that we can control, so (1) is TBD until we can arrive at a tooling solution for all languages.
+* There may need to be a right-click gesture that you can use to turn off nullability for a referenced assembly.
+* Turning it off globally is not something that we can control, so (1) is not possible unless there is a solution-level switch.
 
 ### Interaction model
 
@@ -774,9 +772,7 @@ All F# assemblies built with a previous F# compiler will be treated as such:
 
 #### Ignoring F# 5.0 assemblies that do have nullability
 
-Users may want to progressively work through `null` warnings by treating a given assembly as "nullability obliviousness". To respect this, F# 5.0 will have to ignore any potentially unsafe dereference of `null` until such a time that "nullability obliviousness" is turned off for that assembly.
-
-Note: redundant `null` checks should not produce a warning.
+Users may want to progressively work through `null` warnings by ignoring any warnings coming from a given assembly. To respect this, F# 5.0 would have to ignore any potentially unsafe dereference of `null` until such a time that warnings are turned back on for types coming from that assembly. Although not an explicitly supported part of the design, we may consider this.
 
 **Potential issue:** How are these types annotated in code? `string` or `string | null`, with the latter simply not triggering any warnings?
 
@@ -786,11 +782,9 @@ Because the nullability attribute is only understood by F# 5.0, their presence h
 
 #### Older F# components consuming F# assemblies that do have nullability
 
-F# components are no different than non-F# components when it comes to being consumed by an older F# codebase. The nullability attribute is simply ignored.
+F# components are no different than non-F# components when it comes to being consumed by an older F# codebase. The nullability attribute is simply ignored by older F# compilers.
 
 ### Breaking changes and tunability
-
-Non-null warnings are an obvious breaking change with existing code, and thus will be opt-in for existing projects. New projects will have non-null warnings be on by default.
 
 Type inference will infer a reference type to be nullable in cases where it can be the result of an F# expression. This will generate warnings for existing code utilizing type inference. It will obviously also do so when dereferencing a reference type inferred to be nullable. Thus, warnings for nullability must be off by default for existing projects and on by default for new ones.
 
@@ -819,9 +813,9 @@ This is also a very complicated feature, with lots of edge cases, that has signi
 
 * There is insufficient flow analysis such that F# programmers are asserting non-nullability all over the place just to avoid unnecessary warnings
 * Existing, working code is infected without the programmer explicitly opting into this new behavior
-* The rest of the .NET ecosystem simply does not adopt non-nullability, thus making adornments the new normal
+* The rest of the .NET ecosystem simply does not adopt non-nullability
 
-Although we cannot control the third point, ensuring that the implementation is complete and up to spec with respect to what C# also does (while accounting for F#-isms) is the only way to do our part in helping the ecosystem produce less nulls.
+Although we cannot control the third point, ensuring that the F# implementation is complete is the only way to do our part in helping the ecosystem produce less `null` values.
 
 Additionally, we now have the following possible things to account for with respect to accessing underlying data:
 
@@ -856,39 +850,57 @@ That said, it will become quite evident that this feature is necessary if F# is 
 
 * Design a fully sound (apart from runtime casts/reflection, akin to F# units of measure) and fully checked non-nullness system for F# (which gives errors rather than warnings), then interoperate with C# (giving warnings around the edges for interop).
 
----------> Possibly, though there may be compatibility concerns.
+---------> Possibly, though there would potentially untractable compatibility concerns.
 
 * Allow code to be generic w.r.t nullness. For example, so you can express, "if you give me a `null` in, I might give you a `null` back; if you give me a non-`null` in, I will give you a non-`null` back".
 
----------> Questions about usability arise, and if we do something similar to null obliviousness.
+---------> Questions about usability arise, including if we do null obliviousness
 
-#### Question mark nullability annotation
+#### Use of `|` like an ad-hoc union type
 
-```fsharp
-let ns: string? = "hello"
-```
+An ideal syntax would be reminiscent of ad-hoc union types:
 
-Issue: looks horrible with F# optional parameters
 
 ```fsharp
-type C() =
-    member __.M(?x: string?) = "BLEGH"
+let ns: string | null = "hello"
 ```
 
-Issue: dynamic member lookup
+However, this would be a breaking change, as these are all valid representations of code in F# today:
 
 ```fsharp
-// This will look confusing
-let y: NullableDynamicMember? = Something?SomeDynamicMember
+let f2 (_ : string | null) = 1
+
+type X = A of string | B | C
+
+type X = A of string | null | C
 ```
 
-#### Nullref<'T>
+Finding a way to adopt `|` syntax without breaking the previously-mentioned samples (and untold other examples) may not be possible.
+
+#### Other union-like representations
+
+A riff of the previously-mentioned alternative is `or`:
+
+
+```fsharp
+let ns: string or null = "hello"
+```
+
+As is `||`:
+
+```fsharp
+let ns: string || null = "hello"
+```
+
+However, both are well-understood to be used for boolean operations, so "overloading" their meaning might be confusing. This may be something we revisit.
+
+#### Nullref<'T> or Nullable<'T>
 
 Have a wrapper type for any reference type `'T` that could be null.
 
 Issues:
 
-* Really, really ugly nesting is going to happen
+* Very ugly nesting would occur
 * No syntax for this makes F# seen as "behind" C# for such a cornerstone feature of the .NET ecosystem
 
 #### Option or ValueOption
@@ -1163,8 +1175,6 @@ This means that `FSharpOption` is a nullable reference type if it were to be con
 
 **Recommendation:** discuss further with the C# team to see if something can be done about this.
 
-
-
 ### Meaning of `unbox`
 
 Here's something tricky.  For an F# type C consider
@@ -1181,7 +1191,6 @@ That is, the meaning of `unbox` in F# depends on whether the type carries a null
 
 The problem of course is that once (3) is allowed we have an issue - using the slow helper is now no longer correct and will raise an exception, i.e. `unbox<C?>(null)` will raise an exception.
 
-
 ### Interaction with default values
 
 F# does some analysis related to whether types have default values or not.  This is used to
@@ -1192,4 +1201,3 @@ F# does some analysis related to whether types have default values or not.  This
 4. For struct types, to determine if the `'T when 'T : (new : unit -> 'T)` is satisfied.
    
 Historically .NET reference types have always been considered to have default values. We should consider whether `string` is now considered to have a default value, or more dpecifically whether we should report optional nullability warnings when there is a difference between the cases of old and new-nullability rules.
-
