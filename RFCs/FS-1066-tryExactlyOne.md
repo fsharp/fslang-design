@@ -56,12 +56,14 @@ Seq.tryExactlyOne (Seq.ofList [1; 2])
 # Drawbacks
 [drawbacks]: #drawbacks
 
-Extending api surface.
+* Extending api surface.
+* Confusion of C# developers expecting the function to throw (as the similar function from LINQ throws).
 
 # Alternatives
 [alternatives]: #alternatives
 
-Implementing this function with throwing for more than one element. Not choosing this path means that this function won't be a direct replacement for `System.Linq.IEnumerable.SingleOrDefault`.
+* Implementing this function with throwing for more than one element. Not choosing this path means that this function won't be a direct replacement for `System.Linq.IEnumerable.SingleOrDefault`.
+* Implementing this function with `None` for `null` seqs and arrays. This would introduce inconsistency with other array and seq functions as they all throw on null.
 
 # Compatibility
 [compatibility]: #compatibility
