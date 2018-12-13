@@ -244,6 +244,7 @@ type =
     reference-type __ambivalent  (also written reference-type%)
 ```
 
+
 #### Library additions
 
 In the prototype, library functions are added to cover the basic operations associated with nullable reference types. These
@@ -512,13 +513,28 @@ A new constraints is added:
     'T when 'T: not null
 ```
 
-This is checked as follows:
+
+This constraint is checked as follows:
 
 * An error is given if the constraint is instantiated with a type that uses null as a true value e.g. the `option` type or the `unit` type.
 
 * A nullabliity warning is given if the constraint is instantiated with a nullable type or a type defined with `AllowNullLiteral(true)` attribute.
 
 > NOTE: The F# 4.x `null` also constraint implies a `not struct` constraint. See [Unresolved questions](nullable-reference-types.md#unresolved-questions) for more. 
+
+Using `'T?` adds the constraint that `'T` is non-null.  There are two exceptions to this in FSharp.Core:
+
+* `withNull : 'T -> 'T?` doesn't add this constraint.  
+* `Option.toObj : 'T option -> 'T?` doesn't add this constraint.  
+
+In both cases this is because these can be used as "collapsing" operators, where instantiating with, for example, `string?` gives
+
+```fsharp
+withNull : string? -> string?
+Option.toObj : string? option -> string?
+```
+Here any existing `null` in the input remains a `null` in the output.
+
 
 #### 'obj' type
 
