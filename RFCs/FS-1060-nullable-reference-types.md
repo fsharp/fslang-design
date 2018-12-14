@@ -310,9 +310,47 @@ In the prototype, parallel value-type versions of these functions are required b
         val (|NullV|NotNullV|) : value: 'T? -> Choice<unit, 'T>  when 'T : not struct
 ```
 
+#### The `not null` constraint
+
+Today, there are three relevant constraints in F# - `null`, `struct` and `not struct`:
+
+```fsharp
+    'T when 'T: null
+    'T when 'T: struct
+    'T when 'T: not struct
+```
+A new constraints is added:
+```fsharp
+    'T when 'T: not null
+```
+
+
+This constraint is checked as follows:
+
+* An error is given if the constraint is instantiated with a type that uses null as a true value e.g. the `option` type or the `unit` type.
+
+* A nullabliity warning is given if the constraint is instantiated with a nullable type or a type defined with `AllowNullLiteral(true)` attribute.
+
+> NOTE: The F# 4.x `null` also constraint implies a `not struct` constraint. See [Unresolved questions](nullable-reference-types.md#unresolved-questions) for more. 
+
+Using `'T?` adds the constraint that `'T` is non-null.  There are two exceptions to this in FSharp.Core:
+
+* `withNull : 'T -> 'T?` doesn't add this constraint.  
+* `Option.toObj : 'T option -> 'T?` doesn't add this constraint.  
+
+In both cases this is because these can be used as "collapsing" operators, where instantiating with, for example, `string?` gives
+
+```fsharp
+withNull : string? -> string?
+Option.toObj : string? option -> string?
+```
+Here any existing `null` in the input remains a `null` in the output.
+
+
+
 ### Type inference and checking
 
-#### F# type relations
+#### Type inference - F# type relations
 
 * Nullable annotations on reference types are ignored when deciding type equivalence, though warnings are emitted for mismatches.
 
@@ -327,7 +365,7 @@ In the prototype, parallel value-type versions of these functions are required b
 To re-iterate: nullable reference types are about separating distinguishing the implicit `null` from a reference type, but they are not a new _kind_ of reference type. They are still the same reference type and, despite warnings, can still compile when a nullability rule is violated.
 
 
-#### Constraint solving
+#### Type inference - Constraint solving
 
 Nullability is propagated through type inference.  Some examples for the solution of type equality constraints:
 
@@ -340,7 +378,7 @@ Nullability is propagated through type inference.  Some examples for the solutio
 
 Some of these represent algorithmic type inference based on known type information of a kind that is used elsewhere by F#.  
 
-### Type inference - null literals and the nullness constraint
+#### Type inference - null literals and the nullness constraint
 
 The use of the `null` literal and some other existing constructs places a nullness constraint on the
 known type of the expression or pattern input.  For backwards
@@ -393,7 +431,7 @@ let f2 s : string? = if s <> "" then "hello" else null
 ```
 
 
-### Type inference - nullness variables
+#### Type inference - nullness variables
 
 Nullness variables represent uncertainty about whether constructs are null or non-null. They are unified as more information becomes available. 
 
@@ -403,7 +441,7 @@ In the prototype, nullness variables are currently only introduced for type infe
 
 TB: list cases where nullness variables are required and the rules for solving them
 
-#### Asserting non-nullability
+#### Type inference - Asserting non-nullability
 
 To get around scenarios where compiler analysis cannot establish a non-null situation, a programmer can use the `nonNull` function to convert a nullable reference type to a non-nullable reference type:
 
@@ -417,7 +455,7 @@ This function has a signature of `nonNull: 'T? -> 'T`. It will throw a `NullRefe
 
 The function `Unchecked.nonNull` is similar but no actual check is made, in the underlying IL it is just the identity function.
 
-### Type inference - object arguments
+#### Type inference - object arguments in member invocation
 
 All object arguments are considered to be non-null:
 ```fsharp
@@ -499,44 +537,7 @@ let ys = [ ""; ""; null ] // WARNING, inferred type string list
 let zs = seq { yield ""; yield ""; yield null } // WARNING inferred type seq<string>
 ```
 
-#### Generic Constraints
-
-Today, there are three relevant constraints in F# - `null`, `struct` and `not struct`:
-
-```fsharp
-    'T when 'T: null
-    'T when 'T: struct
-    'T when 'T: not struct
-```
-A new constraints is added:
-```fsharp
-    'T when 'T: not null
-```
-
-
-This constraint is checked as follows:
-
-* An error is given if the constraint is instantiated with a type that uses null as a true value e.g. the `option` type or the `unit` type.
-
-* A nullabliity warning is given if the constraint is instantiated with a nullable type or a type defined with `AllowNullLiteral(true)` attribute.
-
-> NOTE: The F# 4.x `null` also constraint implies a `not struct` constraint. See [Unresolved questions](nullable-reference-types.md#unresolved-questions) for more. 
-
-Using `'T?` adds the constraint that `'T` is non-null.  There are two exceptions to this in FSharp.Core:
-
-* `withNull : 'T -> 'T?` doesn't add this constraint.  
-* `Option.toObj : 'T option -> 'T?` doesn't add this constraint.  
-
-In both cases this is because these can be used as "collapsing" operators, where instantiating with, for example, `string?` gives
-
-```fsharp
-withNull : string? -> string?
-Option.toObj : string? option -> string?
-```
-Here any existing `null` in the input remains a `null` in the output.
-
-
-#### 'obj' type
+#### Type inference - 'obj' type
 
 Nullability warnings are never emitted for the `obj` type. 
 
@@ -551,7 +552,7 @@ Nullability warnings are never emitted for the `obj` type.
 > TODO: the use of `obj?` should be disallowed.
 
 
-#### Default values and Microsoft.FSharp.Core.DefaultValueAttribute
+#### Type checking - Default values and Microsoft.FSharp.Core.DefaultValueAttribute
 
 In F# 4.5: 
 
