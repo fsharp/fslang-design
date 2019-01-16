@@ -13,7 +13,7 @@ This RFC covers the detailed proposal for this suggestion.
 
 Augment the ValueOption type and module functions to be at parity with reference options:
 
-* Add [<DebuggerDisplay>] attribute to the type.
+* Add `[<DebuggerDisplay>]` attribute to the type.
 * Add `IsNone`, `IsSome`, `None`, `Some`, `op_Implicit`, and `ToString` members to the type.
 * Add `ValueOption` versions of the `Option` module functions.
 
