@@ -144,7 +144,7 @@ let len (str: string?) =
 
 // Parameter to a function
 let len (str: string?) =
-    let s = nullArgCheck "str" str // 
+    let s = nullArgCheck "str" str // Returns a non-null string
     s.Length  // binds a non-null result
 
 // Declared type at let-binding
