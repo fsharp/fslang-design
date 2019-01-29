@@ -288,26 +288,26 @@ is required instead of
 In the prototype, parallel value-type versions of these functions are required because of the limiation for generic code mentioned above.
 
 ```fsharp
-        /// Get the null value for a nullable value type.
-        val inline nullV<'T>: 'T? when 'T : struct
+/// Get the null value for a nullable value type.
+val inline nullV<'T>: 'T? when 'T : struct
 
-        /// Determines whether the given value is null.
-        /// Equivalent to "not value.HasValue"
-        val inline isNullV: value:'T? -> bool when 'T : struct
-        
-        /// Asserts that the value is non-null. Raises a NullReferenceException when value is null, otherwise returns the value.
-        /// Equivalent to value.Value
-        val inline notNullV: value:'T? -> 'T when 'T : struct
+/// Determines whether the given value is null.
+/// Equivalent to "not value.HasValue"
+val inline isNullV: value:'T? -> bool when 'T : struct
 
-        /// Converts the value to a type that admits null as a normal value.
-        /// Equivalent to System.Nullable(value)
-        val inline withNullV: value:'T -> 'T? when 'T : struct
-        
-        /// When used in a pattern asserts the value being matched is not null.
-        val (|NonNullV|) : value: 'T? -> 'T when 'T : not struct
+/// Asserts that the value is non-null. Raises a NullReferenceException when value is null, otherwise returns the value.
+/// Equivalent to value.Value
+val inline notNullV: value:'T? -> 'T when 'T : struct
 
-        /// An active pattern which determines whether the given value is null.
-        val (|NullV|NotNullV|) : value: 'T? -> Choice<unit, 'T>  when 'T : not struct
+/// Converts the value to a type that admits null as a normal value.
+/// Equivalent to System.Nullable(value)
+val inline withNullV: value:'T -> 'T? when 'T : struct
+
+/// When used in a pattern asserts the value being matched is not null.
+val (|NonNullV|) : value: 'T? -> 'T when 'T : not struct
+
+/// An active pattern which determines whether the given value is null.
+val (|NullV|NotNullV|) : value: 'T? -> Choice<unit, 'T>  when 'T : not struct
 ```
 
 #### The `not null` constraint
@@ -323,7 +323,6 @@ A new constraints is added:
 ```fsharp
     'T when 'T: not null
 ```
-
 
 This constraint is checked as follows:
 
@@ -346,8 +345,6 @@ Option.toObj : string? option -> string?
 ```
 Here any existing `null` in the input remains a `null` in the output.
 
-
-
 ### Type inference and checking
 
 #### Type inference - F# type relations
@@ -362,8 +359,7 @@ Here any existing `null` in the input remains a `null` in the output.
 
 * Nullable annotations on reference types are ignored when checking for duplicate methods.
 
-To re-iterate: nullable reference types are about separating distinguishing the implicit `null` from a reference type, but they are not a new _kind_ of reference type. They are still the same reference type and, despite warnings, can still compile when a nullability rule is violated.
-
+To re-iterate: nullable reference types are about distinguishing the implicit `null` from a reference type, but they are not a new _kind_ of reference type. They are still the same reference type and, despite warnings, can still compile when a nullability rule is violated.
 
 #### Type inference - Constraint solving
 
