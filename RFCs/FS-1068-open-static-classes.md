@@ -4,7 +4,7 @@ The design suggestion [Open static classes](https://github.com/fsharp/fslang-sug
 This RFC covers the detailed proposal for this suggestion.
 
 * [x] Approved in principle
-* [ ] Details:
+* [ ] [Discussion thread](https://github.com/fsharp/fslang-design/issues/352)
 * [x] [Implementation](https://github.com/Microsoft/visualfsharp/pull/6309)
 
 
