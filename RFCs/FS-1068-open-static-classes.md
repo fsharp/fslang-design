@@ -91,5 +91,7 @@ This is a non-breaking change.
 # Unresolved questions
 [unresolved]: #unresolved-questions
 
-TBD
+* [ ] Resolve how static classes are defined in F#
+* [ ] Respect and test for RequireQualifiedNameAttribute(true) on a static class, that prevents it being opened, or at least gives a warning, as for F# modules.
+
 
