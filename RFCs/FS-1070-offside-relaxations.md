@@ -1,4 +1,4 @@
-# F# RFC FS-1070 - Offside relaxtions for constructors and members
+# F# RFC FS-1070 - Offside relaxations for constructors and members
 
 The design suggestion [Allow undentation for constructors](https://github.com/fsharp/fslang-suggestions/issues/724) has been marked "approved in principle".
 This RFC covers the detailed proposal for this suggestion and some related design relaxations.
