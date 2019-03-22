@@ -26,16 +26,16 @@ The problem affects quotation processing or dynamic invocation of all `inline` c
 
 a. quotations of code that uses calls to generic inlined math code.
 
-b. quotations of code that uses user-defined SRTP operators (e.g. anything using FSharpPlus or anything like it, or just plain user-defined code).  RFCs like #4726 make this kind of code more common.
+b. quotations of code that uses user-defined SRTP operators (e.g. anything using FSharpPlus or anything like it, or just plain user-defined code).  RFCs like [#4726](https://github.com/Microsoft/visualfsharp/pull/4726) make this kind of code more common.
 
-c. quotations of code that uses any future extensions of SRTP features such as RFC FS-1043, see #3582
+c. quotations of code that uses any future extensions of SRTP features such as [RFC FS-1043](https://github.com/fsharp/fslang-design/blob/24d871a30b5c384579a27fd49fdf9dfb29b1080d/RFCs/FS-1043-extension-members-for-operators-and-srtp-constraints.md), see [#3582](https://github.com/Microsoft/visualfsharp/pull/3582)
 
-d. quotations that uses implicit operators, discussed in #6344
+d. quotations that uses implicit operators, discussed in [#6344](https://github.com/Microsoft/visualfsharp/pull/6344)
 
 We worked around many of these problems in FSharp.Core in F# 2.0 but did not solve its
 root cause, and haven't addressed the problem since. This problem spreads through any tools that process quotations
 (e.g. evaluators, or transpilers), requiring many special-case workarounds when operators are encountered, and causes
-FSharp.Core to contain a bunch of (sometimes half-implemented) [reflection-based primitives](https://github.com/Microsoft/visualfsharp/blob/master/src/fsharp/FSharp.Core/prim-types.fs#L2557)
+FSharp.Core to contain a bunch of (sometimes half-implemented) [reflection-based primitives](https://github.com/Microsoft/visualfsharp/blob/44c7e10ca432d8f245a6d8f8e0ec19ca8c72edaf/src/fsharp/FSharp.Core/prim-types.fs#L2557)
 to re-solve SRTP constraints at runtime in order to support quotation evaluation. 
 
 This RFC (TBD) and PR solves this issue at its core by changing the quotations to include "witnesses" for trait constraints
@@ -109,7 +109,7 @@ Currently FSharp.Core contains partial implementations of some basic operators l
 
 a. not all operators were implemented
 
-b. the use of reflectionto re-resolve SRTP constraints at runtime is slow and has many corner cases that are not correctly handled.
+b. the use of reflection to re-resolve SRTP constraints at runtime is slow and has many corner cases that are not correctly handled.
 
 c. this doesn't help with any user code that makes SRTP calls
 
@@ -150,7 +150,7 @@ Relevant issues
 * https://github.com/Microsoft/visualfsharp/issues/865#issuecomment-170399176
 
 Relevant code
-* There is a host of code in FSharp.Core associated with the non-witness-passing implementation of some primitives like "+" and "Zero".  e.g. [this](https://github.com/Microsoft/visualfsharp/blob/master/src/fsharp/FSharp.Core/prim-types.fs#L2557).  Essentially all this code becomes redundant after this PR.
+* There is a host of code in FSharp.Core associated with the non-witness-passing implementation of some primitives like "+" and "Zero".  e.g. [this](https://github.com/Microsoft/visualfsharp/blob/44c7e10ca432d8f245a6d8f8e0ec19ca8c72edaf/src/fsharp/FSharp.Core/prim-types.fs#L2557).  Essentially all this code becomes redundant after this PR.
 
 * There will be many workarounds in existing quotation evaluators
 
