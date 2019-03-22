@@ -16,7 +16,7 @@ to represent the semantic intent of the code, specifically it is missing any rec
 resolution of SRTP constraints. This RFC addresses this problem by incorporating the necessary
 information into both quotations and the code laid down for dynamic interpretation of quotations.
 
-# Detailed Design
+# Detailed Description of Problem
 
 F# quotations using SRTP-constrained generic code (such as `+` or `List.sumBy`) does not carry any information about
 how an SRTP constraint has been resolved, requiring adhoc re-resolution of SRTP
@@ -116,7 +116,49 @@ c. this doesn't help with any user code that makes SRTP calls
 The end result is that historically quotations and generic code using SRTP simply don't work very
 well together: it's a feature interaction that has never really been resolved properly.
 
-This PR shifts us to use witness passing.  This means that the compiled stub (used only for quotations) is now:
+# Detailed Design
+
+This PR shifts us to use witness passing.   That is, 
+
+1. In each quotation using a generic inlined function, a witness is recorded for the solution of each trait constraint. 
+
+2. You can access this information via the new `Quotations.Patterns.CallWithWitnesses` active pattern, and reconstruct the node using `Quotations.Expr.CallWithWitnesses`.
+
+3. The method signature for each SRTP-constrained generic inlined function has one extra argument for each SRTP constraint
+
+4. The emitted IL for each SRTP-constrained generic inlined function either invokes of passes the witnesses as necessary, and now never emits the `NotSUpportedException` code.
+
+### Witnesses
+
+A witness is a lambda term that represents the solution to an SRTP constraint. For example, if you use `+` in generic inline math code, then there will be an extra hidden parameter in the compiled form of that generic code. If you examine quotation witnesses using `CallWithWitnesses`, you will see a type-specialized lambda passed as that argument at callsites where the generic
+function is called at a non-generic, specific type.
+
+For example, for an SRTP-constraint `when  ^a : (static member (+) :  ^a * ^a ->  ^a)`:
+
+* You will see `(fun (a: double) (b: double) -> a + b)` passed in at the place where the code is specialized at type `double`.
+
+* You will see `(fun (a: TimeSpan) (b: TimeSpan) -> TimeSpan.op_Addition(a,b))` passed in at the place where the code is specialized at type `TimeSpan`.
+
+Because this is only about quotations, you only see these witnesses by matching on the quotation using the new
+`CallWithWitnesses` active pattern when processing the quotation.
+
+This measn that each witness effectively records the resolution/implementation of a trait constraint
+in quotations and/or compiled code.
+
+Note that passing implicit witnesses is the standard technique for implementing Haskell type classes.
+
+
+### Compiled form of SRTP-constrained generic code
+
+For 
+```fsharp
+let inline negate x = -x
+```
+of type
+```
+val inline negate: x: ^a ->  ^a when  ^a : (static member ( ~- ) :  ^a ->  ^a)
+``` 
+the compiled stub (used only for quotations) is now:
 ```
 .method public static !!a  negate<a>(class FSharpFunc`2<!!a,!!a> op_UnaryNegation, !!a x) 
 {
@@ -126,21 +168,61 @@ This PR shifts us to use witness passing.  This means that the compiled stub (us
   IL_0009:  ret
 } 
 ```
-That is, 
 
-1. In each quotation using a generic inlined function, a witness is automatically passed for the solution of each trait constraint. 
+### Accessing witness information in quotations
 
-2 The emitted IL for the witness-accepting version of the generic inlined function invokes or passes the witnesses as necessary. 
+Library additions:
 
-3. Thus quotations now contain information about the witnesses passed, you can access this information via the new `CallWithWitnesses` node
+```fsharp
+namespace FSharp.Core.Quotations
 
-Note that this PR and RFC is currently relevant only to quotations - no actual code generation changes for non `let inline` code (and the actual code generation for `inline` code is irrelevant for regular F# code, since, well, everything is inlined), and the PR is careful that existing quotations and quotation processing code will behave precisely as before.    
+type Expr =
+    /// <summary>Builds an expression that represents a call to an static method or module-bound function</summary>
+    /// <param name="methodInfo">The MethodInfo describing the method to call.</param>
+    /// <param name="methodInfoWithWitnesses">The additional MethodInfo describing the method to call, accepting witnesses.</param>
+    /// <param name="witnesses">The list of witnesses to the method.</param>
+    /// <param name="arguments">The list of arguments to the method.</param>
+    /// <returns>The resulting expression.</returns>
+    static member CallWithWitnesses: methodInfo: MethodInfo * methodInfoWithWitnesses: MethodInfo * witnesses: Expr list * arguments: Expr list -> Expr
 
+    /// <summary>Builds an expression that represents a call to an instance method associated with an object</summary>
+    /// <param name="obj">The input object.</param>
+    /// <param name="methodInfo">The description of the method to call.</param>
+    /// <param name="methodInfoWithWitnesses">The additional MethodInfo describing the method to call, accepting witnesses.</param>
+    /// <param name="witnesses">The list of witnesses to the method.</param>
+    /// <param name="arguments">The list of arguments to the method.</param>
+    /// <returns>The resulting expression.</returns>
+    static member CallWithWitnesses: obj:Expr * methodInfo:MethodInfo * methodInfoWithWitnesses: MethodInfo * witnesses: Expr list * arguments:Expr list -> Expr
 
-
+module Patterns =
+    /// <summary>An active pattern to recognize expressions that represent calls to static and instance methods, and functions defined in modules, including witness arguments</summary>
+    /// <param name="input">The input expression to match against.</param>
+    /// <returns>(Expr option * MethodInfo * MethodInfo * Expr list) option</returns>
+    [<CompiledName("CallWithWitnessesPattern")>]
+    val (|CallWithWitnesses|_|) : input:Expr -> (Expr option * MethodInfo * MethodInfo * Expr list * Expr list) option
+```
 ### Code samples
 
-TBD
+For example:
+```fsharp
+let q = <@ 1 + 2 @> 
+
+match q with 
+| CallWithWitnesses(None, minfo1, minfo2, witnessArgs, args) -> 
+    printfn "minfo1 = %A" minfo1.Name // T3 op_Addition<int32,int32,int32>(T1 x, T2 y)
+    printfn "minfo2 = %A" minfo2.Name // T3 op_Addition<int32,int32,int32>(FSharpFunc<T1,FSharpFunc<T2,T3>> op_Addition, T1 x, T2 y)
+    printfn "witnessArgs = %A" witnessArgs // [ Lambda(Call(op_Addition(1,1)) ]
+    printfn "args = %A" args
+| _ ->
+    failwith "fail"
+```
+gives
+```fsharp
+minfo1: T3 op_Addition<int32,int32,int32>(T1 x, T2 y)
+minfo2: T3 op_Addition<int32,int32,int32>(FSharpFunc<T1,FSharpFunc<T2,T3>> op_Addition, T1 x, T2 y)
+witnessArgs = [ Lambda(Call(op_Addition(1,1)) ]
+args = [ Const(1); Const(2) ]
+```
 
 ### Resources
 
@@ -152,22 +234,30 @@ Relevant issues
 Relevant code
 * There is a host of code in FSharp.Core associated with the non-witness-passing implementation of some primitives like "+" and "Zero".  e.g. [this](https://github.com/Microsoft/visualfsharp/blob/44c7e10ca432d8f245a6d8f8e0ec19ca8c72edaf/src/fsharp/FSharp.Core/prim-types.fs#L2557).  Essentially all this code becomes redundant after this PR.
 
-* There will be many workarounds in existing quotation evaluators
-
+* There are many workarounds in existing quotation evaluators. 
 
 # Drawbacks
 [drawbacks]: #drawbacks
 
-TBD
+* Quotation evaluators will need to be updated to make use of witness parameters
 
 # Alternatives
 [alternatives]: #alternatives
 
-Although the RFC and PR is ony relevant to reflection and quotations, the witness passing could also be leveraged by future implementations of type-class like functionality, e.g. simply allow generic math code without the use of `inline`, (e.g. `let generic add x = x + x`).  However such code would be substantially slower if not inlined, which is why we always currently require it to be inlined. 
-
+Although the RFC is only relevant to reflection and quotations, the witness passing could also be leveraged
+by future implementations of type-class like functionality, e.g. simply allow generic math code without
+the use of `inline`, (e.g. `let generic add x = x + x`).  However such code would be substantially slower
+if not inlined, which is why we always currently always require it to be inlined. 
 
 # Compatibility
 [compatibility]: #compatibility
+
+Note that this RFC is only relevant to quotations and reflection - no actual code generation changes
+for non `let inline` code (and the actual code generation for `inline` code is irrelevant for regular F# code,
+since, well, everything is inlined), and the PR is careful that existing quotations and quotation processing
+code will behave precisely as before.    
+
+### Presence of extra generated methods may affect existing reflection calls
 
 The major problem with a simple version of this fix is backwards
 compat: the fix adds extra witness arguments to the compiled form of generic `inline`
@@ -178,7 +268,8 @@ that doesn't accept witness arguments, and the second the go-forward method that
 
 Code that uses .NET reflection calls that expect only one method to have been emitted for an F# function may
 fail after this change.  For example
-```
+
+```fsharp
 namespace A
 module B = 
     let MyFunction x = x
@@ -193,10 +284,16 @@ bty.GetMethod("MyFunction") // succeeds
 bty.GetMethod("MyInlineFunction") // now fails with ambiguity, there are now two MyInlineFunction methods 
 ```
 
-
 # Unresolved questions
 [unresolved]: #unresolved-questions
 
-* [ ] Decide whether the change in behaviour w.r.t. reflection is acceptable.  If not, we may need to codegen the additional method differently.
+* [ ] The `CallWithWitnesses` node requires both the legacy and updated MethodInfos to be provided. This may be painful if people
+      attempt to create this node from nothing.
+
+* [ ] Decide whether the change in behaviour w.r.t. reflection is acceptable.  If not, we may need to
+      codegen the additional method differently.
+
 * [ ] Adjust the LeafExpressionEvaluator to actually use the extra `CallWithWitnesses` node to do better evaluation.
-* [ ] Complete the witnesses passed for primitives (they are currently broken). The witnesses passed for SRTP constraints over user-defined types are accurate
+
+* [ ] Complete the witnesses passed for primitives (they are currently broken). The witnesses passed for
+      SRTP constraints over user-defined types are accurate
