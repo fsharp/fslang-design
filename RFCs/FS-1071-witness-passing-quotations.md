@@ -158,9 +158,17 @@ of type
 ```
 val inline negate: x: ^a ->  ^a when  ^a : (static member ( ~- ) :  ^a ->  ^a)
 ``` 
-the compiled stub (used only for quotations) is now:
+the compiled form of this code is now two methods - the first is emitted for compatibility and the second is
+the witness-carrying version of the method which has `WithWitnesses` added to the name
 ```
-.method public static !!a  negate<a>(class FSharpFunc`2<!!a,!!a> op_UnaryNegation, !!a x) 
+.method public static !!a  negate<a>(!!a x) cil managed
+{
+  IL_0000:  ldstr      "Dynamic invocation of op_UnaryNegation is not supported"
+  IL_0005:  newobj     instance void [mscorlib]System.NotSupportedException::.ctor(string)
+  IL_000a:  throw
+} 
+
+.method public static !!a  negateWithWitnesses<a>(class FSharpFunc`2<!!a,!!a> op_UnaryNegation, !!a x) 
 {
   IL_0000:  ldarg.0
   IL_0001:  ldarg.1
@@ -210,7 +218,7 @@ let q = <@ 1 + 2 @>
 match q with 
 | CallWithWitnesses(None, minfo1, minfo2, witnessArgs, args) -> 
     printfn "minfo1 = %A" minfo1.Name // T3 op_Addition<int32,int32,int32>(T1 x, T2 y)
-    printfn "minfo2 = %A" minfo2.Name // T3 op_Addition<int32,int32,int32>(FSharpFunc<T1,FSharpFunc<T2,T3>> op_Addition, T1 x, T2 y)
+    printfn "minfo2 = %A" minfo2.Name // T3 op_AdditionWithWitnesses<int32,int32,int32>(FSharpFunc<T1,FSharpFunc<T2,T3>> op_Addition, T1 x, T2 y)
     printfn "witnessArgs = %A" witnessArgs // [ Lambda(Call(op_Addition(1,1)) ]
     printfn "args = %A" args
 | _ ->
@@ -219,7 +227,7 @@ match q with
 gives
 ```fsharp
 minfo1: T3 op_Addition<int32,int32,int32>(T1 x, T2 y)
-minfo2: T3 op_Addition<int32,int32,int32>(FSharpFunc<T1,FSharpFunc<T2,T3>> op_Addition, T1 x, T2 y)
+minfo2: T3 op_AdditionWithWitnesses<int32,int32,int32>(FSharpFunc<T1,FSharpFunc<T2,T3>> op_Addition, T1 x, T2 y)
 witnessArgs = [ Lambda(Call(op_Addition(1,1)) ]
 args = [ Const(1); Const(2) ]
 ```
@@ -252,22 +260,27 @@ if not inlined, which is why we always currently always require it to be inlined
 # Compatibility
 [compatibility]: #compatibility
 
+### Solved: continue exact same semantics for existing code
+
 Note that this RFC is only relevant to quotations and reflection - no actual code generation changes
 for non `let inline` code (and the actual code generation for `inline` code is irrelevant for regular F# code,
 since, well, everything is inlined), and the PR is careful that existing quotations and quotation processing
 code will behave precisely as before.    
 
-### Presence of extra generated methods may affect existing reflection calls
+### Solved: Presence of extra generated methods may affect existing reflection calls
 
-The major problem with a simple version of this fix is backwards
-compat: the fix adds extra witness arguments to the compiled form of generic `inline`
-functions (one new argument is added for each SRTP constraint).  For this reason in this PR we carefully continue to
+One potential problem with this RFC is that the simplest version of its implementation is
+simply to change the signatures for generated methods, adding extra witness arguments to the compiled form of generic `inline`
+functions.  However this would not be backward-compatible:
+existing code using quotations would break.
+
+For this reason in this PR we carefully continue to
 emit the old methods as well (the ones not taking witness arguments) and precisely preserve their semantics.
 This each generic `inline` function now results in two IL methods being emitted - the first a legacy method
 that doesn't accept witness arguments, and the second the go-forward method that accepts the extra arguments.
 
-Code that uses .NET reflection calls that expect only one method to have been emitted for an F# function may
-fail after this change.  For example
+Further, the new `WithWitnesses` methods are given a distinct name, with the suffix added.  This is to ensure that
+code that uses .NET reflection still only finds one method of the original name.  For example
 
 ```fsharp
 namespace A
@@ -281,7 +294,7 @@ type C() =
 let bty = typeof<C>.Assembly.GetType("A.B")
 
 bty.GetMethod("MyFunction") // succeeds
-bty.GetMethod("MyInlineFunction") // now fails with ambiguity, there are now two MyInlineFunction methods 
+bty.GetMethod("MyInlineFunction") // we want this to continue to succeed without ambiguity
 ```
 
 # Unresolved questions
@@ -289,9 +302,6 @@ bty.GetMethod("MyInlineFunction") // now fails with ambiguity, there are now two
 
 * [ ] The `CallWithWitnesses` node requires both the legacy and updated MethodInfos to be provided. This may be painful if people
       attempt to create this node from nothing.
-
-* [ ] Decide whether the change in behaviour w.r.t. reflection is acceptable.  If not, we may need to
-      codegen the additional method differently.
 
 * [ ] Adjust the LeafExpressionEvaluator to actually use the extra `CallWithWitnesses` node to do better evaluation.
 
