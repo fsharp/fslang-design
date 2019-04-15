@@ -1,4 +1,6 @@
-# FST-1006-compiler-package-publish-vfsharp
+# [DENIED] FST-1006-compiler-package-publish-vfsharp
+
+**This RFC has not been accepted. It remains here for historical purposes.**
 
 This RFC proposes that we publish the [F# Compiler Tools package (FCT)](https://www.nuget.org/packages/FSharp.Compiler.Tools/) package directly from the [Visual F# repository](https://github.com/Microsoft/visualfsharp) rather than the existing [F# packaging repository](https://github.com/fsharp/fsharp).
 
