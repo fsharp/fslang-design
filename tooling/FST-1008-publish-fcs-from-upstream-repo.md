@@ -15,7 +15,7 @@ This would be the same as FSharp.Core today.
 
 ### Prerelease usage
 
-The F# build would produce a signed FSharp.Compiler.Private package. This would be accessible in a build artifacts directory for anyone looking to build this package against a particular branch of the F# codebase.
+The F# build would produce a signed FSharp.Compiler.Service package. This would be accessible in a build artifacts directory for anyone looking to build this package against a particular branch of the F# codebase.
 
 Additionally, Microsoft will publish a nightly feed on MyGet where a new package would be published every time there is a signed F# build.
 
