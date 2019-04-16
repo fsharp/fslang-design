@@ -39,7 +39,7 @@ The first is preferred so that links need not be updated across the web, so that
 
 ## Archiving the FSharp.Compiler.Service repository
 
-Once the `dotnet/fsharp` repository is set up to publish nightlies of the FSharp.Compiler.Service package and the NuGet package itself has been set up as documented above, the process for archiving the FSharp.Compiler.Service repository can begin. It's not as simple as merely arching the repository:
+Once the `dotnet/fsharp` repository is set up to publish nightlies of the FSharp.Compiler.Service package and the NuGet package itself has been set up as documented above, the process for archiving the FSharp.Compiler.Service repository can begin. It's not as simple as merely archiving the repository, however:
 
 ### Migrating issues
 
