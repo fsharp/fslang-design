@@ -56,3 +56,12 @@ The README must be modified to state clearly that this repository is archived, a
 Additionally, we should retain the historical context of this repository to ensure that we don't lose any of the rich history it has developed over the years.
 
 Finally, once all of the above is completed, we can archive the repository.
+
+## Compatibility and versioning
+
+Despite the package being at version `28.0.0` at the time of writing, it's best to think of it as version `0.28`. It is not binary compatible and is subject to many breaking changes. The FCS API itself is likely to undergo more changes in the future, and consumers of that API will have to adjust to those changes. This is the norm today, and we expect it to continue for quite some time. Given this, the compatibility and versioning rules are:
+
+* The binary in the package is **not** binary compatible and will change
+* The package will follow semantic versioning, where any major version change indicates a possible breaking change
+
+In the future, the FCS APIs may stabilize and binary compatibility may be enforced. But that is at an unknown time long in the future.
