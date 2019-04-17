@@ -89,6 +89,6 @@ To reiterate - to build FCS in `dotnet/fsharp`:
 
 * You should only require an OS that .NET Core can run on; i.e., no Windows-only dependencies
 * You should not need to install any machine dependencies to build FCS
-* You should be able to run all FCS tests without machine dpeendencies or a particular OS
+* You should be able to run all FCS tests without machine dependencies or a particular OS
 * You should be able to edit the FCS source in your editor of choice by opening `FSharp.Compiler.Service.sln`
 * You should be able to produce an unsigned `.nupkg` of FCS for personal use
