@@ -572,6 +572,10 @@ Response:
 
 > It's just too deeply flawed - it neither gives performance, nor interop, nor reflection metadata. We can't leave such a huge performance hole lying around F#.
 
+### Alternative: support pattern matching
+
+A note by @dsyme: The omission of pattern matching for anonymous records really shows my strong bias against pattern matching on records at all - I nearly always dislike code that uses pattern matching on records. For exaple, I don't think it adds to the robustness of code since pattern matching on records is "flexible", i.e. fields can be omitted.   I know others will disagree however.
+
 ### Alternative: syntax ``type {| i = 1 |}``
 
 Response: This is one of a number of alternatives trying imply "this value has runtime type information".  Others might be ``rtt {| i = 1 |}`` (``rtt`` for "runtime type") or ``obj {| i = 1 |}``.  However each of which seems worse in other ways. For example ``type`` mighy imply "what comes after this is in the syntax of types" or something like that.
