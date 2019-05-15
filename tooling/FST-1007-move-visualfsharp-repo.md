@@ -13,6 +13,6 @@ There are a few reasons why we're interested in moving the VisualFSharp repo:
 
 ## Practical issues to address
 
-* Transfer of IP and other legal matters - We don't expect to face any issues here, but we'll need to consult with Microsoft legal to ensure all our bases are covered.
+* Transfer of IP and other legal matters - All covered.
 * Issues/PRs/discussions/etc. migration - GitHub handles this automatically. No history should be lost in either the commits nor comments.
-* Links across the web that link to microsoft/visualfsharp - Not sure. If GitHub handles redirects it's fine, but if not then we'll just have to do our best to update links in places we know have meaningful traffic.
+* Links across the web that link to microsoft/visualfsharp - GitHub handles this automatically.
