@@ -36,7 +36,7 @@ We worked around many of these problems in FSharp.Core in F# 2.0 but did not sol
 root cause, and haven't addressed the problem since. This problem spreads through any tools that process quotations
 (e.g. evaluators, or transpilers), requiring many special-case workarounds when operators are encountered, and causes
 FSharp.Core to contain a bunch of (sometimes half-implemented) [reflection-based primitives](https://github.com/Microsoft/visualfsharp/blob/44c7e10ca432d8f245a6d8f8e0ec19ca8c72edaf/src/fsharp/FSharp.Core/prim-types.fs#L2557)
-to re-solve SRTP constraints at runtime in order to support quotation evaluation. 
+to re-solve SRTP constraints at runtime in order to support quotation evaluation. This also affects code generation for F# type providers, see https://github.com/fsprojects/FSharp.TypeProviders.SDK/pull/313.
 
 This RFC (TBD) and PR solves this issue at its core by changing the quotations to include "witnesses" for trait constraints
 as seen by quotations.
