@@ -26,7 +26,7 @@ This work is only completed when all rows have a status of ":)". The library upd
 
 If an item is marked "low-pri" it doesn't need to be completed in order for the library update to happen.
 
-###Regular functional functions
+### Regular functional functions
 
 Function | Comment | List | Array | Seq | PR | Status
 -------- | ------- | ---- | ----- | --- | --- | ------
@@ -125,7 +125,7 @@ Note: In F# 3.0 `Seq.where` was defined as a synonym for `Seq.filter`, mainly du
 
 Note: In F# 3.x, `nth` is defined with inconsistent signatures for `Array` and `List`. The proposal above replaces `nth` by `item` and would eventually deprecate `nth` (with a message to say 'please use Seq.item'. It also adds a corresponding `tryItem`. Both `item` and `tryItem` would take the integer index as the first parameter.
 
-###Regular functional operators producing two or more output collections
+### Regular functional operators producing two or more output collections
 
 These operators are not defined for `Seq.*` for performance reasons because using them would require iterating the input sequence twice.
 
@@ -138,7 +138,7 @@ Function | Comment | List | Array | Seq | PR | Status
 `unzip` |   | o | o | n/a | --- | n/a
 `unzip3` |   | o | o | n/a | --- | n/a
 
-###Mutation-related operators
+### Mutation-related operators
 
 Function | Comment | List | Array | Seq | PR | Status
 -------- | ------- | ---- | ----- | --- | --- | ------
@@ -154,7 +154,7 @@ Function | Comment | List | Array | Seq | PR | Status
 `sub` |   | n/a | o | n/a | ---  | n/a 
 `zeroCreate` |   | n/a | o | n/a | ---  | n/a 
 
-###Conversion operators
+### Conversion operators
 
 Function | Comment | List | Array | Seq | PR | Status
 -------- | ------- | ---- | ----- | --- | --- | ------
@@ -165,7 +165,7 @@ Function | Comment | List | Array | Seq | PR | Status
 `toArray` |   | o | n/a | o | ---  | n/a 
 `toSeq` |   | o | o | n/a | ---  | n/a 
 
-###On-demand or IEnumerable computation operators
+### On-demand or IEnumerable computation operators
 
 Function | Comment | List | Array | Seq | PR | Status
 -------- | ------- | ---- | ----- | --- | --- | ------
