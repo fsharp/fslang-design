@@ -51,7 +51,7 @@ let newData = {| data with Z = data.X + 5 |}
 
 ## Design Principle: Low Ceremony, Cheap and Cheerful data
 
-The basic design principle is that an explicit record type decaration is not needed when packaging data in a record-like way:
+The basic design principle is that an explicit record type decoration is not needed when packaging data in a record-like way:
 
 ```fsharp
 let data = {| X = 1; Y = "abc" |}
@@ -99,7 +99,7 @@ We adopt the dsign principle that the answer to this must be "yes" - the develop
 Let's call this process "nominalization".
 
 Supporting smooth nominalization is important as code matures, because values that start
-as "just data" often gradaully become more like objects: they collect some associated derived properties,
+as "just data" often gradually become more like objects: they collect some associated derived properties,
 some methods, they start to have constraints and invariants applied, they may end up
 having their representation hidden, they may become mutable.  Anonymous record types do **not** support this full range of
 nominal type machinery, however nominal record types and class types do.  As a type matures, you want to make sure
