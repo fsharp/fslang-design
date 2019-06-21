@@ -1251,9 +1251,7 @@ c2 <- null // OK
 
 This behavior is quite similar to nullable reference types, but is unfortunately a bit of a cleaver when all you need is a paring knife. It's arguable that the value of nullability for F# programmers is _ad-hoc_ in nature, which is something that is squarely accomplished with nullable reference types. Instead, `[<AllowNullLiteral>]` sort of "pollutes" things by making any instantiation a nullable instantiation.
 
-**Recommendation**: Relax this restriction from an error to a warning in F# 5.0 only, and then treat any reference to types decorated with `[<AllowNullLiteral>]` as if they were nullable reference types. This is not a breaking change, but it does mean that F#-declared reference types are now a bit different once this feature is in place.
-
-
+**Recommendation**: Relax the restriction where F#-declared reference types cannot have `null` as a proper value from an error to a warning. Conceptually, any reference to type decorated with `[<AllowNullLiteral>]` will be seen as equivalent to a nullable reference type. This is not a breaking change, but it does mean that F#-declared reference types are now a bit different once this feature is in place.
 
 #### Unchecked.defaultOf<'T>
 
