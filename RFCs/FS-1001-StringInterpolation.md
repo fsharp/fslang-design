@@ -58,7 +58,7 @@ Use cases include any for which printf and variants are currently used: console 
 
 6. The `PrintfFormat` type in FSharp.Core is extended as follows:
 
-```
+```fsharp
 open System
 
 type PrintfFormat<'Printer,'State,'Residue,'Result>
@@ -85,7 +85,7 @@ We disallow a mix of `%d` and `%d{expr}` specifiers in a single format string.
 
 ### Tooling
 
-The compiler service tooling is adjusted to account for understanding when we're in an interoplated context (and complete the `}` with brace completion).
+The compiler service tooling is adjusted to account for understanding when we're in an interoplated context (and complete the `}` with brace completion). It is expected that autocompletion will work in an interoplated context, as will any navigational features that work with symbols in a document.
 
 ### Drawbacks
 
