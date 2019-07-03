@@ -83,7 +83,9 @@ type PrintfFormat<'Printer,'State,'Residue,'Result>
     new: value: string * captures: obj[] * types: Type[] -> PrintfFormat<'Printer,'State,'Residue,'Result>
     member Captures: obj[]
     member Types: Type[]
+    member FormatProvider: IFormatProvider
     member ToFormattableString: unit -> FormattableString
+    member WithFormatProvider : IFormatProvider -> PrintfFormat<'Printer,'State,'Residue,'Result>
 
 type PrintfFormat<'Printer,'State,'Residue,'Result,'Tuple>
     //Exisiting
