@@ -8,19 +8,20 @@ There is an approved-in-principle [proposal](http://fslang.uservoice.com/forums/
 
 ### Summary
 
-Proposed syntax:
+This adds a new expresssion form called an interpolated string:
 
 ```fsharp
-printf "some text %(expression) some more text"
+let x = 1
+let pi = 3.1414
+let text = "cats"
+$"I say {x} is one and %0.2f{pi} is pi and %20s{text} are dogs"
 ```
 
-An alternate has been proposed which would mirror the syntax from C#:
-```fsharp
-$"some text {expression} some more text"
-```
+Further, some extensions, alignments and adjustments are made to existing format strings.
 
 ### Links
 
+* [F# printf formats](https://msdn.microsoft.com/en-us/visualfsharpdocs/conceptual/core.printf-module-%5Bfsharp%5D?f=255&MSPPError=-2147217396)
 * [C# string interpolation docs](https://msdn.microsoft.com/en-us/library/dn961160.aspx)
 * [Swift string interpolation](https://developer.apple.com/library/ios/documentation/Swift/Conceptual/Swift_Programming_Language/StringsAndCharacters.html)
 
@@ -36,27 +37,60 @@ Use cases include any for which printf and variants are currently used: console 
 
 ### Detailed Design
 
-The prototype accepts arbitrary F# expressions as **embedded expressions** into an interpolated string. The whole string is given as an argument to `printf` and related functions.
+1. `$"....{}..."` is a new form called an "interpolation string", and can contain either:
 
-The source string literal is split into chunks containing text and embedded expressions. Then chunks are joined using [String.Concat][4].
+   * Type-checked printf style fills: `%printfFormat{<interpolationExpression>}`, e.g. `%d{x}` or `%20s{text}`.
+ 
+   * Unchecked ".NET-style" fills: `{<interpolationExpression>[,<dotnetAlignment>][:<dotnetFormatString>]}`, e.g. `{x}` or `{y:N4}`.
 
-Initial string literal:
+   .NET-style fills are actually a shortcut for a `%O` printf pattern .....`%(dotnetAlignment,dotnetFormatString)O{interpolationExpression}..."`.
 
-```fsharp
-"%d%(foo)%d%(bar.bar)"
+2. An interpolation string is checked as type `string`, `PrintfFormat`, `FormattableString` or `IFormattable`. The choice is based on the known type against which the expression is checked. We first try to unify to `string` and, if that fails, test for the other known types without unifying.
+
+   Existing string literals continue to be interpreted as type `string` or `PrintfFormat` unchanged. The choice is based on the known type against which the expression is checked.
+
+3. Interpolation fills (e.g `%d{x}`) may only be used in interpolation strings.  Unfilled printf-style placeholders (e.g. `%d`) may only be present for existing string literals.
+
+4. The elaborated form of an interpolated string is as follows:
+
+   - If interpreted as type `string` an implicit call to `sprintf` is inserted along with the creation of a `PrintfFormat` capturing the interpolated fills.
+
+   - If interpreted as type `PrintfFormat` then an implicit creation of a `PrintfFormat` capturing the interpolated fills.
+   
+   - If interpreted as type `FormattableString` or `IFormattable` then an implicit creation of a `PrintfFormat` capturing the interpolated fills followed by `.ToFormattableString()` and an upcast if necessary.
+
+5. The set of acceptable printf formats is extended to include `%O` patterns with .NET formatting, using `%(dotnetAlignment,dotnetFormatString)O`.  Once a value is available such an expression is formatted using `System.String.Format("{0:dotnetAlignment,dotnetFormatString}", value)`.  If `dotnetAlignment` and `dotnetFormatString` are both missing then this is equivalent to `value.ToString()` if `value` is non-null.  If `value` is `null` this is rendered as `<null>`.
+
+6. The `PrintfFormat` type in FSharp.Core is extended as follows:
+
+```
+open System
+
+type PrintfFormat<'Printer,'State,'Residue,'Result>
+    // Existing
+    new: value: string -> PrintfFormat<'Printer,'State,'Residue,'Result>
+    member Value: string
+    
+    // New
+    new: value: string * captures: obj[] * types: Type[] -> PrintfFormat<'Printer,'State,'Residue,'Result>
+    member Captures: obj[]
+    member Types: Type[]
+    member ToFormattableString: unit -> FormattableString
+
+type PrintfFormat<'Printer,'State,'Residue,'Result,'Tuple>
+    //Exisiting
+    new: value: string -> PrintfFormat<'Printer,'State,'Residue,'Result,'Tuple>
+    
+    // New
+    new: value: string * captures: obj[] * types: Type[] -> PrintfFormat<'Printer,'State,'Residue,'Result,'Tuple>
 ```
 
-After splitting:
+We disallow a mix of `%d` and `%d{expr}` specifiers in a single format string.
 
-```fsharp
-Text("%d"); Expression(foo); Text(%d); Expression(bar.bar)
-```
 
-Final result
+### Tooling
 
-```fsharp
-String.Concat([| "%d"; box foo; "%d"; box (bar.baz) |])
-```
+The compiler service tooling is adjusted to account for understanding when we're in an interoplated context (and complete the `}` with brace completion).
 
 ### Drawbacks
 
@@ -66,20 +100,13 @@ This adds yet another way of formatting strings, on top of `string.Format` and a
 
 #### Syntax
 
-The C# syntax uses curly braces to delineate the embedded expressions:
-
-```fsharp
-printf "some text %{expression} some more text"
-```
-This seems to be better liked alternative than the parens. (The original syntax was proposed before C# syntax was known.)
+An initial version of this RFC proposed `sprintf "%d(expression)"` as the form for interpolated strings.
 
 There are many other options, mostly taken from other languages: `${expr}`, `${expr}`,`#expr`, `#{expr}`.
 
-Another alternative is to prefix the whole string and use simple curly braces: `printf $"some text {expr} some more text"`.
-
 #### No printf
 
-The interpolated string currently needs to be an argument to `printf`. In most other languages, this need not be the case. E.g. compare to C# where the string is simply prepended with a `$` sign. Similarly in F# `printf` could be optional or shortened using a symbol in front of the string.
+An initial version of this RFC proposed the interpolated be an argument to `printf`. In most other languages, this need not be the case. E.g. compare to C# where the string is simply prepended with a `$` sign. Similarly in F# `printf` could be optional or shortened using a symbol in front of the string.
 
 #### Extensibility
 
@@ -91,28 +118,12 @@ The leading `f` indicates that `sprintf` like formatting is to be used, but we c
 
 There is also some overlap here with extensible `sprintf` formatting so perhaps a middle ground is to allow the leading character to specify the processing of the arguments like you can do with `kprintf` as for example described [here](https://bugsquash.blogspot.co.uk/2010/07/abusing-printfformat-in-f.html).
 
+
 ### Open questions:
 
 * Should the embedded expressions be restricted to some subset of possible F# expressions to prevent abuse? If so, how are the expression restricted?
     * One proposal is to restrict to identifiers and dotted names.
     * Depending on the restriction, this may exclude valid use cases. Many examples given include simple computations and function calls. Also a restriction increases complexity, as parsing and checking in an embedded expression has different rules which need to be checked and implemented separately.
-* How do we add format specifiers to interpolated strings? There are several suggestions:
-    * Before the embedded expression: `"text %02d(expr) text"` @latkin notes that this is a breaking change.
-    * After the embedded expression `"text %(expr)02d text"`
-    * Inside the embedded expression, specifier first, separated by colon `:`: `"text %(02d:expr) text"`.
-    * Inside the embedded expression, expression first, then specifier separated by column `,`: `"text %(expr, 02d) text"`.
-* Is the set of available format specifiers the same as the one that is allowed for `printf`? Some have proposed extra specifiers for interpolated strings. Also the full set of `printf` format strings may be overkill: effectively users already denote what they want to print.
-* As opposed to the `printf` format string, in interpolated strings the format specifiers can be omitted. That means that the compiler needs to choose a reasonable default, based on the type of the embedded expression.
-    * The current prototype chooses `%O` for everything. This doesn't work well with F# types, for which `%A` would be a better choice. Also, `%O` allows culture-specific behavior to seep in. But `%A` across the board doesn't work well either, for example for simple strings.
-    * So it seems we need some type directed behavior here, but this needs to be specified.
-* Could you use a mix of `%d` and `%(expr)` specifiers in a single format string? It seems nice to allow this, but it will likely increase implementation complexity.
-* Culture needs to be considered. In C#'s string interpolation, the result can be implicitly converted to `IFormattable` which can then in turn be converted to a string by passing in a `CultureInfo`.
-* Localization needs to be considered. In C#'s string interpolation, the result can be implicitly converted to `FormattableString` which allows you to inspect the objects that result from the interpolation computations, which can (among other things) be used for localization.
-* As for implementation strategy, is the general idea of implementing this feature entirely on the semantic level acceptable?
-
-### Detailed Changes to Language Specification
-
-TBD
 
 [2]:http://en.wikipedia.org/wiki/String_interpolation
 [4]:http://msdn.microsoft.com/en-us/library/system.string.concat(v=vs.110).aspx
