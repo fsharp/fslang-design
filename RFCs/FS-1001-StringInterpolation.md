@@ -3,8 +3,8 @@
 
 There is an approved-in-principle [proposal](http://fslang.uservoice.com/forums/245727-f-language/suggestions/6002107-steal-nice-println-syntax-from-swift) to extend the existing printf functionality in the F# language design with [string interpolation][2]. To discuss this design please us [design discussion thread][7].
 
-  * [ ] Discussion: [under discussion](https://github.com/fsharp/FSharpLangDesign/issues/6)
-  * [ ] Implementation: [Proof of concept submitted](https://github.com/Microsoft/visualfsharp/pull/921)
+  * [ ] Discussion: [under discussion](https://github.com/fsharp/fslang-design/issues/368)
+  * [ ] Implementation: [in progress](https://github.com/dotnet/fsharp/pull/6770)
 
 ### Summary
 
