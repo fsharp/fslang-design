@@ -19,12 +19,6 @@ $"I say {x} is one and %0.2f{pi} is pi and %20s{text} are dogs"
 
 Further, some extensions, alignments and adjustments are made to existing format strings.
 
-### Links
-
-* [F# printf formats](https://msdn.microsoft.com/en-us/visualfsharpdocs/conceptual/core.printf-module-%5Bfsharp%5D?f=255&MSPPError=-2147217396)
-* [C# string interpolation docs](https://msdn.microsoft.com/en-us/library/dn961160.aspx)
-* [Swift string interpolation](https://developer.apple.com/library/ios/documentation/Swift/Conceptual/Swift_Programming_Language/StringsAndCharacters.html)
-
 ### Motivation
 
 String interpolation improves readability and reduces errors by staying visually closer to the end result.
@@ -127,8 +121,9 @@ There is also some overlap here with extensible `sprintf` formatting so perhaps 
 
 * Depending on the restriction, this may exclude valid use cases. Many examples given include simple computations and function calls. Also a restriction increases complexity, as parsing and checking in an embedded expression has different rules which need to be checked and implemented separately.
     
-[2]:http://en.wikipedia.org/wiki/String_interpolation
-[4]:http://msdn.microsoft.com/en-us/library/system.string.concat(v=vs.110).aspx
-[5]:http://msdn.microsoft.com/en-us/library/system.object.tostring(v=vs.110).aspx
-[6]:http://msdn.microsoft.com/en-us/library/ee370560.aspx
-[7]:https://github.com/fsharp/FSharpLangDesign/issues/6
+### Links
+
+* [F# printf formats](https://msdn.microsoft.com/en-us/visualfsharpdocs/conceptual/core.printf-module-%5Bfsharp%5D?f=255&MSPPError=-2147217396)
+* [C# string interpolation docs](https://msdn.microsoft.com/en-us/library/dn961160.aspx)
+* [Swift string interpolation](https://developer.apple.com/library/ios/documentation/Swift/Conceptual/Swift_Programming_Language/StringsAndCharacters.html)
+* http://en.wikipedia.org/wiki/String_interpolation
