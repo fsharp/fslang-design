@@ -124,6 +124,8 @@ There is also some overlap here with extensible `sprintf` formatting so perhaps 
 * Should the embedded expressions be restricted to some subset of possible F# expressions to prevent abuse? If so, how are the expression restricted?
     * One proposal is to restrict to identifiers and dotted names.
     * Depending on the restriction, this may exclude valid use cases. Many examples given include simple computations and function calls. Also a restriction increases complexity, as parsing and checking in an embedded expression has different rules which need to be checked and implemented separately.
+    
+* The format specifier `%a` doesn't really work with `IFormatProvider`  - perhaps we can alter the expected input signature of a custom formatting function, from `'State -> 'a -> 'Result` to `'State -> IFormatProvider -> 'a -> 'Result`
 
 [2]:http://en.wikipedia.org/wiki/String_interpolation
 [4]:http://msdn.microsoft.com/en-us/library/system.string.concat(v=vs.110).aspx
