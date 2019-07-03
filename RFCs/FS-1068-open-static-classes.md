@@ -48,13 +48,12 @@ type C =
 open C
 Pi
 ```
-*  There is a question as to whether we add `[<Static>]` or `static type C = `... 
-
-* The RFC will explain the pros and cons of this feature (and the potential for its abuse).
 
 * The implementation is not large but intrudes a little on name resolution and we should take care to assess potential ramifications of those changes
 
 * The design has an interaction with type providers: type providers can provide static classes, hence this would allow type providers to provide "unqualified" names.  This is no doubt useful for some projections where the natural thing is unqualified, e.g. the "R" type provider always required `R.plot` etc.
+
+* Adding `RequireQualifiedNameAttribute(true)` on a static class, prevents it being opened, as for F# modules.
 
 * The design has an interaction with the F#-only feature "static" extension members, e.g. this works:
 
@@ -66,6 +65,7 @@ open System.Math
 Pi
 ```
 
+* Only static classes may be opened.  In C#, any class can be opened and its static content made available.  This is not the case in F#.
 
 ## Code samples
 
@@ -81,7 +81,9 @@ This feature should only be used very very carefully.
 # Alternatives
 [alternatives]: #alternatives
 
-The main alternative is "don't do this"
+* The main alternative is "don't do this"
+
+* We have an alternative to allow any classes to be opened.  In C#, any class can be opened using `using static System.String`, and its static content made available.  We decided to restrict the feature to static classes only in F# as this appears to be its intended use case.
 
 # Compatibility
 [compatibility]: #compatibility
@@ -91,7 +93,5 @@ This is a non-breaking change.
 # Unresolved questions
 [unresolved]: #unresolved-questions
 
-* [ ] Resolve how static classes are defined in F#
-* [ ] Respect and test for RequireQualifiedNameAttribute(true) on a static class, that prevents it being opened, or at least gives a warning, as for F# modules.
-
+none
 
