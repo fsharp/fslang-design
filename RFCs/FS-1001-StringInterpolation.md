@@ -1,14 +1,15 @@
 
 # F# RFC FS-1001 - String Interpolation
 
-There is an approved-in-principle [proposal](http://fslang.uservoice.com/forums/245727-f-language/suggestions/6002107-steal-nice-println-syntax-from-swift) to extend the existing printf functionality in the F# language design with [string interpolation][2]. To discuss this design please us [design discussion thread][7].
+There is an approved-in-principle [proposal](http://fslang.uservoice.com/forums/245727-f-language/suggestions/6002107-steal-nice-println-syntax-from-swift) to extend the existing printf functionality in the F# language design with string interpolation. 
 
-  * [ ] Discussion: [under discussion](https://github.com/fsharp/fslang-design/issues/368)
-  * [ ] Implementation: [in progress](https://github.com/dotnet/fsharp/pull/6770)
+* [ ] Discussion: [under discussion](https://github.com/fsharp/fslang-design/issues/368)
+
+* [ ] Implementation: [in progress](https://github.com/dotnet/fsharp/pull/6770)
 
 ### Summary
 
-This adds a new expresssion form called an interpolated string:
+A new expresssion form called an interpolated string is added. 
 
 ```fsharp
 let x = 1
@@ -17,7 +18,7 @@ let text = "cats"
 $"I say {x} is one and %0.2f{pi} is pi and %20s{text} are dogs"
 ```
 
-Further, some extensions, alignments and adjustments are made to existing format strings.
+Interpolation fills can be both untyped `{x}` or typed `%d{x}`.  Untyped locations are interpreted as `%O{x}`, except that `null` values are formatted as the empty string.
 
 ### Motivation
 
