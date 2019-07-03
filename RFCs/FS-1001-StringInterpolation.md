@@ -67,7 +67,7 @@ Use cases include any for which printf and variants are currently used: console 
    
    - If interpreted as type `FormattableString` or `IFormattable` then an implicit creation of a `PrintfFormat` capturing the interpolated fills followed by `.ToFormattableString()` and an upcast if necessary.
 
-5. The set of acceptable printf formats is extended to include `%O` patterns with .NET formatting, using `%(dotnetAlignment,dotnetFormatString)O`.  Once a value is available such an expression is formatted using `System.String.Format("{0:dotnetAlignment,dotnetFormatString}", value)`.  If `dotnetAlignment` and `dotnetFormatString` are both missing then this is equivalent to `value.ToString()` if `value` is non-null.  If `value` is `null` this is rendered as `<null>`.
+5. The set of acceptable printf formats is extended to include `%O` patterns with .NET formatting, using `%(dotnetAlignment,dotnetFormatString)O`.  Once a value is available such an expression is formatted using `System.String.Format("{0:dotnetAlignment,dotnetFormatString}", value)`.  If `dotnetAlignment` and `dotnetFormatString` are both missing then this is equivalent to `value.ToString()` if `value` is non-null.  If `value` is `null` then for non-interpolated format strings this is formatted as `<null>`.  For interpolated format strings it is formatted as the empty string.
 
 6. The `PrintfFormat` type in FSharp.Core is extended as follows:
 
@@ -96,6 +96,9 @@ type PrintfFormat<'Printer,'State,'Residue,'Result,'Tuple>
 7. In an interpolation string, when an unescaped `{` is met, a new evaluation context is created, and then an interpolated expression is expected. An additional `}` that does not belong to the interpolated expression closes the evaluation context. Multiple interpolated expressions are evaluated left-to-right, and do not share the same evaluation context.
 
 We disallow a mix of `%d` and `%d{expr}` specifiers in a single format string, as shown in 3. To put it the other way, an interpolation string does not have unfilled parameters or curried forms, and a "conventional" string does not have filled parameters.
+
+Note that `null` is formatted as the empty string for interpolated strings, and as `<null>` for any `%O` in existing `printf` format strings.
+
 
 ### Tooling
 
