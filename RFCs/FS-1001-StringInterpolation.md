@@ -39,10 +39,17 @@ Use cases include any for which printf and variants are currently used: console 
    * Unchecked ".NET-style" fills: `{<interpolationExpression>[,<dotnetAlignment>][:<dotnetFormatString>]}`, e.g. `{x}` or `{y:N4}`.
 
    .NET-style fills are actually a shortcut for a `%O` printf pattern .....`%(dotnetAlignment,dotnetFormatString)O{interpolationExpression}..."`.
+   A verbatim interpolation string `$@"...{}..."` or `@$"...{}...` is the interpolated counterpart of a verbatim string; A multiline interpolation string `$"""...{}..."""` is the interpolated counterpart of a multiline string.
+   A literal `{` or `}` character, paired or not, must be escaped (by doubling) in an interpolation string.
+
 
 2. An interpolation string is checked as type `string`, `PrintfFormat`, `FormattableString` or `IFormattable`. The choice is based on the known type against which the expression is checked. We first try to unify to `string` and, if that fails, test for the other known types without unifying.
 
    Existing string literals continue to be interpreted as type `string` or `PrintfFormat` unchanged. The choice is based on the known type against which the expression is checked.
+   Some background information about the types:
+   - A `FormattableString` is a C#-style format string with parameters captured. It allows one to first pack the format string and the parameters, and then format with different cultural conventions later -- the `ToString` method accepts a `IFormatProvider` which carries cultural formatting conventions. 
+   - A `IFormatProvider` is the standard way of supplying cultural formatting conventions, and custom formatting behaviors in .NET; For example, `System.Globalization.CultureInfo` implements `IFormatProvider`.
+   - A `IFormattable` is an abstraction of formattable stuff. The `FormattableString` implements this (so, basically the same thing). Note that `FormattableString` is net46+ only.
 
 3. Interpolation fills (e.g `%d{x}`) may only be used in interpolation strings.  Unfilled printf-style placeholders (e.g. `%d`) may only be present for existing string literals.
 
@@ -80,8 +87,9 @@ type PrintfFormat<'Printer,'State,'Residue,'Result,'Tuple>
     new: value: string * captures: obj[] * types: Type[] -> PrintfFormat<'Printer,'State,'Residue,'Result,'Tuple>
 ```
 
-We disallow a mix of `%d` and `%d{expr}` specifiers in a single format string.
+7. In an interpolation string, when an unescaped `{` is met, a new evaluation context is created, and then an interpolated expression is expected. An additional `}` that does not belong to the interpolated expression closes the evaluation context. Multiple interpolated expressions are evaluated left-to-right, and do not share the same evaluation context.
 
+We disallow a mix of `%d` and `%d{expr}` specifiers in a single format string, as shown in 3. To put it the other way, an interpolation string does not have unfilled parameters or curried forms, and a "conventional" string does not have filled parameters.
 
 ### Tooling
 
@@ -126,5 +134,8 @@ There is also some overlap here with extensible `sprintf` formatting so perhaps 
 
 * [F# printf formats](https://msdn.microsoft.com/en-us/visualfsharpdocs/conceptual/core.printf-module-%5Bfsharp%5D?f=255&MSPPError=-2147217396)
 * [C# string interpolation docs](https://msdn.microsoft.com/en-us/library/dn961160.aspx)
+* [.NET FormattableString class](https://docs.microsoft.com/en-us/dotnet/api/system.formattablestring?view=netframework-4.8)
+* [.NET IFormatProvider example](https://docs.microsoft.com/en-us/dotnet/standard/base-types/how-to-define-and-use-custom-numeric-format-providers?view=netframework-4.8)
 * [Swift string interpolation](https://developer.apple.com/library/ios/documentation/Swift/Conceptual/Swift_Programming_Language/StringsAndCharacters.html)
 * http://en.wikipedia.org/wiki/String_interpolation
+
