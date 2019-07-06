@@ -96,10 +96,6 @@ let i' =
 printfn "%d" i'.GetNumber() // 13
 ```
 
-## Reabstracting through inheritance
-
-TODO - only applicable when inheriting from an interface with a DIM on it.
-
 # Drawbacks
 
 This is an inheritance-based feature. Since F# code tends towards expressions and function composition over inheritance, this is of minimal value to most F# programmers. It also adds another vector by which someone could write inheritance-oriented F# code. However, it has been determined that the following make it worth doing this interop work:
