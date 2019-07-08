@@ -85,14 +85,14 @@ open Dims
 
 type C() =
     interface IHaveADefaultMember with
-        override __.GetNumber() = 13
+        member __.GetNumber() = 13
 
 let i = C() :> IHaveADefaultMember
 printfn "%d" i.GetNumber() // 13
 
 let i' =
     { new IHaveADefaultMember
-        override __.GetNumber() = 13 }
+        member __.GetNumber() = 13 }
 printfn "%d" i'.GetNumber() // 13
 ```
 
