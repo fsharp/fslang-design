@@ -13,7 +13,7 @@ type PensionData =
 generates a constructor which can be used in C#: 
 
 ```csharp
-PensionData r = PensionData("Adam",10)
+var r = PensionData("Adam",10)
 ```
 
 Using this constructor is not currently allowed in F#:
@@ -43,6 +43,14 @@ Therefore it would be good to have, **in addition to** the existing F#-specific 
 
 See summary.
 
+Note that the existing constructor has named arguments, as in the following currently valid C#, which would automatically apply to F#:
+
+```csharp
+var r = PensionData(name: "Adam",10)
+```
+
+If [optional record fields](https://github.com/fsharp/fslang-suggestions/issues/617) are implemented, they should be implemented in the constructor as optional named arguments.
+
 # Drawbacks
 
 Organizations preferring using the existing syntax and wanting to enforce this will need to do so through a style guide.
@@ -56,8 +64,40 @@ Do nothing.
 
 # Compatibility
 
-This is not a breaking change.
+This should not be implemented as a breaking change.
+
+The type name should only be treated as the constructor where there is no other binding with the same name in scope.
+
+For example, similarly to other classes:
+```fsharp
+type C(a:int) = member t.A = a
+let C(x:int) = ()
+C // the second C takes precedence
+
+type R = { A: int }
+let R(x:int) = ()
+R // the second R should take precedence
+```
+
+Unlike other classes:
+```fsharp
+let C(x:int) = ()
+type C(a:int) = member t.A = a
+let z = C 3 // z has type C
+
+let R(x:int) = ()
+type R = { A: int }
+let z = R 3 // Currently this is valid code and z has type unit.
+// This should remain the case to avoid breaking changes.
+```
+
 
 # Unresolved questions
 
-None.
+This proposal could be extended to include pattern matching:
+
+```fsharp
+match r with
+| PensionData(name, years) -> sprintf "%s will probably retire in %i years." name years
+```
+
