@@ -90,7 +90,9 @@ let subset = {| data with- Z; W
 
 That is to say, it is possible to exclude at least 1 label and construct at least 1 new label for the result anonymous record.
 
-Order does not matter. A `with-` can be specified before or after a `with`.
+Order matters in one case: using a `with-` for a label added by a `with`. This is an error, since you cannot subtract something that does not exist. If someone wishes to drop a label that they just added, they should specify `with` first.
+
+Otherwise, order does not matter. A `with-` can be specified before or after a `with`.
 
 It is possible with `with` and `with-` a label with the same name. The result will be that it does not exist in the result anonymous record. This is akin to allowing you to write `let x = 1 + 1 - 1`.
 
