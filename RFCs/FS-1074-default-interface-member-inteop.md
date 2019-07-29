@@ -96,6 +96,46 @@ let i' =
 printfn "%d" i'.GetNumber() // 13
 ```
 
+## Explicit Interface Implementation
+
+The need for an explicit interface implementation on a class will be aware of default interface implementations.
+
+For example:
+
+```csharp
+public interface IA
+{
+    void M()
+    {
+        // default implementation
+    }
+}
+
+public interface IB : IA
+{
+    void MB();     
+}
+
+public interface IC : IA
+{
+    void MC();
+}
+```
+
+```fsharp
+type Test () =
+
+    interface IB with
+
+        member __.MB() = ()
+
+    interface IC with
+
+        member __.MC() = ()
+```
+
+The user does not need to be explicit with `IA` because all the slots for `IA` have a default implementation. `IA.M` has a most specific implementation, which is `IA`; there is no ambiguity here. If `IA.M` did not have a default implementation, 
+
 # Drawbacks
 
 This is an inheritance-based feature. Since F# code tends towards expressions and function composition over inheritance, this is of minimal value to most F# programmers. It also adds another vector by which someone could write inheritance-oriented F# code. However, it has been determined that the following make it worth doing this interop work:
