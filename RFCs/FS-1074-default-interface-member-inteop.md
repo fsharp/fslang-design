@@ -134,7 +134,7 @@ type Test () =
         member __.MC() = ()
 ```
 
-The user does not need to be explicit with `IA` because all the slots for `IA` have a default implementation. `IA.M` has a most specific implementation, which is `IA`; there is no ambiguity here. If `IA.M` did not have a default implementation, 
+The user does not need to be explicit with `IA` because all the slots for `IA` have a default implementation. `IA.M` has a most specific implementation, which is `IA`; there is no ambiguity here.
 
 # Drawbacks
 
