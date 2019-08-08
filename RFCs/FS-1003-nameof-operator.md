@@ -38,6 +38,32 @@ The name of the operator is `nameof`
 
 This substitution should be done at compile time, no performance impact expected
 
+### Valid names
+
+Names of members must be static or come from an instance.
+
+So the following code that attempts to get the name of an instance property with an instance of its containing class is not valid:
+
+```fsharp
+type C() =
+    member __.M = ()
+    
+nameof C.M // Error!
+```
+
+But the following are valid::
+
+```fsharp
+type C() =
+    static member M = ()
+    member __.M2 = ()
+    
+nameof C.M // Yay :)
+
+let c = C()
+nameof c.M2 // Yay :)
+```
+
 ### Testing considerations
 
 The standard range of testing  considerations for F# library functions apply.
