@@ -3,10 +3,6 @@
 The design suggestion [Open static classes](https://github.com/fsharp/fslang-suggestions/issues/383) has been marked "approved in principle".
 This RFC covers the detailed proposal for this suggestion.
 
-* [x] Approved in principle
-* [ ] [Discussion thread](https://github.com/fsharp/fslang-design/issues/352)
-* [x] [Implementation](https://github.com/Microsoft/visualfsharp/pull/6309)
-
 
 # Summary
 [summary]: #summary
@@ -26,7 +22,6 @@ val it : float = 1.0
 val it : float = 1.0
 ```
 
-
 # Motivation
 [motivation]: #motivation
 
@@ -34,7 +29,6 @@ This greatly increases the expressivity of F# DSLs by allowing method-API facili
 arguments and type-directed overloading to be used in the DSL design.
 
 Additionally, important C# DSL APIs are starting to appear that effectively require this.
-
 
 # Detailed design
 [design]: #detailed-design
@@ -48,6 +42,14 @@ type C =
 open C
 Pi
 ```
+
+TBD - rules on:
+
+* Resolving overloads so that shadowing does not apply
+* Resolving methods vs. properties and who wins
+* Resolving methods vs. properties for type extensions
+
+## OLD DESIGN NOTES - NOT A DESIGN FOLLOWS
 
 * The implementation is not large but intrudes a little on name resolution and we should take care to assess potential ramifications of those changes
 
