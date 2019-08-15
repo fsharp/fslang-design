@@ -62,7 +62,15 @@ open C
 M(2) |> ignore
 ```
 
-However, **methods are not functions**, so very different rules apply beyond simple cases like the above. This primarily concerns name resolution when overloads are involved, or when considering whether or not we resolve a method or a property first.
+However, **members are not functions**, so very different rules apply beyond simple cases like the above. This primarily concerns name resolution when overloads are involved, or when considering whether or not we resolve a method or a property first.
+
+Additionally, visible static fields should also be accessible. Example:
+
+```fsharp
+open System.Data.Common.DbMetaDataColumnNames
+
+printfn "%s" ColumnSize
+```
 
 ## Only static classes can be opened
 
