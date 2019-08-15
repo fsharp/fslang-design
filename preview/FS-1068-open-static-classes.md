@@ -186,7 +186,7 @@ M(1)
 
 ### Background: name resolution in the context of a type
 
-Type-directed member resolution in F# prefers properties over methods. Section 14.1.5 states:
+Type-directed member in section 14.1.5 states:
 
 > Name Resolution for Members is a sub-procedure used to resolve `.member-ident[.rest]` to a member, in the context of a particular type `type`.
 > ...
@@ -234,11 +234,34 @@ Because APIs utilizing static members generally use methods instead of propertie
 # Alternatives
 [alternatives]: #alternatives
 
-We have an alternative to allow any classes or structs to be opened. In C#, any class or struct can be opened using `using static System.String`, and its static content made available. This can be possibly done in the future, as an extension of this feature. But it is currently considered out of scope.
+## Open anything
+
+In C#, any class or struct can be opened using `using static System.String`, and its static content made available. This can be possibly done in the future, as an extension of this feature.
+
+This would enable some things like this:
+
+```fsharp
+open System.Numerics.Vector2
+
+let v1 = Vector2(1.0f, 2.0f)
+let v2 = Vector2(1.0f, 2.0f)
+
+Dot(v1, v2) // No need to fully qualify 'Dot'
+```
+
+But it is currently considered out of scope.
+
+# Compatibility
+[compatibility]: #compatibility
+
+This is a non-breaking change.
+
+# Unresolved questions
+[unresolved]: #unresolved-questions
 
 ## Resolving static classes with generic parameters
 
-The design currently does not account for opening static classes with a generic type parameter. C# allows this:
+C# allows for opening static classes with generic parameters like this:
 
 ```csharp
 using static MyStaticClass<int>;
@@ -254,14 +277,6 @@ type C =
     static member M(x: 'T) = ()
 ```
 
-So there is no apparent requirement to allow for something like `open C<int>` because there is no need to express a `C<'T>` in F# to allow for having static members that use generics.
+So for an F#-only perspective, there is no apparent requirement to allow for something like `open C<int>` because there is no need to express a `C<'T>` in F# to allow for having static members that use generics.
 
-# Compatibility
-[compatibility]: #compatibility
-
-This is a non-breaking change.
-
-# Unresolved questions
-[unresolved]: #unresolved-questions
-
-none
+However, from an interop perspective, this may be required as some APIs may use generic type parameters on the static class, forcing users to open these with a concrete substitution when using them.
