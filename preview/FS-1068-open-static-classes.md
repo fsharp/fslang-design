@@ -188,15 +188,16 @@ Because overloads coming from multiple opened static classes are not resolved in
 
 Because APIs utilizing static members generally use methods instead of properties, we prefer methods over properties and adjust the previous ordered-list as such:
 
-> Try to resolve `member-ident` to one of the following, in order:
-> a. A union case.
-> **b. A method group.**
-> c. A property group.
-> d. A field.
-> e. An event.
-> **f. A method group of extension members, by consulting the `ExtensionsInScope` table.**
-> g. A property group of extension members , by consulting the `ExtensionsInScope` table.
-> h. A nested type `type-nested`. Recursively resolve .rest if it is present, otherwise return `type-nested`
+Try to resolve `member-ident` to one of the following, in order:
+
+1. A union case.
+**2. A method group.**
+3. A property group.
+4. A field.
+5. An event.
+**6. A method group of extension members, by consulting the `ExtensionsInScope` table.**
+7. A property group of extension members , by consulting the `ExtensionsInScope` table.
+8. A nested type `type-nested`. Recursively resolve .rest if it is present, otherwise return `type-nested`
 
 That is to say, we will resolve methods over properties in the context of opening static classes or static members extending a static class.
 
