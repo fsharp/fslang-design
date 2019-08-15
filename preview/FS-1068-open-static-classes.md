@@ -182,47 +182,23 @@ open B
 M(1)
 ```
 
-## Resolving methods over properties
-
-### Background: name resolution in the context of a type
-
-Type-directed member in section 14.1.5 states:
-
-> Name Resolution for Members is a sub-procedure used to resolve `.member-ident[.rest]` to a member, in the context of a particular type `type`.
-> ...
-> At each `type`, try to resolve `member-ident` to one of the following, in order:
-> a. A union case of `type`.
-> **b. A property group of `type`.**
-> c. A method group of `type`.
-> d. A field of `type`.
-> e. An event of `type`.
-> **f. A property group of extension members of `type`, by consulting the `ExtensionsInScope` table.**
-> g. A method group of extension members of `type`, by consulting the `ExtensionsInScope` table.
-> h. A nested `type` `type-nested` of `type`. Recursively resolve .rest if it is present, otherwise return `type-nested`
-
-That is to say, the compiler will prefer a _property_ of name `M` over a _method_ of name `M`. This also applies to the resolution of members specified in type extension.
-
-(TODO - example)
-
-## Name resolution for overloads coming from multiple static classes
+### Name resolution for members coming from different static classes or type extensions
 
 Because overloads coming from multiple opened static classes are not resolved in the context of a type, we do not require compatibility with the existing rules for resolution.
 
 Because APIs utilizing static members generally use methods instead of properties, we prefer methods over properties and adjust the previous ordered-list as such:
 
-(TODO - confirm)
+> Try to resolve `member-ident` to one of the following, in order:
+> a. A union case.
+> **b. A method group.**
+> c. A property group.
+> d. A field.
+> e. An event.
+> **f. A method group of extension members, by consulting the `ExtensionsInScope` table.**
+> g. A property group of extension members , by consulting the `ExtensionsInScope` table.
+> h. A nested type `type-nested`. Recursively resolve .rest if it is present, otherwise return `type-nested`
 
-> At each `type`, try to resolve `member-ident` to one of the following, in order:
-> a. A union case of `type`.
-> **b. A method group of `type`.**
-> c. A property group of `type`.
-> d. A field of `type`.
-> e. An event of `type`.
-> **f. A method group of extension members of `type`, by consulting the `ExtensionsInScope` table.**
-> g. A property group of extension members of `type`, by consulting the `ExtensionsInScope` table.
-> h. A nested type `type-nested` of `type`. Recursively resolve .rest if it is present, otherwise return `type-nested`
-
-(TODO - example)
+That is to say, we will resolve methods over properties in the context of opening static classes or static members extending a static class.
 
 # Drawbacks
 [drawbacks]: #drawbacks
