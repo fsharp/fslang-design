@@ -27,6 +27,8 @@ val it : float = 1.0
 
 This greatly increases the expressivity of F# DSLs by allowing method-API facilities such as named arguments, optional arguments and type-directed overloading to be used in the DSL design.
 
+Type providers can provide static classes, hence this would allow type providers to provide "unqualified" names. This useful for some projections where the natural thing is unqualified, e.g. the "R" type provider always required `R.plot` etc. With this feature, `T.plot` can now be `plot`.
+
 Additionally, important C# DSL APIs are starting to appear that effectively require this.
 
 # Background: static classes
@@ -80,7 +82,7 @@ As with modules, application of this attribute to a static class in F# will requ
 [<AbstractClass; Sealed; RequireQualifiedAccess>]
 type C =
     static member M(x: int) = x * 2
-    
+
 open C // Compile error
 M(12) // 'M' is not recognized
 ```
@@ -93,7 +95,7 @@ Also like modules, specifying `AutoOpen` on a static class automatically brings 
 [<AbstractClass; Sealed; AutoOpen>]
 type C =
     static member M(x: int) = x * 2
-    
+
 M(12) // Can call 'M' without opening 'C'
 ```
 
@@ -104,14 +106,42 @@ It is possible to use type extensions to extend static classes. Members defined 
 ```fsharp
 type System.Math with
     static member MyPI = 3.14
-    
+
 open System.Math
 MyPI // works!
 ```
 
-Resolving members on type extensions works the same as with non-static extensions. These rules are not adjusted.
+Resolving members on type extensions works the same as with non-static extensions. These rules are not adjusted. That is, members defined in type extensions don't get magically attached to an already-opened static class. The following code will not compile because the `N` member is not in scope:
 
-(TODO - example)
+```fsharp
+[<AbstractClass; Sealed>]
+type C =
+    static member M(x: int) = x * 2
+
+open C
+
+type C with
+    static member N(x: float) = ()
+
+M(12)
+N(12.0) // Compile error, not in scope
+```
+
+The `open C` declaration must be placed below the type extension:
+
+```fsharp
+[<AbstractClass; Sealed>]
+type C =
+    static member M(x: int) = x * 2
+
+type C with
+    static member N(x: float) = ()
+
+open C
+
+M(12)
+N(12.0) // Works!
+```
 
 ## Resolving overloaded methods
 
@@ -121,11 +151,11 @@ When multiple methods of the same name are in scope, they can be overloaded prov
 [<AbstractClass; Sealed>]
 type A =
     static member M(x: int) = x * 2
-    
+
 [<AbstractClass; Sealed>]
 type B =
     static member M(x: float) = x * 2.0
-    
+
 open A
 open B
 
@@ -140,11 +170,11 @@ If the signatures for `M` were not unique, then it would not be possible to call
 [<AbstractClass; Sealed>]
 type A =
     static member M(x: int) = x * 2
-    
+
 [<AbstractClass; Sealed>]
 type B =
     static member M(x: int) = x * 2
-    
+
 open A
 open B
 
@@ -158,19 +188,17 @@ M(1)
 
 Type-directed member resolution in F# prefers properties over methods. Section 14.1.5 states:
 
-> Name Resolution for Members is a sub-procedure used to resolve `.member-ident[.rest]` to a
-member, in the context of a particular type `type`.
+> Name Resolution for Members is a sub-procedure used to resolve `.member-ident[.rest]` to a member, in the context of a particular type `type`.
 > ...
-> At each type, try to resolve member-ident to one of the following, in order:
-> a. A union case of type.
-> **b. A property group of type.**
-> c. A method group of type.
-> d. A field of type.
-> e. An event of type.
-> **f. A property group of extension members of type, by consulting the ExtensionsInScope table.**
-> g. A method group of extension members of type, by consulting the ExtensionsInScope table.
-> h. A nested type type-nested of type. Recursively resolve .rest if it is present, otherwise return
-type-nested
+> At each `type`, try to resolve `member-ident` to one of the following, in order:
+> a. A union case of `type`.
+> **b. A property group of `type`.**
+> c. A method group of `type`.
+> d. A field of `type`.
+> e. An event of `type`.
+> **f. A property group of extension members of `type`, by consulting the `ExtensionsInScope` table.**
+> g. A method group of extension members of `type`, by consulting the `ExtensionsInScope` table.
+> h. A nested `type` `type-nested` of `type`. Recursively resolve .rest if it is present, otherwise return `type-nested`
 
 That is to say, the compiler will prefer a _property_ of name `M` over a _method_ of name `M`. This also applies to the resolution of members specified in type extension.
 
@@ -178,28 +206,23 @@ That is to say, the compiler will prefer a _property_ of name `M` over a _method
 
 ## Name resolution for overloads coming from multiple static classes
 
-Because overloads coming from multuple opened static classes are not resolved in the context of a type, we do not require compatibility with the existing rules for resolution.
+Because overloads coming from multiple opened static classes are not resolved in the context of a type, we do not require compatibility with the existing rules for resolution.
 
 Because APIs utilizing static members generally use methods instead of properties, we prefer methods over properties and adjust the previous ordered-list as such:
 
 (TODO - confirm)
 
-> At each type, try to resolve member-ident to one of the following, in order:
-> a. A union case of type.
-> **b. A method group of type.**
-> c. A property group of type.
-> d. A field of type.
-> e. An event of type.
-> **f. A method group of extension members of type, by consulting the ExtensionsInScope table.**
-> g. A property group of extension members of type, by consulting the ExtensionsInScope table.
-> h. A nested type type-nested of type. Recursively resolve .rest if it is present, otherwise return
-type-nested
+> At each `type`, try to resolve `member-ident` to one of the following, in order:
+> a. A union case of `type`.
+> **b. A method group of `type`.**
+> c. A property group of `type`.
+> d. A field of `type`.
+> e. An event of `type`.
+> **f. A method group of extension members of `type`, by consulting the `ExtensionsInScope` table.**
+> g. A property group of extension members of `type`, by consulting the `ExtensionsInScope` table.
+> h. A nested type `type-nested` of `type`. Recursively resolve .rest if it is present, otherwise return `type-nested`
 
 (TODO - example)
-
-## OLD DESIGN NOTES - NOT A DESIGN FOLLOWS
-
-* The design has an interaction with type providers: type providers can provide static classes, hence this would allow type providers to provide "unqualified" names.  This is no doubt useful for some projections where the natural thing is unqualified, e.g. the "R" type provider always required `R.plot` etc.
 
 # Drawbacks
 [drawbacks]: #drawbacks
@@ -212,6 +235,26 @@ type-nested
 [alternatives]: #alternatives
 
 We have an alternative to allow any classes or structs to be opened. In C#, any class or struct can be opened using `using static System.String`, and its static content made available. This can be possibly done in the future, as an extension of this feature. But it is currently considered out of scope.
+
+## Resolving static classes with generic parameters
+
+The design currently does not account for opening static classes with a generic type parameter. C# allows this:
+
+```csharp
+using static MyStaticClass<int>;
+```
+
+However, this is partly due to the fact that you _must_ parameterize either a method via `M<T>` or a class containing that member with `C<T>` to actually have something like a generic parameter as input to a member.
+
+F# does not have this restriction. That is, this F# code is not possible to write in C#:
+
+```fsharp
+[<AbstractClass; Sealed>]
+type C =
+    static member M(x: 'T) = ()
+```
+
+So there is no apparent requirement to allow for something like `open C<int>` because there is no need to express a `C<'T>` in F# to allow for having static members that use generics.
 
 # Compatibility
 [compatibility]: #compatibility
