@@ -254,6 +254,16 @@ type C =
     static member M(x: 'T) = ()
 ```
 
-So for an F#-only perspective, there is no apparent requirement to allow for something like `open C<int>` because there is no need to express a `C<'T>` in F# to allow for having static members that use generics.
+So for an F#-only perspective, there is no strong requirement to allow for something like `open C<int>` because there is no need to express a `C<'T>` in F# to allow for having static members that use generics.
 
-However, from an interop perspective, this may be required as some APIs may use generic type parameters on the static class, forcing users to open these with a concrete substitution when using them.
+There is a case that involves properties, where something like the following imposes a value restriction that requires parameterizing `C`:
+
+```fsharp
+[<AbstractClass; Sealed>]
+type C =
+    static member P: 'T = Unchecked.defaultof<'T> // value restriction; `T is inferred to be 'obj'
+```
+
+To make the property a generic return type, `C` must be made `C<'T>`, but then it cannot be opened.
+
+More commonly, from an interop perspective, opening a generic static class may be required as some APIs may use generic type parameters on the static class, forcing users to open these with a concrete substitution when using them.
