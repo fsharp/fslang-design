@@ -72,6 +72,14 @@ open System.Data.Common.DbMetaDataColumnNames
 printfn "%s" ColumnSize
 ```
 
+Visible consts should also be allowed. Example:
+
+```fsharp
+open System.Math
+
+PI
+```
+
 ## Only static classes can be opened
 
 The corresponding feature in C# allows for any class or struct to be "opened", allowing you access to any static members defined on it. Such examples include the `Vector2` and `Vector3` structs, which contain static methods for operating on those data types.
