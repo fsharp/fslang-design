@@ -25,67 +25,193 @@ val it : float = 1.0
 # Motivation
 [motivation]: #motivation
 
-This greatly increases the expressivity of F# DSLs by allowing method-API facilities such as named arguments, optional
-arguments and type-directed overloading to be used in the DSL design.
+This greatly increases the expressivity of F# DSLs by allowing method-API facilities such as named arguments, optional arguments and type-directed overloading to be used in the DSL design.
 
 Additionally, important C# DSL APIs are starting to appear that effectively require this.
+
+# Background: static classes
+
+In .NET, "static classes" are abstract and sealed, containing only static members.
+
+To declare these in F#, you need to specify those attributes on a type:
+
+```fsharp
+[<AbstractClass; Sealed>]
+type C =
+    static member M(x: int) = x * 2
+
+C.M(2) |> ignore
+```
+
+A benefit to using these over module-bound functions is that you can take advantage of overloading and optional parameters. F# tooling will also provide more information in tooltips. The downside is that they are not functions, so you miss out on things like first-class functions (methods cannot take other methods as input, etc.).
 
 # Detailed design
 [design]: #detailed-design
 
-*  In .NET "static" classes  are abstract and sealed, containing only static members.  
-* In F# these are currently declared through
+Opening of static classes allows for treating a static class somewhat as if it were a module with module-bound functions inside of it. So the previous code sample could look like this:
+
 ```fsharp
-[<AbstractClass; Sealed>] 
+[<AbstractClass; Sealed>]
 type C =
-    static member Pi = 3.14
+    static member M(x: int) = x * 2
+
 open C
-Pi
+
+M(2) |> ignore
 ```
 
-TBD - rules on:
+However, **methods are not functions**, so very different rules apply beyond simple cases like the above. This primarily concerns name resolution when overloads are involved, or when considering whether or not we resolve a method or a property first.
 
-* Resolving overloads so that shadowing does not apply
-* Resolving methods vs. properties and who wins
-* Resolving methods vs. properties for type extensions
+## Only static classes can be opened
+
+The corresponding feature in C# allows for any class or struct to be "opened", allowing you access to any static members defined on it. Such examples include the `Vector2` and `Vector3` structs, which contain static methods for operating on those data types.
+
+This functionality is explicitly scoped out for now.
+
+## Attributes
+
+There are two relevant attributes that are also respected: `AutoOpen` and `RequireQualifiedAccess`.
+
+### `RequireQualifiedAccess`
+
+As with modules, application of this attribute to a static class in F# will require full qualification to use a member defined within.
+
+```fsharp
+[<AbstractClass; Sealed; RequireQualifiedAccess>]
+type C =
+    static member M(x: int) = x * 2
+    
+open C // Compile error
+M(12) // 'M' is not recognized
+```
+
+### `AutoOpen`
+
+Also like modules, specifying `AutoOpen` on a static class automatically brings its members into scope.
+
+```fsharp
+[<AbstractClass; Sealed; AutoOpen>]
+type C =
+    static member M(x: int) = x * 2
+    
+M(12) // Can call 'M' without opening 'C'
+```
+
+## Extending static classes
+
+It is possible to use type extensions to extend static classes. Members defined as type extensions are visible when opening these static classes:
+
+```fsharp
+type System.Math with
+    static member MyPI = 3.14
+    
+open System.Math
+MyPI // works!
+```
+
+Resolving members on type extensions works the same as with non-static extensions. These rules are not adjusted.
+
+(TODO - example)
+
+## Resolving overloaded methods
+
+When multiple methods of the same name are in scope, they can be overloaded provided that their signatures are unique:
+
+```fsharp
+[<AbstractClass; Sealed>]
+type A =
+    static member M(x: int) = x * 2
+    
+[<AbstractClass; Sealed>]
+type B =
+    static member M(x: float) = x * 2.0
+    
+open A
+open B
+
+// Both methods are resolved
+M(1) |> ignore
+M(1.0) |> ignore
+```
+
+If the signatures for `M` were not unique, then it would not be possible to call `M`. Full qualification is required, or if the source is available, a change to one of the methods is required:
+
+```fsharp
+[<AbstractClass; Sealed>]
+type A =
+    static member M(x: int) = x * 2
+    
+[<AbstractClass; Sealed>]
+type B =
+    static member M(x: int) = x * 2
+    
+open A
+open B
+
+// Error: ambiguous call
+M(1)
+```
+
+## Resolving methods over properties
+
+### Background: name resolution in the context of a type
+
+Type-directed member resolution in F# prefers properties over methods. Section 14.1.5 states:
+
+> Name Resolution for Members is a sub-procedure used to resolve `.member-ident[.rest]` to a
+member, in the context of a particular type `type`.
+> ...
+> At each type, try to resolve member-ident to one of the following, in order:
+> a. A union case of type.
+> **b. A property group of type.**
+> c. A method group of type.
+> d. A field of type.
+> e. An event of type.
+> **f. A property group of extension members of type, by consulting the ExtensionsInScope table.**
+> g. A method group of extension members of type, by consulting the ExtensionsInScope table.
+> h. A nested type type-nested of type. Recursively resolve .rest if it is present, otherwise return
+type-nested
+
+That is to say, the compiler will prefer a _property_ of name `M` over a _method_ of name `M`. This also applies to the resolution of members specified in type extension.
+
+(TODO - example)
+
+## Name resolution for overloads coming from multiple static classes
+
+Because overloads coming from multuple opened static classes are not resolved in the context of a type, we do not require compatibility with the existing rules for resolution.
+
+Because APIs utilizing static members generally use methods instead of properties, we prefer methods over properties and adjust the previous ordered-list as such:
+
+(TODO - confirm)
+
+> At each type, try to resolve member-ident to one of the following, in order:
+> a. A union case of type.
+> **b. A method group of type.**
+> c. A property group of type.
+> d. A field of type.
+> e. An event of type.
+> **f. A method group of extension members of type, by consulting the ExtensionsInScope table.**
+> g. A property group of extension members of type, by consulting the ExtensionsInScope table.
+> h. A nested type type-nested of type. Recursively resolve .rest if it is present, otherwise return
+type-nested
+
+(TODO - example)
 
 ## OLD DESIGN NOTES - NOT A DESIGN FOLLOWS
 
-* The implementation is not large but intrudes a little on name resolution and we should take care to assess potential ramifications of those changes
-
 * The design has an interaction with type providers: type providers can provide static classes, hence this would allow type providers to provide "unqualified" names.  This is no doubt useful for some projections where the natural thing is unqualified, e.g. the "R" type provider always required `R.plot` etc.
 
-* Adding `RequireQualifiedNameAttribute(true)` on a static class, prevents it being opened, as for F# modules.
-
-* The design has an interaction with the F#-only feature "static" extension members, e.g. this works:
-
-```fsharp
-type System.Math with 
-    static member Pi = 3.1415
-
-open System.Math
-Pi
-```
-
-* Only static classes may be opened.  In C#, any class can be opened and its static content made available.  This is not the case in F#.
-
-## Code samples
-
-See above
 # Drawbacks
 [drawbacks]: #drawbacks
 
-This feature should only be used very very carefully. 
-1. Code using this feature may be substantially less clear and harder to understand
-2. If multiple APIs are `open`'d with conflicting method sets then severe usability problems will occur.
-3. Adding methods to static classes can cause breaking changes or source code incompatibilities in client code using this feature.
+* This introduces another avenue to encounter issues when resolving overloads
+* This introduces more avenues to mix overloaded members with type inference, which can lead to source breaking changes if APIs defining those members add overloads over time
+* Code using this feature could be harder to understand without editor tooling
 
 # Alternatives
 [alternatives]: #alternatives
 
-* The main alternative is "don't do this"
-
-* We have an alternative to allow any classes to be opened.  In C#, any class can be opened using `using static System.String`, and its static content made available.  We decided to restrict the feature to static classes only in F# as this appears to be its intended use case.
+We have an alternative to allow any classes or structs to be opened. In C#, any class or struct can be opened using `using static System.String`, and its static content made available. This can be possibly done in the future, as an extension of this feature. But it is currently considered out of scope.
 
 # Compatibility
 [compatibility]: #compatibility
@@ -96,4 +222,3 @@ This is a non-breaking change.
 [unresolved]: #unresolved-questions
 
 none
-
