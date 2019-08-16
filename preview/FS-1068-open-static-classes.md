@@ -258,6 +258,18 @@ C# allows for opening static classes with generic parameters like this:
 
 ```csharp
 using static MyStaticClass<int>;
+
+M(12);
+```
+
+When opening different generic instantiations of `MyStaticClass`, the specialized members are viewed as overloaded methods:
+
+```csharp
+using static MyStaticClass<int>;
+using static MyStaticClass<string>;
+
+M(12); // This is one overload
+M("hello"); // This is another overload
 ```
 
 However, this is partly due to the fact that you _must_ parameterize either a method via `M<T>` or a class containing that member with `C<T>` to actually have something like a generic parameter as input to a member.
@@ -283,3 +295,5 @@ type C =
 To make the property a generic return type, `C` must be made `C<'T>`, but then it cannot be opened.
 
 More commonly, from an interop perspective, opening a generic static class may be required as some APIs may use generic type parameters on the static class, forcing users to open these with a concrete substitution when using them.
+
+Should this be done for F#, we'll also have to match how C# creates a method group based on specialized members coming from the opened generic static class.
