@@ -181,7 +181,7 @@ See also unresolved issues below.
 This would have been a breaking change.
 
 
-## Unresolved issues (for release from preview)
+## Unresolved issues (in preview)
 
 * [ ] `nameof` on an operator gives the compiled name of the operator
 
