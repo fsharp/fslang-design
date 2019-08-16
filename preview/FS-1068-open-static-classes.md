@@ -4,6 +4,13 @@ The design suggestion [Open static classes](https://github.com/fsharp/fslang-sug
 This RFC covers the detailed proposal for this suggestion.
 
 
+[Discussion thread](https://github.com/fsharp/fslang-design/issues/352)
+
+* [x] Approved in principle
+* [x] Details: [Resolved to Preview](https://github.com/fsharp/fslang-design/issues/352)
+* [x] Implementation: [Complete to Preview](https://github.com/dotnet/fsharp/pull/6325)
+
+
 # Summary
 [summary]: #summary
 
@@ -159,45 +166,6 @@ M(12)
 N(12.0) // Works!
 ```
 
-## Resolving overloaded methods
-
-When multiple methods of the same name are in scope, they can be overloaded provided that their signatures are unique:
-
-```fsharp
-[<AbstractClass; Sealed>]
-type A =
-    static member M(x: int) = x * 2
-
-[<AbstractClass; Sealed>]
-type B =
-    static member M(x: float) = x * 2.0
-
-open A
-open B
-
-// Both methods are resolved
-M(1) |> ignore
-M(1.0) |> ignore
-```
-
-If the signatures for `M` were not unique, then it would not be possible to call `M`. Full qualification is required, or if the source is available, a change to one of the methods is required:
-
-```fsharp
-[<AbstractClass; Sealed>]
-type A =
-    static member M(x: int) = x * 2
-
-[<AbstractClass; Sealed>]
-type B =
-    static member M(x: int) = x * 2
-
-open A
-open B
-
-// Error: ambiguous call
-M(1)
-```
-
 ### Name resolution for members coming from different static classes or type extensions
 
 Because overloads coming from multiple opened static classes are not resolved in the context of a type, we do not require compatibility with the existing rules for resolution.
@@ -252,7 +220,46 @@ This is a non-breaking change.
 # Unresolved questions
 [unresolved]: #unresolved-questions
 
-## Resolving static classes with generic parameters
+## Unresloved issues: Resolving overloaded methods
+
+When multiple methods of the same name are in scope, they can be overloaded provided that their signatures are unique:
+
+```fsharp
+[<AbstractClass; Sealed>]
+type A =
+    static member M(x: int) = x * 2
+
+[<AbstractClass; Sealed>]
+type B =
+    static member M(x: float) = x * 2.0
+
+open A
+open B
+
+// Both methods are resolved
+M(1) |> ignore
+M(1.0) |> ignore
+```
+
+If the signatures for `M` were not unique, then it would not be possible to call `M`. Full qualification is required, or if the source is available, a change to one of the methods is required:
+
+```fsharp
+[<AbstractClass; Sealed>]
+type A =
+    static member M(x: int) = x * 2
+
+[<AbstractClass; Sealed>]
+type B =
+    static member M(x: int) = x * 2
+
+open A
+open B
+
+// Error: ambiguous call
+M(1)
+```
+
+## Unresolved question: Resolving static classes with generic parameters
 
 C# allows for opening static classes with generic parameters like this:
 
