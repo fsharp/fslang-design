@@ -222,6 +222,9 @@ This is a non-breaking change.
 
 #### Issue to reconsider: Resolving overloaded methods
 
+**Proposed resolution**: allow combination of method overloads according to C# rules
+
+
 When multiple methods of the same name are in scope, they can be overloaded provided that their signatures are unique:
 
 ```fsharp
@@ -259,9 +262,10 @@ open B
 M(1)
 ```
 
-Proposed resolution by @TIHan and @cartermp: allow cobination of method overloads accoring to C# rules
 
-#### Issue to reconsider: open on non-static classes
+#### Issue: open on non-static classes
+
+**Proposed resolution**: TBD
 
 Current Behavior: Only able to open pure static classes, not any class or type that has static members. This decision started here: https://github.com/fsharp/fslang-design/issues/352#issuecomment-499146012 
 
@@ -288,7 +292,9 @@ namespace ConsoleApp378
 }
 ```
 
-#### Issue to reconsider: Opening static classes with generic parameter instantiations
+### Issue: Opening static classes with generic parameter instantiations
+
+**Proposed resolution**: do not do this as part of this RFC
 
 C# allows for opening static classes with generic parameters like this:
 
