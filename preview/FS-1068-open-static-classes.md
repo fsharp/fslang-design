@@ -11,7 +11,7 @@ This RFC covers the detailed proposal for this suggestion.
 * [x] Implementation: [Complete to Preview](https://github.com/dotnet/fsharp/pull/6325)
 
 
-# Summary
+## Summary
 [summary]: #summary
 
 Add support for opening static classes, e.g. `open System.Math`. For example
@@ -29,7 +29,7 @@ val it : float = 1.0
 val it : float = 1.0
 ```
 
-# Motivation
+## Motivation
 [motivation]: #motivation
 
 This greatly increases the expressivity of F# DSLs by allowing method-API facilities such as named arguments, optional arguments and type-directed overloading to be used in the DSL design.
@@ -38,7 +38,7 @@ Type providers can provide static classes, hence this would allow type providers
 
 Additionally, important C# DSL APIs are starting to appear that effectively require this.
 
-# Background: static classes
+## Background: static classes
 
 In .NET, "static classes" are abstract and sealed, containing only static members.
 
@@ -54,7 +54,7 @@ C.M(2) |> ignore
 
 A benefit to using these over module-bound functions is that you can take advantage of overloading and optional parameters. F# tooling will also provide more information in tooltips. The downside is that they are not functions, so you miss out on things like first-class functions (methods cannot take other methods as input, etc.).
 
-# Detailed design
+## Detailed design
 [design]: #detailed-design
 
 Opening of static classes allows for treating a static class somewhat as if it were a module with module-bound functions inside of it. So the previous code sample could look like this:
@@ -87,17 +87,17 @@ open System.Math
 PI
 ```
 
-## Only static classes can be opened
+### Only static classes can be opened
 
 The corresponding feature in C# allows for any class or struct to be "opened", allowing you access to any static members defined on it. Such examples include the `Vector2` and `Vector3` structs, which contain static methods for operating on those data types.
 
 This functionality is explicitly scoped out for now.
 
-## Attributes
+### Attributes
 
 There are two relevant attributes that are also respected: `AutoOpen` and `RequireQualifiedAccess`.
 
-### `RequireQualifiedAccess`
+#### `RequireQualifiedAccess`
 
 As with modules, application of this attribute to a static class in F# will require full qualification to use a member defined within.
 
@@ -110,7 +110,7 @@ open C // Compile error
 M(12) // 'M' is not recognized
 ```
 
-### `AutoOpen`
+#### `AutoOpen`
 
 Also like modules, specifying `AutoOpen` on a static class automatically brings its members into scope.
 
@@ -122,7 +122,7 @@ type C =
 M(12) // Can call 'M' without opening 'C'
 ```
 
-## Extending static classes
+### Extending static classes
 
 It is possible to use type extensions to extend static classes. Members defined as type extensions are visible when opening these static classes:
 
@@ -185,17 +185,17 @@ Try to resolve `member-ident` to one of the following, in order:
 
 That is to say, we will resolve methods over properties in the context of opening static classes or static members extending a static class.
 
-# Drawbacks
+## Drawbacks
 [drawbacks]: #drawbacks
 
 * This introduces another avenue to encounter issues when resolving overloads
 * This introduces more avenues to mix overloaded members with type inference, which can lead to source breaking changes if APIs defining those members add overloads over time
 * Code using this feature could be harder to understand without editor tooling
 
-# Alternatives
+## Alternatives
 [alternatives]: #alternatives
 
-## Open anything
+### Open anything
 
 In C#, any class or struct can be opened using `using static System.String`, and its static content made available. This can be possibly done in the future, as an extension of this feature.
 
@@ -212,15 +212,15 @@ Dot(v1, v2) // No need to fully qualify 'Dot'
 
 But it is currently considered out of scope.
 
-# Compatibility
+## Compatibility
 [compatibility]: #compatibility
 
 This is a non-breaking change.
 
-# Unresolved questions
+## Unresolved questions and feedback
 [unresolved]: #unresolved-questions
 
-## Unresolved issues: Resolving overloaded methods
+#### Issue to reconsider: Resolving overloaded methods
 
 When multiple methods of the same name are in scope, they can be overloaded provided that their signatures are unique:
 
@@ -261,7 +261,7 @@ M(1)
 
 Proposed resolution by @TIHan and @cartermp: allow cobination of method overloads accoring to C# rules
 
-#### Unresolved issue: open on non-static classes
+#### Issue to reconsider: open on non-static classes
 
 Current Behavior: Only able to open pure static classes, not any class or type that has static members. This decision started here: https://github.com/fsharp/fslang-design/issues/352#issuecomment-499146012 
 
@@ -288,7 +288,7 @@ namespace ConsoleApp378
 }
 ```
 
-#### Unresolved issue: Resolving static classes with generic parameter instantiations
+#### Issue to reconsider: Opening static classes with generic parameter instantiations
 
 C# allows for opening static classes with generic parameters like this:
 
@@ -307,6 +307,8 @@ using static MyStaticClass<string>;
 M(12); // This is one overload
 M("hello"); // This is another overload
 ```
+
+The preview version of the F# feature explicitly does not allow this: `open` is only allowed on non-generic static classes.
 
 From an interop perspective, opening a generic static class may be required as some APIs may use generic type parameters on the static class, forcing users to open these with a concrete substitution when using them.
 
