@@ -166,25 +166,6 @@ M(12)
 N(12.0) // Works!
 ```
 
-### Name resolution for members coming from different static classes or type extensions
-
-Because overloads coming from multiple opened static classes are not resolved in the context of a type, we do not require compatibility with the existing rules for resolution.
-
-Because APIs utilizing static members generally use methods instead of properties, we prefer methods over properties and adjust the previous ordered-list as such:
-
-Try to resolve `member-ident` to one of the following, in order:
-
-1. A union case.
-**2. A method group.**
-3. A property group.
-4. A field.
-5. An event.
-**6. A method group of extension members, by consulting the `ExtensionsInScope` table.**
-7. A property group of extension members , by consulting the `ExtensionsInScope` table.
-8. A nested type `type-nested`. Recursively resolve .rest if it is present, otherwise return `type-nested`
-
-That is to say, we will resolve methods over properties in the context of opening static classes or static members extending a static class.
-
 ## Drawbacks
 [drawbacks]: #drawbacks
 
@@ -262,6 +243,24 @@ open B
 M(1)
 ```
 
+#### Name resolution for members coming from different static classes or type extensions
+
+Because overloads coming from multiple opened static classes are not resolved in the context of a type, we do not require compatibility with the existing rules for resolution.
+
+Because APIs utilizing static members generally use methods instead of properties, we prefer methods over properties and adjust the previous ordered-list as such:
+
+Try to resolve `member-ident` to one of the following, in order:
+
+1. A union case.
+2. **A method group.**
+3. A property group.
+4. A field.
+5. An event.
+6. **A method group of extension members, by consulting the `ExtensionsInScope` table.**
+7. A property group of extension members , by consulting the `ExtensionsInScope` table.
+8. A nested type `type-nested`. Recursively resolve .rest if it is present, otherwise return `type-nested`
+
+That is to say, we will resolve methods over properties in the context of opening static classes or static members extending a static class.
 
 #### Issue: open on non-static classes
 
