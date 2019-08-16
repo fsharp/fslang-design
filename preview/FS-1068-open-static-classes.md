@@ -220,7 +220,7 @@ This is a non-breaking change.
 # Unresolved questions
 [unresolved]: #unresolved-questions
 
-## Unresloved issues: Resolving overloaded methods
+## Unresolved issues: Resolving overloaded methods
 
 When multiple methods of the same name are in scope, they can be overloaded provided that their signatures are unique:
 
@@ -259,7 +259,36 @@ open B
 M(1)
 ```
 
-## Unresolved question: Resolving static classes with generic parameters
+Proposed resolution by @TIHan and @cartermp: allow cobination of method overloads accoring to C# rules
+
+#### Unresolved issue: open on non-static classes
+
+Current Behavior: Only able to open pure static classes, not any class or type that has static members. This decision started here: https://github.com/fsharp/fslang-design/issues/352#issuecomment-499146012 
+
+We have received feedback (@TIHan) that only allowing static classes (and not any class that has a static member) may be too restrictive.
+
+For example consider C# examples of this kind:
+```csharp
+using System.Numerics;
+using static System.Numerics.Vector3;
+using static System.Numerics.Vector2;
+
+namespace ConsoleApp378
+{
+    class Program
+    {
+        static void Main(string[] args)
+        {
+            var v1 = new Vector3();
+            var result1 = Lerp(v1, v1, 1);
+            var v2 = new Vector2();
+            var result2 = Lerp(v2, v2, 1);
+        }
+    }
+}
+```
+
+#### Unresolved issue: Resolving static classes with generic parameter instantiations
 
 C# allows for opening static classes with generic parameters like this:
 
