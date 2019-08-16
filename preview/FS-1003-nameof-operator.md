@@ -76,7 +76,7 @@ The name of the operator is `nameof`. It is an intrinsic in FSharp.Core
 
 - can be used with names that are quoted in <code>``</code>
 
-- can be used with names of operators like `+`, `|>`, `typeof`, `nameof`, ...
+- can be used with names of operators like `+`, `|>`, `typeof`, `nameof`, evaluating to the compiled name of the operator
 
 - can be used with generic functions/types
 
@@ -88,8 +88,6 @@ The name of the operator is `nameof`. It is an intrinsic in FSharp.Core
 
 - can be used with module names, `nameof(FSharp.Collections.List)`
 
-- can be used with operators, `nameof(+)`.  In this case, the construct evaluates to the compiled name of the operator.
-
 Other considerations:
 
 - the use of `nameof` is allowed in quotations, the substitution is still made at compile-time
@@ -100,14 +98,14 @@ Other considerations:
 
 - `nameof` may not be used with pipe operator, `x |> nameof`
 
-### Names of instance members 
+### Names of instance members
 
 Names of members must be static or come from an instance. So the following code that attempts to get the name of an instance property with an instance of its containing class is not valid:
 
 ```fsharp
 type C() =
     member __.M = ()
-    
+
 nameof C.M // Error!
 ```
 
@@ -117,7 +115,7 @@ But the following are valid::
 type C() =
     static member M = ()
     member __.M2 = ()
-    
+
 nameof C.M // Yay :)
 
 let c = C()
@@ -126,7 +124,7 @@ nameof c.M2 // Yay :)
 
 NOTE: this is being reconsidered, see unresolved issues below.
 
-### Names of overloaded members require a type annotation:
+### Names of overloaded members require a type annotation
 
 When selecting an overloaded member, a type annotation may be necessary to select a member:
 ```fsharp
@@ -151,6 +149,7 @@ type MethodGroupNameOfTests() =
 ### Names of operators reveal the compiled name of the operator
 
 For example:
+
 ```fsharp
 nameof(+)   // gives "op_Addition"
 ```
@@ -174,13 +173,13 @@ nameof(C3<_>)   // gives "C3"
 
 ### `nameof` on generic type parameters is not permitted
 
-In the preview release, the `nameof` construct can't be used with type arguments, `let f<'t> (x : 't) = nameof 't`.  This is because syntactcially the argument to `nameof` is an expression, and not a type.
+In the preview release, the `nameof` construct can't be used with type arguments, `let f<'t> (x : 't) = nameof 't`.  This is because syntactically the argument to `nameof` is an expression, and not a type.
 
 NOTE: this was by design for the preview, but is being reconsidered, see unresolved issues below.
 
-### `nameof` of a function using `RequireExplicitTypeArgumentsAttribute` may require explicit type paramaters
+### `nameof` of a function using `RequiresExplicitTypeArguments` may require explicit type parameters
 
-F# functions labelled with the `RequireExplicitTypeArguments` require the use of a ummy type instantiation:
+F# functions labeled with the `RequiresExplicitTypeArguments` require the use of a dummy type instantiation:
 
 ```fsharp
 nameof(typeof<_>)
@@ -196,10 +195,36 @@ This substitution should be done at compile time, no performance impact expected
 
 See also unresolved issues below.
 
+### Alternative: formalize the notion of a named entity
+
+In the [C# version of this feature](https://github.com/dotnet/csharplang/blob/master/spec/expressions.md#nameof-expressions), the `nameof` expression takes a `named_entity` as input:
+
+```antlr
+nameof_expression
+    : 'nameof' '(' named_entity ')'
+    ;
+
+named_entity
+    : simple_name
+    | named_entity_target '.' identifier type_argument_list?
+    ;
+
+named_entity_target
+    : 'this'
+    | 'base'
+    | named_entity
+    | predefined_type
+    | qualified_alias_member
+    ;
+```
+
+A named entity is a valid expression, with one key distinction: instance members that fail to resolve due to being in a static context **do not** fail to resolve when in the context of a `nameof` expression. It is also an error for a named entity designating a method group to have type arguments.
+
+For F#, we should consider formalizing the `expr` part of `nameof expr` in a similar fashion.
+
 #### Alternative: use a keyword not a library intrinsic
 
 This would have been a breaking change.
-
 
 ## Unresolved issues (based on preview)
 
@@ -210,4 +235,3 @@ This would have been a breaking change.
 * [ ] `nameof` may not be used with the name of a generic type parameter.
 
 * [ ] Resolving overloaded members requires a type instantiation.
- 
