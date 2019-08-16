@@ -82,9 +82,7 @@ Other considerations:
 
 ### Names of instance members 
 
-Names of members must be static or come from an instance.
-
-So the following code that attempts to get the name of an instance property with an instance of its containing class is not valid:
+Names of members must be static or come from an instance. So the following code that attempts to get the name of an instance property with an instance of its containing class is not valid:
 
 ```fsharp
 type C() =
@@ -106,7 +104,9 @@ let c = C()
 nameof c.M2 // Yay :)
 ```
 
-### Names of overloaded members
+NOTE: this is being reconsidered, see unresolved issues below.
+
+### Names of overloaded members require a type annotation:
 
 When selecting an overloaded member, a type annotation may be necessary to select a member:
 ```fsharp
@@ -128,11 +128,45 @@ type MethodGroupNameOfTests() =
         Assert.AreEqual("MethodGroup1",b)
 ```
 
-### Names of generic type parameters not permitted
+### Names of operators reveal the compiled name of the operator
 
-The `nameof` construct can't be used with type arguments, `let f<'t> (x : 't) = nameof 't`.  This is because syntactcially the argument to `nameof` is an expression, and not a type.
+For example:
+```fsharp
+nameof(+)   // gives "op_Addition"
+```
 
-NOTE: this is being reconsidered.
+NOTE: this is being reconsidered, see unresolved issues below.
+
+### Names of generic type instantiations are permitted
+
+The `nameof` construct can be used with generic type instantiations, e.g.
+
+```fsharp
+type C2<'T> = A | B
+type C3<'T>() = class end
+
+nameof(C2)      // gives "C2"
+nameof(C2<int>) // gives "C2"
+nameof(C2<_>)   // gives "C2"
+nameof(C3)      // gives "C3"
+nameof(C3<_>)   // gives "C3"
+```
+
+### `nameof` on generic type parameters is not permitted
+
+In the preview release, the `nameof` construct can't be used with type arguments, `let f<'t> (x : 't) = nameof 't`.  This is because syntactcially the argument to `nameof` is an expression, and not a type.
+
+NOTE: this was by design for the preview, but is being reconsidered, see unresolved issues below.
+
+### `nameof` of a function using `RequireExplicitTypeArgumentsAttribute` may require explicit type paramaters
+
+F# functions labelled with the `RequireExplicitTypeArguments` require the use of a ummy type instantiation:
+
+```fsharp
+nameof(typeof<_>)
+```
+
+NOTE: this attribute is used very rarely.  It is possible this restriction may be lifted in future language revisions.
 
 ### Performance considerations
 
@@ -144,7 +178,8 @@ See also unresolved issues below.
 
 #### Alternative: use a keyword not a library intrinsic
 
-This would have been a breaking change
+This would have been a breaking change.
+
 
 ## Unresolved issues (for release from preview)
 
@@ -152,9 +187,7 @@ This would have been a breaking change
 
 * [ ] Resolving instance members requires an artificial instance object.
 
-* [ ] No way to get the name of a generic type parameter.
+* [ ] `nameof` may not be used with the name of a generic type parameter.
 
 * [ ] Resolving overloaded members requires a type instantiation.
-
-
-
+ 
