@@ -279,28 +279,6 @@ M(12); // This is one overload
 M("hello"); // This is another overload
 ```
 
-However, this is partly due to the fact that you _must_ parameterize either a method via `M<T>` or a class containing that member with `C<T>` to actually have something like a generic parameter as input to a member.
-
-F# does not have this restriction. That is, this F# code is not possible to write in C#:
-
-```fsharp
-[<AbstractClass; Sealed>]
-type C =
-    static member M(x: 'T) = ()
-```
-
-So for an F#-only perspective, there is no strong requirement to allow for something like `open C<int>` because there is no need to express a `C<'T>` in F# to allow for having static members that use generics.
-
-There is a case that involves properties, where something like the following imposes a value restriction that requires parameterizing `C`:
-
-```fsharp
-[<AbstractClass; Sealed>]
-type C =
-    static member P: 'T = Unchecked.defaultof<'T> // value restriction; `T is inferred to be 'obj'
-```
-
-To make the property a generic return type, `C` must be made `C<'T>`, but then it cannot be opened.
-
-More commonly, from an interop perspective, opening a generic static class may be required as some APIs may use generic type parameters on the static class, forcing users to open these with a concrete substitution when using them.
+From an interop perspective, opening a generic static class may be required as some APIs may use generic type parameters on the static class, forcing users to open these with a concrete substitution when using them.
 
 Should this be done for F#, we'll also have to match how C# creates a method group based on specialized members coming from the opened generic static class.
