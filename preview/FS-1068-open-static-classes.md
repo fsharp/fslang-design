@@ -318,4 +318,18 @@ The preview version of the F# feature explicitly does not allow this: `open` is 
 
 From an interop perspective, opening a generic static class may be required as some APIs may use generic type parameters on the static class, forcing users to open these with a concrete substitution when using them.
 
-Should this be done for F#, we'll also have to match how C# creates a method group based on specialized members coming from the opened generic static class.
+Should this be done for F#, we'll also have to match how C# creates a method group based on specialized members coming from the opened generic static class. Additional behavioral considerations for this:
+
+* It requires resolving overloaded members coming from different `open` declarations, or at least the same mechanism, should `open C<int>` and `open C<string>` be specified
+* A concrete substitution is likely to be required, as `open C<_>` would make little sense here given that it's already possible to define generic static methods without the containing class also defining a generic type
+
+That is, the following should likely be the behavior:
+
+```fsharp
+open C<_> // Error: disallowed
+open C<int>
+open C<string>
+
+M(12); // Allowed, viewed as an overload
+M("hello"); // Allowed, viewed as an overload
+```
