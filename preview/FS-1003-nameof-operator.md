@@ -28,6 +28,26 @@ let add x y =
     x + y
 ```
 
+### Detailed Processing Rules for `nameof expr`
+
+A library function `FSharp.Core.Operators.nameof` is added.  When used we adjust the processing of the expression form
+```fsharp
+    nameof expr
+```
+Here `expr` is syntactically an expression and is processed as follows:
+1. If `expr` is of the form `(expr2)` then the parentheses are ignored and `expr` is processed
+
+2. If `expr` is of the form `expr2 : type` then `type` is processed and `expr2` is processed using the resulting known type
+
+3. If `expr` is a long  identifier e.g. `id1.id2.id3` then it is resolved as either
+
+   a. a namespace or module
+   
+   b. a type name
+   
+   c. is checked as a long identifier expression (using any available known type from a type annotation)
+
+
 ### Naming 
 
 The name of the operator is `nameof`. It is an intrinsic in FSharp.Core
