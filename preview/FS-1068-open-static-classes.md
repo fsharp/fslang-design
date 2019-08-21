@@ -122,6 +122,12 @@ type C =
 M(12) // Can call 'M' without opening 'C'
 ```
 
+### Opening types reveals nested types
+
+**Note**: In the preview nested types are not revealed when opening a static type
+
+When a static .NET type (or a provided type) any accessible nested types also become accessible without qualification.
+
 ### Extending static classes
 
 It is possible to use type extensions to extend static classes. Members defined as type extensions are visible when opening these static classes:
