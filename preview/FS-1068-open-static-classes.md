@@ -14,20 +14,18 @@ This RFC covers the detailed proposal for this suggestion.
 ## Summary
 [summary]: #summary
 
-Add support for opening static classes, e.g. `open System.Math`. For example
+Add support for opening static classes, e.g. `open type System.Math`. For example
 
 ```fsharp
-> open System.Math;;
+> open type System.Math;;
 > Min(1.0, 2.0);;
 val it : float = 1.0
 
 > Min(2.0, 1.0);;
 val it : float = 1.0
-
-> open System.Math;;
-> Min(2.0, 1.0);;
-val it : float = 1.0
 ```
+
+**Note**: in the preview `open System.Math` is used instead of `open type System.Math`. 
 
 ## Motivation
 [motivation]: #motivation
@@ -64,7 +62,7 @@ Opening of static classes allows for treating a static class somewhat as if it w
 type C =
     static member M(x: int) = x * 2
 
-open C
+open type C
 
 M(2) |> ignore
 ```
@@ -82,12 +80,14 @@ printfn "%s" ColumnSize
 Visible consts should also be allowed. Example:
 
 ```fsharp
-open System.Math
+open type System.Math
 
 PI
 ```
 
-### Only static classes can be opened
+### Non-static classes can be opened
+
+**Note**: in the preview only static classes can be opened
 
 The corresponding feature in C# allows for any class or struct to be "opened", allowing you access to any static members defined on it. Such examples include the `Vector2` and `Vector3` structs, which contain static methods for operating on those data types.
 
@@ -106,7 +106,7 @@ As with modules, application of this attribute to a static class in F# will requ
 type C =
     static member M(x: int) = x * 2
 
-open C // Compile error
+open type C // Compile error
 M(12) // 'M' is not recognized
 ```
 
@@ -122,6 +122,12 @@ type C =
 M(12) // Can call 'M' without opening 'C'
 ```
 
+### Opening types reveals nested types
+
+**Note**: In the preview nested types are not revealed when opening a static type
+
+When a static .NET type (or a provided type) any accessible nested types also become accessible without qualification.
+
 ### Extending static classes
 
 It is possible to use type extensions to extend static classes. Members defined as type extensions are visible when opening these static classes:
@@ -130,7 +136,7 @@ It is possible to use type extensions to extend static classes. Members defined 
 type System.Math with
     static member MyPI = 3.14
 
-open System.Math
+open type System.Math
 MyPI // works!
 ```
 
@@ -141,7 +147,7 @@ Resolving members on type extensions works the same as with non-static extension
 type C =
     static member M(x: int) = x * 2
 
-open C
+open type C
 
 type C with
     static member N(x: float) = ()
@@ -160,7 +166,7 @@ type C =
 type C with
     static member N(x: float) = ()
 
-open C
+open type C
 
 M(12)
 N(12.0) // Works!
@@ -176,14 +182,22 @@ N(12.0) // Works!
 ## Alternatives
 [alternatives]: #alternatives
 
-### Open anything
+###  `open C`, `open type C` or `open static C`
+
+We have resolved to use `open type C`.
+
+See original discussion here: https://github.com/fsharp/fslang-design/issues/352#issuecomment-499146012.  
+
+Issues to do with potential breaking changes do to changes in shadowing led to a change of heart, see https://github.com/fsharp/fslang-design/issues/352#issuecomment-522533863
+
+### Open non-static-classes
 
 In C#, any class or struct can be opened using `using static System.String`, and its static content made available. This can be possibly done in the future, as an extension of this feature.
 
 This would enable some things like this:
 
 ```fsharp
-open System.Numerics.Vector2
+open type System.Numerics.Vector2
 
 let v1 = Vector2(1.0f, 2.0f)
 let v2 = Vector2(1.0f, 2.0f)
@@ -191,86 +205,13 @@ let v2 = Vector2(1.0f, 2.0f)
 Dot(v1, v2) // No need to fully qualify 'Dot'
 ```
 
-But it is currently considered out of scope.
+In the preview only static classes could be opened. Post preview have resolved to allow non-static types to be opened.
 
-## Compatibility
-[compatibility]: #compatibility
+See original discussion here: https://github.com/fsharp/fslang-design/issues/352#issuecomment-499146012.  
 
-This is a non-breaking change.
+Issues to do with potential breaking changes do to changes in shadowing led to a change of heart, see https://github.com/fsharp/fslang-design/issues/352#issuecomment-522533863
 
-## Unresolved questions and feedback
-[unresolved]: #unresolved-questions
-
-#### Issue to reconsider: Resolving overloaded methods
-
-**Proposed resolution**: allow combination of method overloads according to C# rules
-
-
-When multiple methods of the same name are in scope, they can be overloaded provided that their signatures are unique:
-
-```fsharp
-[<AbstractClass; Sealed>]
-type A =
-    static member M(x: int) = x * 2
-
-[<AbstractClass; Sealed>]
-type B =
-    static member M(x: float) = x * 2.0
-
-open A
-open B
-
-// Both methods are resolved
-M(1) |> ignore
-M(1.0) |> ignore
-```
-
-If the signatures for `M` were not unique, then it would not be possible to call `M`. Full qualification is required, or if the source is available, a change to one of the methods is required:
-
-```fsharp
-[<AbstractClass; Sealed>]
-type A =
-    static member M(x: int) = x * 2
-
-[<AbstractClass; Sealed>]
-type B =
-    static member M(x: int) = x * 2
-
-open A
-open B
-
-// Error: ambiguous call
-M(1)
-```
-
-#### Name resolution for members coming from different static classes or type extensions
-
-Because overloads coming from multiple opened static classes are not resolved in the context of a type, we do not require compatibility with the existing rules for resolution.
-
-Because APIs utilizing static members generally use methods instead of properties, we prefer methods over properties and adjust the previous ordered-list as such:
-
-Try to resolve `member-ident` to one of the following, in order:
-
-1. A union case.
-2. **A method group.**
-3. A property group.
-4. A field.
-5. An event.
-6. **A method group of extension members, by consulting the `ExtensionsInScope` table.**
-7. A property group of extension members , by consulting the `ExtensionsInScope` table.
-8. A nested type `type-nested`. Recursively resolve .rest if it is present, otherwise return `type-nested`
-
-That is to say, we will resolve methods over properties in the context of opening static classes or static members extending a static class.
-
-#### Issue: open on non-static classes
-
-**Proposed resolution**: TBD
-
-Current Behavior: Only able to open pure static classes, not any class or type that has static members. This decision started here: https://github.com/fsharp/fslang-design/issues/352#issuecomment-499146012 
-
-We have received feedback (@TIHan) that only allowing static classes (and not any class that has a static member) may be too restrictive.
-
-For example consider C# examples of this kind:
+Also, consider C# examples of this kind:
 ```csharp
 using System.Numerics;
 using static System.Numerics.Vector3;
@@ -290,6 +231,74 @@ namespace ConsoleApp378
     }
 }
 ```
+
+#### Combining overloaded methods from different types
+
+Post-preview we will allow combination of method overloads from different types according to C# rules.
+
+When multiple methods of the same name are in scope, they can be overloaded provided that their signatures are unique:
+
+```fsharp
+[<AbstractClass; Sealed>]
+type A =
+    static member M(x: int) = x * 2
+
+[<AbstractClass; Sealed>]
+type B =
+    static member M(x: float) = x * 2.0
+
+open type A
+open type B
+
+// Both methods are resolved
+M(1) |> ignore
+M(1.0) |> ignore
+```
+
+If the signatures for `M` were not unique, then it would not be possible to call `M`. Full qualification is required, or if the source is available, a change to one of the methods is required:
+
+```fsharp
+[<AbstractClass; Sealed>]
+type A =
+    static member M(x: int) = x * 2
+
+[<AbstractClass; Sealed>]
+type B =
+    static member M(x: int) = x * 2
+
+open type A
+open type B
+
+// Error: ambiguous call
+M(1)
+```
+
+Because overloads coming from multiple opened static classes are not resolved in the context of a type, we do not require compatibility with the existing rules for resolution.
+
+Because APIs utilizing static members generally use methods instead of properties, we prefer methods over properties and adjust the previous ordered-list as such:
+
+Try to resolve `member-ident` to one of the following, in order:
+
+1. A union case.
+2. **A method group.**
+3. A property group.
+4. A field.
+5. An event.
+6. **A method group of extension members, by consulting the `ExtensionsInScope` table.**
+7. A property group of extension members , by consulting the `ExtensionsInScope` table.
+8. A nested type `type-nested`. Recursively resolve .rest if it is present, otherwise return `type-nested`
+
+That is to say, we will resolve methods over properties in the context of opening static classes or static members extending a static class.
+
+
+## Compatibility
+[compatibility]: #compatibility
+
+This is a non-breaking change.
+
+## Unresolved questions and feedback
+[unresolved]: #unresolved-questions
+
 
 ### Issue: Opening static classes with generic parameter instantiations
 
@@ -313,7 +322,7 @@ M(12); // This is one overload
 M("hello"); // This is another overload
 ```
 
-The preview version of the F# feature explicitly does not allow this: `open` is only allowed on non-generic static classes.
+This appears barely documented in the C# design docs. The preview version of the F# feature explicitly does not allow this: `open` is only allowed on non-generic static classes.
 
 From an interop perspective, opening a generic static class may be required as some APIs may use generic type parameters on the static class, forcing users to open these with a concrete substitution when using them.
 
@@ -325,9 +334,9 @@ Should this be done for F#, we'll also have to match how C# creates a method gro
 That is, the following should likely be the behavior:
 
 ```fsharp
-open C<_> // Error: disallowed
-open C<int>
-open C<string>
+open type C<_> // Error: disallowed
+open type C<int>
+open type C<string>
 
 M(12); // Allowed, viewed as an overload
 M("hello"); // Allowed, viewed as an overload
