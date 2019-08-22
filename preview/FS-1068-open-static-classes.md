@@ -205,7 +205,7 @@ let v2 = Vector2(1.0f, 2.0f)
 Dot(v1, v2) // No need to fully qualify 'Dot'
 ```
 
-In the preview only static classes could be opened. Post preview have resolved to allow non-static classes to be opened.
+In the preview only static classes could be opened. Post preview have resolved to allow non-static types to be opened.
 
 See original discussion here: https://github.com/fsharp/fslang-design/issues/352#issuecomment-499146012.  
 
