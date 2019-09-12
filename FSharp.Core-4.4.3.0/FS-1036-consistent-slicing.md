@@ -75,7 +75,7 @@ The current behavior in Python is:
 a <= y <= b+1 | if x > y [] else `{ L[x] .. L[y-1] }` | []
 y > b+1 |  `{ L[x] .. L[b] }` | []
 
-(Note: We can't have x < a and y < a cases because Python negative indices mean something else)
+(Note: x < a and y < a cases aren't shown here because Python negative indices mean something else)
 
 ---
 
