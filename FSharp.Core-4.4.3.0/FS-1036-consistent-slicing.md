@@ -81,7 +81,7 @@ y > b+1 |  `{ L[x] .. L[b] }` | []
 
 As in the example above the slicing behavior in F# is a lot more confusing than C# or Python. Sometimes when indexes are out of bounds you get [], sometimes you get Error, and sometimes you get either. 
 
-C# disallows any out of bound indexes and Python just takes `L[x:y] = L[x:min(y, b)]` and `[]` if the bounds don't make sense. This is much easier to create a mental model of, especially to new users.
+C# disallows any out of bound indexes and Python just takes `L[x:y] = L[x:min(y, b)]` and `[]` if the bounds don't make sense. The out-of-bounds slicing behavior in C# and Python are much easier to create a mental model of, especially to new users.
 
 # Detailed design
 [design]: #detailed-design
@@ -138,7 +138,6 @@ Why?
 - This would work with concatenation and recursive cases where we need a base case of `l.[0..(-1)] = []`. This behavior lends itself well to elegant, functional code based on composition with little explicit bounds checking (if any).
 - For people who are doing calculations on arrays of numbers (perhaps ML workloads) your life would be easier as you wouldn't have to explicitly check for bounds.
 - This would bring F# more in line with python and make it more accessible for python users, which is a growth opportunity for F# that does not rely on C# bleeding functional programmers
-- It's much more clearer and consistent.
 
 # Drawbacks
 [drawbacks]: #drawbacks
