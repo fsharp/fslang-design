@@ -135,7 +135,7 @@ Using the example above, we'd end up with:
 
 Why?
 - The legacy behavior has been `L.[0..(-1)] = []`, so we don't want to change that to Error all of a sudden. 
-- This would work with concatenation and recursive cases where we need a base case of `l.[0..(-1)] = []` (see @charlesroddie's example in discussion).
+- This would work with concatenation and recursive cases where we need a base case of `l.[0..(-1)] = []`. This behavior lends itself well to elegant, functional code based on composition with little explicit bounds checking (if any).
 - For people who are doing calculations on arrays of numbers (perhaps ML workloads) your life would be easier as you wouldn't have to explicitly check for bounds.
 - This would bring F# more in line with python and make it more accessible for python users, which is a growth opportunity for F# that does not rely on C# bleeding functional programmers
 - It's much more clearer and consistent.
