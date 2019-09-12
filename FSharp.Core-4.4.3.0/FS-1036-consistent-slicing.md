@@ -60,7 +60,7 @@ a <= y <= b | Error | if x > y [] else `{ L[x] .. L[y] }` | []
 y > b | Error | Error | if x > y [] else Error
 
 
-The current behavior in C# .NET preview is:
+The current behavior in C# 8 is:
 
 `L[x..y]` | x < a | a <= x <= b+1 | x > b+1
 -------|--------|------------------|------
