@@ -14,6 +14,8 @@ This RFC covers the detailed proposal for this suggestion.
 Currently, if `x` is a list, `x.[..j]` gives an out of bounds exception when j<0, while `x.[0..j]` gives `[]`.
 This proposes changing `x.[..j]` to give the same output as `x.[0..j]`, and `x.[i..]` to give the same output as `x.[i..(x.Length-1)]`
 
+In addition, there is some inconsistency in the out-of-bounds behavior for slicing these collections as well.
+
 The same logic also applies to lists, strings, and arrays, including multidimensional arrays.
 
 
