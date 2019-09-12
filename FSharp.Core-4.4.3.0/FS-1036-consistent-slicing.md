@@ -45,7 +45,7 @@ In our current impmentation of slicing, when an out-of-bounds index is given for
 
 For example, `l.[(-1)..0]` throws an error, because -1 is not a valid index in the list. Based on this, one may expect `l.[0..(-1)]` to also throw an error. However, the latter slice completes successfully and returns `[]`.
 
-A more detailed examination is as follows:
+To illustrate this, we provide a more detailed examination of F#, C#, and Python slicing behaviors:
 
 
 Assuming we have a list `L` with lower bound `a` and upper bound `b`, then:
