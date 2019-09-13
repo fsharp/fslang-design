@@ -85,17 +85,17 @@ C# disallows any out of bound indexes and Python just takes `L[x:y] = L[x:min(y,
 
 ### Sample use case
 
-One common technique used in machine learning models used to classify images is pooling. Typically, this involves "pooling" together a 2D slice of a 2D matrix representation of an image, and extracting a single value from this pool. We then slide this pool around the entire image, obtaining a new representation of the image that yields better results.
+One common technique used in machine learning models used to classify images is max pooling. Typically, this involves "pooling" together a 2D slice of a 2D matrix representation of an image, and extracting a single value from this pool. We then slide this pool around the entire image, obtaining a new representation of the image that yields better results.
 
 This may look like:
 
 ![Pooling](https://miro.medium.com/max/803/1*Zx-ZMLKab7VOCQTxdZ1OAw.gif)
 
-For example, if we want to use mean pooling with a size of 3x3, we could write code that looks like
+For example, if we want to use max pooling with a size of 3x3, we could write code that looks like
 ```
 for i <- 0..height-3
     for j <- 0..width-3
-        result[i][j] = mean (image[i..i+2, j..j+2])
+        result[i][j] = max (image[i..i+2, j..j+2])
 ```
 
 However, notice that the result after pooling is smaller. We are losing resolution, and we ideally want our input size to equal our output.
@@ -117,7 +117,7 @@ for i <- 1..image.height-1
 
 for i <- 0..image2.height-3
     for j <- 0..image2.width-3
-        result[i][j] = mean (image2[i..i+2, j..j+2])
+        result[i][j] = max (image2[i..i+2, j..j+2])
 ```
 
 However, this can be simplified greatly with different slicing semantics. With the new slicing behavior, we could write:
@@ -125,7 +125,7 @@ However, this can be simplified greatly with different slicing semantics. With t
 ```
 for i <- 0..height
     for j <- 0..width
-        result[i][j] = mean (image[i-1..i+1, j-1..j+1])
+        result[i][j] = max (image[i-1..i+1, j-1..j+1])
 ```
 
 Because the new slicing behavior ignores values that are out of bounds, this effectively accomplishes the same result as padding the edges of the input image with zeroes.
