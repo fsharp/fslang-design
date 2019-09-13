@@ -83,6 +83,60 @@ As in the example above the slicing behavior in F# is a lot more confusing than 
 
 C# disallows any out of bound indexes and Python just takes `L[x:y] = L[x:min(y, b)]` and `[]` if the bounds don't make sense. The out-of-bounds slicing behavior in C# and Python are much easier to create a mental model of, especially to new users.
 
+### Sample use case
+
+One common technique used in machine learning models used to classify images is pooling. Typically, this involves "pooling" together a 2D slice of a 2D matrix representation of an image, and extracting a single value from this pool. We then slide this pool around the entire image, obtaining a new representation of the image that yields better results.
+
+This may look like:
+
+![Pooling](https://miro.medium.com/max/803/1*Zx-ZMLKab7VOCQTxdZ1OAw.gif)
+
+For example, if we want to use mean pooling with a size of 3x3, we could write code that looks like
+```
+for i <- 0..height-3
+    for j <- 0..width-3
+        result[i][j] = mean (image[i..i+2, j..j+2])
+```
+
+However, notice that the result after pooling is smaller. We are losing resolution, and we ideally want our input size to equal our output.
+
+One solution commonly used in the machine learning world is padding, where we pad the edges of the input with zeros, like 
+
+![Pooling](https://miro.medium.com/max/593/1*1okwhewf5KCtIPaFib4XaA.gif)
+
+This way, after padding, when we apply the sliding window to mean pool the image, we obtain a result image of the same dimensions.
+
+This could look like:
+
+```
+image2 = new [image.height+2][image.width+2]
+
+for i <- 1..image.height-1
+    for j <- image.width-1
+        image2[i+1][j+1] = image[i][j]
+
+for i <- 0..image2.height-3
+    for j <- 0..image2.width-3
+        result[i][j] = mean (image2[i..i+2, j..j+2])
+```
+
+However, this can be simplified greatly with different slicing semantics. With the new slicing behavior, we could write:
+
+```
+for i <- 0..height
+    for j <- 0..width
+        result[i][j] = mean (image[i-1..i+1, j-1..j+1])
+```
+
+Because the new slicing behavior ignores values that are out of bounds, this effectively accomplishes the same result as padding the edges of the input image with zeroes.
+
+And this would accomplish the same mean pooling behavior, but with:
+- Less code
+- Better performance
+- Uses less memory
+- Easier to understand
+- Harder to mess up bounds
+
 # Detailed design
 [design]: #detailed-design
 
