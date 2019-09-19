@@ -1,4 +1,4 @@
-# F# RFC FS-1036 - Tolerant Slicing
+# F# RFC FS-1077 - Tolerant Slicing
 
 The design suggestion [Tolerant Slicing](https://github.com/Microsoft/visualfsharp/issues/2643) has been approved for RFC.
 This RFC covers the detailed proposal for this suggestion.
