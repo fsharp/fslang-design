@@ -5,8 +5,8 @@ This RFC covers the detailed proposal for this suggestion.
 
 * [x] Approved in principle
 * [x] [Suggestion](https://github.com/fsharp/fslang-suggestions/issues/333)
-* [ ] Details
-* [ ] Implementation: [In progress](https://github.com/Microsoft/visualfsharp/pull/FILL-ME-IN)
+* [x] Details
+* [x] Implementation: [Complete](https://github.com/dotnet/fsharp/pull/6829)
 
 
 # Summary
