@@ -32,7 +32,7 @@ val it : float = 1.0
 
 This greatly increases the expressivity of F# DSLs by allowing method-API facilities such as named arguments, optional arguments and type-directed overloading to be used in the DSL design.
 
-Type providers can provide static classes, hence this would allow type providers to provide "unqualified" names. This useful for some projections where the natural thing is unqualified, e.g. the "R" type provider always required `R.plot` etc. With this feature, `T.plot` can now be `plot`.
+Type providers can provide static classes, hence this would allow type providers to provide "unqualified" names. This useful for some projections where the natural thing is unqualified, e.g. the "R" type provider always required `R.plot` etc. With this feature, `R.plot` can now be `plot`.
 
 Additionally, important C# DSL APIs are starting to appear that effectively require this.
 
@@ -209,7 +209,7 @@ In the preview only static classes could be opened. Post preview have resolved t
 
 See original discussion here: https://github.com/fsharp/fslang-design/issues/352#issuecomment-499146012.  
 
-Issues to do with potential breaking changes do to changes in shadowing led to a change of heart, see https://github.com/fsharp/fslang-design/issues/352#issuecomment-522533863
+Issues to do with potential breaking changes coming from changes in shadowing led to a change of heart, see https://github.com/fsharp/fslang-design/issues/352#issuecomment-522533863
 
 Also, consider C# examples of this kind:
 ```csharp
@@ -322,7 +322,7 @@ M(12); // This is one overload
 M("hello"); // This is another overload
 ```
 
-This appears barely documented in the C# design docs. The preview version of the F# feature explicitly does not allow this: `open` is only allowed on non-generic static classes.
+This appears barely documented in the C# design docs. The preview version of the F# feature explicitly does not allow this: `open type` is only allowed on non-generic static classes.
 
 From an interop perspective, opening a generic static class may be required as some APIs may use generic type parameters on the static class, forcing users to open these with a concrete substitution when using them.
 
