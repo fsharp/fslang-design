@@ -155,7 +155,7 @@ Why?
 [alternatives]: #alternatives
 
 - Keep existing behavior for out-of-bounds slicing
-- Follow the C# behavior and throw errors.
+- Follow the C# behavior and throw errors, which would be a runtime-breaking change.
 
 # Unresolved questions
 [unresolved]: #unresolved-questions
