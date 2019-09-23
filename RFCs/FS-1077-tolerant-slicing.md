@@ -11,7 +11,7 @@ This RFC covers the detailed proposal for this suggestion.
 
 # Summary
 [summary]: #summary
-This RFC proposes loosening up the out-of-bounds checking behavior on core collection slicing. Out-of-bounds indices specified during slicing will be "snapped to the ends of the array" instead of throwing out of range exception. This will improve usability for certain use cases.
+This RFC proposes loosening up the out-of-bounds checking behavior on slicing for lists, strings, arrays (including multidimensional variants). Out-of-bounds indices specified during slicing will be "snapped to the ends of the array" instead of throwing out of range exception. This will improve usability for certain use cases.
 
 
 # Motivation
