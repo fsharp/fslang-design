@@ -1,10 +1,9 @@
 # F# RFC FS-1076 - From the end slicing for collections
 
-The design suggestion [FILL ME IN](https://github.com/fsharp/fslang-suggestions/issues/fill-me-in) has been marked "approved in principle".
 This RFC covers the detailed proposal for this suggestion.
 
-* [x] Approved in principle
-* [ ] [Suggestion](https://github.com/fsharp/fslang-suggestions/issues/fill-me-in)
+* [ ] Approved in principle
+* [ ] [Suggestion](https://github.com/fsharp/fslang-suggestions/issues/358)
 * [ ] Details: [under discussion](https://github.com/fsharp/fslang-design/issues/FILL-ME-IN)
 * [ ] Implementation: [In progress](https://github.com/Microsoft/visualfsharp/pull/FILL-ME-IN)
 
