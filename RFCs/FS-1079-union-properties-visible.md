@@ -103,7 +103,7 @@ It does however change what constitutes a breaking change in F# code (see Drawba
 
 * What happens when previous versions of the F# compiler encounter this design addition as source code?
 
-It fails to compile any invokations of the generated members.
+It fails to compile any invocations of the generated members.
 
 * What happens when previous versions of the F# compiler encounter this design addition in compiled binaries?
 
