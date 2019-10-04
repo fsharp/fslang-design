@@ -33,7 +33,7 @@ Considering that F# already generates a member `IsEmail : bool` which does exact
 let canSendEmailTo person =
     person.contact.IsEmail
 ```
-
+As you can see, the use of `IsEmail` is far more succinct for this use case, obviating the need for a pattern match just to check a single thing.
 # Detailed design
 
 The compiler generates the following public members for every discriminated union type:
