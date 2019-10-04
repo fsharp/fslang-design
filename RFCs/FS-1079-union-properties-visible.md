@@ -1,4 +1,4 @@
-# F# RFC FS-1079 - Make .Tag and .Is* discriminated union properties visible from F# #
+# F# RFC FS-1079 - Make .Is* discriminated union properties visible from F# #
 
 The design suggestion [Make .Tag and .Is* discriminated union properties visible from F#](https://github.com/fsharp/fslang-suggestions/issues/222) has been marked "approved in principle".
 
@@ -6,7 +6,7 @@ This RFC covers the detailed proposal.
 
 # Summary
 
-F# discriminated unions have a number of generated public members that were created for C# interoperability and are hidden from F# code. These include, for example, an instance property `IsFoo : bool` per case `Foo`.
+F# discriminated unions have a number of generated public members that were created for C# interoperability and are hidden from F# code. These include an instance property `IsFoo : bool` per case `Foo`.
 
 This proposal is to make these members visible and usable from F# code too.
 
@@ -34,6 +34,7 @@ let canSendEmailTo person =
     person.contact.IsEmail
 ```
 As you can see, the use of `IsEmail` is far more succinct for this use case, obviating the need for a pattern match just to check a single thing.
+
 # Detailed design
 
 The compiler generates the following public members for every discriminated union type:
@@ -48,7 +49,11 @@ The compiler generates the following public members for every discriminated unio
 
 5. Either a static property `Foo` or a static method `NewFoo` per case named `Foo`, depending on whether `Foo` has arguments or not, which constructs an instance of this case.
 
-In this design, members #1 through 4 are made available to F# code as well. #5 is kept hidden from F#, because it is equivalent to the corresponding case constructor and would be redundant and confusing.
+In this design, members #1 (`Is*`) are made available to F# code as well. #2 through #5 are kept hidden from F#:
+
+* The arguments for or against exposing `Tag` are discussed in [Alternatives](#alternatives).
+
+* The `Foo` / `NewFoo` members are equivalent to the corresponding case constructor and would be redundant and confusing.
 
 Here is an example union type declaration with all of the newly F#-visible members listed explicitly (in pseudo-code, since nested `type` declarations are invalid F#):
 
@@ -62,6 +67,8 @@ type Example =
     member IsFirst : bool
     
     member IsSecond : bool
+
+    // The following members were already generated, and remain hidden from F#:
     
     member Tag : int
     
@@ -70,8 +77,6 @@ type Example =
         val First : int
         
         val Second : int
-        
-    // The following members were already generated, and remain hidden from F#:
     
     static member First : Example
     
@@ -80,18 +85,24 @@ type Example =
 
 # Drawbacks
 
-Exposing `Tag` and `Tags` changes whether reordering the cases of a union type declaration is a breaking change:
-
-|                                     | Before this change   | After this change   |
-| :---------------------------------- | :------------------: | :-----------------: |
-| Binary compatible for F# consumer   | No                   | No                  |
-| Source compatible for F# consumer   | Yes                  | No                  |
-| Binary compatible for C# consumer   | No                   | No                  |
-| Source compatible for C# consumer   | No                   | No                  |
+These attributes might incite beginners to check a value's case using a series of `if x.IsFoo then ... elif x.IsBar then ...` in situations where pattern matching would be more appropriate.
 
 # Alternatives
 
-An alternate design would be to only expose the `Is*` properties but not the `Tag` property and the `Tags` nested type. This would eliminate the drawback regarding case reordering, while still exposing what is arguably the most useful generated members.
+An alternate design would be to also expose the `Tag` property and `Tags` nested type (#2 through #4 as listed in [Detailed design](#detailed-design)). They can be useful in some limited situations, but are left out of the main proposal for several reasons:
+
+* They are more rarely useful than `Is*`.
+
+* They would be even more prone to confusing beginners, by inciting them to match against `x.Tag` instead of `x`.
+
+* Exposing `Tag` and `Tags` changes whether reordering the cases of a union type declaration is a breaking change:
+
+    |                                     | Before this change   | After this change   |
+    | :---------------------------------- | :------------------: | :-----------------: |
+    | Binary compatible for F# consumer   | No                   | No                  |
+    | Source compatible for F# consumer   | **Yes**              | **No**              |
+    | Binary compatible for C# consumer   | No                   | No                  |
+    | Source compatible for C# consumer   | No                   | No                  |
 
 # Compatiblity
 
