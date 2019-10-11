@@ -228,10 +228,10 @@ This would have been a breaking change.
 
 ## Unresolved issues (based on preview)
 
-* [ ] `nameof` on an operator gives the compiled name of the operator
-
-* [ ] Resolving instance members requires an artificial instance object.
-
-* [ ] `nameof` may not be used with the name of a generic type parameter.
-
-* [ ] Resolving overloaded members requires a type instantiation.
+- [ ] `nameof` on an operator gives the compiled name of the operator
+- [ ] Resolving instance members requires an artificial instance object.
+- [ ] `nameof` may not be used with the name of a generic type parameter.
+- [ ] Resolving overloaded members requires a type instantiation.
+- [ ] Using `nameof` in a literal, e.g.., `let rec [<Literal>] Foo = nameof Foo`
+- [ ] Sepcifying `nameof` on a member val
+- [ ] Specifying `nameof` on  a value without needing to use `rec`, e.g., `let x = nameof x`
