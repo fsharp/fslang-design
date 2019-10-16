@@ -17,7 +17,7 @@ This RFC proposes loosening up the out-of-bounds checking behavior on slicing fo
 # Motivation
 [motivation]: #motivation
 
-In our current impmentation of slicing, when an out-of-bounds index is given for the beginning or end of the slice, the resultant behavior can differ depending on the case.
+In our current implementation of slicing, when an out-of-bounds index is given for the beginning or end of the slice, the resultant behavior can differ depending on the case.
 
 For example, `l.[(-1)..0]` throws an error, because -1 is not a valid index in the list. Based on this, one may expect `l.[0..(-1)]` to also throw an error. However, the latter slice completes successfully and returns `[]`.
 
@@ -55,7 +55,7 @@ y > b+1 |  `{ L[x] .. L[b] }` | []
 
 ---
 
-As in the example above the slicing behavior in F# is a lot more confusing than C# or Python. Sometimes when indexes are out of bounds you get [], sometimes you get Error, and sometimes you get either. 
+As in the example above the slicing behavior in F# is a lot more confusing than C# or Python. Sometimes when indexes are out of bounds you get `[]`, sometimes you get Error, and sometimes you get either.
 
 C# disallows any out of bound indexes and Python just takes `L[x:y] = L[x:min(y, b)]` and `[]` if the bounds don't make sense. The out-of-bounds slicing behavior in C# and Python are much easier to create a mental model of, especially to new users.
 
@@ -126,7 +126,7 @@ y < a | [] | [] | []
 a <= y <= b |  `{ L[a] .. L[y] }` |  if x > y [] else `{ L[x] .. L[y] }` | []
 y > b | ` { L[a] .. L[b] } ` | ` { L[x] .. L[b] }` | []
 
-This is pretty much equivalent to `L.[x..y] = L.[max(x, a)..min(y, b)]` and [] otherwise. The slicing behavior would be consistent with Python.
+This is pretty much equivalent to `L.[x..y] = L.[max(x, a)..min(y, b)]` and `[]` otherwise. The slicing behavior would be consistent with Python.
 
 Using the example above, we'd end up with:
 
