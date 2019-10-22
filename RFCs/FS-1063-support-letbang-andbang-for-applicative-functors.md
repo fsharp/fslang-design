@@ -1,4 +1,4 @@
-# F# RFC FS-1063 - Support let! .. and... for applicative functors
+# F# RFC FS-1063 - Support let! .. and... for simultaneous bind to reduce re-execution in computation expressions
 
 The design suggestion [Support let! .. and... for applicative functors](https://github.com/fsharp/fslang-suggestions/issues/579) has been marked "approved in principle".
 This RFC covers the detailed proposal for this suggestion.
@@ -6,14 +6,16 @@ This RFC covers the detailed proposal for this suggestion.
 * [x] [Approved in principle](https://github.com/fsharp/fslang-suggestions/issues/579#event-1345361104) & [prioritised](https://github.com/fsharp/fslang-suggestions/issues/579#event-1501977428)
 * [x] [Suggestion](https://github.com/fsharp/fslang-suggestions/issues/579)
 * [x] [Discussion](https://github.com/fsharp/fslang-design/issues/335)
-* [ ] Implementation: [In progress](https://github.com/Microsoft/visualfsharp/pull/5696)
+* [ ] Implementation: [In progress](https://github.com/dotnet/fsharp/pull/7756)
 
 # Summary
 [summary]: #summary
 
-Extend computation expressions to support applicative functors via a new `let! ... and! ... return ...` syntax.
+Extend computation expressions to support applicative functors via a new `let! ... and! ... return ...` syntax.  This allows
+computations that include a sequence of `let! ... let! ...` to avoid the problem of cascading binds
+when these are independent.
 
-With this new syntax, [Pauan points out](https://github.com/fsharp/fslang-suggestions/issues/579#issuecomment-310799948) that we can write a convenient and readable computation expression for `Observable`s that acts similarly to [`Observable.zip`](http://fsprojects.github.io/FSharp.Control.Reactive/tutorial.html#Observable-Module), but [avoids unnecessary resubscriptions and other overheads associated with `Bind`](https://github.com/fsharp/fslang-suggestions/issues/579#issuecomment-310854419) and syntactically scales nicely with the number of arguments whilst admitting arguments of different types.
+There are many examples where this is valuable.  As an example, with this new syntax, [Pauan points out](https://github.com/fsharp/fslang-suggestions/issues/579#issuecomment-310799948) that we can write a convenient and readable computation expression for `Observable`s that acts similarly to [`Observable.zip`](http://fsprojects.github.io/FSharp.Control.Reactive/tutorial.html#Observable-Module), but [avoids unnecessary resubscriptions and other overheads associated with `Bind`](https://github.com/fsharp/fslang-suggestions/issues/579#issuecomment-310854419) and syntactically scales nicely with the number of arguments whilst admitting arguments of different types.
 
 Applicative computation expression form:
 
