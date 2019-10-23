@@ -11,8 +11,8 @@ This RFC covers the detailed proposal for this suggestion.
 # Summary
 [summary]: #summary
 
-We extend computation expressions to support a new `let! ... and! ... ` syntax.  This allows
-computations that include a sequence of `let! ... let! ...` to avoid the problem of re-executing binds
+We support a new `let! ... and! ... ` syntax in computation expressions.  This allows
+computations to avoid forcing the use of a sequence of `let! ... let! ...` which forces re-execution of binds
 when these are independent.
 
 There are many examples where this is valuable, many of them known as "applicatives" in the functional
@@ -29,6 +29,8 @@ becomes
 ```fsharp
 ce.Bind(ce.CombineSources(e1, e2), (fun (v1, v2) -> ... )
 ```
+
+TBD: what happens with arbitrary size of `let! .. and! ...`
 
 # Motivation
 [motivation]: #motivation
@@ -63,6 +65,8 @@ rxquery {
 }
 ```
 
+### Applicatives 
+
 [Applicative functors](https://en.wikipedia.org/wiki/Applicative_functor) (or just "applicatives", for short) have been growing in popularity as a way to build applications and model certain domains over the last decade or so, since McBride and Paterson published [Applicative Programming with Effects](http://www.staff.city.ac.uk/~ross/papers/Applicative.html). Applicatives are now reaching a level of popularity within the community that supporting them with a convenient and readable syntax, as we do for monads, makes sense.
 
 With _applicative_ computation expressions, we can write more computations with this convenient syntax than before (there are more contexts which meet the requirements for applicative computation expressions than the existing monadic ones), and we can write more efficient computations (the requirements of applicatives rule out needing to support some potentially expensive operations).
@@ -71,8 +75,52 @@ In some cases, applicative computation expressions have no useful `bind` at all 
 `return`.  In other cases, the use of a true `bind` may represent a "dynamic" parts of a computation graph, and the
 use of `let! .. and! ...` may represent the "static" part of a computation graph.
 
+Applicatives can be implemented by adjusting the types for `Bind` and `Return`. This restricts the CE to one large multi-bind, followed by a simple return.
 
-## Examples of useful applicatives
+```fsharp
+type Applicative() =
+
+    member x.MergeSources(a : option<'a>, b : option<'b>) =
+        (a,b) ||> Option.map2 (fun a b -> (a,b))
+
+    // NOTE: the Bind is really a `Map` as the continuation returns 'b instead of <'b>
+    member x.Bind(m : option<'a>, mapping : 'a -> 'b) : option<'b> =
+        m |> Option.map mapping
+
+    // NOTE: the Return doesn't return M<'T>
+    member x.Return v = v
+
+let app = Applicative()
+```
+
+Now, with this typing, the following is allowed:
+
+```fsharp
+let test (a : option<int>) (b : option<int>) =
+    app {
+        let! a = a
+        and! b = b
+        // Similar to this:
+        // let! (a, b) = app.CombineSources(a, b)
+        let x = b * b + a
+        return a * b + x
+    }
+```
+
+But this is not:
+
+```fsharp
+let test (a : option<int>) (b : option<int>) =
+    app {
+        let! a = a
+        let! b = b
+        let x = b * b + a
+        return a * b + x
+    }
+```
+
+
+## Examples of useful applications
 
 [Marlow et al.](https://dl.acm.org/citation.cfm?id=2628144) discuss the fact that the independence of arguments to an applicative (as opposed to the implied sequencing of monads) allow us to conveniently introduce parallelism.
 
@@ -216,6 +264,9 @@ TBD
 
 # Alternative Designs
 [alternative-designs]: #alternative-designs
+
+The original design was based on a highly constrained form of applicative and an `Apply` de-sugaring.  
+
 
 We chose not to support `use!` or `anduse!`. Why: TBD
 
