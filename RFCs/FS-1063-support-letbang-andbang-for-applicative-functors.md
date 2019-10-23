@@ -249,7 +249,7 @@ Variable patterns:
 
 ```fsharp
 ce {
-    let! ActivePattern(x) = foo ✔️
+    let! (ActivePattern(x)) = foo ✔️
     and! (y,_)            = bar ✔️
     and! (SingleCaseDu z) = baz ✔️
     return x + y + z
@@ -260,15 +260,35 @@ ce {
 # Drawbacks
 [drawbacks]: #drawbacks
 
-TBD
+* Additional design complexity
 
 # Alternative Designs
 [alternative-designs]: #alternative-designs
 
 The original design was based on a highly constrained form of applicative and an `Apply` de-sugaring.  
 
+The original design supported `use!` or `anduse!` via a `ApplyUsing` method.
+This was removed partly because of complexity, and partly because `builder.MergeSources(...)` gives no particular place
+to put the resource reclamation. Also, the exact guarantees about when the resource reclamation protection is
+guaranteed are not entirely easy to ascertain and [can result in resource leaks](https://github.com/fsharp/fslang-design/commit/1392717f4a1d9cc74db5c6e9036fe625f8aee532#diff-ace7d4450b2d38b03ffd531603d424a8L779).
+Removing this forces the user to either have a `Using` method with `use!`, or to write more explicit code making one
+or more explicit calls to functional combinators, e.g.
 
-We chose not to support `use!` or `anduse!`. Why: TBD
+```fsharp
+ce {
+    use! r1 = computeResource1() // Requires 'Using'
+    let! v2 = computeValue2()
+    return resource1.Value + value2
+ }
+```
+rather than
+```fsharp
+ce {
+    use! r1 = computeResource1()
+    and! v2 = computeValue2()
+    return resource1.Value + value2
+ }
+```
 
 We chose not to support `do!` or `anddo!` in place of a `let! _ = ...` or `and! _ = ...` (respectively), since `do!` implies side-effects and hence sequencing in a way that applicatives explicitly aim to avoid (see the parallelism example earlier). These keywords and their corresponding translations could be introduced in a later addition to the language, if the community's position changed on the matter.
 
@@ -287,5 +307,6 @@ No
 # Unresolved Questions
 [unresolved]: #unresolved-questions
 
-* [ ] See TBD above
+* [ ] See TBD above about arbitrary-sized `let! ... and! ...`
+
 
