@@ -21,16 +21,26 @@ programming community.
 # Detailed Design
 [design]: #detailed-design
 
+`let! ... and! ...` expressions are de-sugared as follows:
+
+Given this:
+
 ```
-ce { let! v1 = e1 and! v2 = e2 in ... }
+ce { let! pat1 = e1 and! ... and! patN = eN in ... }
 ```
-becomes
+
+If a `Bind`*N* (e.g. `Bind3`) method is present, then this becomes
 
 ```fsharp
-ce.Bind(ce.CombineSources(e1, e2), (fun (v1, v2) -> ... )
+ce.BindN(e1, ..., eN, (fun (pat1, ..., patN) -> ... )
 ```
 
-TBD: what happens with arbitrary size of `let! .. and! ...`
+Otherwise a `MergeSources` method must be present and the expression is de-sugared to:
+```fsharp
+ce.Bind(ce.MergeSources(e1, ..., eN), (fun (pat1, ..., patN) -> ... )
+```
+
+TBD: what happens with the `MergeSources` case for arbitrary size of `let! .. and! ...` - do we automate nesting?
 
 # Motivation
 [motivation]: #motivation
