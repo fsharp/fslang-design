@@ -1,7 +1,8 @@
 # F# RFC FS-1063 - More efficient and expressive computation expressions via `and!` and `BindReturn`
 
-The design suggestion [Support let! .. and... for applicative functors](https://github.com/fsharp/fslang-suggestions/issues/579) has been marked "approved in principle".
-This RFC covers the detailed proposal for this suggestion.
+The design suggestion [Support let! .. and... for applicative functors](https://github.com/fsharp/fslang-suggestions/issues/579) has been marked "approved in principle". This RFC covers the detailed proposal for this suggestion.
+
+The 2nd design suggestion [extend ComputationExpression builders with Map](https://github.com/fsharp/fslang-suggestions/issues/36) has also been approved and the RFC covers a variation of this proposal.
 
 * [x] [Approved in principle](https://github.com/fsharp/fslang-suggestions/issues/579#event-1345361104) & [prioritised](https://github.com/fsharp/fslang-suggestions/issues/579#event-1501977428)
 * [x] [Suggestion](https://github.com/fsharp/fslang-suggestions/issues/579)
@@ -13,51 +14,147 @@ This RFC covers the detailed proposal for this suggestion.
 
 We support a new `let! ... and! ... ` syntax in computation expressions.  This allows
 computations to avoid forcing the use of a sequence of `let! ... let! ...` which forces re-execution of binds
-when these are independent.
-
-There are many examples where this is valuable, many of them known as "applicatives" in the functional
+when these are independent. There are many examples where this is valuable, many of them known as "applicatives" in the functional
 programming community.  
+
+We also support a translation of binds that immediately always execute `return` to an optional builder method `BindReturn`.
 
 # Detailed Design
 [design]: #detailed-design
+
+## `and!`
 
 `let! ... and! ...` expressions are de-sugared as follows:
 
 Given this:
 
 ```
-ce { let! pat1 = e1 and! ... and! patN = eN in ... }
+builder { let! pat1 = e1 and! ... and! patN = eN in ... }
 ```
 
 If a `Bind`*N* (e.g. `Bind3`) method is present, then this becomes
 
 ```fsharp
-ce.BindN(e1, ..., eN, (fun (pat1, ..., patN) -> ... )
+builder.BindN(e1, ..., eN, (fun (pat1, ..., patN) -> ... )
 ```
 
-Otherwise, if `N <= 5` a `MergeSourcesN` method must be present and the expression is de-sugared to:
+Otherwise, detect if `MergeSources`, `MergeSources3`, `MergeSources4` .. are present up to some `MergeSourcesM` (M for Max). If
+so, then for `N <= M` expression is de-sugared to:
 ```fsharp
-ce.Bind(ce.MergeSourcesN(e1, ..., eN), (fun (pat1, ..., patN) -> ... )
+builder.Bind(builder.MergeSourcesN(e1, ..., eN), (fun (pat1, ..., patN) -> ... )
 ```
 
-Otherwise, if `N > 5` an appropriate set of `MergeSources` calls is made, e.g. for N = 7
+and for  `N > M` an appropriate set of `MergeSources` calls is made, e.g. for N = 7 and M = 5
 ```fsharp
-ce.Bind(ce.MergeSources5(e1, e2, e3, e4, ce.MergeSources3(e5, e6, e7)), (fun (pat1, ..., pat4, (pat5, pat6, pat7)) -> ... )
+builder.Bind(builder.MergeSources5(e1, e2, e3, e4, builder.MergeSources3(e5, e6, e7)), (fun (pat1, ..., pat4, (pat5, pat6, pat7)) -> ... )
 ```
 
-Rationale: 
+## `BindReturn`
 
-* Allowing a de-sugaring to direct calls to overloaded `Bind2`, `Bind3` methods etc. allows for a maximally efficient implementaion
-  avoiding needless merging and unmerging of inputs for the most common cases.
+Given a bind `let! ... in innerComp` where the inner computation relevant to the Bind is
 
-* Allowing a de-sugaring to `MergeSources2` etc. in other cases allows for an arbitrary number of `let! ... and! ...` while maintaining type safety.  The upper limit of 5 simultaneous merges is arbitrary but aligned with the design choices in other parts of the F# design.
+1. an immediate `return`
+
+2. an `if-then-else` with immediate `return` on each branch that is present
+
+3. a sequential expression with immediate `return` 
+
+4. a `match` with imediate `return` on each branch that is present
+
+then the expression becomes `builder.BindReturn(source, (fun pat -> innerExpr))` where `innerExpr` is the inner computation with `return` removed.
+
+Likewise, the same rule applies for `Bind2`, `Bind3` etc.
+
+
+## Rationale
+
+* Allowing a de-sugaring `and!` to direct calls to overloaded `Bind2`, `Bind3` methods etc. allows for more efficient implementations
+  of dependency graphs avoiding needless merging and unmerging of inputs for the most common cases.
+
+* Allowing a de-sugaring of `and!` to `MergeSources` etc. in other cases allows for an arbitrary number of `let! ... and! ...` while maintaining 
+  type safety.  The upper limit of 5 simultaneous merges is arbitrary but aligned with the design choices in other parts of the F# design.
+
+* Allowing a de-sugaring of bind-return patterns to `BindReturn` etc. allows for complete elimination of binds when forming static 
+  computation graphs, with no execution of binds nor reallocation of nodes.
 
 Notes:
 
 * The consuming pattern is a tuple, but not committed to be either a struct tuple or reference tuple - the result tuple of `MergeSources` or the consuming function in `Bind` will dictate the inferred structness 
 
-# Motivation
-[motivation]: #motivation
+
+# Discussion and Examples
+
+## Dependency/Calculation graphs
+
+Consider a typical dependency graph implementation (this is a sketch, the full details will be in the PR)
+```fsharp
+type Node<'T> =
+    /// Evaluate the node if it is out of date and cache the value
+    member Value: 'T
+
+    /// The nodes that depend on this node
+    member Dependents: Node list
+    
+type Input<'T> =
+    member Node: Node<'T>
+    member SetValue: 'T -> unit
+
+type NodeBuilder
+
+let node = NodeBuilder()
+```
+Now  consider these:
+```fsharp
+let inp1 = Input(3)
+let inp2 = Input(7)
+let inp3 = Input(0)
+
+let test1 = 
+    node { 
+        let! v1 = inp1.Node
+        and! v2 = inp2.Node
+        and! v3 = inp3.Node
+        return v1 + v2 + v3
+    }
+   // Equivalent to
+   //   node.Bind3Return(inp1.Node, inp2.Node, inp3.Node, (fun (v1, v2, v3) ->
+   //      v1 + v2 + v3))
+
+let test2 = 
+    node { 
+        let! v1 = inp1.Node
+        let! v2 = inp2.Node
+        let! v3 = inp3.Node
+        return v1 + v2 + v3
+    }
+   // Equivalent to 
+   //   node.Bind(inp1.Node, (fun v1 ->
+   //     node.Bind(inp2.Node, (fun v2 ->
+   //       node.Bind(inp3.Node, (fun (v1, v2, v3) -> v1 + v2 + v3))   
+```
+and a load such as
+```
+for i in 1 .. 1000 do
+  inp1.Value <- 4 
+  let v2 = test2.Value // recompute
+
+  inp2.Value <- 10
+  let v3 = test2.Value // recompute
+  ()
+```
+Then a typical performance difference is:
+```
+total recalcs using and! = 2000
+total nodes using and! = 1
+
+total recalcs using let! = 5000
+total nodes using let! = 7000
+```
+Note that the approach incorporating `and!`is much, much more efficient. Furthermore, the actual calculation graph is
+**static** rather than dynamic - no new nodes are allocated during recalc execution.
+
+
+## Observables 
 
 As an example, with this new syntax, [Pauan points out](https://github.com/fsharp/fslang-suggestions/issues/579#issuecomment-310799948) that we can write a convenient and readable computation expression for `Observable`s that acts similarly to [`Observable.zip`](http://fsprojects.github.io/FSharp.Control.Reactive/tutorial.html#Observable-Module), but [avoids unnecessary resubscriptions and other overheads associated with `Bind`](https://github.com/fsharp/fslang-suggestions/issues/579#issuecomment-310854419) and syntactically scales nicely with the number of arguments whilst admitting arguments of different types.
 
@@ -89,7 +186,7 @@ rxquery {
 }
 ```
 
-### Applicatives 
+### Other applicatives 
 
 [Applicative functors](https://en.wikipedia.org/wiki/Applicative_functor) (or just "applicatives", for short) have been growing in popularity as a way to build applications and model certain domains over the last decade or so, since McBride and Paterson published [Applicative Programming with Effects](http://www.staff.city.ac.uk/~ross/papers/Applicative.html). Applicatives are now reaching a level of popularity within the community that supporting them with a convenient and readable syntax, as we do for monads, makes sense.
 
@@ -280,6 +377,7 @@ ce {
  }
 ```
 
+TBD: there are other syntactc forms that are valid, these need to be listed
 
 # Drawbacks
 [drawbacks]: #drawbacks
@@ -331,6 +429,7 @@ No
 # Unresolved Questions
 [unresolved]: #unresolved-questions
 
-* [ ] See TBD above about arbitrary-sized `let! ... and! ...`
+* [ ] Consider interaction with custom operators and put it under test
+* [ ] Consider interaction of `BindReturn` with `use!` and `match!` and put it under test
 
 
