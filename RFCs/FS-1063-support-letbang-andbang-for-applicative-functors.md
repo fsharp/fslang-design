@@ -1,4 +1,4 @@
-# F# RFC FS-1063 - Support and! for simultaneous bind in computation expressions
+# F# RFC FS-1063 - More efficient and expressive computation expressions via `and!` and `BindReturn`
 
 The design suggestion [Support let! .. and... for applicative functors](https://github.com/fsharp/fslang-suggestions/issues/579) has been marked "approved in principle".
 This RFC covers the detailed proposal for this suggestion.
