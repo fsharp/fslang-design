@@ -28,11 +28,11 @@ First, a `let! ... and! ...` expressions is de-sugared as follows. Given this:
 
 then
 
-1. If a `Bind`*N* (e.g. `Bind3`) method is present on the builder, then the de-sugaring is:
+1. If a `BindN` (e.g. `Bind3`) method is present on the builder, then the de-sugaring is:
 
        builder.BindN(e1, ..., eN, (fun (pat1, ..., patN) -> ... )
 
-2. Otherwise, a `MergeSources` method must be present on the builder.  Optionally, `MergeSources3`, `MergeSources4` .. may  present on the builder up to some `MergeSourcesM` (M for Max). If `N <= M` the expression is de-sugared to:
+2. Otherwise, a `MergeSources` method must be present on the builder.  Optionally, `MergeSources3`, `MergeSources4` .. may also present on the builder up to some `MergeSourcesM` (M for Max). If `N <= M` the expression is de-sugared to:
 
        builder.Bind(builder.MergeSourcesN(e1, ..., eN), (fun (pat1, ..., patN) -> ... )
 
