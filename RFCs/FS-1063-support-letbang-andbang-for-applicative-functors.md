@@ -22,6 +22,7 @@ We also support a translation of binds that immediately always execute `return` 
 # Detailed Design
 [design]: #detailed-design
 
+
 ## `and!`
 
 `let! ... and! ...` expressions are de-sugared as follows:
@@ -64,6 +65,19 @@ Given a bind `let! ... in innerComp` where the inner computation relevant to the
 then the expression becomes `builder.BindReturn(source, (fun pat -> innerExpr))` where `innerExpr` is the inner computation with `return` removed.
 
 Likewise, the same rule applies for `Bind2`, `Bind3` etc.
+
+
+## New Methods on Builders
+
+A summary of the relevant new builder methods:
+
+* `MergeSources` - gives `and!` support for arbitrary number of `and!`  via tupling nodes
+* `MergeSources3`, `MergeSources4`... - optional, reduce number of tupling nodes
+
+* `Bind2`, `Bind3` etc. - optional, binds `let! .. and! ...` efficiently without tupling nodes
+
+* `BindReturn` - adds support and/or efficiency for `let! ... return` 
+* `Bind2Return`, `Bind3Return`, etc. - optional, binds `let! .. and! ... return` efficiently without tupling nodes
 
 
 ## Rationale
