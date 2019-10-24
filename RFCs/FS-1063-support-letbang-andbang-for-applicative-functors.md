@@ -56,20 +56,17 @@ then the expression becomes `builder.BindReturn(source, (fun pat -> innerExpr))`
 Likewise, apply a corresponding rule to produce calls to `Bind2Return`, `Bind3Return` and so on from `and!` expressions whose inner computation is an imediately-returning computation.
 
 
-## New Methods on Builders
+## Notes
 
-A summary of the relevant new builder methods:
+* A summary of the relevant new builder methods:
 
-* `MergeSources` - gives `and!` support for arbitrary number of `and!`  via tupling nodes
-* `MergeSources3`, `MergeSources4`... - optional, reduce number of tupling nodes
+  * `MergeSources` - gives `and!` support for arbitrary number of `and!`  via tupling nodes
+  * `MergeSources3`, `MergeSources4`... - optional, reduce number of tupling nodes
 
-* `Bind2`, `Bind3` etc. - optional, binds `let! .. and! ...` efficiently without tupling nodes
+  * `Bind2`, `Bind3` etc. - optional, binds `let! .. and! ...` efficiently without tupling nodes
 
-* `BindReturn` - adds support and/or efficiency for `let! ... return` 
-* `Bind2Return`, `Bind3Return`, etc. - optional, binds `let! .. and! ... return` efficiently without tupling nodes
-
-
-## Rationale
+  * `BindReturn` - adds support and/or efficiency for `let! ... return` 
+  * `Bind2Return`, `Bind3Return`, etc. - optional, binds `let! .. and! ... return` efficiently without tupling nodes
 
 * Allowing a de-sugaring `and!` to direct calls to overloaded `Bind2`, `Bind3` methods etc. allows for more efficient implementations
   of dependency graphs avoiding needless merging and unmerging of inputs for the most common cases.
@@ -80,16 +77,15 @@ A summary of the relevant new builder methods:
 * Allowing a de-sugaring of bind-return patterns to `BindReturn` etc. allows for complete elimination of binds when forming static 
   computation graphs, with no execution of binds nor reallocation of nodes.
 
-Notes:
-
-* The consuming pattern is a tuple, but not committed to be either a struct tuple or reference tuple - the result tuple of `MergeSources` or the consuming function in `Bind` will dictate the inferred structness 
+* The consuming pattern of Bind2 and others are tuples, but the de-sugaring does not commit to be either a struct tuple or reference tuple.
 
 
 # Discussion and Examples
 
 ## Dependency/Calculation graphs
 
-Consider a typical dependency graph implementation (this is a sketch, the full details will be in the PR)
+Consider a typical dependency graph implementation (this is a sketch, see [the example in the PR](https://github.com/dotnet/fsharp/pull/7756/files#diff-e77ad28a19cb44b6c0d896f17fac41f6))
+
 ```fsharp
 type Node<'T> =
     /// Evaluate the node if it is out of date and cache the value
