@@ -35,12 +35,26 @@ If a `Bind`*N* (e.g. `Bind3`) method is present, then this becomes
 ce.BindN(e1, ..., eN, (fun (pat1, ..., patN) -> ... )
 ```
 
-Otherwise a `MergeSources` method must be present and the expression is de-sugared to:
+Otherwise, if `N <= 5` a `MergeSourcesN` method must be present and the expression is de-sugared to:
 ```fsharp
-ce.Bind(ce.MergeSources(e1, ..., eN), (fun (pat1, ..., patN) -> ... )
+ce.Bind(ce.MergeSourcesN(e1, ..., eN), (fun (pat1, ..., patN) -> ... )
 ```
 
-TBD: what happens with the `MergeSources` case for arbitrary size of `let! .. and! ...` - do we automate nesting?
+Otherwise, if `N > 5` an appropriate set of `MergeSources` calls is made, e.g. for N = 7
+```fsharp
+ce.Bind(ce.MergeSources5(e1, e2, e3, e4, ce.MergeSources3(e5, e6, e7)), (fun (pat1, ..., pat4, (pat5, pat6, pat7)) -> ... )
+```
+
+Rationale: 
+
+* Allowing a de-sugaring to direct calls to overloaded `Bind2`, `Bind3` methods etc. allows for a maximally efficient implementaion
+  avoiding needless merging and unmerging of inputs for the most common cases.
+
+* Allowing a de-sugaring to `MergeSources2` etc. in other cases allows for an arbitrary number of `let! ... and! ...` while maintaining type safety.  The upper limit of 5 simultaneous merges is arbitrary but aligned with the design choices in other parts of the F# design.
+
+Notes:
+
+* The consuming pattern is a tuple, but not committed to be either a struct tuple or reference tuple - the result tuple of `MergeSources` or the consuming function in `Bind` will dictate the inferred structness 
 
 # Motivation
 [motivation]: #motivation
