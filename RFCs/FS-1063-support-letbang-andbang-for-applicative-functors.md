@@ -22,49 +22,38 @@ We also support a translation of binds that immediately always execute `return` 
 # Detailed Design
 [design]: #detailed-design
 
+First, a `let! ... and! ...` expressions is de-sugared as follows. Given this:
 
-## `and!`
+    builder { let! pat1 = e1 and! ... and! patN = eN in ... }
 
-`let! ... and! ...` expressions are de-sugared as follows:
+then
 
-Given this:
+1. If a `Bind`*N* (e.g. `Bind3`) method is present on the builder, then the de-sugaring is:
 
-```
-builder { let! pat1 = e1 and! ... and! patN = eN in ... }
-```
+       builder.BindN(e1, ..., eN, (fun (pat1, ..., patN) -> ... )
 
-If a `Bind`*N* (e.g. `Bind3`) method is present, then this becomes
+2. Otherwise, a `MergeSources` method must be present on the builder.  Optionally, `MergeSources3`, `MergeSources4` .. may  present on the builder up to some `MergeSourcesM` (M for Max). If `N <= M` the expression is de-sugared to:
 
-```fsharp
-builder.BindN(e1, ..., eN, (fun (pat1, ..., patN) -> ... )
-```
+       builder.Bind(builder.MergeSourcesN(e1, ..., eN), (fun (pat1, ..., patN) -> ... )
 
-Otherwise, detect if `MergeSources`, `MergeSources3`, `MergeSources4` .. are present up to some `MergeSourcesM` (M for Max). If
-so, then for `N <= M` expression is de-sugared to:
-```fsharp
-builder.Bind(builder.MergeSourcesN(e1, ..., eN), (fun (pat1, ..., patN) -> ... )
-```
+   If `N > M` an appropriate set of `MergeSources` calls is made, e.g. for N = 7 and M = 5
 
-and for  `N > M` an appropriate set of `MergeSources` calls is made, e.g. for N = 7 and M = 5
-```fsharp
-builder.Bind(builder.MergeSources5(e1, e2, e3, e4, builder.MergeSources3(e5, e6, e7)), (fun (pat1, ..., pat4, (pat5, pat6, pat7)) -> ... )
-```
+       builder.Bind(builder.MergeSources5(e1, e2, e3, e4, builder.MergeSources3(e5, e6, e7)), (fun (pat1, ..., pat4, (pat5, pat6, pat7)) -> ... )
 
-## `BindReturn`
 
-Given a bind `let! ... in innerComp` where the inner computation relevant to the Bind is
+Next, consider any `let! pat = expr in innerComp`. If the `innerComp` is an immediately-returning computation, i.e.
 
 1. an immediate `return`
 
-2. an `if-then-else` with immediate `return` on each branch that is present
+2. a conditional `if e1 then e2 else e3` where `e2` and `e3` are both immediate `return`
 
-3. a sequential expression with immediate `return` 
+3. a sequential expression `e1; e2` where `e2` is an immediate `return` 
 
-4. a `match` with imediate `return` on each branch that is present
+4. a `match` where each target is an immediate return
 
 then the expression becomes `builder.BindReturn(source, (fun pat -> innerExpr))` where `innerExpr` is the inner computation with `return` removed.
 
-Likewise, the same rule applies for `Bind2`, `Bind3` etc.
+Likewise, apply a corresponding rule to produce calls to `Bind2Return`, `Bind3Return` and so on from `and!` expressions whose inner computation is an imediately-returning computation.
 
 
 ## New Methods on Builders
