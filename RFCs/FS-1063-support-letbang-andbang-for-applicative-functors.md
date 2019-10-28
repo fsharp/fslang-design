@@ -466,7 +466,6 @@ No
 # Unresolved Questions
 [unresolved]: #unresolved-questions
 
-* [ ] Consider interaction with custom operators and put it under test
-* [ ] Consider interaction of `BindReturn` with `use!` and `match!` and put it under test
+None
 
 
