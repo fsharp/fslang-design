@@ -1,8 +1,6 @@
 # F# RFC FS-1063 - More efficient and expressive computation expressions via `and!` and `BindReturn`
 
-The design suggestion [Support let! .. and... for applicative functors](https://github.com/fsharp/fslang-suggestions/issues/579) has been marked "approved in principle". This RFC covers the detailed proposal for this suggestion.
-
-The 2nd design suggestion [extend ComputationExpression builders with Map](https://github.com/fsharp/fslang-suggestions/issues/36) has also been approved and the RFC covers a variation of this proposal.
+The design suggestion [Support let! .. and... for applicative functors](https://github.com/fsharp/fslang-suggestions/issues/579) has been marked "approved in principle". The 2nd design suggestion [extend ComputationExpression builders with Map](https://github.com/fsharp/fslang-suggestions/issues/36) has also been approved. This RFC covers the detailed proposal for the combination of these two suggestions.
 
 * [x] [Approved in principle](https://github.com/fsharp/fslang-suggestions/issues/579#event-1345361104) & [prioritised](https://github.com/fsharp/fslang-suggestions/issues/579#event-1501977428)
 * [x] [Suggestion](https://github.com/fsharp/fslang-suggestions/issues/579)
@@ -78,6 +76,36 @@ Likewise, apply a corresponding rule to produce calls to `Bind2Return`, `Bind3Re
   computation graphs, with no execution of binds nor reallocation of nodes.
 
 * The consuming pattern of Bind2 and others are tuples, but the de-sugaring does not commit to be either a struct tuple or reference tuple.
+
+Sample signatures:
+```fsharp
+type ApplicativeBuilder() =
+    inherit TraceCore()
+
+    // MergeSources adds support for `and!`.  Struct tuples can be used
+    member builder.MergeSources(x1: M<'T1>, x2: M<'T2>) : M<'T1 * 'T2> = ...
+
+    // If you have MergeSources, then a MergeSources3 can be added for performance 
+    member builder.MergeSources3(x1: M<'T1>, x2: M<'T2>, x3: M<'T3>) : M<'T1 * 'T2 * 'T3> = ...
+
+    // If you have MergeSources, then a MergeSources4 can be added for performance 
+    member builder.MergeSources4(x1: M<'T1>, x2: M<'T2>, x3: M<'T3>, x4: M<'T4>) : M<'T1 * 'T2 * 'T3 * 'T4> = ...
+
+    // If you have MergeSources, then a Bind2 can be added for performance
+    member builder.Bind2(x1: M<'T1>, x2: M<'T2>, f: 'T1 -> 'T2 -> M<'T3>) : M<'T3> = ...
+
+    // If you have Bind, then BindReturn can be added for performance
+    //
+    // If you don't have Bind, then adding BindReturn allows a single let! bind followed by a return,
+    // i.e. an applicative.
+    member builder.BindReturn(x: M<'T1>, f: 'T1 -> 'T2) : M<'T2> = ...
+
+    // If you have BindReturn and MergeSources, then Bind2Return can be added for performance
+    member builder.Bind2Return(x1: M<'T1>, x2: M<'T2>, f: 'T1 * 'T2 -> 'T3) : M<'T3> = ...
+
+    // If you have BindReturn and MergeSources, then Bind3Return can be added for performance
+    member builder.Bind3Return(x1: M<'T1>, x2: M<'T2>, x3: M<'T3>, f: 'T1 * 'T2 * 'T3 -> 'T4) : M<'T4> = ...
+```
 
 
 # Discussion and Examples
