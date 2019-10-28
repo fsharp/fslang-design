@@ -82,9 +82,25 @@ Sample signatures:
 type ApplicativeBuilder() =
     inherit TraceCore()
 
-    // MergeSources adds support for `and!`.  Struct tuples can be used
+    // Fundamental methods
+
+    // The standard Return
+    member builder.Return(x: 'T) : M<'T> = ...
+
+    // The standard Bind
+    member builder.Bind(x1: M<'T1>, f: 'T1 -> M<'T2>) : M<'T2> = ...
+
+    // If you have Bind, then BindReturn can be added for performance
+    //
+    // If you don't have Bind, then adding BindReturn allows a single let! bind followed by a return,
+    // i.e. an applicative.
+    member builder.BindReturn(x: M<'T1>, f: 'T1 -> 'T2) : M<'T2> = ...
+
+    // If you have Bind or BindReturn, MergeSources adds support for `and!`.  Struct tuples can be used
     member builder.MergeSources(x1: M<'T1>, x2: M<'T2>) : M<'T1 * 'T2> = ...
 
+    // Performance optimizations
+    
     // If you have MergeSources, then a MergeSources3 can be added for performance 
     member builder.MergeSources3(x1: M<'T1>, x2: M<'T2>, x3: M<'T3>) : M<'T1 * 'T2 * 'T3> = ...
 
@@ -92,13 +108,7 @@ type ApplicativeBuilder() =
     member builder.MergeSources4(x1: M<'T1>, x2: M<'T2>, x3: M<'T3>, x4: M<'T4>) : M<'T1 * 'T2 * 'T3 * 'T4> = ...
 
     // If you have MergeSources, then a Bind2 can be added for performance
-    member builder.Bind2(x1: M<'T1>, x2: M<'T2>, f: 'T1 -> 'T2 -> M<'T3>) : M<'T3> = ...
-
-    // If you have Bind, then BindReturn can be added for performance
-    //
-    // If you don't have Bind, then adding BindReturn allows a single let! bind followed by a return,
-    // i.e. an applicative.
-    member builder.BindReturn(x: M<'T1>, f: 'T1 -> 'T2) : M<'T2> = ...
+    member builder.Bind2(x1: M<'T1>, x2: M<'T2>, f: 'T1 * 'T2 -> M<'T3>) : M<'T3> = ...
 
     // If you have BindReturn and MergeSources, then Bind2Return can be added for performance
     member builder.Bind2Return(x1: M<'T1>, x2: M<'T2>, f: 'T1 * 'T2 -> 'T3) : M<'T3> = ...
