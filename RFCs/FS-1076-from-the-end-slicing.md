@@ -1,4 +1,4 @@
-# F# RFC FS-1076 - From the end slicing for collections
+# F# RFC FS-1076 - From the end slicing and indexing for collections
 
 This RFC covers the detailed proposal for this suggestion.
 
@@ -11,7 +11,7 @@ This RFC covers the detailed proposal for this suggestion.
 # Summary
 [summary]: #summary
 
-This RFC proposes the capability to slice collections with indices counted from the end. Using the `^i` syntax in slicing desugars to `collection.GetReverseIndex(i)`.
+This RFC proposes the capability to slice and index collections with indices counted from the end. Using the `^i` syntax in slicing and indexing desugars to `collection.GetReverseIndex(i)`.
 
 e.g.
 ```
@@ -28,7 +28,7 @@ list.[^2..^1] // 3,4
 # Motivation
 [motivation]: #motivation
 
-From-the-end slicing would allow easier operations on arrays. Currently in Python one can specify a negative index, like `list.[:-1]` to obtain a slice of the list without the last element. This feature is often used in scientific and mathematical computation. Adding this feature would make F# more accessible for those uses.
+From-the-end slicing and indexing would allow easier operations on arrays. Currently in Python one can specify a negative index, like `list.[:-1]` to obtain a slice of the list without the last element. This feature is often used in scientific and mathematical computation. Adding this feature would make F# more accessible for those uses.
 
 # Detailed design
 [design]: #detailed-design
@@ -43,7 +43,7 @@ The `^` operator is currently used as a infix operator for:
 It is used as a prefix operator for:
 - Statically resolved types
 
-For the from-the-end slicing, the `^` operator will be overloaded as a prefix operator. 
+For the from-the-end slicing and indexing, the `^` operator will be overloaded as a prefix operator. 
 
 We will add new rules to the parser to support the following expressions for `optRange`:
 ```
@@ -52,6 +52,7 @@ We will add new rules to the parser to support the following expressions for `op
 x..^y
 ..^y
 ^x..^y
+^x
 ```
 
 Using `^` outside of the square brackets will not mean anything, as the parsing rule that handles it only exists inside `optRange`.
@@ -67,6 +68,8 @@ Currently in the typechecker, the slicing is handled in two ways (see `typecheck
 
 
 To support from-the-end slicing, logic can be added in these two code paths to check if the `^` symbol was prepended to any of the indices. If it is detected, the call to `GetSlice` with the index `^i` will be desugared to `myCollection.GetReverseIndex(i)`. The desugared indices will be piped to the existing `GetSlice` implementations.
+
+For indexing, currently `.[i]` is desugared to `.Item(i)`. After this change, `.[^i]` would be desugared to `.Item(GetReverseIndex(i))`.
 
 For all the core collections, the provided implementation of `GetReverseIndex(i)` would be `collection.Length - i - 1` (See below for rationale of -1).
 
@@ -120,7 +123,7 @@ This would break any code that defines `..^` as a custom operator.
 
 ## Third-party collections
 
-We currently require third party collections to implement `<'T>.GetSlice` to support slicing syntax. We can additionally require third party collections to implement `<'T>.GetReverseIndex` if they wish to support from-the-end slicing. If they choose to do only the former, any `^i` indices in the slice will fail with a compile time error.
+We currently require third party collections to implement `<'T>.GetSlice` to support slicing syntax and `<'T>.Item` for indexing. We can additionally require third party collections to implement `<'T>.GetReverseIndex` if they wish to support from-the-end indexing and slicing. If they choose to do implement only `GetSlice`/`Item`, any `^i` indices will fail with a compile time error.
 
 ## Old versions of Core
 - New compiler + new core:
