@@ -123,7 +123,7 @@ This would break any code that defines `..^` as a custom operator.
 
 ## Third-party collections
 
-We currently require third party collections to implement `<'T>.GetSlice` to support slicing syntax and `<'T>.Item` for indexing. We can additionally require third party collections to implement `<'T>.GetReverseIndex` if they wish to support from-the-end indexing and slicing. If they choose to do only the former, any `^i` indices will fail with a compile time error.
+We currently require third party collections to implement `<'T>.GetSlice` to support slicing syntax and `<'T>.Item` for indexing. We can additionally require third party collections to implement `<'T>.GetReverseIndex` if they wish to support from-the-end indexing and slicing. If they choose to do implement only `GetSlice`/`Item`, any `^i` indices will fail with a compile time error.
 
 ## Old versions of Core
 - New compiler + new core:
