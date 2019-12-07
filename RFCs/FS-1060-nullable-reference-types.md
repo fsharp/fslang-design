@@ -56,22 +56,25 @@ Some of the existing mitigations include:
 2. `let` and `let rec` bindings are always initialized prior to use.  This includes `let` bindings
    in classes, where checks are made to ensure that the uninitialized `this` is not leaked, e.g. via
    virtual dispatch to members in subclasses.
-
-3. F# does allow F#-declared reference types to be  decorated with `[<AllowNullLiteral>]`. This attribute
-   is useful for when an F# programmers frequently uses `null` for a particular type. However, this action
-   "infects" any other place where the type might be used, forcing those places to also account for `null`.
-
-4. In F# code unboxing protects against null values. That is, the meaning of `unbox` in F# depends on
+   
+3. In F# code unboxing protects against null values. That is, the meaning of `unbox` in F# depends on
    whether the type has null as a normal value or not.  For example, `unbox<int list>(null)` raises an
    exception, where `unbox<string>(null)` does not. The same applies for type casts and pattern matching
-   type tests.  This prevents unboxing being a backdoor route for creating `null`
+   type tests.  This prevents unboxing being a backdoor route for creating `null`.
+   
+4. F# does some analysis related to whether types have default values or not, covered below.
 
-5. F# does some analysis related to whether types have default values or not, covered below.
+5. The `null` literal may only be used with types that support it.
+   
+### Existing ways `null` can be introduced to an F# codebase
 
-6. The `null` literal may only be used with types that support it.
+Despite the F# language design being biased very heavily against `null` values, they are a reality that F# programmers must eventually deal with. They can leak into a codebase in a few ways:
 
-7.  The FSharp.Core library includes `Unchecked.defaultof<_>` and `Array.zeroCreate` which can generate nulls.  Also F# LINQ queries (relatively rarely used) include custom operators such as `exactlyOneOrDefault`.
+1. Interop with .NET types such as `string`, where `null` is a proper value, means that F# programmers have no way to tell if a value is `null`, requiring checks equivalent to what C# programmers need to do. As of C# 8, .NET metadata can contain information about the nullability of such a type, but F# does not understand this metadata. This can sometimes be a problem, because when you work with F# types that do not support `null` as a proper value, you need not check for `null`. Not getting into the habit of checking for `null` can result in unexpected exceptions at runtime when interoperating with .NET.
 
+2. F# does allow F#-declared reference types to be  decorated with `[<AllowNullLiteral>]`. This attribute is useful for when an F# programmers frequently uses `null` for a particular type. However, this action "infects" any other place where the type might be used, forcing those places to also account for `null`.
+
+3. The FSharp.Core library includes `Unchecked.defaultof<_>` and `Array.zeroCreate` functions which can generate nulls when the type specified is a reference type such as `string`.  Also F# LINQ queries (relatively rarely used) include custom operators such as `exactlyOneOrDefault`.
 
 ## Principles
 
