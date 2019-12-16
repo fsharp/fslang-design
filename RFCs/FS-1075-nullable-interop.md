@@ -140,9 +140,12 @@ This is backwards compatible.
 
 Don't fix this problem
 
-# Unresolved questions
+# Resolved questions
 [unresolved]: #unresolved-questions
 
-* [ ] Should we apply this rule to **all** Nullable-typed arguments on methods, not just optional ones, giving a value-to-Nullable rule at method calls?
+During the implementation the question came up:
 
+> Should we apply this rule to **all** Nullable-typed arguments on methods, not just optional ones, giving a value-to-Nullable rule at method calls?
+
+This is out of scope of this RFC
 
