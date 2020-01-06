@@ -13,19 +13,19 @@ This RFC covers the detailed proposal for this suggestion.
 # Summary
 [summary]: #summary
 
-The `fixed` expression should be extended `ref` types and any type that implements the C#-style [`GetPinnableReference()`](https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/proposals/csharp-7.3/pattern-based-fixed) pattern.
+The `fixed` expression should be extended `byref<'a>` types and any type that implements the C#-style [`GetPinnableReference()`](https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/proposals/csharp-7.3/pattern-based-fixed) pattern.
 
 # Motivation
 [motivation]: #motivation
 
-It should be possible to pin and take native references of types like `Span<T>` and `Memory<T>` via `fixed` statements, as this is useful especially in native interop scenarios. At the moment, there are no workarounds in pure F#: you can do this in C#, but it's impossible in F#. The best you can do is write that part of your code in C#.
+It should be possible to pin and take native references of types like `Span<'T>` and `Memory<'T>` via `fixed` statements, as this is useful especially in native interop scenarios. At the moment, there are no workarounds in pure F#: you can do this in C#, but it's impossible in F#. The best you can do is write that part of your code in C#.
 
 # Detailed design
 [design]: #detailed-design
 
 This section of the RFC needs more detail and specific examples. Please feel free to contribute by editing this file and submitting a PR to fsharp/fslang-design.
 
-This will require both type-checker and codegen changes. Statements in the following form: `use ptr = fixed expr` now need to successfully type-check for any `expr` where its type is a ref type or something that implements `GetPinnableReference()`. The code generator will need to generate code that pins these references and takes their addresses. For reference, here is the C# proposal: https://github.com/dotnet/csharplang/blob/master/proposals/csharp-7.3/pattern-based-fixed.md.
+This will require both type-checker and codegen changes. Statements in the following form: `use ptr = fixed expr` now need to successfully type-check for any `expr` where its type is a `byref<'a>` type or something that implements `GetPinnableReference()`. The code generator will need to generate code that pins these references and takes their addresses. For reference, here is the C# proposal: https://github.com/dotnet/csharplang/blob/master/proposals/csharp-7.3/pattern-based-fixed.md.
 
 # Drawbacks
 [drawbacks]: #drawbacks
@@ -35,7 +35,7 @@ This feature would introduce more special rules into the language.
 # Alternatives
 [alternatives]: #alternatives
 
-- Don't do this, providing no alternative for those who want to use Spans<T> and friends with native code from F#
+- Don't do this, providing no alternative for those who want to use Span<'T> and friends with native code from F#
 - Only extend `fixed` to support `ref` types
 - Only extend `fixed` to support `GetPinnableReference()`
   
