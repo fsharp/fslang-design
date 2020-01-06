@@ -1,7 +1,7 @@
-# F# RFC FS-1081 - Extend fixed expressions to support types that implement GetPinnableReference
+# F# RFC FS-1081 - Extend fixed expressions to support ref types and types implementing GetPinnableReference()
 
 
-The design suggestion [FILL ME IN](https://github.com/fsharp/fslang-suggestions/issues/fill-me-in) has been marked "approved in principle".
+The design suggestion [Extend fixed expressions to support more types](https://github.com/fsharp/fslang-suggestions/issues/761) has been marked "approved in principle".
 This RFC covers the detailed proposal for this suggestion.
 
 * [x] Approved in principle
@@ -13,12 +13,12 @@ This RFC covers the detailed proposal for this suggestion.
 # Summary
 [summary]: #summary
 
-One para explanation of the feature.
+The `fixed` expression should be extended `ref` types and any type that implements the C#-style [`GetPinnableReference()`](https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/proposals/csharp-7.3/pattern-based-fixed) pattern.
 
 # Motivation
 [motivation]: #motivation
 
-Why are we doing this? What use cases does it support? What is the expected outcome?
+It should be possible to pin and take native references of types like `Span<T>` and `Memory<T>` via `fixed` statements, as this is useful especially in native interop scenarios. At the moment, there are no workarounds in pure F#: you can do this in C#, but it's impossible in F#. The best you can do is write that part of your code in C#.
 
 # Detailed design
 [design]: #detailed-design
@@ -36,13 +36,15 @@ let add x y = x + y
 # Drawbacks
 [drawbacks]: #drawbacks
 
-Why should we *not* do this?
+This feature would introduce more special rules into the language.
 
 # Alternatives
 [alternatives]: #alternatives
 
-What other designs have been considered? What is the impact of not doing this?
-
+- Don't do this, providing no alternative for those who want to use Spans<T> and friends with native code from F#
+- Only extend `fixed` to support `GetPinnableReference()`
+- Only extend `fixed` to support `ref` types
+  
 # Compatibility
 [compatibility]: #compatibility
 
@@ -56,5 +58,4 @@ Please address all necessary compatibility questions:
 # Unresolved questions
 [unresolved]: #unresolved-questions
 
-What parts of the design are still TBD?
-
+None
