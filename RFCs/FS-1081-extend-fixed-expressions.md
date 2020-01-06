@@ -36,8 +36,8 @@ This feature would introduce more special rules into the language.
 [alternatives]: #alternatives
 
 - Don't do this, providing no alternative for those who want to use Spans<T> and friends with native code from F#
-- Only extend `fixed` to support `GetPinnableReference()`
 - Only extend `fixed` to support `ref` types
+- Only extend `fixed` to support `GetPinnableReference()`
   
 # Compatibility
 [compatibility]: #compatibility
