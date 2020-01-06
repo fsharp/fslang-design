@@ -23,15 +23,9 @@ It should be possible to pin and take native references of types like `Span<T>` 
 # Detailed design
 [design]: #detailed-design
 
-This is the bulk of the RFC. Explain the design in enough detail for somebody familiar
-with the language to understand, and for somebody familiar with the compiler to implement.
-This should get into specifics and corner-cases, and include examples of how the feature is used.
+This section of the RFC needs more detail and specific examples. Please feel free to contribute by editing this file and submitting a PR to fsharp/fslang-design.
 
-Example code:
-
-```fsharp
-let add x y = x + y
-```
+This will require both type-checker and codegen changes. Statements in the following form: `use ptr = fixed expr` now need to successfully type-check for any `expr` where its type is a ref type or something that implements `GetPinnableReference()`. The code generator will need to generate code that pins these references and takes their addresses. For reference, here is the C# proposal: https://github.com/dotnet/csharplang/blob/master/proposals/csharp-7.3/pattern-based-fixed.md.
 
 # Drawbacks
 [drawbacks]: #drawbacks
