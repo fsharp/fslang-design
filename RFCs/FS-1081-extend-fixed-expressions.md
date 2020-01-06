@@ -5,15 +5,15 @@ The design suggestion [Extend fixed expressions to support more types](https://g
 This RFC covers the detailed proposal for this suggestion.
 
 * [x] Approved in principle
-* [ ] [Suggestion](https://github.com/fsharp/fslang-suggestions/issues/fill-me-in)
-* [ ] Details: [under discussion](https://github.com/fsharp/fslang-design/issues/FILL-ME-IN)
-* [ ] Implementation: [In progress](https://github.com/Microsoft/visualfsharp/pull/FILL-ME-IN)
+* [ ] [Suggestion](https://github.com/fsharp/fslang-suggestions/issues/761)
+* [ ] Details: [under discussion](https://github.com/fsharp/fslang-design/issues/421)
+* [ ] Implementation: [Not started]
 
 
 # Summary
 [summary]: #summary
 
-The `fixed` expression should be extended `byref<'a>` types and any type that implements the C#-style [`GetPinnableReference()`](https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/proposals/csharp-7.3/pattern-based-fixed) pattern.
+The `fixed` expression should be extended to support `byref<'a>` types and any type that implements the C#-style [`GetPinnableReference()`](https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/proposals/csharp-7.3/pattern-based-fixed) pattern.
 
 # Motivation
 [motivation]: #motivation
