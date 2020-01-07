@@ -15,7 +15,7 @@ Shipping preview versions of the F# language early is very difficult, because th
 C# has the same issue and has chosen to ship preview C# lang features in the RTM builds, concealed by the --langversion switch.  F# also has a --langversion switch, however, many F# compiler features rely on new APIs added to FSharp.Core.
 For example,  `nameof` and the 3D and 4D slicing enhancement APIs all reside in FSharp.Core with no good way to let developers know that these are a part of a preview language feature.
 
-This feature will allow us to ship preview library features in the FSharp.Core dll, in such a way that developers will have a warning if they try to use them from a compiler without the preview switch specified, but will not have to worry about warnings when preview is specified.
+This feature will allow us to ship preview library features in the FSharp.Core, in such a way that developers will have a warning if they try to use them from a compiler without the preview switch specified, but will not have to worry about warnings when preview is specified.
 
 # Detailed design
 [design]: 
