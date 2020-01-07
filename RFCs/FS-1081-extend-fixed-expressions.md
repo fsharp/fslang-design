@@ -23,9 +23,17 @@ It should be possible to pin and take native references of types like `Span<'T>`
 # Detailed design
 [design]: #detailed-design
 
-This section of the RFC needs more detail and specific examples. Please feel free to contribute by editing this file and submitting a PR to fsharp/fslang-design.
+Currently, statements of the following form: `use ptr = fixed expr` are allowed when `expr` is one of:
+* Array
+* String
+* Address of an array element
+* Address of a field
 
-This will require both type-checker and codegen changes. Statements in the following form: `use ptr = fixed expr` now need to successfully type-check for any `expr` where its type is a `byref<'a>` type or something that implements `GetPinnableReference()`. The code generator will need to generate code that pins these references and takes their addresses. For reference, here is the C# proposal: https://github.com/dotnet/csharplang/blob/master/proposals/csharp-7.3/pattern-based-fixed.md.
+FS-1081 adds the following to the list of allowed types for `expr`:
+* byref
+* any 'a when 'a implements `GetPinnableReference() : unit -> byref<'t>`
+
+The code generator will need to generate code that pins these references and takes their addresses. For reference, here is the C# proposal: https://github.com/dotnet/csharplang/blob/master/proposals/csharp-7.3/pattern-based-fixed.md.
 
 # Drawbacks
 [drawbacks]: #drawbacks
@@ -36,7 +44,7 @@ This feature would introduce more special rules into the language.
 [alternatives]: #alternatives
 
 - Don't do this, providing no alternative for those who want to use Span<'T> and friends with native code from F#
-- Only extend `fixed` to support `ref` types
+- Only extend `fixed` to support `byref<'a>` types
 - Only extend `fixed` to support `GetPinnableReference()`
   
 # Compatibility
@@ -44,10 +52,13 @@ This feature would introduce more special rules into the language.
 
 Please address all necessary compatibility questions:
 * Is this a breaking change?
+  * No.
 * What happens when previous versions of the F# compiler encounter this design addition as source code?
+  * A pre-FS1081 F# compiler will generate a compiler error.
 * What happens when previous versions of the F# compiler encounter this design addition in compiled binaries?
+  * A pre-FS1081 F# compiler will not encounter any issues because any differences in codegen that this design addition creates will be contained to method/function body IL, and will not affect the public interface of user code.
 * If this is a change or extension to FSharp.Core, what happens when previous versions of the F# compiler encounter this construct?
-
+  * N/A - no changes to FSharp.Core are prescribed by FS-1081.
 
 # Unresolved questions
 [unresolved]: #unresolved-questions
