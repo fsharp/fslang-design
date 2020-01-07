@@ -11,7 +11,7 @@ This RFC covers the detailed proposal for this suggestion.
 Allow --langversion:preview to disable compiler warnings from APIs using the ExperimentalAttribute().
 
 # Motivation
-[motivation]: Shipping preview versions of the F# language early is very difficult, because there isn't a delivery mechanism that is seperate from Visual Studio or the DotNet Cli.
+Shipping preview versions of the F# language early is very difficult, because there isn't a delivery mechanism that is separate from Visual Studio or the .NET CLI.
 C# has the same issue and has chosen to ship preview C# lang features in the RTM builds, concealed by the --langversion switch.  F# also has a --langversion switch, however, many F# compiler features rely on new APIs added to FSharp.Core.
 e.g. nameof and the 3D and 4D slicing enhancments APIs.
 
