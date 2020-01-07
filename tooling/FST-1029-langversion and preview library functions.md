@@ -8,7 +8,7 @@ This RFC covers the detailed proposal for this suggestion.
 
 
 # Summary
-[summary]: Allow --langversion:preview to disable compiler warnings from APIs using the ExperimentalAttribute().
+Allow --langversion:preview to disable compiler warnings from APIs using the ExperimentalAttribute().
 
 # Motivation
 [motivation]: Shipping preview versions of the F# language early is very difficult, because there isn't a delivery mechanism that is seperate from Visual Studio or the DotNet Cli.
