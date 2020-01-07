@@ -18,7 +18,6 @@ For example,  `nameof` and the 3D and 4D slicing enhancement APIs all reside in 
 This feature will allow us to ship preview library features in the FSharp.Core, in such a way that developers will have a warning if they try to use them from a compiler without the preview switch specified, but will not have to worry about warnings when preview is specified.
 
 # Detailed design
-[design]: 
 In order to not change the handling of any existing ExperimentalAttributes, we look to see if the message contains the text: "--langversion:preview"
 If that text is found then no warning is produced.
 
