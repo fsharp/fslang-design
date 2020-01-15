@@ -10,7 +10,7 @@ This RFC covers the detailed proposal for this suggestion.
 
 # Summary
 
-Add the `uint` type abbreviation to FSharp.Core to align with the `int` type abbreviation.
+Add the `uint` type abbreviation and casting function to FSharp.Core to align with the `int` type abbreviation and casting function.
 
 # Motivation
 
@@ -21,6 +21,8 @@ The following three type abbreviations exist in FSharp.Core today:
 * `uint32`
 
 The `int` abbreviation is equivalent to `int32`. However, there is no corresponding `uint` abbreviation. This feels like an omission more than a deliberate decision. In fact, the F# compiler already assumes that the abbreviation exists in [formatting](https://github.com/dotnet/fsharp/blob/master/src/utils/sformat.fs#L147) and [an error message](https://github.com/dotnet/fsharp/blob/master/src/fsharp/FSComp.txt#L790). Because of this, the type abbreviation should be added.
+
+Additionally, there is an `int` casting function, but not `uint` equivalent.
 
 # Detailed design
 
@@ -37,6 +39,18 @@ let f (x: uint) = ()
 ```
 
 Formatting with `%u` should also work because this is an abbreviation for the same type as `uint32`.
+
+This also includes a `uint` function in FSharp.Core, allowing you to cast to `uint` instead of needing to write `uint32`:
+
+```fsharp
+let f x: uint = uint x
+```
+
+Its signature is as follows:
+
+```fsharp
+val inline uint: value:^T -> int when ^T: (static member op_Explicit: ^T -> int) and default ^T: int
+```
 
 # Drawbacks
 
