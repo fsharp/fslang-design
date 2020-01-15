@@ -49,7 +49,7 @@ let f x: uint = uint x
 Its signature is as follows:
 
 ```fsharp
-val inline uint: value:^T -> int when ^T: (static member op_Explicit: ^T -> int) and default ^T: int
+val inline uint: value:^T -> uint when ^T: (static member op_Explicit: ^T -> uint) and default ^T: uint
 ```
 
 # Drawbacks
