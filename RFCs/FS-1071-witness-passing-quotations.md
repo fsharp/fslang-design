@@ -11,8 +11,8 @@ This RFC covers the detailed proposal for this suggestion and some related desig
 # Summary
 [summary]: #summary
 
-F# quotations of code using SRTP constraint trait calls don't't carry sufficient information
-to represent the proper semantics of the code, specifically they are missing accurate information concerning the
+F# quotations of code using SRTP constraint trait calls don't carry sufficient information
+to represent the proper semantics of the code. Specifically the quotations are missing accurate information concerning the
 resolution of SRTP constraints. This means these quotations can't be accurately executed.
 This RFC addresses this problem by incorporating the necessary
 information into both quotations and the code laid down for dynamic interpretation of quotations.
