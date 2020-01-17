@@ -7,7 +7,7 @@ These design suggestions:
 have been marked "approved in principle". This RFC covers the detailed proposal for these
 
 * [x] Approved in principle
-* [ ] Implementation: [In progress](https://github.com/Microsoft/visualfsharp/pull/3582)
+* [ ] Implementation: [In progress](https://github.com/dotnet/fsharp/pull/6805)
 
 
 # Summary
@@ -41,7 +41,7 @@ It is reasonable to use extension methods to retrofit operators and other semant
 
 The main technical challenges are
 
-- the precise specificiation of scoping, operator resolution and SRTP constraints
+- the precise specification of scoping, operator resolution and SRTP constraints
 
 - backwards compat
 
@@ -49,7 +49,7 @@ The main technical challenges are
 # Drawbacks
 [drawbacks]: #drawbacks
 
-* This slightly strengthens the "type-class"-like capabilities of SRTP resolution. This means that people may increasingly use SRTP code as a way to write generic, reusable code rather than passing paramaters explicitly.  While this is reasonable for generic arithmetic code, it has many downsides when applied to other things.
+* This slightly strengthens the "type-class"-like capabilities of SRTP resolution. This means that people may increasingly use SRTP code as a way to write generic, reusable code rather than passing parameters explicitly.  While this is reasonable for generic arithmetic code, it has many downsides when applied to other things.
 
 # Alternatives
 [alternatives]: #alternatives
