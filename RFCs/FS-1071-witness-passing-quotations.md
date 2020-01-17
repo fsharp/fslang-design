@@ -140,7 +140,7 @@ For example, for an SRTP-constraint `when  ^a : (static member (+) :  ^a * ^a ->
 Because this is primarily about quotations, you only see these witnesses by matching on the quotation using the new
 `CallWithWitnesses` active pattern when processing the quotation.
 
-This measn that each witness effectively records the resolution/implementation of a trait constraint
+This means that each witness effectively records the resolution/implementation of a trait constraint
 in quotations and/or compiled code.
 
 Note that passing implicit witnesses is the standard technique for implementing Haskell type classes.
