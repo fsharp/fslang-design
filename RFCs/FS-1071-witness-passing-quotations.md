@@ -11,35 +11,33 @@ This RFC covers the detailed proposal for this suggestion and some related desig
 # Summary
 [summary]: #summary
 
-F# quotations of code using SRTP constraint trait calls doesn't carry sufficient information
-to represent the semantic intent of the code, specifically it is missing any record of the
-resolution of SRTP constraints. This RFC addresses this problem by incorporating the necessary
+F# quotations of code using SRTP constraint trait calls don't't carry sufficient information
+to represent the proper semantics of the code, specifically they are missing accurate information concerning the
+resolution of SRTP constraints. This means these quotations can't be accurately executed.
+This RFC addresses this problem by incorporating the necessary
 information into both quotations and the code laid down for dynamic interpretation of quotations.
 
 # Detailed Description of Problem
 
 F# quotations using SRTP-constrained generic code (such as `+` or `List.sumBy`) does not carry any information about
-how an SRTP constraint has been resolved, requiring adhoc re-resolution of SRTP
-constraints at runtime.  
+how an SRTP constraint has been resolved.
+This affects quotation processing or execution, i.e. code that does any of the following:
 
-The problem affects quotation processing or dynamic invocation of all `inline` code, and thus particularly affects evaluating or otherwise processing the following:
+a. evaluates quotations of code that uses calls to generic inlined math code.
 
-a. quotations of code that uses calls to generic inlined math code.
+b. evaluates quotations of code that uses user-defined SRTP operators (e.g. anything using FSharpPlus or anything like it, or just plain user-defined code).  RFCs like [#4726](https://github.com/Microsoft/visualfsharp/pull/4726) make this kind of code more common.
 
-b. quotations of code that uses user-defined SRTP operators (e.g. anything using FSharpPlus or anything like it, or just plain user-defined code).  RFCs like [#4726](https://github.com/Microsoft/visualfsharp/pull/4726) make this kind of code more common.
+c. evaluates quotations of code that uses any future extensions of SRTP features such as [RFC FS-1043](https://github.com/fsharp/fslang-design/blob/24d871a30b5c384579a27fd49fdf9dfb29b1080d/RFCs/FS-1043-extension-members-for-operators-and-srtp-constraints.md), see [#3582](https://github.com/Microsoft/visualfsharp/pull/3582)
 
-c. quotations of code that uses any future extensions of SRTP features such as [RFC FS-1043](https://github.com/fsharp/fslang-design/blob/24d871a30b5c384579a27fd49fdf9dfb29b1080d/RFCs/FS-1043-extension-members-for-operators-and-srtp-constraints.md), see [#3582](https://github.com/Microsoft/visualfsharp/pull/3582)
+d. evaluates quotations that uses implicit operators, discussed in [#6344](https://github.com/Microsoft/visualfsharp/pull/6344)
 
-d. quotations that uses implicit operators, discussed in [#6344](https://github.com/Microsoft/visualfsharp/pull/6344)
-
-We worked around many of these problems in FSharp.Core in F# 2.0 but did not solve its
-root cause, and haven't addressed the problem since. This problem spreads through any tools that process quotations
+We worked around many of these problems in FSharp.Core in F# 2.0 but did not solve the
+root cause of the problem, and haven't addressed the problem since. This problem spreads through any tools that process quotations
 (e.g. evaluators, or transpilers), requiring many special-case workarounds when operators are encountered, and causes
 FSharp.Core to contain a bunch of (sometimes half-implemented) [reflection-based primitives](https://github.com/Microsoft/visualfsharp/blob/44c7e10ca432d8f245a6d8f8e0ec19ca8c72edaf/src/fsharp/FSharp.Core/prim-types.fs#L2557)
 to re-solve SRTP constraints at runtime in order to support quotation evaluation. This also affects code generation for F# type providers, see https://github.com/fsprojects/FSharp.TypeProviders.SDK/pull/313.
 
-This RFC (TBD) and PR solves this issue at its core by changing the quotations to include "witnesses" for trait constraints
-as seen by quotations.
+This RFC solves this issue at its core by changing the quotations to include "witnesses" for trait constraints.
 
 The problem can be seen in even tiny pieces of generic math code. We'll use this micro example of some generic inline math code:
 ```fsharp
@@ -64,9 +62,9 @@ then consider
 ```
 and
 ```
-   <@ negate TimeSpan.Zero @> |> eval
+    <@ negate (System.TimeSpan.FromHours(1.0)) @> |> eval
 ```
-These both give exceptions like this:
+Prior to this RFC these both give exceptions like this:
 ```
 System.NotSupportedException: Dynamic invocation of op_UnaryNegation is not supported
    at Microsoft.FSharp.Linq.RuntimeHelpers.LeafExpressionConverter.EvaluateQuotation(FSharpExpr e)
@@ -120,13 +118,13 @@ well together: it's a feature interaction that has never really been resolved pr
 
 This PR shifts us to use witness passing.   That is, 
 
-1. In each quotation using a generic inlined function, a witness is recorded for the solution of each trait constraint. 
+1. In each quotation `Call` using a generic inlined function, a witness is recorded for the solution of each trait constraint. 
 
 2. You can access this information via the new `Quotations.Patterns.CallWithWitnesses` active pattern, and reconstruct the node using `Quotations.Expr.CallWithWitnesses`.
 
-3. The method signature for each SRTP-constrained generic inlined function has one extra argument for each SRTP constraint
+3. The compiled method signature for each SRTP-constrained generic inlined function has one extra argument for each SRTP constraint. This is in a new method with a new distinguished suffic to the name.
 
-4. The emitted IL for each SRTP-constrained generic inlined function either invokes of passes the witnesses as necessary, and now never emits the `NotSUpportedException` code.
+4. The emitted IL for each SRTP-constrained generic inlined function either passes the necessary witnesses, and now never emits the `NotSupportedException` code.
 
 ### Witnesses
 
@@ -135,11 +133,11 @@ function is called at a non-generic, specific type.
 
 For example, for an SRTP-constraint `when  ^a : (static member (+) :  ^a * ^a ->  ^a)`:
 
-* You will see `(fun (a: double) (b: double) -> a + b)` passed in at the place where the code is specialized at type `double`.
+* You will see `(fun (a: double) (b: double) -> LanguagePrimtiives.AdditionDynamic a b)` passed in at the place where the code is specialized at type `double`.
 
 * You will see `(fun (a: TimeSpan) (b: TimeSpan) -> TimeSpan.op_Addition(a,b))` passed in at the place where the code is specialized at type `TimeSpan`.
 
-Because this is only about quotations, you only see these witnesses by matching on the quotation using the new
+Because this is primarily about quotations, you only see these witnesses by matching on the quotation using the new
 `CallWithWitnesses` active pattern when processing the quotation.
 
 This measn that each witness effectively records the resolution/implementation of a trait constraint
@@ -159,7 +157,7 @@ of type
 val inline negate: x: ^a ->  ^a when  ^a : (static member ( ~- ) :  ^a ->  ^a)
 ``` 
 the compiled form of this code is now two methods - the first is emitted for compatibility and the second is
-the witness-carrying version of the method which has `WithWitnesses` added to the name
+the witness-carrying version of the method which has `$W` added to the name
 ```
 .method public static !!a  negate<a>(!!a x) cil managed
 {
@@ -168,7 +166,7 @@ the witness-carrying version of the method which has `WithWitnesses` added to th
   IL_000a:  throw
 } 
 
-.method public static !!a  negateWithWitnesses<a>(class FSharpFunc`2<!!a,!!a> op_UnaryNegation, !!a x) 
+.method public static !!a  negate$W<a>(class FSharpFunc`2<!!a,!!a> op_UnaryNegation, !!a x) 
 {
   IL_0000:  ldarg.0
   IL_0001:  ldarg.1
@@ -176,10 +174,11 @@ the witness-carrying version of the method which has `WithWitnesses` added to th
   IL_0009:  ret
 } 
 ```
+Functions and methods that are not inline or have no SRTP constraints have no extra entry points.
 
-### Accessing witness information in quotations
+### Library additions for accessing witness information in quotations
 
-Library additions:
+There are library additions for accessing witness information in quotations:
 
 ```fsharp
 namespace FSharp.Core.Quotations
@@ -209,17 +208,179 @@ module Patterns =
     [<CompiledName("CallWithWitnessesPattern")>]
     val (|CallWithWitnesses|_|) : input:Expr -> (Expr option * MethodInfo * MethodInfo * Expr list * Expr list) option
 ```
+
+### Library additions for built-in witnesses
+
+The following functions are used as witnesses for built-in operations like `+`.  Some of these already exist in FSharp.Core, the others are freshly added.
+
+```fsharp
+namespace FSharp.Core
+
+module LanguagePrimitives = 
+        val GenericZeroDynamic : unit -> 'T 
+        val GenericOneDynamic : unit -> 'T 
+        val AdditionDynamic : x:'T1 -> y:'T2 -> 'U
+        val CheckedAdditionDynamic : x:'T1 -> y:'T2 -> 'U
+        val MultiplyDynamic : x:'T1 -> y:'T2 -> 'U
+        val CheckedMultiplyDynamic : x:'T1 -> y:'T2 -> 'U
+        val SubtractionDynamic : x:'T1 -> y:'T2 -> 'U
+        val DivisionDynamic : x:'T1 -> y:'T2 -> 'U
+        val UnaryNegationDynamic : value:'T -> 'U
+        val ModulusDynamic : x:'T1 -> y:'T2 -> 'U
+        val CheckedSubtractionDynamic : x:'T1 -> y:'T2 -> 'U
+        val CheckedUnaryNegationDynamic : value:'T -> 'U
+        val LeftShiftDynamic : value:'T1 -> shift:'T2 -> 'U
+        val RightShiftDynamic : value:'T1 -> shift:'T2 -> 'U
+        val BitwiseAndDynamic : x:'T1 -> y:'T2 -> 'U
+        val BitwiseOrDynamic : x:'T1 -> y:'T2 -> 'U
+        val ExclusiveOrDynamic : x:'T1 -> y:'T2 -> 'U
+        val LogicalNotDynamic : value:'T -> 'U
+        val ExplicitDynamic : value:'T -> 'U
+        val LessThanDynamic : x:'T1 -> y:'T2 -> 'U
+        val GreaterThanDynamic : x:'T1 -> y:'T2 -> 'U
+        val LessThanOrEqualDynamic : x:'T1 -> y:'T2 -> 'U
+        val GreaterThanOrEqualDynamic : x:'T1 -> y:'T2 -> 'U
+        val EqualityDynamic : x:'T1 -> y:'T2 -> 'U
+        val InequalityDynamic : x:'T1 -> y:'T2 -> 'U
+        val DivideByIntDynamic : x:'T -> y:int -> 'T
+
+// These are pre-existing and act as suitable witnesses
+module OperatorIntrinsics =
+        val AbsDynamic : x:'T -> 'T 
+        val AcosDynamic : x:'T -> 'T 
+        val AsinDynamic : x:'T -> 'T 
+        val AtanDynamic : x:'T -> 'T 
+        val Atan2Dynamic : y:'T1 -> x:'T1 -> 'T2
+        val CeilingDynamic : x:'T -> 'T 
+        val ExpDynamic : x:'T -> 'T 
+        val FloorDynamic : x:'T -> 'T 
+        val TruncateDynamic : x:'T -> 'T 
+        val RoundDynamic : x:'T -> 'T 
+        val SignDynamic : 'T -> int
+        val LogDynamic : x:'T -> 'T 
+        val Log10Dynamic : x:'T -> 'T 
+        val SqrtDynamic : 'T1 -> 'T2
+        val CosDynamic : x:'T -> 'T 
+        val CoshDynamic : x:'T -> 'T 
+        val SinDynamic : x:'T -> 'T 
+        val SinhDynamic : x:'T -> 'T 
+        val TanDynamic : x:'T -> 'T 
+        val TanhDynamic : x:'T -> 'T 
+        val PowDynamic : x:'T -> y:'U -> 'T 
+
+
+```
+For example, for the SRTP-constraint `when  ^a : (static member (+) :  ^a * ^a ->  ^a)` you will see `(fun (a: double) (b: double) -> LanguagePrimtiives.AdditionDynamic a b)` passed at the place where the code is specialized at type `double`.
+
+The above are used whenever a "built in" constraint solution is determined by the F# compiler, e.g. in the cases where no corresponding `op_Addition` member actually exists on a type such as `System.Double`, but rather the F# compiler simulates the existence of such a type.
+
+
+### Implicit operator trait calls now permitted
+
+Quotations can now contain implicit operator uses, including the dynamic operator, e.g. 
+```fsharp
+type Foo(s: string) =
+     member _.S = s
+     static member (?) (foo : Foo, name : string) = foo.S + name
+     static member (++) (foo : Foo, name : string) = foo.S + name
+     static member (?<-) (foo : Foo, name : string, v : string) = ()
+
+let foo = Foo("hello, ")
+
+let q2 = <@ foo ? uhh @>
+let q4 = <@ foo ? uhh <- "hm" @>
+let q5 = <@ foo ++ "uhh" @>
+
+```
+Previously these were not permitted.  The quotation is an application of a lambda expression which is the solution to the implied SRTP constraint.
+```fsharp
+val q2 : Quotations.Expr<string> =
+  Application (Application (Lambda (arg0,
+                                  Lambda (arg1,
+                                          Call (None, op_Dynamic, [arg0, arg1]))),
+                          PropertyGet (None, foo, [])), Value ("uhh"))
+val q4 : Quotations.Expr<unit> =
+  Application (Application (Application (Lambda (arg0,
+                                               Lambda (arg1,
+                                                       Lambda (arg2,
+                                                               Call (None,
+                                                                     op_DynamicAssignment,
+                                                                     [arg0, arg1,
+                                                                      arg2])))),
+                                       PropertyGet (None, foo, [])),
+                          Value ("uhh")), Value ("hm"))
+val q5 : Quotations.Expr<string> =
+  Application (Application (Lambda (arg0,
+                                  Lambda (arg1,
+                                          Call (None, op_PlusPlus, [arg0, arg1]))),
+                          PropertyGet (None, foo, [])), Value ("uhh"))
+```
+
+
+### Accessing witness information of `ReflectedDefinition`
+
+ReflectedDefinitions may contain invocations of SRTP constraints, e.g.
+
+```fsharp
+[<ReflectedDefinition>]
+let inline f1 (x: ^T) = ( ^T : (static member Foo: int -> int) (3))
+
+[<ReflectedDefinition>]
+let inline f2 x y z = (x - y) + z
+```
+The implicit arguments are visible when accessing the reflected definition via the witness-passing MethodInfo. For example, given:
+```fsharp
+type C() = 
+    static member Foo (x:int) = x
+
+[<ReflectedDefinition>]
+let inline f3 (x: ^T) =
+    ( ^T : (static member Foo: int -> int) (3))
+```
+Then
+```fsharp
+match <@ f3 (C()) @> with
+| Quotations.Patterns.Call(_, mi, _) -> Quotations.Expr.TryGetReflectedDefinition(mi)
+```
+returns `None` because the `Call` pattern has accessed the non-witness-passing MethodInfo.  However this:
+```fsharp
+match <@ f3 (C()) @> with 
+| Quotations.Patterns.CallWithWitnesses(_, mi, miw, _, _) -> Quotations.Expr.TryGetReflectedDefinition(miw)
+```
+returns a quotation of this shape:
+```fsharp
+     Lambda (Foo, Lambda (x, Application (Foo, Value (3))))
+```
+where the `Foo` argument is the implicit witness being passed to `f3$W`.  Note the `miw` MethodInfo is the method
+for `f3$W` and has a ReflectedDefinition (because it is informationally complete and actually has witnesses), where
+`f3` does not.
+
+### Witnesses not available for SRTP-constrained class type parameters
+
+Witnesses are not available for SRTP-constrained class type parameters, e.g. 
+
+```fsharp
+    type C< ^a when ^a : (static member (+) : ^a * ^a -> ^a) >() =
+        ...
+```
+No witnesses are available for quotations involving invocation associated with these constraints. In these cases
+`null` is passed as a witness.  Instead, SRTP constraints should only be used on method and function definitions
+if accurate witnesses are required.
+
+
+
 ### Code samples
 
 For example:
 ```fsharp
+open FSharp.Quotations.Patterns
 let q = <@ 1 + 2 @> 
 
 match q with 
 | CallWithWitnesses(None, minfo1, minfo2, witnessArgs, args) -> 
-    printfn "minfo1 = %A" minfo1.Name // T3 op_Addition<int32,int32,int32>(T1 x, T2 y)
-    printfn "minfo2 = %A" minfo2.Name // T3 op_AdditionWithWitnesses<int32,int32,int32>(FSharpFunc<T1,FSharpFunc<T2,T3>> op_Addition, T1 x, T2 y)
-    printfn "witnessArgs = %A" witnessArgs // [ Lambda(Call(op_Addition(1,1)) ]
+    printfn "minfo1 = %A" minfo1.Name
+    printfn "minfo2 = %A" minfo2.Name
+    printfn "witnessArgs = %A" witnessArgs
     printfn "args = %A" args
 | _ ->
     failwith "fail"
@@ -227,8 +388,8 @@ match q with
 gives
 ```fsharp
 minfo1: T3 op_Addition<int32,int32,int32>(T1 x, T2 y)
-minfo2: T3 op_AdditionWithWitnesses<int32,int32,int32>(FSharpFunc<T1,FSharpFunc<T2,T3>> op_Addition, T1 x, T2 y)
-witnessArgs = [ Lambda(Call(op_Addition(1,1)) ]
+minfo2: T3 op_Addition$W<int32,int32,int32>(FSharpFunc<T1,FSharpFunc<T2,T3>> op_Addition, T1 x, T2 y)
+witnessArgs = [Lambda (arg0_0, Lambda (arg1_0, Call (None, AdditionDynamic, [arg0_0, arg1_0])))]
 args = [ Const(1); Const(2) ]
 ```
 
@@ -252,10 +413,18 @@ Relevant code
 # Alternatives
 [alternatives]: #alternatives
 
+### No longer require 'inline'
+
 Although the RFC is only relevant to reflection and quotations, the witness passing could also be leveraged
 by future implementations of type-class like functionality, e.g. simply allow generic math code without
 the use of `inline`, (e.g. `let generic add x = x + x`).  However such code would be substantially slower
 if not inlined, which is why we always currently always require it to be inlined. 
+
+### Choice of name for alternative entry point
+
+This RFC suffixes `$W` for the entry point.  Alternatives such as `WithWitnesses` were consdiered.
+
+
 
 # Compatibility
 [compatibility]: #compatibility
@@ -300,10 +469,5 @@ bty.GetMethod("MyInlineFunction") // we want this to continue to succeed without
 # Unresolved questions
 [unresolved]: #unresolved-questions
 
-* [ ] The `CallWithWitnesses` node requires both the legacy and updated MethodInfos to be provided. This may be painful if people
-      attempt to create this node from nothing.
+None
 
-* [ ] Adjust the LeafExpressionEvaluator to actually use the extra `CallWithWitnesses` node to do better evaluation.
-
-* [ ] Complete the witnesses passed for primitives (they are currently broken). The witnesses passed for
-      SRTP constraints over user-defined types are accurate
