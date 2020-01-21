@@ -4,7 +4,7 @@ The design suggestion [Improve interop to `Nullable` optional parameters](https:
 This RFC covers the detailed proposal for this suggestion and some related design relaxations.
 
 * [x] Approved in principle
-* [ ] [Discussion](TBD)
+* [x] [Discussion](https://github.com/fsharp/fslang-design/issues/428)
 * [x] [Implementation](https://github.com/dotnet/fsharp/pull/7296)
 
 # Summary
