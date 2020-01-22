@@ -13,7 +13,7 @@ have been marked "approved in principle". This RFC covers the detailed proposal 
 # Summary
 [summary]: #summary
 
-Extension methods are previously ignored by SRTP constraint resolution.  This RFC mean they are taken into account.
+Extension methods are previously ignored by SRTP constraint resolution.  This RFC means they are taken into account.
 
 For example, consider
 ```fsharp
@@ -33,17 +33,19 @@ foo.fs(4,16): error FS0001: The type 'int' does not match the type 'string'
 # Motivation
 [motivation]: #motivation
 
-It is reasonable to use extension methods to retrofit operators and other semantics on to existing types. This "completes the picture" with everything allowed by extension methods in a natural way.
+It is reasonable to use extension methods to retrofit operators and other semantics on to existing types. This "completes the picture" as extension methods in a natural way.
 
 
 # Detailed design
 [design]: #detailed-design
 
-The main technical challenges are
+The proposed change is as follows:
 
-- the precise specification of scoping, operator resolution and SRTP constraints
+1. Each SRTP constraint incorporates the relevant extension methods in-scope at the point the SRTP constraint is asserted (in the terminology of the compiler, this is the point a generic construct is used and "freshened").  The accessibility domain (i.e. the methods in scope) is also noted as part of the constraint.  Both of these pieces of information are propagated as part of the constraint.
 
-- backwards compat
+2. When attempting to solve the constraint, the extension methods are taken into account if overload resolution is attempted for the constraint.
+
+3. Built-in constraint solutions for things like `op_Addition` constraints are applied if and when the relevant types match precisely, and are applied even if some extension methods of that name are available.
 
 
 # Drawbacks
@@ -55,6 +57,7 @@ The main technical challenges are
 [alternatives]: #alternatives
 
 1. Don't do it
+
 
 # Compatibility
 [compatibility]: #compatibility
