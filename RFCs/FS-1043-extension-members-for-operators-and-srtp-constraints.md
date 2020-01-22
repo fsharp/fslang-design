@@ -39,13 +39,17 @@ It is reasonable to use extension methods to retrofit operators and other semant
 # Detailed design
 [design]: #detailed-design
 
-The proposed change is as follows:
+The proposed change is as follows, in the internal logic of the constraint solving process:
 
-1. Each SRTP constraint incorporates the relevant extension methods in-scope at the point the SRTP constraint is asserted (in the terminology of the compiler, this is the point a generic construct is used and "freshened").  The accessibility domain (i.e. the methods in scope) is also noted as part of the constraint.  Both of these pieces of information are propagated as part of the constraint.
+1. During constraint solving, the record of each SRTP constraint incorporates the relevant extension methods in-scope at the point the SRTP constraint is asserted. That is, at the point a generic construct is used and "freshened".  The accessibility domain (i.e. the information indicating accessible methods) is also noted as part of the constraint.  Both of these pieces of information are propagated as part of the constraint. We call these the *trait possible extension solutions* and the *trait accessor domain*
 
-2. When attempting to solve the constraint, the extension methods are taken into account if overload resolution is attempted for the constraint.
+2. When checking whether one unsolved SRTP constraint A *implies* another B (note: this a process used to avoid asserting duplicate constraints when propagating a constraint from one type parameter to another - see `implies` in `ConstraintSolver.fs`), both the possible extension solutions and the accessor domain of A are ignored, and those of the existing asserted constraint are preferred.
 
-3. Built-in constraint solutions for things like `op_Addition` constraints are applied if and when the relevant types match precisely, and are applied even if some extension methods of that name are available.
+3. When checking whether one unsolved SRTP constraint is *consistent* with another (note: this is a process used to check for inconsistency errors amongst a set of constraints - see `consistent` in `ConstraintSolver.fs`), the possible extension solutions and accessor domain are ignored.
+
+4. When attempting to solve the constraint via overload resolution, the possible extension solutions which are accessible from the trait accessor domain are taken into account.  
+
+5. Built-in constraint solutions for things like `op_Addition` constraints are applied if and when the relevant types match precisely, and are applied even if some extension methods of that name are available.
 
 
 # Drawbacks
@@ -67,4 +71,7 @@ TBD (there are important questions to look at here)
 # Unresolved questions
 [unresolved]: #unresolved-questions
 
-TBD
+* [ ] Points 2 & 3 (`consistent` and `implies`) are subtle and I will attempt to expand the test cases where constraints flow together from different accessibility
+domains to try to identify a case where this matters. However it's actually very hard and artificial to construct tests where this matters, because SRTP constraints are typically freshened
+and solved within quite small scopes where the available methods and accessibility domain is always consistent.
+
