@@ -66,7 +66,22 @@ The proposed change is as follows, in the internal logic of the constraint solvi
 # Compatibility
 [compatibility]: #compatibility
 
-TBD (there are important questions to look at here)
+Status: We are trying to determine when/if this RFC is a breaking change.
+
+We assume it must be a breaking change, because additional methods are taken into account in the overload resolution used in SRTP constraint resolution. That must surely cause it to fail where it would have succeeded before. However,
+
+1. All the new methods are extension methods, which are lower priority in overload resolution
+
+Even if it's theoretically a breaking change, we may still decide it's worthwhile because the risk of change is low.  This seems plausible because
+
+1. Taking the extra existing extension methods into account is natural and a lot like an addition to the .NET libraries causing overload resolution to fail. We don't really consider that a breaking change (partly because this is measured differently for C# and F#, as they have different sensitivities to adding overloads).
+
+2. For the built-in operators like `(+)`, there will be relatively few such candidate extension methods in F# code because we give warnings when users try to add extension methods for these
+
+3. Nearly all SRTP constraints (at least the ones for built-in operators) are on static members, and C# code can't introduce extension members that are static - just instance ones. So C# extension members will only cause compat concern for F# code using SRTP constraints on instance members, AND where the C# extension methods make a difference to overload resolution.
+
+Still, we're pretty sure this must be a breaking change. We would appreciate help construct test cases where it is/isn't.
+
 
 # Unresolved questions
 [unresolved]: #unresolved-questions
