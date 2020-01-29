@@ -125,6 +125,13 @@ C.NullableOptionals2(x = Nullable 6)   // produces 4 // can provide nullable for
 C.NullableOptionals2(d = Nullable 8.0)   // produces 6 
 ```
 
+Some additional overload resolution rules are required to allow method sets to distinguish between method overloads when the types of two arguments differ only by nullability, e.g. one method has an argument of type `X` and another has an argument of type `Nullable<X>`, then the former is preferred.  The specific rules are:
+
+* When comparing overloads, and overload argument of type `X` is preferred to one of type `Nullable<X>` if they otherwise both match.
+
+* When comparing overloads, we were previously only comparing unnamed arguments based on the arguments on the caller side.  Named arguments on the caller side were ignored.   Now, if two overloads were considered equal priority by previous rules, then their entire argument lists are compared including both unnamed and named arguments, using the same rules as already used for unnamed arguments.  We use this as a last-resort comparison.
+
+
 # Drawbacks
 [drawbacks]: #drawbacks
 
