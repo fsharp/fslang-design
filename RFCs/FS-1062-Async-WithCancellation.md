@@ -54,7 +54,7 @@ Since all methods on `Async` are implemented as `static members`, that pattern s
 
 static member WithCancellation(computation : Async<'a>, cancellationToken : CancellationToken) = async {
   let! ct2 = Async.CancellationToken
-  use cts = CancellationTokenSource.CreateLinkedTokenSource (ct, ct2)
+  use cts = CancellationTokenSource.CreateLinkedTokenSource (cancellationToken, ct2)
   let tcs = new TaskCompletionSource<'a>()
   use _reg = cts.Token.Register (fun () -> tcs.TrySetCanceled() |> ignore)
   let a = async {
