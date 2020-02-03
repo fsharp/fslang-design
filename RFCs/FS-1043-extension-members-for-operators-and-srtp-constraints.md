@@ -51,6 +51,127 @@ The proposed change is as follows, in the internal logic of the constraint solvi
 
 5. Built-in constraint solutions for things like `op_Addition` constraints are applied if and when the relevant types match precisely, and are applied even if some extension methods of that name are available.
 
+# Examples
+
+## Widening to specific type
+
+**NOTE: this is an example of what is allowed by this RFC, but is not recommended for standard F# coding. In particular error messages may degrade for existing code.**
+
+By default `1 + 2.0` doesn't check in F#.  By using extension members on addition you can make this check:
+```fsharp
+
+type System.Int32 with
+    static member inline widen_to_int64 (a: int32) : int64 = int64 a
+    static member inline widen_to_single (a: int32) : single = single a
+    static member inline widen_to_double (a: int32) : double = double a
+
+type System.Single with
+    static member inline widen_to_double (a: int) : double = double a
+
+let inline widen_to_int64 (x: ^T) : int64 = (^T : (static member widen_to_int64 : ^T -> int64) (x))
+let inline widen_to_single (x: ^T) : single = (^T : (static member widen_to_single : ^T -> single) (x))
+let inline widen_to_double (x: ^T) : double = (^T : (static member widen_to_double : ^T -> double) (x))
+
+type System.Int64 with
+    static member inline (+)(a: int64, b: 'T) : int64 = a + widen_to_int64 b
+    static member inline (+)(a: 'T, b: int64) : int64 = widen_to_int64 a + b
+
+type System.Single with
+    static member inline (+)(a: single, b: 'T) : single = a + widen_to_single b
+    static member inline (+)(a: 'T, b: single) : single = widen_to_single a + b
+
+type System.Double with
+    static member inline (+)(a: double, b: 'T) : double = a + widen_to_double b
+    static member inline (+)(a: 'T, b: double) : double = widen_to_double a + b
+
+let examples() =
+
+    (1 + 2L)  |> ignore<int64>
+    (1 + 2.0f)  |> ignore<single>
+    (1 + 2.0)  |> ignore<double>
+
+    (1L + 2)  |> ignore<int64>
+    (1L + 2.0)  |> ignore<double>
+```
+
+## Defining safe conversion
+
+**NOTE: this is an example of what is allowed by this RFC, but is not recommended for standard F# coding. In particular error messages may degrade for existing code.**
+
+By default there is no function which captures the notion of safe `op_Implicit` implicit conversion in F#.
+You can define one like this:
+```
+let inline safeConv (x: ^T) : ^U = ((^T or ^U) : (static member op_Implicit : ^T -> ^U) (x))
+```
+With this RFC you can then populate this with instances for existing primitive types:
+```fsharp
+type System.SByte with
+    static member inline op_Implicit (a: sbyte) : int16 = int16 a
+    static member inline op_Implicit (a: sbyte) : int32 = int32 a
+    static member inline op_Implicit (a: sbyte) : int64 = int64 a
+    static member inline op_Implicit (a: sbyte) : nativeint = nativeint a
+    static member inline op_Implicit (a: sbyte) : single = single a
+    static member inline op_Implicit (a: sbyte) : double = double a
+
+type System.Byte with
+    static member inline op_Implicit (a: byte) : int16 = int16 a
+    static member inline op_Implicit (a: byte) : uint16 = uint16 a
+    static member inline op_Implicit (a: byte) : int32 = int32 a
+    static member inline op_Implicit (a: byte) : uint32 = uint32 a
+    static member inline op_Implicit (a: byte) : int64 = int64 a
+    static member inline op_Implicit (a: byte) : uint64 = uint64 a
+    static member inline op_Implicit (a: byte) : nativeint = nativeint a
+    static member inline op_Implicit (a: byte) : unativeint = unativeint a
+    static member inline op_Implicit (a: byte) : single = single a
+    static member inline op_Implicit (a: byte) : double = double a
+
+type System.Int16 with
+    static member inline op_Implicit (a: int16) : int32 = int32 a
+    static member inline op_Implicit (a: int16) : int64 = int64 a
+    static member inline op_Implicit (a: int16) : nativeint = nativeint a
+    static member inline op_Implicit (a: int16) : single = single a
+    static member inline op_Implicit (a: int16) : double = double a
+
+type System.UInt16 with
+    static member inline op_Implicit (a: uint16) : int32 = int32 a
+    static member inline op_Implicit (a: uint16) : uint32 = uint32 a
+    static member inline op_Implicit (a: uint16) : int64 = int64 a
+    static member inline op_Implicit (a: uint16) : uint64 = uint64 a
+    static member inline op_Implicit (a: uint16) : nativeint = nativeint a
+    static member inline op_Implicit (a: uint16) : unativeint = unativeint a
+    static member inline op_Implicit (a: uint16) : single = single a
+    static member inline op_Implicit (a: uint16) : double = double a
+
+type System.Int32 with
+    static member inline op_Implicit (a: int32) : int64 = int64 a
+    static member inline op_Implicit (a: int32) : nativeint = nativeint a
+    static member inline op_Implicit (a: int32) : single = single a
+    static member inline op_Implicit (a: int32) : double = double a
+
+type System.UInt32 with
+    static member inline op_Implicit (a: uint32) : int64 = int64 a
+    static member inline op_Implicit (a: uint32) : uint64 = uint64 a
+    static member inline op_Implicit (a: uint32) : unativeint = unativeint a
+    static member inline op_Implicit (a: uint32) : single = single a
+    static member inline op_Implicit (a: uint32) : double = double a
+
+type System.Int64 with
+    static member inline op_Implicit (a: int64) : double = double a
+
+type System.UInt64 with
+    static member inline op_Implicit (a: uint64) : double = double a
+
+type System.IntPtr with
+    static member inline op_Implicit (a: nativeint) : int64 = int64 a
+    static member inline op_Implicit (a: nativeint) : double = double a
+
+type System.UIntPtr with
+    static member inline op_Implicit (a: unativeint) : uint64 = uint64 a
+    static member inline op_Implicit (a: unativeint) : double = double a
+
+type System.Single with
+    static member inline op_Implicit (a: int) : double = double a
+```
 
 # Drawbacks
 [drawbacks]: #drawbacks
