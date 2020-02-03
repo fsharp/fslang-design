@@ -84,9 +84,9 @@ val inline f2 : x:DateTime -> y: ^a ->  ^b  when (DateTime or  ^a) : (static mem
 Why?  Well, prior to this RFC, generalization invokes "weak resolution" for both inline and non-inline code.  This caused
 overload resolution to be applied even though the second parameter type of "y" is not known.
 
-* In the first case, overload resolution succeeded because there is only one overload (`DateTime + TimeSpan -> DateTime`)
+* In the first case, overload resolution for `op_Addition` succeeded because there is only one overload.
 
-* In the second case it failed (there are two overloads, DateTIme - DateTime and DateTime - TimeSpan). The failure is ignored, and the code is left generic.
+* In the second case, overload resolution for `op_Subtraction` failed because there are two overloads. The failure is ignored, and the code is left generic.
 
 For non-inline code and primitive types this "weak resolution" process is reasonable.  But for inline code it was incorrect, especially in the context of this RFC, because future extension methods may now provide additional witnesses for `+` on DateTime and some other type.  
 
