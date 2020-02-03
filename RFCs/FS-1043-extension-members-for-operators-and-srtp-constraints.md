@@ -59,7 +59,7 @@ The proposed change is as follows, in the internal logic of the constraint solvi
 
 5. Built-in constraint solutions for things like `op_Addition` constraints are applied if and when the relevant types match precisely, and are applied even if some extension methods of that name are available.
 
-## Weak Resolution is no longer applied to SRTP constraint solving for generic inline code
+## Weak resolution no longer forces overload resolution for SRTP constraints prior to generalizing `inline` code
 
 Prior to this RFC, for generic inline code we apply "weak resolution" to constraints prior to generalization.
 
