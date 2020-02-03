@@ -3,7 +3,7 @@
 These design suggestions:
 * https://github.com/fsharp/fslang-suggestions/issues/230
 * https://github.com/fsharp/fslang-suggestions/issues/29
-* [Consider the return type in overload resolution](https://github.com/fsharp/fslang-suggestions/issues/820)
+* https://github.com/fsharp/fslang-suggestions/issues/820
 
 have been marked "approved in principle". This RFC covers the detailed proposal for these
 
