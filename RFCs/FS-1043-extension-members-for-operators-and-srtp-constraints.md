@@ -3,6 +3,7 @@
 These design suggestions:
 * https://github.com/fsharp/fslang-suggestions/issues/230
 * https://github.com/fsharp/fslang-suggestions/issues/29
+* [Consider the return type in overload resolution](https://github.com/fsharp/fslang-suggestions/issues/820)
 
 have been marked "approved in principle". This RFC covers the detailed proposal for these
 
@@ -30,6 +31,10 @@ foo.fs(2,21): warning FS1215: Extension members cannot provide operator overload
 foo.fs(4,16): error FS0001: The type 'int' does not match the type 'string'
 ```
 
+In addition, this RFC adds an attribute `AllowOverloadOnReturnTypeAttribute` to FSharp.Core to implement suggestion [Consider the return type in overload resolution](https://github.com/fsharp/fslang-suggestions/issues/820). If this is present on any applicable overloads in a method overload resolution, then the return type is also checked/unified when determining overload resolution.  Previously, only methods named `op_Explicit` and `op_Implicit` where given this treatment.
+
+In addition, this RFC makes small technical modifications to the process of solving SRTP constraints.  These will be documented in further  sections of this RFC.
+
 # Motivation
 [motivation]: #motivation
 
@@ -38,6 +43,9 @@ It is reasonable to use extension methods to retrofit operators and other semant
 
 # Detailed design
 [design]: #detailed-design
+
+
+## Adding extension members to SRTP constraint solving
 
 The proposed change is as follows, in the internal logic of the constraint solving process:
 
@@ -51,13 +59,83 @@ The proposed change is as follows, in the internal logic of the constraint solvi
 
 5. Built-in constraint solutions for things like `op_Addition` constraints are applied if and when the relevant types match precisely, and are applied even if some extension methods of that name are available.
 
+## Weak Resolution is not applied to SRTP constraint solving for generic inlinde code
+
+Prior to this RFC, in generic inline code we apply "weak resolution" to constraints that could otherwise be generalised.
+
+Consider this:
+```
+let inline f1 (x: System.DateTime) y = x + y;;
+let inline f2 (x: System.DateTime) y = x - y;;
+```
+The relevant available overloads are:
+```fsharp
+type System.DateTime with
+    static member op_Addition: DateTime * TimeSpan -> DateTime
+    static member op_Subtraction: DateTime * TimeSpan -> DateTime
+    static member op_Subtraction: DateTime * DateTime -> TimeSpan
+```
+Prior to this RFC, `f1` is generalized to non-generic code, and `f2` to generic code, as seen by these types:
+```
+val inline f1 : x:System.DateTime -> y:System.TimeSpan -> System.DateTime
+val inline f2 : x:.DateTime -> y: ^a ->  ^b  when (System.DateTime or  ^a) : (static member ( - ) : System.DateTime * ^a ->  ^b)
+```
+Why?  Well, prior to this RFC generalization invokes "weak resolution" for both inline and non-inline code.  This causes
+overload resolution to be applied even though the second parameter type of "y" is not known.
+
+* In the first case, overload resolution succeeded because there is only one overload (`DateTime + TimeSpan -> DateTime`)
+
+* In the second case it failed (there are two overloads, DateTIme - DateTime and DateTime - TimeSpan). The failure is ignored, and the code is left generic.
+
+For non-inline code this "weak resolution" process is reasonable.  But for inline code it was incorrect, especially in the context of this RFC, because future extension methods may now provide additional witnesses for `+` on DateTime and some other type.  
+
+In this RFC, we disable weak resolution for inline code for cases that involve true overload/witness resolution. This changes
+inferred types in some situations, e.g. with this RFC the type is now as follows:
+```
+> let inline f1 (x: System.DateTime) y = x + y;;
+val inline f1 : x:DateTime -> y: ^a ->  ^b when (DateTime or  ^a) : (static member ( + ) : DateTime * ^a ->  ^b)
+```
+
+Signatures files may need to be updated to account for this change.
+
+
+# Drawbacks
+[drawbacks]: #drawbacks
+
+* This slightly strengthens the "type-class"-like capabilities of SRTP resolution. This means that people may increasingly use SRTP code as a way to write generic, reusable code rather than passing parameters explicitly.  While this is reasonable for generic arithmetic code, it has many downsides when applied to other things.
+
+# Alternatives
+[alternatives]: #alternatives
+
+1. Don't do it
+
+
+# Compatibility
+[compatibility]: #compatibility
+
+Status: We are trying to determine when/if this RFC is a breaking change.
+
+We assume it must be a breaking change, because additional methods are taken into account in the overload resolution used in SRTP constraint resolution. That must surely cause it to fail where it would have succeeded before. However,
+
+1. All the new methods are extension methods, which are lower priority in overload resolution
+
+Even if it's theoretically a breaking change, we may still decide it's worthwhile because the risk of change is low.  This seems plausible because
+
+1. Taking the extra existing extension methods into account is natural and a lot like an addition to the .NET libraries causing overload resolution to fail. We don't really consider that a breaking change (partly because this is measured differently for C# and F#, as they have different sensitivities to adding overloads).
+
+2. For the built-in operators like `(+)`, there will be relatively few such candidate extension methods in F# code because we give warnings when users try to add extension methods for these
+
+3. Nearly all SRTP constraints (at least the ones for built-in operators) are on static members, and C# code can't introduce extension members that are static - just instance ones. So C# extension members will only cause compat concern for F# code using SRTP constraints on instance members, AND where the C# extension methods make a difference to overload resolution.
+
+Still, we're pretty sure this must be a breaking change. We would appreciate help construct test cases where it is/isn't.
+
 # Examples
 
 ## Widening to specific type
 
-**NOTE: this is an example of what is allowed by this RFC, but is not recommended for standard F# coding. In particular error messages may degrade for existing code.**
+**NOTE: this is an example of what is allowed by this RFC, but is not necessarily recommended for standard F# coding. In particular error messages may degrade for existing code, and extensive further prelude definitions would be required to give a consistent programming model.**
 
-By default `1 + 2.0` doesn't check in F#.  By using extension members on addition you can make this check:
+By default `1 + 2.0` doesn't check in F#.  By using extension members to provide additional overloads for addition you can make this check.  Note that the set of available extensions determines the "numeric hierarchy" and is used to augment the operators, not the actual numeric types themselves.
 ```fsharp
 
 type System.Int32 with
@@ -94,14 +172,16 @@ let examples() =
     (1L + 2.0)  |> ignore<double>
 ```
 
-## Defining safe conversion
+## Defining safe conversion corresponding to `op_Implicit`
 
-**NOTE: this is an example of what is allowed by this RFC, but is not recommended for standard F# coding. In particular error messages may degrade for existing code.**
+**NOTE: this is an example of what is allowed by this RFC, but is not necessarily recommended for standard F# coding. In particular compiler performance is poor when resolving heavily overloaded constraints.**
 
-By default there is no function which captures the notion of safe `op_Implicit` implicit conversion in F#.
+By default there is no function which captures the notion of .NET's safe `op_Implicit` conversion in F# (though note
+the conversion is still explicit in F# code, not implicit).
+
 You can define one like this:
 ```
-let inline safeConv (x: ^T) : ^U = ((^T or ^U) : (static member op_Implicit : ^T -> ^U) (x))
+let inline implicitConv (x: ^T) : ^U = ((^T or ^U) : (static member op_Implicit : ^T -> ^U) (x))
 ```
 With this RFC you can then populate this with instances for existing primitive types:
 ```fsharp
@@ -172,37 +252,6 @@ type System.UIntPtr with
 type System.Single with
     static member inline op_Implicit (a: int) : double = double a
 ```
-
-# Drawbacks
-[drawbacks]: #drawbacks
-
-* This slightly strengthens the "type-class"-like capabilities of SRTP resolution. This means that people may increasingly use SRTP code as a way to write generic, reusable code rather than passing parameters explicitly.  While this is reasonable for generic arithmetic code, it has many downsides when applied to other things.
-
-# Alternatives
-[alternatives]: #alternatives
-
-1. Don't do it
-
-
-# Compatibility
-[compatibility]: #compatibility
-
-Status: We are trying to determine when/if this RFC is a breaking change.
-
-We assume it must be a breaking change, because additional methods are taken into account in the overload resolution used in SRTP constraint resolution. That must surely cause it to fail where it would have succeeded before. However,
-
-1. All the new methods are extension methods, which are lower priority in overload resolution
-
-Even if it's theoretically a breaking change, we may still decide it's worthwhile because the risk of change is low.  This seems plausible because
-
-1. Taking the extra existing extension methods into account is natural and a lot like an addition to the .NET libraries causing overload resolution to fail. We don't really consider that a breaking change (partly because this is measured differently for C# and F#, as they have different sensitivities to adding overloads).
-
-2. For the built-in operators like `(+)`, there will be relatively few such candidate extension methods in F# code because we give warnings when users try to add extension methods for these
-
-3. Nearly all SRTP constraints (at least the ones for built-in operators) are on static members, and C# code can't introduce extension members that are static - just instance ones. So C# extension members will only cause compat concern for F# code using SRTP constraints on instance members, AND where the C# extension methods make a difference to overload resolution.
-
-Still, we're pretty sure this must be a breaking change. We would appreciate help construct test cases where it is/isn't.
-
 
 # Unresolved questions
 [unresolved]: #unresolved-questions
