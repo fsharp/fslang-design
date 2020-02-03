@@ -59,14 +59,15 @@ The proposed change is as follows, in the internal logic of the constraint solvi
 
 5. Built-in constraint solutions for things like `op_Addition` constraints are applied if and when the relevant types match precisely, and are applied even if some extension methods of that name are available.
 
-## Weak Resolution is not applied to SRTP constraint solving for generic inlinde code
+## Weak Resolution is no longer applied to SRTP constraint solving for generic inline code
 
-Prior to this RFC, in generic inline code we apply "weak resolution" to constraints that could otherwise be generalised.
+Prior to this RFC, for generic inline code we apply "weak resolution" to constraints prior to generalization.
 
 Consider this:
 ```
-let inline f1 (x: System.DateTime) y = x + y;;
-let inline f2 (x: System.DateTime) y = x - y;;
+open System
+let inline f1 (x: DateTime) y = x + y;;
+let inline f2 (x: DateTime) y = x - y;;
 ```
 The relevant available overloads are:
 ```fsharp
@@ -75,28 +76,28 @@ type System.DateTime with
     static member op_Subtraction: DateTime * TimeSpan -> DateTime
     static member op_Subtraction: DateTime * DateTime -> TimeSpan
 ```
-Prior to this RFC, `f1` is generalized to non-generic code, and `f2` to generic code, as seen by these types:
+Prior to this RFC, `f1` is generalized to **non-generic** code, and `f2` is correctly generalized to generic code, as seen by these types:
 ```
-val inline f1 : x:System.DateTime -> y:System.TimeSpan -> System.DateTime
-val inline f2 : x:.DateTime -> y: ^a ->  ^b  when (System.DateTime or  ^a) : (static member ( - ) : System.DateTime * ^a ->  ^b)
+val inline f1 : x:DateTime -> y:TimeSpan -> DateTime
+val inline f2 : x:DateTime -> y: ^a ->  ^b  when (DateTime or  ^a) : (static member ( - ) : System.DateTime * ^a ->  ^b)
 ```
-Why?  Well, prior to this RFC generalization invokes "weak resolution" for both inline and non-inline code.  This causes
+Why?  Well, prior to this RFC, generalization invokes "weak resolution" for both inline and non-inline code.  This caused
 overload resolution to be applied even though the second parameter type of "y" is not known.
 
 * In the first case, overload resolution succeeded because there is only one overload (`DateTime + TimeSpan -> DateTime`)
 
 * In the second case it failed (there are two overloads, DateTIme - DateTime and DateTime - TimeSpan). The failure is ignored, and the code is left generic.
 
-For non-inline code this "weak resolution" process is reasonable.  But for inline code it was incorrect, especially in the context of this RFC, because future extension methods may now provide additional witnesses for `+` on DateTime and some other type.  
+For non-inline code and primitive types this "weak resolution" process is reasonable.  But for inline code it was incorrect, especially in the context of this RFC, because future extension methods may now provide additional witnesses for `+` on DateTime and some other type.  
 
-In this RFC, we disable weak resolution for inline code for cases that involve true overload/witness resolution. This changes
+In this RFC, we disable weak resolution for inline code for cases that involve true overload resolution. This changes
 inferred types in some situations, e.g. with this RFC the type is now as follows:
 ```
-> let inline f1 (x: System.DateTime) y = x + y;;
+> let inline f1 (x: DateTime) y = x + y;;
 val inline f1 : x:DateTime -> y: ^a ->  ^b when (DateTime or  ^a) : (static member ( + ) : DateTime * ^a ->  ^b)
 ```
 
-Signatures files may need to be updated to account for this change.
+Some signatures files may need to be updated to account for this change.
 
 
 # Drawbacks
