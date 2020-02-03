@@ -2,11 +2,8 @@
 
 This RFC covers the detailed proposal for this suggestion.
 
-* [ ] Approved in principle
-* [ ] [Suggestion](https://github.com/fsharp/fslang-suggestions/issues/358)
-* [ ] Details: [under discussion](https://github.com/fsharp/fslang-design/issues/FILL-ME-IN)
-* [ ] Implementation: [In progress](https://github.com/Microsoft/visualfsharp/pull/FILL-ME-IN)
-
+* [x] Approved in principle
+* [x] [Suggestion](https://github.com/fsharp/fslang-suggestions/issues/358)
 
 # Summary
 [summary]: #summary
