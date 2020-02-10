@@ -112,25 +112,6 @@ Some signatures files may need to be updated to account for this change.
 1. Don't do it
 
 
-# Compatibility
-[compatibility]: #compatibility
-
-Status: We are trying to determine when/if this RFC is a breaking change.
-
-We assume it must be a breaking change, because additional methods are taken into account in the overload resolution used in SRTP constraint resolution. That must surely cause it to fail where it would have succeeded before. However,
-
-1. All the new methods are extension methods, which are lower priority in overload resolution
-
-Even if it's theoretically a breaking change, we may still decide it's worthwhile because the risk of change is low.  This seems plausible because
-
-1. Taking the extra existing extension methods into account is natural and a lot like an addition to the .NET libraries causing overload resolution to fail. We don't really consider that a breaking change (partly because this is measured differently for C# and F#, as they have different sensitivities to adding overloads).
-
-2. For the built-in operators like `(+)`, there will be relatively few such candidate extension methods in F# code because we give warnings when users try to add extension methods for these
-
-3. Nearly all SRTP constraints (at least the ones for built-in operators) are on static members, and C# code can't introduce extension members that are static - just instance ones. So C# extension members will only cause compat concern for F# code using SRTP constraints on instance members, AND where the C# extension methods make a difference to overload resolution.
-
-Still, we're pretty sure this must be a breaking change. We would appreciate help construct test cases where it is/isn't.
-
 # Examples
 
 ## Widening to specific type
@@ -253,6 +234,147 @@ type System.UIntPtr with
 
 type System.Single with
     static member inline op_Implicit (a: int) : double = double a
+```
+
+
+# Compatibility
+[compatibility]: #compatibility
+
+Status: We are trying to determine when/if this RFC is a breaking change.
+
+We assume it must be a breaking change, because additional methods are taken into account in the overload resolution used in SRTP constraint resolution. That must surely cause it to fail where it would have succeeded before. However,
+
+1. All the new methods are extension methods, which are lower priority in overload resolution
+
+Even if it's theoretically a breaking change, we may still decide it's worthwhile because the risk of change is low.  This seems plausible because
+
+1. Taking the extra existing extension methods into account is natural and a lot like an addition to the .NET libraries causing overload resolution to fail. We don't really consider that a breaking change (partly because this is measured differently for C# and F#, as they have different sensitivities to adding overloads).
+
+2. For the built-in operators like `(+)`, there will be relatively few such candidate extension methods in F# code because we give warnings when users try to add extension methods for these
+
+3. Nearly all SRTP constraints (at least the ones for built-in operators) are on static members, and C# code can't introduce extension members that are static - just instance ones. So C# extension members will only cause compat concern for F# code using SRTP constraints on instance members, AND where the C# extension methods make a difference to overload resolution.
+
+Still, we're pretty sure this must be a breaking change. We would appreciate help construct test cases where it is/isn't.
+
+I'm examining some consequences of the part of this RFC "Weak Resolution no longer forces overload resolution...".   In general this seems a great improvement.  However, I have found one case where, for the complicated SRTP code such as found in FSharpPlus, existing code no longer compiles.
+
+### Example
+
+Here is a standalone repro reduced substantially, and where many types are made more explicit:
+```fsharp
+let inline InvokeMap (mapping: ^F) (source: ^I) : ^R =  
+    ((^I or ^R) : (static member Map : ^I * ^F ->  ^R) source, mapping)
+
+ // A similated collection
+type Coll<'T>() =
+
+    // A similated 'Map' witness
+    static member Map (source: Coll<'a>, mapping: 'a->'b) : Coll<'b> = new Coll<'b>()
+```
+Now consider this generic inlince code:
+```fsharp
+let inline MapTwice (x: Coll<'a>) (v: 'a) : Coll<'a> =
+    InvokeMap ((+) v) (InvokeMap ((+) v) x)
+```
+
+### Explanation
+
+The characteristics are
+1. There is no overloading directly, but this code is generic and there is the *potential* for further overloading by adding further extension methods.
+
+2. The definition of the member constraint allows reoslution by **return type**, e.g. `(^I or ^R)` for `Map` .  Because of this, the return type of the inner `InvokeMap` call is **not** known to be `Coll` until weak resolution is applied to the constraints. This is because extra overloads could in theory be added via new witnesses mapping the collection to a different collection type.
+
+3. The resolution of the nested member constraints will eventually imply that the type variable `'a` support the addition opreator.
+   However after this RFC, the generic function `MapTwice` now gets generalized **before** the member constraints are fully solved
+   and the return types known.  The process of generalizing the function makes the type variable `'a` rigid (generalized).  The
+   member constraints are then solved via weak resolution in the final phase of inference, and the return type of `InvokeMap`
+   is determined to be a `ZipList`, and the `'a` variable now requires an addition operator.  Because the code has already
+   been generalized the process of asserting this constraint fails with an obscure error messsage.
+
+### Workarounds
+
+There are numerous workarounds:
+
+1. sequentialize the constraint problem rather than combining the resolution of the `Apply` and `Map` methods, e.g.
+```fsharp
+let inline (+) (x: ZipList<'a>, y: ZipList<'a>) : ZipList<'a> =
+    let f = InvokeMap (+) x
+    InvokeApply f y
+```
+   This works because using `let f = InvokeMap (+) x` forces weak resolution of the constraints involved in this construct (whereas passing `InvokeMap (+) x` directly as an argument to `InvokeApply f y` leaves the resolution delayed). 
+
+2. Another approach is to annotate, e.g.
+```fsharp
+let inline (+) (x: ZipList<'a>, y: ZipList<'a>) : ZipList<'a> =
+    InvokeApply (InvokeMap ((+): 'a -> 'a -> 'a) x) y
+```
+   This works because the type annotation means the `op_Addition` constraint is immediately assocaited with the type variable `'a` that is part of the function signature.
+
+3. Another approach (and likely the best) is to **no longer use return types as support types** in this kind of generic code.  (My understanding is that the use of return types as support types in such cases FSharpPlus was basically "only" to delay weak resolution anyway).  This means using this definition:
+
+```fsharp
+let inline CallMapMethod (mapping: ^F, source: ^I, _output: ^R, mthd: ^M) =
+    ((^M or ^I) : (static member MapMethod : (^I * ^F) * ^M  -> ^R) (source, mapping), mthd)
+```
+instead of
+```fsharp
+let inline CallMapMethod (mapping: ^F, source: ^I, _output: ^R, mthd: ^M) =
+    ((^M or ^I or ^R) : (static member MapMethod : (^I * ^F) * ^M  -> ^R) (source, mapping), mthd)
+```
+
+   With this change the code compiles.
+
+This is the only example I've found of this in FSharpPlus.  However I guess there may be client code of FSharpPlus that hits this problems.  In general I suppose it may result whenever we have
+
+```
+     let inline SomeGenericFunction (...) =
+        ...some composition of FSharpPlus operations that use return types to resolve member constrinats....
+```
+
+We expect this pattern to happening in client code of FSharpPlus code. The recommendation is:
+
+1. We keep the change to avoid weak resolution as part of the RFC 
+
+2. We adjust FSharpPlus to no longer use return types as resolvers unless absolutely necessary
+
+3. We apply workarounds for client code by adding further type annotations
+
+As part of this RFC we should also deliver a guide on writing SRTP code that documents cases like this and
+gives guidelines about their use.
+
+### Slightly Larger Example
+
+For completeness here's a longer example of this problem:
+```fsharp
+module Lib
+
+let inline CallApplyMethod (input1: ^I1, input2: ^I2, mthd : ^M) : ^R =
+    ((^M or ^I1 or ^I2 or ^R) : (static member ApplyMethod : ^I1 * ^I2 * ^M -> ^R) input1, input2, mthd)
+
+let inline CallMapMethod (mapping: ^F, source: ^I, _output: ^R, mthd: ^M) =
+    ((^M or ^I or ^R) : (static member MapMethod : (^I * ^F) * ^M  -> ^R) (source, mapping), mthd)
+
+type Apply =
+    static member inline ApplyMethod (f: ^AF, x: ^AX, _mthd:Apply) : ^AOut = ((^AF or ^AX) : (static member Apply : ^AF * ^AX -> ^AOut) f, x)
+
+type Map =
+    static member inline MapMethod ((x: ^FT, f: 'T->'U), _mthd: Map) : ^R = (^FT : (static member Map : ^FT * ('T -> 'U) ->  ^R) x, f)
+
+let inline InvokeApply (f: ^AF) (x: ^AX) : ^AOut = CallApplyMethod(f, x, Unchecked.defaultof<Apply>)
+
+let inline InvokeMap (mapping: 'T->'U) (source: ^FT) : ^FU =  CallMapMethod (mapping, source, Unchecked.defaultof< ^FU >, Unchecked.defaultof<Map>)
+
+[<Sealed>]
+type ZipList<'s>() =
+
+    static member Map (_xs: ZipList<'a>, _f: 'a->'b) : ZipList<'b> = failwith ""
+
+    static member Apply (_fs: ZipList<'a->'b>, _xs: ZipList<'a>) : ZipList<'b>  = failwith ""
+```
+The following code fails to compile with this RFC activated:
+```fsharp
+let inline AddZipLists (x: ZipList<'a>, y: ZipList<'a>) : ZipList<'a> =
+    InvokeApply (InvokeMap (+) x) y
 ```
 
 # Unresolved questions
