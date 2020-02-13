@@ -570,20 +570,21 @@ type DateTime with
 ```
 This makes it impossible to define byref extension properties in particular. 
 
-* Note that `IsByRefLikeAttribute` is only available in .NET 4.7.2.
+* Note that `IsByRefLikeAttribute` is only available in at least .NET 4.7.2 or .NET Standard 2.1.
+
+Those who are targeting other frameworks can define these attributes in their own code this way:
 
 ```fsharp
 namespace System.Runtime.CompilerServices
     open System
-    open System.Runtime.CompilerServices
-    open System.Runtime.InteropServices
-    [<AttributeUsage(AttributeTargets.All,AllowMultiple=false); Sealed>]
-    type IsReadOnlyAttribute() =
-        inherit System.Attribute()
 
-    [<AttributeUsage(AttributeTargets.All,AllowMultiple=false); Sealed>]
-    type IsByRefLikeAttribute() =
-        inherit System.Attribute()
+    [<AttributeUsage(AttributeTargets.All); Sealed>]
+    type internal IsReadOnlyAttribute() =
+        inherit Attribute()
+
+    [<AttributeUsage(AttributeTargets.Struct); Sealed>]
+    type internal IsByRefLikeAttribute() =
+        inherit Attribute()
 ```
 
 
