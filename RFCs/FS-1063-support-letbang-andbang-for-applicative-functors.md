@@ -5,7 +5,8 @@ The design suggestion [Support let! .. and... for applicative functors](https://
 * [x] [Approved in principle](https://github.com/fsharp/fslang-suggestions/issues/579#event-1345361104) & [prioritised](https://github.com/fsharp/fslang-suggestions/issues/579#event-1501977428)
 * [x] [Suggestion](https://github.com/fsharp/fslang-suggestions/issues/579)
 * [x] [Discussion](https://github.com/fsharp/fslang-design/issues/335)
-* [ ] Implementation: [In progress](https://github.com/dotnet/fsharp/pull/7756)
+* [x] Implementation: [Completed to preview](https://github.com/dotnet/fsharp/pull/7756)
+* [x] [Design note](https://github.com/dsyme/fsharp-presentations/blob/master/design-notes/rethinking-applicatives.md)
 
 # Summary
 [summary]: #summary
