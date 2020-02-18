@@ -131,10 +131,10 @@ is processed as if it were the following
 
 The details of this are in the F# language specification.
 
-Both the  `... part1; return varspace` subject to the extra processing specified in this RFC. For example, it is
+The  `... part1; return varspace` is subject to the extra processing specified in this RFC. For example, it is
 eligible to become a `BindReturn` if `part1` is a `let! .. and! ...`.
 
-The `let! varspace = ... in part2` is likewise subject to the extra processing specified in this RFC.  For example, it is eligible to
+Likewise, the `let! varspace = ... in part2` is also subject to the extra processing specified in this RFC.  For example, it is eligible to
 become a `BindReturn` if `part2` is a simple `return`.
 
 An example is given in [the accompanying design note](https://github.com/dsyme/fsharp-presentations/blob/master/design-notes/rethinking-applicatives.md)
