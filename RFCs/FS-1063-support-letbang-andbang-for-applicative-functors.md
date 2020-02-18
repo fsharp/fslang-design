@@ -120,7 +120,7 @@ type ApplicativeBuilder() =
 
 ## Interaction with Custom Operators
 
-In F# computation expressions a custom operator
+In F# computation expressions a custom operator with `MaintainsVariableSpaceUsingBind=true`
 
     b { ... part1; op; part2 }
 
