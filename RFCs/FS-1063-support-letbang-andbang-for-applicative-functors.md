@@ -118,6 +118,27 @@ type ApplicativeBuilder() =
     member builder.Bind3Return(x1: M<'T1>, x2: M<'T2>, x3: M<'T3>, f: 'T1 * 'T2 * 'T3 -> 'T4) : M<'T4> = ...
 ```
 
+## Interaction with Custom Operators
+
+In F# computation expressions a custom operator
+
+    b { ... part1; op; part2 }
+
+is processed as if it were the following
+
+    b { let! varspace = op (b { ... part1; return varspace })
+        part2 }
+
+The details of this are in the F# language specification.
+
+Both the  `... part1; return varspace` subject to the extra processing specified in this RFC. For example, it is
+eligible to become a `BindReturn` if `part1` is a `let! .. and! ...`.
+
+The `let! varspace = ... in part2` is likewise subject to the extra processing specified in this RFC.  For example, it is eligible to
+become a `BindReturn` if `part2` is a simple `return`.
+
+An example is given in [the accompanying design note](https://github.com/dsyme/fsharp-presentations/blob/master/design-notes/rethinking-applicatives.md)
+
 
 # Discussion and Examples
 
