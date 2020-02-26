@@ -100,7 +100,7 @@ Overriding a default implementation in an interface is not enabled though as tha
 
 ## Explicit Interface Implementation
 
-The need for an explicit interface implementation on a class will be aware of default interface implementations.
+The need for an explicit interface implementation will be aware of default interface implementations.
 
 For example:
 
@@ -138,7 +138,7 @@ type Test () =
 
 The user does not need to be explicit with `IA` because all the slots for `IA` have a default implementation. `IA.M` has a most specific implementation, which is `IA`; there is no ambiguity here.
 
-## No Most Specific Implementation Error
+## Most Specific Implementation Error
 
 Having default implementations for interface members will result in the diamond problem:
 
