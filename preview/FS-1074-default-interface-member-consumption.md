@@ -1,4 +1,4 @@
-# F# RFC FS-1074 - Default interface member consumption
+# F# RFC FS-1074 - Default Interface Member Consumption
 
 The design suggestion [Default interface member interop](https://github.com/fsharp/fslang-suggestions/issues/679) has been marked "approved in principle".
 This RFC covers the detailed proposal for this suggestion.
@@ -37,7 +37,7 @@ Because this is a new, fundamental concept added to .NET, F# must understand it.
 
 # Detailed design
 
-## Interface implementation
+## Interface Implementation
 
 Interface implementation is extended to not require explicit implementation of members that have a default implementation. That is, the following C# code:
 
@@ -76,7 +76,7 @@ printfn "%d" i'.GetNumber() // 12
 
 If the interface being implemented have some members that do not have a default implementation, it is still required to implement them in F# code. Only the members with a default implementation do not require implementing in F# code.
 
-## Overriding a default implementation
+## Overriding a Default Implementation
 
 It is possible to override a default implementation when implementing an interface:
 
