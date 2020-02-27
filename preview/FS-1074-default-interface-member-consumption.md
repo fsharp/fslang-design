@@ -1,4 +1,4 @@
-# F# RFC FS-1074 - Default interface member interop
+# F# RFC FS-1074 - Default Interface Member Consumption
 
 The design suggestion [Default interface member interop](https://github.com/fsharp/fslang-suggestions/issues/679) has been marked "approved in principle".
 This RFC covers the detailed proposal for this suggestion.
@@ -28,7 +28,7 @@ type C() =
     interface IHaveADefaultMember
 
 let i = C() :> IHaveADefaultMember
-printfn "%d" i.GetNumber() // 12
+printfn "%d" (i.GetNumber()) // 12
 ```
 
 # Motivation
@@ -37,7 +37,7 @@ Because this is a new, fundamental concept added to .NET, F# must understand it.
 
 # Detailed design
 
-## Interface implementation
+## Interface Implementation
 
 Interface implementation is extended to not require explicit implementation of members that have a default implementation. That is, the following C# code:
 
@@ -53,7 +53,7 @@ namespace Dims
 
 Already has an implementation for the `GetNumber` member. So when a type is specified as implementing `IHaveADefaultMember`, there is no need to specify an implementation of `GetNumber` in the corresponding F# code.
 
-For F# classes, only `interface IHaveADefaultMember` is required:
+For F# classes and structs, only `interface IHaveADefaultMember` is required:
 
 ```fsharp
 open Dims
@@ -62,7 +62,7 @@ type C() =
     interface IHaveADefaultMember
 
 let i = C() :> IHaveADefaultMember
-printfn "%d" i.GetNumber() // 12
+printfn "%d" (i.GetNumber()) // 12
 ```
 
 For F# object expressions, only `new IHaveADefaultMember` is required:
@@ -71,14 +71,14 @@ For F# object expressions, only `new IHaveADefaultMember` is required:
 open Dims
 
 let i' = { new IHaveADefaultMember }
-printfn "%d" i'.GetNumber() // 12
+printfn "%d" (i'.GetNumber()) // 12
 ```
 
-If the interface being implemented has some members that do not have a default implementation, it is still required to implement them in F# code. Only the members with a default implementation do not require implementing in F# code.
+If the interface being implemented has members that do not have a default implementation, it is still required to implement them in F# code. Only the members with a default implementation do not require implementing in F# code.
 
-## Overriding a default implementation
+## Overriding a Default Implementation
 
-It is possible to override a default implementation when implementing an interface in F# code:
+It is possible to override a default implementation when implementing an interface:
 
 ```fsharp
 open Dims
@@ -88,17 +88,19 @@ type C() =
         member __.GetNumber() = 13
 
 let i = C() :> IHaveADefaultMember
-printfn "%d" i.GetNumber() // 13
+printfn "%d" (i.GetNumber()) // 13
 
 let i' =
     { new IHaveADefaultMember
         member __.GetNumber() = 13 }
-printfn "%d" i'.GetNumber() // 13
+printfn "%d" (i'.GetNumber()) // 13
 ```
+
+Overriding a default implementation in an interface is not enabled though as that would be an entirely separate feature.
 
 ## Explicit Interface Implementation
 
-The need for an explicit interface implementation on a class will be aware of default interface implementations.
+The need for an explicit interface implementation will be aware of default interface implementations.
 
 For example:
 
@@ -136,6 +138,47 @@ type Test () =
 
 The user does not need to be explicit with `IA` because all the slots for `IA` have a default implementation. `IA.M` has a most specific implementation, which is `IA`; there is no ambiguity here.
 
+## Most Specific Implementation Error
+
+Having default implementations for interface members will result in the diamond problem:
+
+```csharp
+namespace CSharpTest
+{
+    public interface IA
+    {
+        void M();
+    }
+
+    public interface IB : IA
+    {
+        void IA.M()
+        {
+        }
+    }
+
+    public interface IC : IA
+    {
+        void IA.M()
+        {
+        }
+    }
+}
+```
+
+```fsharp
+module FSharpTest
+
+open CSharpTest
+
+type Test () =
+
+    interface IB
+    interface IC
+```
+
+When implementing `IB` and `IC` this way and because they both implement `IA.M`, the member is considered ambiguous and an error will be thrown stating that `IA.M` does not have a most specific implementation.
+
 # Drawbacks
 
 This is an inheritance-based feature. Since F# code tends towards expressions and function composition over inheritance, this is of minimal value to most F# programmers. It also adds another vector by which someone could write inheritance-oriented F# code. However, it has been determined that the following make it worth doing this interop work:
@@ -169,10 +212,3 @@ Nothing special; same as always.
 * If this is a change or extension to FSharp.Core, what happens when previous versions of the F# compiler encounter this construct?
 
 N/A.
-
-# Unresolved questions
-
-N/A.
-
-What parts of the design are still TBD?
-
