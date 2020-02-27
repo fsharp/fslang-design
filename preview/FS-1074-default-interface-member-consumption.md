@@ -74,7 +74,7 @@ let i' = { new IHaveADefaultMember }
 printfn "%d" i'.GetNumber() // 12
 ```
 
-If the interface being implemented have some members that do not have a default implementation, it is still required to implement them in F# code. Only the members with a default implementation do not require implementing in F# code.
+If the interface being implemented has members that do not have a default implementation, it is still required to implement them in F# code. Only the members with a default implementation do not require implementing in F# code.
 
 ## Overriding a Default Implementation
 
