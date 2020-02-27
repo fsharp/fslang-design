@@ -28,7 +28,7 @@ type C() =
     interface IHaveADefaultMember
 
 let i = C() :> IHaveADefaultMember
-printfn "%d" i.GetNumber() // 12
+printfn "%d" (i.GetNumber()) // 12
 ```
 
 # Motivation
@@ -62,7 +62,7 @@ type C() =
     interface IHaveADefaultMember
 
 let i = C() :> IHaveADefaultMember
-printfn "%d" i.GetNumber() // 12
+printfn "%d" (i.GetNumber()) // 12
 ```
 
 For F# object expressions, only `new IHaveADefaultMember` is required:
@@ -71,7 +71,7 @@ For F# object expressions, only `new IHaveADefaultMember` is required:
 open Dims
 
 let i' = { new IHaveADefaultMember }
-printfn "%d" i'.GetNumber() // 12
+printfn "%d" (i'.GetNumber()) // 12
 ```
 
 If the interface being implemented has members that do not have a default implementation, it is still required to implement them in F# code. Only the members with a default implementation do not require implementing in F# code.
@@ -88,12 +88,12 @@ type C() =
         member __.GetNumber() = 13
 
 let i = C() :> IHaveADefaultMember
-printfn "%d" i.GetNumber() // 13
+printfn "%d" (i.GetNumber()) // 13
 
 let i' =
     { new IHaveADefaultMember
         member __.GetNumber() = 13 }
-printfn "%d" i'.GetNumber() // 13
+printfn "%d" (i'.GetNumber()) // 13
 ```
 
 Overriding a default implementation in an interface is not enabled though as that would be an entirely separate feature.
