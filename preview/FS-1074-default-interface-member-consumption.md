@@ -85,10 +85,10 @@ open Dims
 
 type C() =
     interface IHaveADefaultMember with
-        member __.GetNumber() = 13
+        member __.GetNumber() = 12
 
 let i = C() :> IHaveADefaultMember
-printfn "%d" (i.GetNumber()) // 13
+printfn "%d" (i.GetNumber()) // 12
 
 let i' =
     { new IHaveADefaultMember
