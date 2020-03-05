@@ -35,11 +35,13 @@ benefits.  Adding the ability to await and start ValueTasks from an async workfl
 The design here is quite simple - Three functions on the Async module with the following signatures:
 
 ```fsharp
-static member AwaitValueTask: task: ValueTask<'T> -> Async<'T>
+static member AwaitValueTask : task:ValueTask<'T> -> Async<'T>
+
+static member AwaitValueTask : task:ValueTask -> Async<unit>
 
 static member StartAsValueTask : computation:Async<'T> * ?taskCreationOptions:TaskCreationOptions * ?cancellationToken:CancellationToken -> ValueTask<'T>
 
-static member StartChildAsvalueTask : computation:Async<'T> * ?taskCreationOptions:TaskCreationOptions -> Async<ValueTask<'T>>
+static member StartChildAsValueTask : computation:Async<'T> * ?taskCreationOptions:TaskCreationOptions -> Async<ValueTask<'T>>
 ```
 
 Interoperating would then look just like `AwaitTask` and `StartAsTask`:
@@ -73,7 +75,7 @@ The alternative here is designing full support for Task-like return types on asy
 # Unresolved questions
 [unresolved]: #unresolved-questions
 
-* Are `ValueTask<T>`s capable of being created with `TaskCompletionOption`s?  If not, then `StartAsValueTask` and `StartChildAsvalueTask` wouldn't need the parameter with those options.
+* Are `ValueTask<T>`s capable of being created with `TaskCompletionOption`s?  If not, then `StartAsValueTask` and `StartChildAsValueTask` wouldn't need the parameter with those options.
 
 * There is a major question of dependencies - which assembly will ValueTask be defined in, and can FSharp.Core take a static API dependency on that assembly? (An alternative may be to have inlined methods in FSharp.Core with staticaly resolved member constraints that capture the "C# Task pattern", though it's not yet clear if that's technically possible)
 
