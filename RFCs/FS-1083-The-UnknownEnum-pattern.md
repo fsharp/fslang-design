@@ -25,7 +25,7 @@ An `UnknownEnum` pattern would be an ideal solution to this, as it matches all c
 
 A new active pattern, named `UnknownEnum` will be added to FSharp.Core:
 ```fs
-let (|UnknownEnum|_|) (enum:'Enum when 'Enum : enum<'Value>) =
+let (|UnknownEnum|_|) (enum:'Enum when 'Enum : enum<'Underlying>) =
     if typeof<'Enum>.IsEnumDefined(enum) then None else Some <| LanguagePrimitives.EnumToValue enum
 ```
 This pattern deconstructs the underlying value of the enum for concise logging and error reporting.
@@ -52,12 +52,12 @@ match enum<E> 0 with
 | UnknownEnum x -> sprintf "Unknown case: %d" x // Unknown case: 0
 ```
 
-For enumerations with the `Flags` attribute, use of this pattern will result in an error.
+For enumerations with the `Flags` attribute, use of this pattern will result in a warning.
 _Unresolved: Is this necessary?_
 ```fs
 [<Flags>]
 type E = A = 1 | B = 2
-// Error: The UnknownEnum pattern cannot be used on enumerations with the Flags attribute
+// Warning: The UnknownEnum pattern will match all products of flags if they are not declared in the enumeration.
 match enum<E> 0 with 
 | E.A -> "Case A" 
 | E.B -> "Case B" 
@@ -72,11 +72,11 @@ This may promote usage of enums inside F#, whereas discriminated unions (DUs) ar
 
 Also implementing `UnknownEnum` for enums with `FlagsAttribute` (flag enums). This will be added along with `HasFlag` and `EnumZero` active patterns to achieve complete matching on flag enums.
 ```fs
-let inline (|EnumZero|_|) (value:'Enum when 'Enum :> System.Enum) = 
+let inline (|EnumZero|_|) (value:'Enum when 'Enum :> enum<'Underlying>) = 
     if value = LanguagePrimitives.EnumOfValue LanguagePrimitives.GenericZero then Some () else None
 let (|HasFlag|_|) (flag:'Enum) (value:'Enum when 'Enum :> System.Enum) =
     if value.HasFlag flag then Some () else None
-let inline (|UnknownEnum|_|) (value:'Enum when 'Enum : enum<'Value>) =
+let inline (|UnknownEnum|_|) (value:'Enum when 'Enum : enum<'Underlying>) =
     if typeof<'Enum>.IsDefined(typeof<FlagsAttribute>, false) then
         match typeof<'Enum>.GetEnumValues() :?> 'Enum[] |> Array.reduce (|||) |> (~~~) &&& value with
         | EnumZero -> None
@@ -99,6 +99,8 @@ match enum<E> 3 with
 ```
 However, this results in a more complex implementation with `inline` code. Also, flag enums are typically used in high performance scenarios and such an implementation is slower than with bit operators combined with `if` expressions, thus discouraging its use.
 
+Also, some flag enums have an `All` value which has all the flags in the enum set, like `0xffffffff` for a flag enum with `int32` as the underlying type. The presence of this value makes `UnknownEnum` useless as all values will be considered defined. Having a special case for these values only complicate the implementation for little added benefit.
+
 # Compatibility
 
 Please address all necessary compatibility questions:
@@ -118,4 +120,4 @@ Please address all necessary compatibility questions:
 
 # Unresolved questions
 
-Is the error emitted when `UnknownEnum` is used with flag enums necessary? Will a warning be enough instead? Should a warning/error even be raised at all?
+Is the warning emitted when `UnknownEnum` is used with flag enums necessary? Will an error be better? Should a warning/error even be raised at all?
