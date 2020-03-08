@@ -36,14 +36,20 @@ The compiler will need to be updated to recognize this pattern and consider all 
 ```fs
 type E = A = 1 | B = 2
 // No warnings
-match enum<E> 0 with E.A -> "Case A" | E.B -> "Case B" | UnknownEnum x -> sprintf "Unknown case: %d" x // Unknown case: 0
+match enum<E> 0 with
+| E.A -> "Case A"
+| E.B -> "Case B"
+| UnknownEnum x -> sprintf "Unknown case: %d" x // Unknown case: 0
 ```
 
 FS0025 warnings will still be emitted as usual:
 ```fs
 type E = A = 1 | B = 2 | C = 3
 // FS0025: Incomplete pattern matches on this expression. For example, the value 'E.C' may indicate a case not covered by the pattern(s).
-match enum<E> 0 with E.A -> "Case A" | E.B -> "Case B" | UnknownEnum x -> sprintf "Unknown case: %d" x // Unknown case: 0
+match enum<E> 0 with 
+| E.A -> "Case A" 
+| E.B -> "Case B" 
+| UnknownEnum x -> sprintf "Unknown case: %d" x // Unknown case: 0
 ```
 
 For enumerations with the `Flags` attribute, use of this pattern will result in an error.
@@ -52,7 +58,10 @@ _Unresolved: Is this necessary?_
 [<Flags>]
 type E = A = 1 | B = 2
 // Error: The UnknownEnum pattern cannot be used on enumerations with the Flags attribute
-match enum<E> 0 with E.A -> "Case A" | E.B -> "Case B" | UnknownEnum x -> sprintf "Unknown case: %d" x // Unknown case: 0
+match enum<E> 0 with 
+| E.A -> "Case A" 
+| E.B -> "Case B" 
+| UnknownEnum x -> sprintf "Unknown case: %d" x // Unknown case: 0
 ```
 
 # Drawbacks
@@ -79,7 +88,13 @@ let inline (|UnknownEnum|_|) (value:'Enum when 'Enum : enum<'Value>) =
 [<Flags>]
 type E = A = 1 | B = 2 | C = 4 | D = 8
 // No warnings
-match enum<E> 3 with UnknownEnum x -> sprintf "Unknown value: %d" x | HasFlag E.A | HasFlag E.B | HasFlag E.C | HasFlag E.D -> "Has flag" | EnumZero -> "No flag"
+match enum<E> 3 with
+| UnknownEnum x -> sprintf "Unknown value: %d" x 
+| HasFlag E.A 
+| HasFlag E.B 
+| HasFlag E.C 
+| HasFlag E.D -> "Has flag" 
+| EnumZero -> "No flag"
 ```
 However, this results in a more complex implementation with `inline` code. Also, flag enums are typically used in high performance scenarios and such an implementation is slower than with bit operators combined with `if` expressions, thus discouraging its use.
 
