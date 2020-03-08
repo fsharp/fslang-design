@@ -61,7 +61,7 @@ type E = A = 1 | B = 2
 match enum<E> 0 with 
 | E.A -> "Case A" 
 | E.B -> "Case B" 
-| UnknownEnum x -> sprintf "Unknown case: %d" x // Unknown case: 0
+| UnknownEnum x -> sprintf "Unknown case: %d" x
 ```
 
 # Drawbacks
@@ -90,8 +90,9 @@ type E = A = 1 | B = 2 | C = 4 | D = 8
 // No warnings
 match enum<E> 3 with
 | UnknownEnum x -> sprintf "Unknown value: %d" x 
-| HasFlag E.A 
-| HasFlag E.B 
+| HasFlag E.A & HasFlag E.B -> "Correct" // Correct
+| HasFlag E.A
+| HasFlag E.B
 | HasFlag E.C 
 | HasFlag E.D -> "Has flag" 
 | EnumZero -> "No flag"
