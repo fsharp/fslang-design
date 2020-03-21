@@ -98,6 +98,8 @@ Other considerations:
 
 - `nameof` may not be used with pipe operator, `x |> nameof`
 
+- `nameof` does not perform "forward lookup", such as taking the name of a parameter to a method or function in an argument that decorates it
+
 ### Names of instance members
 
 Names of members must be static or come from an instance. So the following code that attempts to get the name of an instance property with an instance of its containing class is not valid:
