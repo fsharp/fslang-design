@@ -28,7 +28,7 @@ A new active pattern, named `UnknownEnum` will be added to FSharp.Core:
 type private UnknownEnumLookup<'Enum>() =
     static member val Values = typeof<'Enum>.GetEnumValues() :?> 'Enum[]
 let (|UnknownEnum|_|) (enum:'Enum when 'Enum : enum<'Underlying>) =
-    if Array.Contains(UnknownEnumLookup<'Enum>.Values, enum) < 0 then
+    if Array.IndexOf(UnknownEnumLookup<'Enum>.Values, enum) < 0 then
         Some <| LanguagePrimitives.EnumToValue enum
     else None
 ```
