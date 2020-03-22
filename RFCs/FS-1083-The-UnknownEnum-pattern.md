@@ -25,8 +25,15 @@ An `UnknownEnum` pattern would be an ideal solution to this, as it matches all c
 
 A new active pattern, named `UnknownEnum` will be added to FSharp.Core:
 ```fs
+type private UnknownEnumLookup<'Enum>() =
+    static member val Values =
+        let values = typeof<'Enum>.GetEnumValues() :?> 'Enum[]
+        Array.Sort values
+        values
 let (|UnknownEnum|_|) (enum:'Enum when 'Enum : enum<'Underlying>) =
-    if typeof<'Enum>.IsEnumDefined(enum) then None else Some <| LanguagePrimitives.EnumToValue enum
+    if Array.BinarySearch(UnknownEnumLookup<'Enum>.Values, enum) < 0 then
+        Some <| LanguagePrimitives.EnumToValue enum
+    else None
 ```
 This pattern deconstructs the underlying value of the enum for concise logging and error reporting.
 
