@@ -26,12 +26,9 @@ An `UnknownEnum` pattern would be an ideal solution to this, as it matches all c
 A new active pattern, named `UnknownEnum` will be added to FSharp.Core:
 ```fs
 type private UnknownEnumLookup<'Enum>() =
-    static member val Values =
-        let values = typeof<'Enum>.GetEnumValues() :?> 'Enum[]
-        Array.Sort values
-        values
+    static member val Values = typeof<'Enum>.GetEnumValues() :?> 'Enum[]
 let (|UnknownEnum|_|) (enum:'Enum when 'Enum : enum<'Underlying>) =
-    if Array.BinarySearch(UnknownEnumLookup<'Enum>.Values, enum) < 0 then
+    if Array.Contains(UnknownEnumLookup<'Enum>.Values, enum) < 0 then
         Some <| LanguagePrimitives.EnumToValue enum
     else None
 ```
