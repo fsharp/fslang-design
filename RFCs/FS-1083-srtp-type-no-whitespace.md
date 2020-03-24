@@ -1,4 +1,4 @@
-# F# RFC FS-1082 - Don't require a space before SRTP type parameter
+# F# RFC FS-1083 - Don't require a space before SRTP type parameter
 
 The design suggestion [Don't require a space before SRTP type parameter](https://github.com/fsharp/fslang-suggestions/issues/668) has been marked "approved in principle".
 This RFC covers the detailed proposal for this suggestion and some related design relaxations.
