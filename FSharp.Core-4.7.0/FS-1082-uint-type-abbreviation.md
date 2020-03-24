@@ -3,11 +3,6 @@
 The design suggestion [Add `uint` type abbreviation to FSharp.Core](https://github.com/fsharp/fslang-suggestions/issues/818) has been marked "approved in principle".
 This RFC covers the detailed proposal for this suggestion.
 
-* [x] Approved in principle
-* [x] [Suggestion](https://github.com/fsharp/fslang-suggestions/issues/818)
-* [x] [Discussion](https://github.com/fsharp/fslang-design/issues/423)
-* [x] [Implementation](https://github.com/dotnet/fsharp/pull/8185)
-
 # Summary
 
 Add the `uint` type abbreviation and casting function to FSharp.Core to align with the `int` type abbreviation and casting function.
@@ -52,9 +47,21 @@ Its signature is as follows:
 val inline uint: value:^T -> uint when ^T: (static member op_Explicit: ^T -> uint) and default ^T: uint
 ```
 
+Additionally, a casting function in the nullable value type operators is added:
+
+```fsharp
+/// <summary>Converts the argument to an unsigned 32-bit integer. This is a direct conversion for all 
+/// primitive numeric types. The operation requires an appropriate
+/// static conversion method on the input type.</summary>
+/// <param name="value">The input value.</param>
+/// <returns>The converted unsigned int</returns>
+[<CompiledName("ToUint")>]
+val inline uint: value: Nullable< ^T > -> Nullable<int> when ^T: (static member op_Explicit: ^T -> uint) and default ^T: uint
+```
+
 # Drawbacks
 
-None.
+`uint` looks like `unit`, which could confuse some people.
 
 # Alternatives
 
