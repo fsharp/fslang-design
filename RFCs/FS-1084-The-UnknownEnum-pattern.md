@@ -1,4 +1,4 @@
-# F# RFC FS-1083 - The `UnknownEnum` pattern
+# F# RFC FS-1084 - The `UnknownEnum` pattern
 
 <!--The design suggestion [The `UnknownEnum` pattern](https://github.com/fsharp/fslang-suggestions/issues/822) has been marked "approved in principle".
 This RFC covers the detailed proposal for this suggestion.
