@@ -31,6 +31,7 @@ Prior to this RFC the result is:
 foo.fs(2,21): warning FS1215: Extension members cannot provide operator overloads.  Consider defining the operator as part of the type definition instead.
 foo.fs(4,16): error FS0001: The type 'int' does not match the type 'string'
 ```
+With this RFC, the code compiles.
 
 In addition, this RFC adds an attribute `AllowOverloadOnReturnTypeAttribute` to FSharp.Core to implement suggestion [Consider the return type in overload resolution](https://github.com/fsharp/fslang-suggestions/issues/820). If this is present on any applicable overloads in a method overload resolution, then the return type is also checked/unified when determining overload resolution.  Previously, only methods named `op_Explicit` and `op_Implicit` where given this treatment.
 
