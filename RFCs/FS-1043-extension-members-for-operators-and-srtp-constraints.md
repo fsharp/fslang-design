@@ -1,4 +1,4 @@
-# F# RFC FS-1043 - Extension members should be available to solve operator trait constraints
+# F# RFC FS-1043 - Extension members become available to solve operator trait constraints
 
 These design suggestions:
 * https://github.com/fsharp/fslang-suggestions/issues/230
