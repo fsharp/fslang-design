@@ -272,7 +272,7 @@ type Coll<'T>() =
     // A similated 'Map' witness
     static member Map (source: Coll<'a>, mapping: 'a->'b) : Coll<'b> = new Coll<'b>()
 ```
-Now consider this generic inlince code:
+Now consider this generic inline code:
 ```fsharp
 let inline MapTwice (x: Coll<'a>) (v: 'a) : Coll<'a> =
     InvokeMap ((+) v) (InvokeMap ((+) v) x)
