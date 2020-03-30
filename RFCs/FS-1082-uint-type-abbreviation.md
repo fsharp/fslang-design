@@ -50,13 +50,7 @@ val inline uint: value:^T -> uint when ^T: (static member op_Explicit: ^T -> uin
 Additionally, a casting function in the nullable value type operators is added:
 
 ```fsharp
-/// <summary>Converts the argument to an unsigned 32-bit integer. This is a direct conversion for all 
-/// primitive numeric types. The operation requires an appropriate
-/// static conversion method on the input type.</summary>
-/// <param name="value">The input value.</param>
-/// <returns>The converted unsigned int</returns>
-[<CompiledName("ToUint")>]
-val inline uint: value: Nullable< ^T > -> Nullable<int> when ^T: (static member op_Explicit: ^T -> uint) and default ^T: uint
+val inline uint: value: Nullable< ^T > -> Nullable<uint> when ^T: (static member op_Explicit: ^T -> uint) and default ^T: uint
 ```
 
 # Drawbacks
