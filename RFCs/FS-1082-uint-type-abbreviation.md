@@ -58,7 +58,7 @@ val inline uint: value: Nullable< ^T > -> Nullable<uint> when ^T: (static member
 `uint` looks like `unit`, which could confuse some people, though this would mostly be when type signatures are concerned like:
 
 ```fsharp
-val f: x:unit -> unit
+val f: x:uint -> unit
 ```
 
 # Alternatives
