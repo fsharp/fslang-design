@@ -11,7 +11,7 @@ This RFC covers the detailed proposal for this suggestion.
 
 # Summary
 
-1. Add the ability to specify and emit resumable code hosted in a state machine object to the F# compiler
+1. Add the ability to specify and emit resumable code hosted in a state machine objects to the F# compiler
 
 2. Use this to implement a `task` builder in FSharp.Core
 
