@@ -62,6 +62,8 @@ Notes
 * The `if __useResumableCode then` is needed because the compilation of resumable code is only activated when code is compiled.
   The `<dynamic-implementation>` is used for dynamically interpreted code, e.g. quotation interpretation.
   In prototyping it can simply raise an exception. It should be semantically identical to the other branch.
+  
+* The above construct should be seen as a language feature.  First-class uses of of constructs such as `__resumableObject` are not allowed except in the exact pattern above.
 
 ### Resumable code
 
@@ -202,29 +204,179 @@ Resumable code is made of the following grammar:
 
 Resumable code may **not** contain `let rec` bindings.  These must be lifted out.
 
-### Value type state machines
+### Struct state machines
 
-TBD
+A struct may be used to host a state machine using the following formulation:
 
-### Resumable code and builders
+```fsharp
+    if __useResumableCode then
+        __resumableStruct<StructStateMachine<'T>, _>
+            (MoveNextMethod(fun sm -> <resumable-code>))
+            (SetMachineStateMethod<_>(fun sm state -> ...))
+            (AfterMethod<_,_>(fun sm -> ...))
+    else
+        ...
+```
+Notes:
 
-TBD
+1. A "template" struct type must be given including a stub implementation of the `IAsyncMachine` interface. 
+
+2. The `__resumableStruct` construct must be used instead of `__resumableObject`
+
+3. The three delegate parameters specify the implementations of the `MoveNext`, `SetMachineState` methods, plus an `After` method
+   that is run on the state machine immediately after creation.
+
+4. For each use of this construct, the template struct type is copied to to a new (internal) struct type, the state variables
+   from the resumable code are added, and the `IAsyncMachine` interface is filled in using the supplied methods.
+
+For example:
+```fsharp
+[<Struct; NoEquality; NoComparison>]
+type OptionStateMachine<'T> =
+    [<DefaultValue(false)>]
+    val mutable Result : 'T option
+
+    static member Run(sm: byref<'K> when 'K :> IAsyncStateMachine) = sm.MoveNext()
+
+    interface IAsyncStateMachine with 
+        member sm.MoveNext() = failwith "no dynamic impl"
+        member sm.SetStateMachine(state: IAsyncStateMachine) = failwith "no dynamic impl"
+
+type OptionCode<'T> = delegate of byref<OptionStateMachine<'T>> -> unit
+
+type OptionBuilder() =
+
+    member inline __.Delay(__expand_f : unit -> OptionCode<'T>) : OptionCode<'T> = OptionCode (fun sm -> (__expand_f()).Invoke &sm)
+
+    member inline __.Combine(__expand_task1: OptionCode<unit>, __expand_task2: OptionCode<'T>) : OptionCode<'T> =
+        OptionCode<_>(fun sm -> 
+            let mutable sm2 = OptionStateMachine<unit>()
+            __expand_task1.Invoke &sm2
+            __expand_task2.Invoke &sm)
+
+    member inline __.Bind(res1: 'T1 option, __expand_task2: ('T1 -> OptionCode<'T>)) : OptionCode<'T> =
+        OptionCode<_>(fun sm -> 
+            match res1 with 
+            | None -> ()
+            | Some v -> (__expand_task2 v).Invoke &sm)
+
+    member inline __.Return (value: 'T) : OptionCode<'T> =
+        OptionCode<_>(fun sm ->
+            sm.Result <- ValueSome value)
+
+    member inline __.Run(__expand_code : OptionCode<'T>) : 'T option = 
+        if __useResumableCode then
+            __resumableStruct<OptionStateMachine<'T>, 'T option>
+                (MoveNextMethod<_>(fun sm -> 
+                       __expand_code.Invoke(&sm)))
+
+                (SetMachineStateMethod<_>(fun sm state -> ()))
+
+                (AfterMethod<_,_>(fun sm -> 
+                    OptionStateMachine<_>.Run(&sm)
+                    sm.ToOption()))
+        else
+            let mutable sm = OptionStateMachine<'T>()
+            __expand_code.Invoke(&sm)
+            sm.ToOption()
+```
+
+NOTE: This is an awkward formulation.  Reference-typed state machines are expressed using object expressions, whcih can
+have additional state variables.  However in F# object-expressions may not be of struct type, so it is always necessary
+to fabricate a new struct type for each state machine use.  Further, it is important that this be based on an existing, well-known
+struct type for the specification of the fragments of code. Finally, the use of delgates is necessary to propgate the
+address of the state machine throughout the code fragments specified by the builder calls.
+
+The formualtion above was chosen to meet all these requirements.  Since the formulation effectively forms a compiler feature,
+but a rarely used one used only in library code, it seems reasonable to make it awkward.
 
 # Examples
 
-Example code:
+### Using the mechanism code for low-allocation synchronous builders
+
+The mechanisms above are enough to allow the definition of computation expression implementations that "expand out" 
+the relevant code fragments into flattened code that runs w.r.t. some (mutable, accumulating) state machine context. 
+
+For example:
 
 ```fsharp
-TBD
+[<Struct; NoEquality; NoComparison>]
+type YieldStateMachine<'T> =
+    [<DefaultValue(false)>]
+    val mutable Result : ResizeArray<'T>
+
+    /// A standard definition to start the state machine without copying the struct
+    static member Run(sm: byref<'K> when 'K :> IAsyncStateMachine) = sm.MoveNext()
+
+    interface IAsyncStateMachine with 
+        member sm.MoveNext() = failwith "no dynamic impl"
+        member sm.SetStateMachine(state: IAsyncStateMachine) = failwith "no dynamic impl"
+
+    member sm.Yield (value: 'T) = 
+        match sm.Result with 
+        | null -> 
+            let ra = ResizeArray()
+            sm.Result <- ra
+            ra.Add(value)
+        | ra -> ra.Add(value)
+
+type YieldCode<'T> = delegate of byref<YieldStateMachine<'T>> -> unit
+
+type ListBuilder() =
+
+    member inline __.Delay(__expand_f: unit -> YieldCode<'T>) : YieldCode<'T> =
+        YieldCode (fun sm -> (__expand_f()).Invoke &sm)
+
+    member inline __.Zero() : YieldCode<'T> =
+        YieldCode(fun _sm -> ())
+
+    member inline __.Combine(__expand_task1: YieldCode<'T>, __expand_task2: YieldCode<'T>) : YieldCode<'T> =
+        YieldCode(fun sm -> 
+            __expand_task1.Invoke &sm
+            __expand_task2.Invoke &sm)
+            
+    member inline __.While(__expand_condition : unit -> bool, __expand_body: YieldCode<'T>) : YieldCode<'T> =
+        YieldCode(fun sm -> 
+            while __expand_condition() do
+                __expand_body.Invoke &sm)
+
+    member inline b.For(sequence: seq<'TElement>, __expand_body: 'TElement -> YieldCode<'T>) : YieldCode<'T> =
+        b.Using (sequence.GetEnumerator(), 
+            (fun e -> b.While((fun () -> e.MoveNext()), (fun sm -> (__expand_body e.Current).Invoke &sm))))
+
+    member inline __.Yield (v: 'T) : YieldCode<'T> =
+        YieldCode(fun sm -> sm.Yield v)
+
+    member inline __.Run(__expand_code : YieldCode<'T>) : ResizeArray<'T> = 
+        if __useResumableCode then
+            __resumableStruct<YieldStateMachine<'T>, _>
+                (MoveNextMethod(fun sm -> __expand_code.Invoke(&sm)))
+                (SetMachineStateMethod(fun sm state -> ()))
+                (AfterMethod(fun sm -> 
+                    YieldStateMachine<_>.Run(&sm)
+                    sm.Result |> Seq.toList))
+        else
+            let mutable sm = YieldStateMachine<'T>()
+            __expand_code.Invoke(&sm)
+            sm.Result
+
+let list = ListBuilder()
 ```
+
+Here there are no resumption points, but the inlining of the code "expands" the user code fragments and implements
+the `yield` operation with respect to the propagated `sm` address of the state machine.
+
+The overall result is a `list { ... }` builder that runs up to 4x faster than the built-in `[ .. ]` for generated lists of
+computationally varying shape (i.e. `[ .. ]` that use conditionals, `yield` and so on).
 
 # Drawbacks
 
-TBD
+Complexity
 
 # Alternatives
 
-TBD
+1. Don't do it.
+2. Don't generalise it (just to it for tasks)
 
 # Compatibility
 
