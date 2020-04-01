@@ -17,10 +17,9 @@ This RFC covers the detailed proposal for this suggestion.
 
 # Motivation
 
-`task { ... }` support is needed in F#.  The primary mechanism need for this is a way to flatten a composition
-of calls to methods like `task.Bind` and `task.Return` and then convert each task to a state machine using
-a single method made of "resumable code", that is, code that includes a jump table and the start and, when
-resuming, jumps into the middle of a .NET method using the logical equivalent of a `goto` statement.
+`task { ... }` support is needed in F# with good quality, low-allocation generated code using resumable code in state machines.
+
+We generalize this mechanism to allow low-allocation implementations of other computation expressions.
 
 ## Design Philosophy
 
