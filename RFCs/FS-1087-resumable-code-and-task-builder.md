@@ -198,16 +198,16 @@ Resumable code is made of the following grammar:
   The `Some` branch usually suspends execution by saving `contID` into the state machine
   for later use with a `__resumeAt` execution at the entry to the method. For example:
   
-    let inline returnFrom (task: Task<'T>) =
-      let mutable awaiter = task.GetAwaiter()
-      match __resumableEntry() with 
-      | Some contID ->
-          sm.ResumptionPoint <- contID
-          sm.MethodBuilder.AwaitUnsafeOnCompleted(&awaiter, &sm)
-          false
-      | None ->
-          sm.Result <- awaiter.GetResult()
-          true
+      let inline returnFrom (task: Task<'T>) =
+          let mutable awaiter = task.GetAwaiter()
+          match __resumableEntry() with 
+          | Some contID ->
+              sm.ResumptionPoint <- contID
+              sm.MethodBuilder.AwaitUnsafeOnCompleted(&awaiter, &sm)
+              false
+          | None ->
+              sm.Result <- awaiter.GetResult()
+              true
 
   Note a resumption expression can return a result - in the above the resumption expression indicates whether the
   task ran to completion or not.
@@ -236,7 +236,7 @@ Resumable code is made of the following grammar:
   second - a `__resumeAt` call can jump straight into the second code when the method is executed to resume previous execution.
   As a result, `__stack_step` should always be consumed prior to any resumption points. For example:
    
-    let inline combine (__expand_task1: (unit -> bool), __expand_task2: (unit -> bool)) =
+      let inline combine (__expand_task1: (unit -> bool), __expand_task2: (unit -> bool)) =
           let __stack_step = __expand_task1()
           if __stack_step then 
               __expand_task2()
@@ -355,10 +355,15 @@ type OptionBuilder() =
             sm.ToOption()
 ```
 
-NOTE: This is an awkward formulation.  Reference-typed resumable state machines are expressed using object expressions, whcih can
-have additional state variables.  However in F# object-expressions may not be of struct type, so it is always necessary
-to fabricate a new struct type for each state machine use.  Further, it is important that this be based on an existing, well-known
-struct type for the specification of the fragments of code. Finally, the use of delgates is necessary to propgate the
+NOTE: Reference-typed resumable state machines are expressed using object expressions, which can
+have additional state variables.  However F# object-expressions may not be of struct type, so it is always necessary
+to fabricate an entirely new struct type for each state machine use. There is no existing construct in F#
+for the anonymous specification of struct types whose methods can capture a closure of variables. The above
+intrinsic effectively adds a limited version of a capability to use an existing struct type as a template for the
+anonymous specification of an implicit, closure-capturing struct type.  The anonymous struct type must be immediately
+eliminated (i.e. used) in the `AfterMethod`.
+
+NOTE: the use of delgates is necessary to propgate the
 address of the state machine throughout the code fragments specified by the builder calls.
 
 The formulation above was chosen to meet all these requirements.  Since the formulation effectively forms a compiler feature,
