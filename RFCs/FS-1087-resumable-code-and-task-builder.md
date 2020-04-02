@@ -297,6 +297,10 @@ Resumable code is made of the following grammar:
 
 Resumable code may **not** contain `let rec` bindings.  These must be lifted out.
 
+The execution of resumable code is best understood in terms of the direct translation of the constructs into a .NET method.
+For example, `__resumeAt` corresponds either to a `goto` (for a known label) or a switch table (for a computed label at the
+start of a method).
+
 ### Specifying resumable state machine structs
 
 A struct may be used to host a resumable state machine using the following formulation:
@@ -305,21 +309,24 @@ A struct may be used to host a resumable state machine using the following formu
     if __useResumableStateMachines then
         __resumableStateMachineStruct<StructStateMachine<'T>, _>
             (MoveNextMethod(fun sm -> <resumable-code>))
-            (SetMachineStateMethod<_>(fun sm state -> ...))
-            (AfterMethod<_,_>(fun sm -> ...))
+            (SetMachineStateMethod(fun sm state -> ...))
+            (AfterMethod(fun sm -> ...))
     else
         ...
 ```
 Notes:
 
-1. A "template" struct type must be given including a stub implementation of the `IAsyncMachine` interface. 
+1. The `__resumableStateMachineStruct` construct must be used instead of `__resumableStateMachine`
 
-2. The `__resumableStateMachineStruct` construct must be used instead of `__resumableStateMachine`
+2. A "template" struct type must be given at a type parameter to `__resumableStateMachineStruct`, in this example it is `StructStateMachine`, a user-defined type normally in the same file.
 
-3. The three delegate parameters specify the implementations of the `MoveNext`, `SetMachineState` methods, plus an `After` method
-   that is run on the state machine immediately after creation.
+3. The template struct type must implement one interface, the `IAsyncMachine` interface. 
 
-4. For each use of this construct, the template struct type is copied to to a new (internal) struct type, the state variables
+4. The three delegate parameters specify the implementations of the `MoveNext`, `SetMachineState` methods, plus an `After` code
+   block that is run on the state machine immediately after creation.  Delegates are used as they can receive the address of the
+   state machine.
+
+5. For each use of this construct, the template struct type is copied to to a new (internal) struct type, the state variables
    from the resumable code are added, and the `IAsyncMachine` interface is filled in using the supplied methods.
 
 NOTE: Reference-typed resumable state machines are expressed using object expressions, which can
@@ -328,13 +335,7 @@ to fabricate an entirely new struct type for each state machine use. There is no
 for the anonymous specification of struct types whose methods can capture a closure of variables. The above
 intrinsic effectively adds a limited version of a capability to use an existing struct type as a template for the
 anonymous specification of an implicit, closure-capturing struct type.  The anonymous struct type must be immediately
-eliminated (i.e. used) in the `AfterMethod`.
-
-NOTE: the use of delgates is necessary to propgate the
-address of the state machine throughout the code fragments specified by the builder calls.
-
-The formulation above was chosen to meet all these requirements.  Since the formulation effectively forms a compiler feature,
-but a rarely used one used only in library code, it seems reasonable to make it awkward.
+eliminated (i.e. used) in the `AfterMethod`.  
 
 ## Feature: Respecting Zero methods in computation expressions 
 
