@@ -830,5 +830,7 @@ This is roughly what compiled `seq { ... }` code looks like in F# today and what
 # Unresolved questions
 
 * [ ] When and how to take the design elements out of preview
+* [ ] ContextInsensitiveTasks
+* [ ] `let rec` not supported in state machines, possibly other constructs too
 
 TBD
