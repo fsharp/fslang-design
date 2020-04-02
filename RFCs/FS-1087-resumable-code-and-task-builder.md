@@ -1,4 +1,4 @@
-# F# RFC FS-1087 - Resumable state machines and task builder
+# F# RFC FS-1087 - Tasks and resumable state machines
 
 The design suggestion [Native support for task { ... } ](https://github.com/fsharp/fslang-suggestions/issues/581) has been marked "approved in principle".
 
