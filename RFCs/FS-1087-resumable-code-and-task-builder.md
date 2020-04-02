@@ -5,45 +5,119 @@ The design suggestion [Native support for task { ... } ](https://github.com/fsha
 This RFC covers the detailed proposal for this suggestion.
 
 - [x] Approved in principle
-- [ ] [Suggestion](https://github.com/fsharp/fslang-suggestions/issues/581)
-- [ ] [RFC Discussion](https://github.com/fsharp/fslang-design/issues/455)
-- [ ] [Prototype](https://github.com/dotnet/fsharp/pull/6811)
+- [x] [Suggestion](https://github.com/fsharp/fslang-suggestions/issues/581)
+- [x] [RFC Discussion](https://github.com/fsharp/fslang-design/issues/455)
+- [x] [Prototype](https://github.com/dotnet/fsharp/pull/6811)
 
 # Summary
 
-1. Add the ability to specify and emit resumable code hosted in a state machine objects to the F# compiler
-
-2. Use this to implement a `task` builder in FSharp.Core
+We add a `task { .. }` builder to the F# standard library.  To implement this, we
+add the ability to specify and emit resumable code hosted in a state machine objects to the F# compiler.
 
 # Motivation
 
-`task { ... }` support is needed in F# with good quality, low-allocation generated code using resumable code in state machines.
-
-We generalize this mechanism to allow low-allocation implementations of other computation expressions.
-
-## Design Philosophy
-
-The design philosophy is to treat this more as a compiler feature, where the actual feature is barely surfaced
-as a language feature, but is rather a set of idioms known to the F# compiler, used to build efficient computation
-expression implementations.
-
-The compiler feature is only
-activated in **compiled** code and not seen in F# quotations.  An alternative implementation can be given for
-interpretation of quotation code.
-
-The feature is not fully checked during type checking, but rather checks are made as code is emitted. 
-
-The feature should only be used by highly skilled F# developers to implement higher-performance computation
-expression builders.
+`task { ... }` support is needed in F# with good quality, low-allocation generated code.
+The feature is implemented via a more general feature for resumable state machines, allowing
+low-allocation implementations of other computation expressions.
 
 # Detailed design
 
-### State machines
+## Tasks
 
-Resumable code is specified using the ``__resumableObject`` compiler primitive, giving a state machine expression:
+We add support for tasks along the lines of `TaskBuilder.fs`.  This supports
+
+* The standard computation expresion features for imperative code (`Delay`, `Run`, `While`, `For`, `TryWith`, `TryFinally`, `Return`, `Using`)
+
+* `let!` and `return!` on task values
+
+* `let!` and `return!` on async values
+
+* `let!` and `return!` "task-like" values (supporting `task.GetAwaiter`, `awaiter.IsCompleted` and `awaiter.GetResult` members).
+
+For example, a simple task:
+```fsharp
+        task {
+            return 1
+        }
 ```
-    if __useResumableCode then
-        __resumableObject
+Binding to `Task<_>` values:
+```fsharp
+    task {
+        let! x = Task.FromResult(1)
+        return 1 + x
+    }
+```
+Binding to (non-generic) `Task` values:
+```fsharp
+    task {
+        let! x = Task.Delay(1)
+        return 1 + x
+    }
+```
+Binding to (task-like) `YieldAwaitable` values:
+```fsharp
+    task {
+        let! x = Task.Yield()
+        return 1 + x
+    }
+```
+Nested tasks:
+```fsharp
+    task {
+        let! x = task { return 1 }
+        return x
+    }
+```
+Try/with in tasks:
+```fsharp
+    task {
+        try 
+           return 1
+        with e -> 
+           return 2
+    }
+```
+Tasks are executed immediately to their first await point. For example:
+```fsharp
+    let mutable x = 1
+    let t =
+        task {
+            x <- x + 1
+            do! Task.Delay(50000)
+            x <- x + 1
+        }
+    printfn "x = %d" x // prints "x = 1"
+```
+
+## Resumable state machines
+
+Tasks are implemented via library definitions utilising a more general feature called "resumable state machines".
+
+### Design Philosophy and Principles
+
+The design philosophy for the "resumable state machines" feature is as follows:
+
+1. We treat this as a compiler feature. The actual feature is barely surfaced
+   as a language feature, but is rather a set of idioms known to the F# compiler, together used to build efficient computation
+   expression implementations.
+
+2. The feature is activated in compiled code.  An alternative implementation of the primitives can be
+   given for dynamic execution of quotation code and reflection calls.
+
+3. The feature is not fully checked during type checking, but rather checks are made as code is emitted. This means
+   mis-implemented resumable code may be detected late in the compilation process, potentially when compiling user code.
+
+4. The feature is designed for use only by highly skilled F# developers to implement low-allocation computation
+   expression builders.
+
+Tasks are implemented via the more general mechanism of resumable state machines.
+
+### Specifying a resumable state machine (reference types)
+
+Resumable state machines of reference type are specified using the ``__resumableStateMachine`` compiler primitive, giving a state machine expression:
+```
+    if __useResumableStateMachines then
+        __resumableStateMachine
             { new SomeStateMachineType() with 
                 member __.Step ()  = 
                    <resumable code>
@@ -53,7 +127,7 @@ Resumable code is specified using the ``__resumableObject`` compiler primitive, 
 ```
 Notes
 
-* `__useResumableCode` and `__resumableObject` are well-known compiler intrinsics in `FSharp.Core.CompilerServices.StateMachineHelpers`
+* `__useResumableStateMachines` and `__resumableStateMachine` are well-known compiler intrinsics in `FSharp.Core.CompilerServices.StateMachineHelpers`
 
 * A value-type state machine may also be used to host the resumable code, see below. 
 
@@ -65,7 +139,7 @@ Notes
   
 * The above construct should be seen as a language feature.  First-class uses of of constructs such as `__resumableObject` are not allowed except in the exact pattern above.
 
-### Resumable code
+### Specifying resumable code
 
 Resumable code is made of the following grammar:
 
@@ -204,13 +278,13 @@ Resumable code is made of the following grammar:
 
 Resumable code may **not** contain `let rec` bindings.  These must be lifted out.
 
-### Struct state machines
+### Specifying resumable state machine structs
 
-A struct may be used to host a state machine using the following formulation:
+A struct may be used to host a resumable state machine using the following formulation:
 
 ```fsharp
-    if __useResumableCode then
-        __resumableStruct<StructStateMachine<'T>, _>
+    if __useResumableStateMachines then
+        __resumableStateMachineStruct<StructStateMachine<'T>, _>
             (MoveNextMethod(fun sm -> <resumable-code>))
             (SetMachineStateMethod<_>(fun sm state -> ...))
             (AfterMethod<_,_>(fun sm -> ...))
@@ -221,7 +295,7 @@ Notes:
 
 1. A "template" struct type must be given including a stub implementation of the `IAsyncMachine` interface. 
 
-2. The `__resumableStruct` construct must be used instead of `__resumableObject`
+2. The `__resumableStateMachineStruct` construct must be used instead of `__resumableStateMachine`
 
 3. The three delegate parameters specify the implementations of the `MoveNext`, `SetMachineState` methods, plus an `After` method
    that is run on the state machine immediately after creation.
@@ -249,24 +323,24 @@ type OptionBuilder() =
     member inline __.Delay(__expand_f : unit -> OptionCode<'T>) : OptionCode<'T> = OptionCode (fun sm -> (__expand_f()).Invoke &sm)
 
     member inline __.Combine(__expand_task1: OptionCode<unit>, __expand_task2: OptionCode<'T>) : OptionCode<'T> =
-        OptionCode<_>(fun sm -> 
+        OptionCode(fun sm -> 
             let mutable sm2 = OptionStateMachine<unit>()
             __expand_task1.Invoke &sm2
             __expand_task2.Invoke &sm)
 
     member inline __.Bind(res1: 'T1 option, __expand_task2: ('T1 -> OptionCode<'T>)) : OptionCode<'T> =
-        OptionCode<_>(fun sm -> 
+        OptionCode(fun sm -> 
             match res1 with 
             | None -> ()
             | Some v -> (__expand_task2 v).Invoke &sm)
 
     member inline __.Return (value: 'T) : OptionCode<'T> =
-        OptionCode<_>(fun sm ->
+        OptionCode(fun sm ->
             sm.Result <- ValueSome value)
 
     member inline __.Run(__expand_code : OptionCode<'T>) : 'T option = 
-        if __useResumableCode then
-            __resumableStruct<OptionStateMachine<'T>, 'T option>
+        if __useResumableStateMachines then
+            __resumableStateMachineStruct<OptionStateMachine<'T>, 'T option>
                 (MoveNextMethod<_>(fun sm -> 
                        __expand_code.Invoke(&sm)))
 
@@ -281,18 +355,291 @@ type OptionBuilder() =
             sm.ToOption()
 ```
 
-NOTE: This is an awkward formulation.  Reference-typed state machines are expressed using object expressions, whcih can
+NOTE: This is an awkward formulation.  Reference-typed resumable state machines are expressed using object expressions, whcih can
 have additional state variables.  However in F# object-expressions may not be of struct type, so it is always necessary
 to fabricate a new struct type for each state machine use.  Further, it is important that this be based on an existing, well-known
 struct type for the specification of the fragments of code. Finally, the use of delgates is necessary to propgate the
 address of the state machine throughout the code fragments specified by the builder calls.
 
-The formualtion above was chosen to meet all these requirements.  Since the formulation effectively forms a compiler feature,
+The formulation above was chosen to meet all these requirements.  Since the formulation effectively forms a compiler feature,
 but a rarely used one used only in library code, it seems reasonable to make it awkward.
+
+## Feature: Respecting Zero methods in computation expressions 
+
+Prior to this RFC, the `do! expr` construct in final position of a computation branch
+in an F# computation expressions was processed as follows:
+
+1. If a `Return` method is present, process as if `builder.Bind(expr, fun () -> builder.Return ())`
+
+2. Otherwise, process as `builder.Bind(expr, fun () -> builder.Zero ())`
+
+The new rule has an extra condition as follows:
+
+1. If a `Return` method is present and there is no `Zero` method present with `DefaultValue` attribute, process as if `builder.Bind(expr, fun () -> builder.Return ())`
+
+2. Otherwise, process as `builder.Bind(expr, fun () -> builder.Zero ())`
+
+For example,
+```fsharp
+    task {
+        if true then 
+            do! Task.Delay(100)
+        return 4
+    }
+```
+is de-sugared to
+```fsharp
+task.Combine(
+    (if true then task.Bind(Task.Delay(100), fun () -> task.Zero()) else task.Zero()),
+    task.Delay(fun () -> task.Return(4)))`.
+```
+rather than
+```fsharp
+task.Combine(
+    (if true then task.Bind(Task.Delay(100), fun () -> task.Return()) else task.Zero()),
+    task.Delay(fun () -> task.Return(4)))`.
+```
+
+Motivation: This corrects a minor problem with F# computation expressions.
+This allows builders ensure `Return` is not implicitly required by `do!` expressions in final position by adding the `DefaultValue`
+attribute to the `Zero` method on the builder type.  This brings the treatment of `do!` in line with the treatment of
+the implicit result on an implicit `else` branch in `if .. then` constructs, and allows `Return` to have a more
+restrictive signature than `Zero`.  In particular in the task builder, we have
+
+```fsharp
+type TaskBuilder =
+    member inline Return: x: 'T -> TaskCode<'T, 'T>
+
+    [<DefaultValue>]
+    member inline Zero: unit -> TaskCode<'TOverall, unit>
+```
+Here implicit `Zero` values (implied by `do!` and `if .. then ..`) can now occur anywhere in a computation expression, regardless
+of the overall type of the task being returned by  the CE.  In contrast, `Return` values (in an explicit `return`) must
+match the type returned by the overall task.
+
+
+## Library additions 
+
+### Library additions (tasks)
+
+The following are added to FSharp.Core:
+```fsharp
+namespace Microsoft.FSharp.Control
+
+type TaskBuilder =
+    member Combine: TaskCode<'TOverall, unit> * TaskCode<'TOverall, 'T> -> TaskCode<'TOverall, 'T>
+    member Delay: (unit -> TaskCode<'TOverall, 'T>) -> TaskCode<'TOverall, 'T>
+    member For: seq<'T> * ('T -> TaskCode<'TOverall, unit>) -> TaskCode<'TOverall, unit>
+    member Return: 'T -> TaskCode<'T, 'T>
+    member Run: TaskCode<'T, 'T> -> Task<'T>
+    member TryFinally: TaskCode<'TOverall, 'T> * (unit -> unit) -> TaskCode<'TOverall, 'T>
+    member TryWith: TaskCode<'TOverall, 'T> * (exn -> TaskCode<'TOverall, 'T>) -> TaskCode<'TOverall, 'T>
+    member Using: 'Resource * ('Resource -> TaskCode<'TOverall, 'T>) -> TaskCode<'TOverall, 'T> when 'Resource :> IDisposable
+    member While: (unit -> bool) * TaskCode<'TOverall, unit> -> TaskCode<'TOverall, unit>
+    member Zero: unit -> TaskCode<'TOverall, unit>
+    member ReturnFrom: Task<'T> -> TaskCode<'T, 'T>
+
+/// Used to specify fragments of task code
+type TaskCode<'TOverall, 'T> 
+```
+
+The following are added to support `Bind` and `ReturnFrom`` on Tasks and task-like patterns
+```fsharp
+namespace Microsoft.FSharp.Control
+
+[<AutoOpen>]
+module ContextSensitiveTasks =
+    type TaskWitnesses = <TBD>
+
+    [<AutoOpen>]
+    module TaskHelpers = 
+
+        val task : TaskBuilder
+
+        type TaskBuilder with 
+            member Bind: ^TaskLike * (^TResult1 -> TaskCode<'TOverall, 'TResult2>) -> TaskCode<'TOverall, 'TResult2> (+ SRTP constaint for Bind)
+
+            member ReturnFrom: ^TaskLike -> TaskCode< 'T, 'T > (+ SRTP constaint for CanReturnFrom)
+```
+
+### Library additions (inlined code)
+
+The following are revealed in the public surface area as the target for inlined code:
+```fsharp
+type TaskCode<'TOverall, 'T> = delegate of byref<TaskStateMachine<'TOverall>> -> bool 
+
+/// This is used by the compiler as a template for creating state machine structs
+[<Struct>]
+type TaskStateMachine<'T> =
+
+    /// Holds the final result of the state machine
+    val mutable Result : 'T
+
+    /// When statically compiled, holds the continuation goto-label further execution of the state machine
+    val mutable ResumptionPoint : int
+
+    val mutable MethodBuilder : AsyncTaskMethodBuilder<'T>
+
+    // For debugging
+    member Address: nativeint
+
+    interface IAsyncStateMachine
+
+```
+
+### Library additions (dynamic execution of task creation)
+
+The following are added to FSharp.Core to support dynamic execution of quotations that create tasks:
+```fsharp
+type TaskBuilder =
+    static member RunDynamic: code: TaskCode<'T, 'T> -> Task<'T>
+    static member CombineDynamic: task1: TaskCode<'TOverall, unit> * task2: TaskCode<'TOverall, 'T> -> TaskCode<'TOverall, 'T>
+    static member WhileDynamic: condition: (unit -> bool) * body: TaskCode<'TOverall, unit> -> TaskCode<'TOverall, unit>
+    static member TryFinallyDynamic: body: TaskCode<'TOverall, 'T> * fin: (unit -> unit) -> TaskCode<'TOverall, 'T>
+    static member TryWithDynamic: body: TaskCode<'TOverall, 'T> * catch: (exn -> TaskCode<'TOverall, 'T>) -> TaskCode<'TOverall, 'T>
+    static member ReturnFromDynamic: task: Task<'T> -> TaskCode<'T, 'T>
+
+    /// When interpreted, holds the continuation for the further execution of the state machine
+    val mutable ResumptionFunc : TaskMachineFunc<'T>
+
+    /// When interpreted, holds the awaiter used to suspend of the state machine
+    val mutable Awaiter : ICriticalNotifyCompletion
+
+/// Used to hold the resumption in dynamically executed task code
+type TaskMachineFunc<'TOverall> = delegate of byref<TaskStateMachine<'TOverall>> -> bool
+```
+
+### Library additions (resumable state machine intrinsics)
+
+```fsharp
+namespace FSharp.Core.CompilerServices
+
+/// Defines the implementation of the MoveNext method for a struct state machine.
+type MoveNextMethod<'Template> = delegate of byref<'Template> -> unit
+
+/// Defines the implementation of the SetMachineState method for a struct state machine.
+type SetMachineStateMethod<'Template> = delegate of byref<'Template> * IAsyncStateMachine -> unit
+
+/// Defines the implementation of the code reun after the creation of a struct state machine.
+type AfterMethod<'Template, 'Result> = delegate of byref<'Template> -> 'Result
+
+/// Contains compiler intrinsics related to the definition of state machines.
+module StateMachineHelpers = 
+
+/// Statically determines whether resumable code is being used
+val __useResumableCode<'T> : bool 
+
+/// Indicates a resumption point within resumable code
+val __resumableEntry: unit -> int option
+
+/// Indicates to jump to a resumption point within resumable code.
+/// If the 'pc' is statically known then this is a 'goto' into resumable code.  If the 'pc' is not statically
+/// known it must be a valid resumption point within this block of resumable code.
+val __resumeAt : pc: int -> 'T
+
+/// Attempts to convert a computation description to a state machine with resumable code 
+val __resumableObject<'T> : _obj: 'T -> 'T
+
+/// Within a compiled state machine, indicates the given methods provide implementations of the
+/// IAsyncStateMachine functionality for a struct state machine.
+///
+/// The template type guides the generation of a new struct type.  Any mention of the template in
+/// any of the code is rewritten to the new struct type.  'moveNext' and 'setMachineState' are
+/// used to implement the methods on the interface implemented by the struct type. The 'after'
+/// method is executed after the state machine has been created.
+[<MethodImpl(MethodImplOptions.NoInlining)>]
+val __resumableStruct<'Template, 'Result> : moveNext: MoveNextMethod<'Template> -> _setMachineState: SetMachineStateMethod<'Template> -> after: AfterMethod<'Template, 'Result> -> 'Result
+```
+
+### Library additions (priorities for SRTP witnesses)
+
+This design uses a SRTPs to charactize the "Task-like" pattern.  This in turn uses the "priority specification pattern" in the
+possible witnesses for SRTPs.
+
+To enable this pattern we add three interfaces in hierarchy order to `FSharp.Core.CompilerServices`:
+```fsharp
+namespace FSharp.Core.CompilerServices
+
+/// A marker interface to give priority to different available overloads.
+type IPriority3 = interface end
+
+/// A marker interface to give priority to different available overloads. Overloads using a
+/// parameter of this type will be preferred to overloads with IPriority3,
+/// all else being equal.
+type IPriority2 = interface inherit IPriority3 end
+
+/// A marker interface to give priority to different available overloads. Overloads using a
+/// parameter of this type will be preferred to overloads with IPriority2 or IPriority3,
+/// all else being equal.
+type IPriority1 = interface inherit IPriority2 end
+```
+
+# Performance
+
+Recent perf status is as https://github.com/dotnet/fsharp/tree/feature/tasks/BenchmarkDotNet.Artifacts/results
+
+## Expected allocation profile for `task { ... }`
+
+The allocation performance of the current approach should be:
+
+* one allocation of Task per `task { ... }`
+
+* the autobox transformation when `let mutable` is used in a task
 
 # Examples
 
-### Using the mechanism code for low-allocation synchronous builders
+## Example: `sync { ... }`
+
+As a micro "no-op" example of defining a builder which gets compiled using state machines, we can define `sync { ... }` which is for entirely synchronous computation with no special semantics.
+
+Implementation: https://github.com/dsyme/visualfsharp/blob/tasks/tests/fsharp/core/state-machines/sync.fs
+
+Examples of use:
+```fsharp
+let t1 y = 
+    sync {
+       printfn "in t1"
+       let x = 4 + 5 + y
+       return x
+    }
+
+let t2 y = 
+    sync {
+       printfn "in t2"
+       let! x = t1 y
+       return x + y
+    }
+
+printfn "t2 6 = %d" (t2 6)
+```
+Code performance will be approximately the same as normal F# code except for one allocation for each execution of each `sync { .. }` as we allocate the "SyncMachine".  In later work we may be able to remove this.
+
+## Example: `task { ... }`
+
+See the implementation in [tasks.fs](https://github.com/dsyme/visualfsharp/blob/tasks/tests/fsharp/core/state-machines/list.fshttps://github.com/microsoft/visualfsharp/pull/6634/files#diff-71685d8abf5330863b6d92402f9132fbR211).  There is complication due to the need to bind to task-pattern tasks and asyncs.
+
+## Example: `taskSeq { ... }`
+
+This is for state machine compilation of computation expressions that generate `IAsyncEnumerable<'T>` values. This is a headline C# 8.0 feature and a very large feature for C#.  It appears to mostly drop out as library code once general-purpose state machine support is available.
+
+See the example in [taskSeq.fs](https://github.com/dsyme/visualfsharp/blob/tasks/tests/fsharp/core/state-machines/taskSeq.fs).  Not everything is implemented yet but the basics work.
+
+## Example `seq2 { ... }`
+
+See https://github.com/dsyme/visualfsharp/blob/tasks/tests/fsharp/core/state-machines/seq2.fs
+
+This is an example showing how to do state machine compilation for `seq2 { ... }` expressions, akin to `seq { ... }` expressions, for which we bake-in state machine compilation into the F# compiler today. Caveats:
+
+* It doesn't cover tailcalls for recursive sequence generation
+* I haven't checked the disposal logic, though I think it's broadly correct
+* No perf testing done (it may be better, may be worse)
+https://github.com/microsoft/visualfsharp/pull/6634/files#diff-4837d60671e85e130108370a6a8c0597R169
+
+I think it's possible this version actually gives better stack traces than the current sequence expression support in the F# compiler.
+
+This is essentially trimming the task support out of `taskSeq { ... }` .
+
+## Example: low-allocation synchronous builders
 
 The mechanisms above are enough to allow the definition of computation expression implementations that "expand out" 
 the relevant code fragments into flattened code that runs w.r.t. some (mutable, accumulating) state machine context. 
@@ -369,6 +716,41 @@ the `yield` operation with respect to the propagated `sm` address of the state m
 The overall result is a `list { ... }` builder that runs up to 4x faster than the built-in `[ .. ]` for generated lists of
 computationally varying shape (i.e. `[ .. ]` that use conditionals, `yield` and so on).
 
+See https://github.com/dsyme/visualfsharp/blob/tasks/tests/fsharp/core/state-machines/list.fs
+
+This example defines  `list { .. }`, `array { .. }` and `rsarray { .. }` for collections, where the computations generate directly into a `ResizeArray` (`System.Collections.Generic.List<'T>`).
+
+F#'s existing `[ .. ]` and `[| ... |]` and `seq { .. } |> Seq.toResizeArray` all use an intermediate `IEnumerable` which is then iterated to populate a `ResizeArray` and then converted to the final immutable collection. In contrast, generating directly into a `ResizeArray` is potentially more efficient (and for `list { ... }` further perf improvements are possible if we put this in `FSharp.Core` and use the mutate-tail-cons-cell trick to generate the list directly). This technique has been known for a while and can give faster collection generation but it has not been possible to get good code generation for the expressions in many cases. Note these aren't really "state machines" because there are no resumption points - there is just an implicit collection we are yielding into in otherwise synchronous code.
+
+Using a directly-generating `list { ... }` seems to give a significant speedup over `[ ... ]` in the example I just tried, included in the code.
+
+```
+PERF: list { ... } : 497
+PERF: [ ... ] : 748
+```
+
+# Limitations
+
+## Limitation - No asynchronous tailcalls
+
+Unlike F# async, tasks do *not* support asynchronous tail recursion, thus unbounded chains of tasks can be created
+consuming unbounded stack and heap resources. Thus the following will work for `N = 100` but not for very large `N`.
+```fsharp
+    let N = 100
+    let rec loop n =
+        task {
+            if n < N then
+                do! Task.Yield()
+                let! _ = Task.FromResult(0)
+                return! loop (n + 1)
+            else
+                return ()
+        }
+    (loop 0).Wait()
+```
+Aside: See [this paper](https://www.microsoft.com/en-us/research/publication/the-f-asynchronous-programming-model/) for more
+information on asynchronous tailcalls in the F# async programming model.
+
 # Drawbacks
 
 Complexity
@@ -380,8 +762,167 @@ Complexity
 
 # Compatibility
 
-This is a backward compatiable addition.
+This is a backward compatible addition.
+
+# Technical note: From computation expressions to state machines
+
+There is a strong relationship between F# computation expressions and state machines.  F# computation expressions compose functional fragments using `Bind`, `ReturnFrom` and other constructs.  With some transformation (e.g. inlining the `Bind` method and others) these quickly reduce to code similar to the inefficient implementation above. For example:
+
+```fsharp
+task {
+    printfn "intro"
+    let! x = task1()
+    printfn "hello"
+    let! y = task2()
+    printfn "world"
+    return x + y
+}
+```
+
+becomes 
+
+```fsharp
+task.Run ( 
+    task.Delay (fun () -> 
+        printfn "intro"
+        task.Bind(task1(), fun x -> 
+            printfn "hello"
+            task.Bind(task2(), fun y -> 
+                printfn "world"
+                task.Return (x+y)))))
+```
+
+Now the meaning of the above code depends on the definition of the builder `task`.  If we assume `Bind` is inlined to `GetAwaiter` and `AwaitOnCompleted` and `Run` ultimately accepts a `MoveNext` function then it is something like:
+
+```fsharp
+let rec state0() = 
+        printfn "intro"
+        let t = task1()
+        let awaiter = t.GetAwaiter()
+        if t.IsCompleted then 
+            state1 (awaiter.GetResult())
+        else
+            awaiter.AwaitOnCompleted(fun () -> state1 (awaiter.GetResult()))
+
+and state1(x) = 
+        printfn "hello"
+        let t = task2()
+        let awaiter = t.GetAwaiter()
+        if t.IsCompleted then 
+            state2 (x, awaiter.GetResult())
+        else
+            awaiter.AwaitOnCompleted(fun () -> state2 (x, awaiter.GetResult()))
+
+and state2(x, y) = 
+        printfn "world"
+        DONE (x + y)
+
+task.Run ( fun () -> state0()))
+```
+
+However today there is no way to get the F# compiler to convert this functional code to more efficient resumable code.   Two main things need to be done. First the "state variables" are all lifted to be mutables, and the code is combined into a single method. The first step is this:
+
+```fsharp
+let mutable awaiter1 = Unchecked.defaultof<_>
+let mutable xv = Unchecked.defaultof<_>
+let mutable awaiter2 = Unchecked.defaultof<_>
+let mutable yv = Unchecked.defaultof<_>
+let rec state0() = 
+        printfn "intro"
+        awaiter1 <- task1().GetAwaiter()
+        if awaiter1.IsCompleted then 
+            state1 ()
+        else
+            awaiter1.AwaitOnCompleted(fun () -> state1 ())
+
+and state1() = 
+        xvar <- awaiter1.GetResult()
+        printfn "hello"
+        awaiter2 <- task2().GetAwaiter()
+        if awaiter2.IsCompleted then 
+            state2 ()
+        else
+            awaiter2.AwaitOnCompleted(fun () -> state2 ())
+
+and state2() = 
+        yvar <- awaiter2.GetResult()
+        printfn "world"
+        Task.FromResult(xvar + yvar)
+
+task.Run ( task.Delay (fun () -> state0()))
+```
+
+then:
+
+```fsharp
+let mutable awaiter1 = Unchecked.defaultof<_>
+let mutable xv = Unchecked.defaultof<_>
+let mutable awaiter2 = Unchecked.defaultof<_>
+let mutable yv = Unchecked.defaultof<_>
+let mutable pc = 0
+let next() =
+    match pc with  
+    | 0 -> 
+        printfn "intro"
+        awaiter1 <- task1().GetAwaiter()
+        if awaiter1.IsCompleted then 
+            pc <- 1
+            return CONTINUE
+        else
+            pc <- 1
+            awaiter1.AwaitOnCompleted(this)
+            return AWAIT
+    | 1 -> 
+        xvar <- awaiter1.GetResult()
+        awaiter2 <- task2().GetAwaiter()
+        if awaiter2.IsCompleted then 
+            pc <- 2
+            return CONTINUE
+        else
+            pc <- 2
+            awaiter2.AwaitOnCompleted(this)
+            return AWAIT
+    | 2 -> 
+        printfn "world"
+        return DONE (xvar + yvar)
+
+task.Run (... return a task that repeatedly calls next() until AWAIT or DONE ...)
+```
+
+This is a sketch to demonstrate the progression from monadic computation expression code to compiled state machine code with integer state representations.
+
+Note:
+
+* the above kind of transformation is **not** valid for all computation expressions - it depends on the implementation details of the computation expression.  It also depends on doing this transformation for a finite number of related binds (i.e. doing it for all of a single `task { ... }` or other CE expression), which allows the use of a compact sequence of integers to represent the different states.   
+* The transformation where values passed between states become "state machine variables" is also not always valid - this can extend the lifetime of values in subtle ways, though the state machine generation can also generally zero out the variables at appropriate points.
+
+* If the computation expression contains conditional control flow (`if ... then... else` and `match` and `while` and `for`) then the AWAIT points can occur in the middle of generated code, and thus the initial `match` in the integer-based version can branch into the middle of control-flow.
+ 
+* If the computation expression contains exception handling then these can sometimes be carefully implemented using the stack-based control-flow constructs in .NET IL and regular F# code.  However this must be done with care.
+
+The heart of a typical state machine is a `MoveNext` or `Step` function that takes an integer `program counter` (`pc`) and jumps to a target:
+
+```fsharp
+      member __.MoveNext() = 
+            match pc with
+               | 1 -> goto L1 
+               | 2 -> goto L2 
+               | _ -> goto L0
+
+            L0: ...
+                ... this code can return, first setting "pc <- L1"...
+
+            L1: ...
+                ... this code can return, e.g. first setting "pc <- L2"...
+
+            L2: ...
+
+```
+
+This is roughly what compiled `seq { ... }` code looks like in F# today and what compiled async/await code looks like in C#, at a very high level. Note you can't write this kind of code directly in F# - there is no `goto` and especially not a `goto` that can jump directly into other code, resuming from the last step of the state machine.  
 
 # Unresolved questions
+
+* [ ] When and how to take the design elements out of preview
 
 TBD
