@@ -22,7 +22,7 @@ low-allocation implementations of other computation expressions.
 
 # Detailed design
 
-## Tasks
+## Feature: Tasks
 
 We add support for tasks along the lines of `TaskBuilder.fs`.  This supports
 
@@ -89,7 +89,7 @@ Tasks are executed immediately to their first await point. For example:
     printfn "x = %d" x // prints "x = 1"
 ```
 
-## Resumable state machines
+## Feature: Resumable state machines
 
 Tasks are implemented via library definitions utilising a more general feature called "resumable state machines".
 
@@ -102,7 +102,7 @@ The design philosophy for the "resumable state machines" feature is as follows:
    expression implementations.
 
 2. The feature is activated in compiled code.  An alternative implementation of the primitives can be
-   given for dynamic execution of quotation code and reflection calls.
+   given for reflective execution, e.g. for interpretation of quotation code.
 
 3. The feature is not fully checked during type checking, but rather checks are made as code is emitted. This means
    mis-implemented resumable code may be detected late in the compilation process, potentially when compiling user code.
@@ -134,7 +134,7 @@ Notes
 * Here `SomeStateMachineType` can be any user-defined reference type, and the object expression must contain a single method.
 
 * The `if __useResumableCode then` is needed because the compilation of resumable code is only activated when code is compiled.
-  The `<dynamic-implementation>` is used for dynamically interpreted code, e.g. quotation interpretation.
+  The `<dynamic-implementation>` is used for reflective execution, e.g. quotation interpretation.
   In prototyping it can simply raise an exception. It should be semantically identical to the other branch.
   
 * The above construct should be seen as a language feature.  First-class uses of of constructs such as `__resumableObject` are not allowed except in the exact pattern above.
@@ -145,9 +145,10 @@ Resumable code is made of the following grammar:
 
 * An call to an inlined function defining further resumable code, e.g. 
 
-      let inline f () = <rcode>
+      <rcode> :=
+          let inline f () = <rcode>
       
-      f(); f() 
+          f(); f() 
 
   Such a function can have function parameters using the `__expand_` naming, e.g. 
 
@@ -169,7 +170,8 @@ Resumable code is made of the following grammar:
 
 * An expansion binding definition (normally arising from the use of an inline function):
 
-      let __expand_abc <args> = <expr> in <rcode>
+      <rcode> :=
+          let __expand_abc <args> = <expr> in <rcode>
 
   Any name beginning with `__expand_` can be used.
   Such an expression is treated as `<rcode>` with all uses of `__expand_abc` macro-expanded and beta-var reduced.
@@ -177,20 +179,23 @@ Resumable code is made of the following grammar:
 
 * An invocation of a function known to be a lambda expression via an expansion binding:
 
-      __expand_abc <args>
+      <rcode> :=
+          __expand_abc <args>
 
   An invocation can also be of a delegate known to be a delegate creation expression via an expansion binding:
 
-      __expand_abc.Invoke <args>
+      <rcode> :=
+          __expand_abc.Invoke <args>
 
   NOTE: Using delegates to form compositional code fragments is particularly useful because a delegate may take a byref parameter, normally
   the address of the enclosing value type state machine.
 
 * A resumption point:
 
-      match __resumableEntry() with
-      | Some contID -> <rcode>
-      | None -> <rcode>
+      <rcode> :=
+          match __resumableEntry() with
+          | Some contID -> <rcode>
+          | None -> <rcode>
 
   If such an expression is executed, the first `Some` branch is taken. However a resumption point is also defined which,
   if a resumption is performed, executes the `None` branch.
@@ -214,14 +219,16 @@ Resumable code is made of the following grammar:
 
 * A `resumeAt` expression:
 
-      __resumeAt <expr>
+      <rcode> :=
+          __resumeAt <expr>
 
   Here <expr> is an integer-valued expression indicating a resumption point, which must be eith 0 or a `contID` arising from a resumption
   point resumable code expression on a previous execution.
   
 * A sequential exection of two resumable code blocks:
 
-      <rcode>; <rcode>
+      <rcode> :=
+          <rcode>; <rcode>
 
   Note that, because the code is resumable, each `<rcode>` may contain zero or more resumption points.
   This means it is **not** guaranteed that the first `<rcode>` will be executed before the
@@ -229,7 +236,8 @@ Resumable code is made of the following grammar:
 
 * A binding sequential exection. The identifier ``__stack_step`` must be used precisely.
 
-      let __stack_step = <rcode> in <rcode>
+      <rcode> :=
+          let __stack_step = <rcode> in <rcode>
 
   Note that, because the code is resumable, each `<rcode>` may contain zero or more resumption points.  Again this
   means it is not guaranteed that the first `<rcode>` will be executed before the
@@ -245,36 +253,47 @@ Resumable code is made of the following grammar:
 
 * A resumable `while` expression:
 
-      while <rcode> do <rcode>
+      <rcode> :=
+          while <rcode> do <rcode>
 
   Note that, because the code is resumable, each `<rcode>` may contain zero or more resumption points.  The execution
   of the method may thus "begin" (via `__resumeAt`) in the middle of such a loop.
 
 * A resumable `try-catch` expression:
 
-      try <rcode> with exn -> <rcode>
+      <rcode> :=
+          try <rcode> with exn -> <rcode>
 
   Note that, because the code is resumable, each `<rcode>` may contain zero or more resumption points.  The execution
   of the code may thus "begin" (via `__resumeAt`) in the middle of either the `try` expression or `with` handler.
 
-* A resumable `match` expression:
+* If no previous case applies, a resumable `match` expression:
 
-      match <expr> with
-      | ...  -> <rcode>
-      | ...  -> <rcode>
+      <rcode> :=
+          match <expr> with
+          | ...  -> <rcode>
+          | ...  -> <rcode>
 
   Note that, because the code is resumable, each `<rcode>` may contain zero or more resumption points.  The execution
   of the code may thus "begin" (via `__resumeAt`) in the middle of the code on each branch.
 
-* A binding expression:
+* If no previous case applies, a binding expression:
 
-      let <pat> = <expr> in <rcode>
+      <rcode> :=
+          let <pat> = <expr> in <rcode>
 
   Note that, because the code is resumable, the `<rcode>` may contain zero or more resumption points.  The binding
-  `let <pat> = <expr>` may thus not have been executed.  However,  all non-stack variables in `<pat>` used beyond the first resumption
+  `let <pat> = <expr>` may thus not have been executed.
+  
+  All variables in `<pat>` used beyond the first resumption
   point are stored in the enclosing state machine to ensure their initialized value is valid on resumption.
+  
+  However, if a variable bound in `<pat>` has name beginning with `__stack_` then it is not given
+  storage in the enclosing state machine,  but rather remains a `local` within the code of the method.
 
-* An arbitrary leaf expression
+* If no previous case applies, then an arbitrary leaf expression
+
+      <expr>
 
 Resumable code may **not** contain `let rec` bindings.  These must be lifted out.
 
@@ -302,58 +321,6 @@ Notes:
 
 4. For each use of this construct, the template struct type is copied to to a new (internal) struct type, the state variables
    from the resumable code are added, and the `IAsyncMachine` interface is filled in using the supplied methods.
-
-For example:
-```fsharp
-[<Struct; NoEquality; NoComparison>]
-type OptionStateMachine<'T> =
-    [<DefaultValue(false)>]
-    val mutable Result : 'T option
-
-    static member Run(sm: byref<'K> when 'K :> IAsyncStateMachine) = sm.MoveNext()
-
-    interface IAsyncStateMachine with 
-        member sm.MoveNext() = failwith "no dynamic impl"
-        member sm.SetStateMachine(state: IAsyncStateMachine) = failwith "no dynamic impl"
-
-type OptionCode<'T> = delegate of byref<OptionStateMachine<'T>> -> unit
-
-type OptionBuilder() =
-
-    member inline __.Delay(__expand_f : unit -> OptionCode<'T>) : OptionCode<'T> = OptionCode (fun sm -> (__expand_f()).Invoke &sm)
-
-    member inline __.Combine(__expand_task1: OptionCode<unit>, __expand_task2: OptionCode<'T>) : OptionCode<'T> =
-        OptionCode(fun sm -> 
-            let mutable sm2 = OptionStateMachine<unit>()
-            __expand_task1.Invoke &sm2
-            __expand_task2.Invoke &sm)
-
-    member inline __.Bind(res1: 'T1 option, __expand_task2: ('T1 -> OptionCode<'T>)) : OptionCode<'T> =
-        OptionCode(fun sm -> 
-            match res1 with 
-            | None -> ()
-            | Some v -> (__expand_task2 v).Invoke &sm)
-
-    member inline __.Return (value: 'T) : OptionCode<'T> =
-        OptionCode(fun sm ->
-            sm.Result <- ValueSome value)
-
-    member inline __.Run(__expand_code : OptionCode<'T>) : 'T option = 
-        if __useResumableStateMachines then
-            __resumableStateMachineStruct<OptionStateMachine<'T>, 'T option>
-                (MoveNextMethod<_>(fun sm -> 
-                       __expand_code.Invoke(&sm)))
-
-                (SetMachineStateMethod<_>(fun sm state -> ()))
-
-                (AfterMethod<_,_>(fun sm -> 
-                    OptionStateMachine<_>.Run(&sm)
-                    sm.ToOption()))
-        else
-            let mutable sm = OptionStateMachine<'T>()
-            __expand_code.Invoke(&sm)
-            sm.ToOption()
-```
 
 NOTE: Reference-typed resumable state machines are expressed using object expressions, which can
 have additional state variables.  However F# object-expressions may not be of struct type, so it is always necessary
@@ -467,9 +434,12 @@ module ContextSensitiveTasks =
             member ReturnFrom: ^TaskLike -> TaskCode< 'T, 'T > (+ SRTP constaint for CanReturnFrom)
 ```
 
+See the implementation source code for the exact specification of the SRTP constraints added.
+
 ### Library additions (inlined code)
 
-The following are revealed in the public surface area as the target for inlined code:
+The following are necessarily revealed in the public surface area because they are used within inlined code implementations
+of the `TaskBuilder` methods.  They are not for general use.
 ```fsharp
 type TaskCode<'TOverall, 'T> = delegate of byref<TaskStateMachine<'TOverall>> -> bool 
 
@@ -485,16 +455,13 @@ type TaskStateMachine<'T> =
 
     val mutable MethodBuilder : AsyncTaskMethodBuilder<'T>
 
-    // For debugging
-    member Address: nativeint
-
     interface IAsyncStateMachine
 
 ```
 
-### Library additions (dynamic execution of task creation)
+### Library additions (reflective execution of task creation)
 
-The following are added to FSharp.Core to support dynamic execution of quotations that create tasks:
+The following are added to FSharp.Core to support reflective execution of quotations that create tasks:
 ```fsharp
 type TaskBuilder =
     static member RunDynamic: code: TaskCode<'T, 'T> -> Task<'T>
@@ -504,13 +471,16 @@ type TaskBuilder =
     static member TryWithDynamic: body: TaskCode<'TOverall, 'T> * catch: (exn -> TaskCode<'TOverall, 'T>) -> TaskCode<'TOverall, 'T>
     static member ReturnFromDynamic: task: Task<'T> -> TaskCode<'T, 'T>
 
-    /// When interpreted, holds the continuation for the further execution of the state machine
+[<Struct>]
+type TaskStateMachine<'T> =
+    ...
+    /// When dynamically invoked, holds the continuation for the further execution of the state machine
     val mutable ResumptionFunc : TaskMachineFunc<'T>
 
-    /// When interpreted, holds the awaiter used to suspend of the state machine
+    /// When dynamically invoked, holds the awaiter used to suspend of the state machine
     val mutable Awaiter : ICriticalNotifyCompletion
 
-/// Used to hold the resumption in dynamically executed task code
+/// When dynamically invoked, represents a resumption for task code
 type TaskMachineFunc<'TOverall> = delegate of byref<TaskStateMachine<'TOverall>> -> bool
 ```
 
@@ -593,11 +563,76 @@ The allocation performance of the current approach should be:
 
 # Examples
 
+## Example: `option { ... }`
+
+See [option.fs](https://github.com/dotnet/fsharp/blob/feature/tasks/tests/fsharp/perf/tasks/FS/option.fs)
+
+Consider an typical`option { ... }` computation expression builder:
+
+```fsharp
+let testOption i = 
+    option {
+        let! x1 = (if i % 5 <> 2 then Some i else None)
+        let! x2 = (if i % 3 <> 1 then Some i else None)
+        return x1 + x2
+    } 
+```
+Here is a sample implementation using a struct state machine:
+```fsharp
+[<Struct; NoEquality; NoComparison>]
+type OptionStateMachine<'T> =
+    [<DefaultValue(false)>]
+    val mutable Result : 'T option
+
+    static member Run(sm: byref<'K> when 'K :> IAsyncStateMachine) = sm.MoveNext()
+
+    interface IAsyncStateMachine with 
+        member sm.MoveNext() = failwith "no dynamic impl"
+        member sm.SetStateMachine(state: IAsyncStateMachine) = failwith "no dynamic impl"
+
+type OptionCode<'T> = delegate of byref<OptionStateMachine<'T>> -> unit
+
+type OptionBuilder() =
+
+    member inline __.Delay(__expand_f : unit -> OptionCode<'T>) : OptionCode<'T> = OptionCode (fun sm -> (__expand_f()).Invoke &sm)
+
+    member inline __.Combine(__expand_task1: OptionCode<unit>, __expand_task2: OptionCode<'T>) : OptionCode<'T> =
+        OptionCode(fun sm -> 
+            let mutable sm2 = OptionStateMachine<unit>()
+            __expand_task1.Invoke &sm2
+            __expand_task2.Invoke &sm)
+
+    member inline __.Bind(res1: 'T1 option, __expand_task2: ('T1 -> OptionCode<'T>)) : OptionCode<'T> =
+        OptionCode(fun sm -> 
+            match res1 with 
+            | None -> ()
+            | Some v -> (__expand_task2 v).Invoke &sm)
+
+    member inline __.Return (value: 'T) : OptionCode<'T> =
+        OptionCode(fun sm ->
+            sm.Result <- ValueSome value)
+
+    member inline __.Run(__expand_code : OptionCode<'T>) : 'T option = 
+        if __useResumableStateMachines then
+            __resumableStateMachineStruct<OptionStateMachine<'T>, 'T option>
+                (MoveNextMethod<_>(fun sm -> __expand_code.Invoke(&sm)))
+                (SetMachineStateMethod<_>(fun sm state -> ()))
+                (AfterMethod<_,_>(fun sm -> 
+                    OptionStateMachine<_>.Run(&sm)
+                    sm.Result))
+        else
+            // The reflective implementation directly invokves the code and runs it synchronously
+            let mutable sm = OptionStateMachine<'T>()
+            __expand_code.Invoke(&sm)
+            sm.ToOption()
+```
+
+
 ## Example: `sync { ... }`
 
-As a micro "no-op" example of defining a builder which gets compiled using state machines, we can define `sync { ... }` which is for entirely synchronous computation with no special semantics.
+As a micro example of defining a `sync { ... }` builder for entirely synchronous computation with no special semantics.
 
-Implementation: https://github.com/dsyme/visualfsharp/blob/tasks/tests/fsharp/core/state-machines/sync.fs
+See [sync.fs](https://github.com/dotnet/fsharp/blob/feature/tasks/tests/fsharp/perf/tasks/FS/sync.fs)
 
 Examples of use:
 ```fsharp
@@ -617,122 +652,38 @@ let t2 y =
 
 printfn "t2 6 = %d" (t2 6)
 ```
-Code performance will be approximately the same as normal F# code except for one allocation for each execution of each `sync { .. }` as we allocate the "SyncMachine".  In later work we may be able to remove this.
+Code performance is approximately the same as normal F# code except for one allocation for each execution of each `sync { .. }` as we allocate the "SyncMachine".  In later work we may be able to remove this.
 
 ## Example: `task { ... }`
 
-See the implementation in [tasks.fs](https://github.com/dsyme/visualfsharp/blob/tasks/tests/fsharp/core/state-machines/list.fshttps://github.com/microsoft/visualfsharp/pull/6634/files#diff-71685d8abf5330863b6d92402f9132fbR211).  There is complication due to the need to bind to task-pattern tasks and asyncs.
+See [tasks.fs](https://github.com/dotnet/fsharp/blob/feature/tasks/src/fsharp/FSharp.Core/tasks.fs).  
 
 ## Example: `taskSeq { ... }`
 
-This is for state machine compilation of computation expressions that generate `IAsyncEnumerable<'T>` values. This is a headline C# 8.0 feature and a very large feature for C#.  It appears to mostly drop out as library code once general-purpose state machine support is available.
+See [taskSeq.fs](https://github.com/dotnet/fsharp/blob/feature/tasks/tests/fsharp/perf/tasks/FS/taskSeq.fs).
 
-See the example in [taskSeq.fs](https://github.com/dsyme/visualfsharp/blob/tasks/tests/fsharp/core/state-machines/taskSeq.fs).  Not everything is implemented yet but the basics work.
+This is for state machine compilation of computation expressions that generate `IAsyncEnumerable<'T>` values. This is a headline C# 8.0 feature and a very large feature for C#.  It appears to mostly drop out as library code once general-purpose state machine support is available.
 
 ## Example `seq2 { ... }`
 
-See https://github.com/dsyme/visualfsharp/blob/tasks/tests/fsharp/core/state-machines/seq2.fs
+See [seq2.fs](https://github.com/dotnet/fsharp/blob/feature/tasks/tests/fsharp/perf/tasks/FS/seq2.fs)
 
-This is an example showing how to do state machine compilation for `seq2 { ... }` expressions, akin to `seq { ... }` expressions, for which we bake-in state machine compilation into the F# compiler today. Caveats:
+This is a resumable machine emitting to a mutable context held in a struct state machine. The state holds the current
+value of the iteration.
 
-* It doesn't cover tailcalls for recursive sequence generation
-* I haven't checked the disposal logic, though I think it's broadly correct
-* No perf testing done (it may be better, may be worse)
-https://github.com/microsoft/visualfsharp/pull/6634/files#diff-4837d60671e85e130108370a6a8c0597R169
+This is akin to `seq { ... }` expressions, for which we bake-in state machine compilation into the F# compiler today. 
 
-I think it's possible this version actually gives better stack traces than the current sequence expression support in the F# compiler.
+## Example: low-allocation list and array builders
 
-This is essentially trimming the task support out of `taskSeq { ... }` .
+See [list.fs](https://github.com/dotnet/fsharp/blob/feature/tasks/tests/fsharp/perf/tasks/FS/list.fs)
 
-## Example: low-allocation synchronous builders
+These are synchronous machines emitting to a mutable context held in a struct state machine.
 
-The mechanisms above are enough to allow the definition of computation expression implementations that "expand out" 
-the relevant code fragments into flattened code that runs w.r.t. some (mutable, accumulating) state machine context. 
-
-For example:
-
-```fsharp
-[<Struct; NoEquality; NoComparison>]
-type YieldStateMachine<'T> =
-    [<DefaultValue(false)>]
-    val mutable Result : ResizeArray<'T>
-
-    /// A standard definition to start the state machine without copying the struct
-    static member Run(sm: byref<'K> when 'K :> IAsyncStateMachine) = sm.MoveNext()
-
-    interface IAsyncStateMachine with 
-        member sm.MoveNext() = failwith "no dynamic impl"
-        member sm.SetStateMachine(state: IAsyncStateMachine) = failwith "no dynamic impl"
-
-    member sm.Yield (value: 'T) = 
-        match sm.Result with 
-        | null -> 
-            let ra = ResizeArray()
-            sm.Result <- ra
-            ra.Add(value)
-        | ra -> ra.Add(value)
-
-type YieldCode<'T> = delegate of byref<YieldStateMachine<'T>> -> unit
-
-type ListBuilder() =
-
-    member inline __.Delay(__expand_f: unit -> YieldCode<'T>) : YieldCode<'T> =
-        YieldCode (fun sm -> (__expand_f()).Invoke &sm)
-
-    member inline __.Zero() : YieldCode<'T> =
-        YieldCode(fun _sm -> ())
-
-    member inline __.Combine(__expand_task1: YieldCode<'T>, __expand_task2: YieldCode<'T>) : YieldCode<'T> =
-        YieldCode(fun sm -> 
-            __expand_task1.Invoke &sm
-            __expand_task2.Invoke &sm)
-            
-    member inline __.While(__expand_condition : unit -> bool, __expand_body: YieldCode<'T>) : YieldCode<'T> =
-        YieldCode(fun sm -> 
-            while __expand_condition() do
-                __expand_body.Invoke &sm)
-
-    member inline b.For(sequence: seq<'TElement>, __expand_body: 'TElement -> YieldCode<'T>) : YieldCode<'T> =
-        b.Using (sequence.GetEnumerator(), 
-            (fun e -> b.While((fun () -> e.MoveNext()), (fun sm -> (__expand_body e.Current).Invoke &sm))))
-
-    member inline __.Yield (v: 'T) : YieldCode<'T> =
-        YieldCode(fun sm -> sm.Yield v)
-
-    member inline __.Run(__expand_code : YieldCode<'T>) : ResizeArray<'T> = 
-        if __useResumableCode then
-            __resumableStruct<YieldStateMachine<'T>, _>
-                (MoveNextMethod(fun sm -> __expand_code.Invoke(&sm)))
-                (SetMachineStateMethod(fun sm state -> ()))
-                (AfterMethod(fun sm -> 
-                    YieldStateMachine<_>.Run(&sm)
-                    sm.Result |> Seq.toList))
-        else
-            let mutable sm = YieldStateMachine<'T>()
-            __expand_code.Invoke(&sm)
-            sm.Result
-
-let list = ListBuilder()
-```
-
-Here there are no resumption points, but the inlining of the code "expands" the user code fragments and implements
-the `yield` operation with respect to the propagated `sm` address of the state machine.
-
+The sample defines  `list { .. }`, `array { .. }` and `rsarray { .. }` for collections, where the computations generate directly into a `ResizeArray` (`System.Collections.Generic.List<'T>`).
 The overall result is a `list { ... }` builder that runs up to 4x faster than the built-in `[ .. ]` for generated lists of
 computationally varying shape (i.e. `[ .. ]` that use conditionals, `yield` and so on).
 
-See https://github.com/dsyme/visualfsharp/blob/tasks/tests/fsharp/core/state-machines/list.fs
-
-This example defines  `list { .. }`, `array { .. }` and `rsarray { .. }` for collections, where the computations generate directly into a `ResizeArray` (`System.Collections.Generic.List<'T>`).
-
 F#'s existing `[ .. ]` and `[| ... |]` and `seq { .. } |> Seq.toResizeArray` all use an intermediate `IEnumerable` which is then iterated to populate a `ResizeArray` and then converted to the final immutable collection. In contrast, generating directly into a `ResizeArray` is potentially more efficient (and for `list { ... }` further perf improvements are possible if we put this in `FSharp.Core` and use the mutate-tail-cons-cell trick to generate the list directly). This technique has been known for a while and can give faster collection generation but it has not been possible to get good code generation for the expressions in many cases. Note these aren't really "state machines" because there are no resumption points - there is just an implicit collection we are yielding into in otherwise synchronous code.
-
-Using a directly-generating `list { ... }` seems to give a significant speedup over `[ ... ]` in the example I just tried, included in the code.
-
-```
-PERF: list { ... } : 497
-PERF: [ ... ] : 748
-```
 
 # Limitations
 
