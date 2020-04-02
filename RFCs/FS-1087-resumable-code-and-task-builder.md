@@ -554,17 +554,17 @@ type IPriority1 = interface inherit IPriority2 end
 
 Recent perf status is as https://github.com/dotnet/fsharp/tree/feature/tasks/BenchmarkDotNet.Artifacts/results
 
-## Expected allocation profile for `task { ... }`
+## Expected allocation profile for task { ... }
 
 The allocation performance of the current approach should be:
 
-* one allocation of Task per `task { ... }`
+* one allocation of Task per task { ... }
 
 * the autobox transformation when `let mutable` is used in a task
 
 # Examples
 
-## Example: `option { ... }`
+## Example: option { ... }
 
 See [option.fs](https://github.com/dotnet/fsharp/blob/feature/tasks/tests/fsharp/perf/tasks/FS/option.fs)
 
@@ -579,7 +579,7 @@ let testOption i =
     } 
 ```
 
-## Example: `sync { ... }`
+## Example: sync { ... }
 
 As a micro example of defining a `sync { ... }` builder for entirely synchronous computation with no special semantics.
 
@@ -605,17 +605,17 @@ printfn "t2 6 = %d" (t2 6)
 ```
 Code performance is approximately the same as normal F# code except for one allocation for each execution of each `sync { .. }` as we allocate the "SyncMachine".  In later work we may be able to remove this.
 
-## Example: `task { ... }`
+## Example: task { ... }
 
 See [tasks.fs](https://github.com/dotnet/fsharp/blob/feature/tasks/src/fsharp/FSharp.Core/tasks.fs).  
 
-## Example: `taskSeq { ... }`
+## Example: taskSeq { ... }
 
 See [taskSeq.fs](https://github.com/dotnet/fsharp/blob/feature/tasks/tests/fsharp/perf/tasks/FS/taskSeq.fs).
 
 This is for state machine compilation of computation expressions that generate `IAsyncEnumerable<'T>` values. This is a headline C# 8.0 feature and a very large feature for C#.  It appears to mostly drop out as library code once general-purpose state machine support is available.
 
-## Example `seq2 { ... }`
+## Example seq2 { ... }
 
 See [seq2.fs](https://github.com/dotnet/fsharp/blob/feature/tasks/tests/fsharp/perf/tasks/FS/seq2.fs)
 
