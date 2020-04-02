@@ -414,6 +414,10 @@ type TaskBuilder =
 
 /// Used to specify fragments of task code
 type TaskCode<'TOverall, 'T> 
+
+[<AutoOpen>]
+module TaskBuilder = 
+    val task : TaskBuilder
 ```
 
 The following are added to support `Bind` and `ReturnFrom`` on Tasks and task-like patterns
@@ -426,8 +430,6 @@ module ContextSensitiveTasks =
 
     [<AutoOpen>]
     module TaskHelpers = 
-
-        val task : TaskBuilder
 
         type TaskBuilder with 
             member Bind: ^TaskLike * (^TResult1 -> TaskCode<'TOverall, 'TResult2>) -> TaskCode<'TOverall, 'TResult2> (+ SRTP constaint for Bind)
