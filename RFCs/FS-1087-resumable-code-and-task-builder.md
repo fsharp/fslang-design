@@ -79,7 +79,7 @@ Try/with in tasks:
 ```
 Tasks are executed immediately to their first await point. For example:
 ```fsharp
-    let mutable x = 1
+    let mutable x = 0
     let t =
         task {
             x <- x + 1
