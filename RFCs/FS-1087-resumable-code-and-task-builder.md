@@ -436,7 +436,7 @@ module ContextSensitiveTasks =
 
 See the implementation source code for the exact specification of the SRTP constraints added.
 
-### Library additions (inlined code)
+### Library additions (inlined code residue)
 
 The following are necessarily revealed in the public surface area because they are used within inlined code implementations
 of the `TaskBuilder` methods.  They are not for general use.
@@ -459,9 +459,9 @@ type TaskStateMachine<'T> =
 
 ```
 
-### Library additions (reflective execution of task creation)
+### Library additions (inline residue for reflective execution of task creation)
 
-The following are added to FSharp.Core to support reflective execution of quotations that create tasks:
+The following are necessarily revealed in the public surface area of FSharp.Core to support reflective execution of quotations that create tasks, as part of the inline residue of the corresponding inlined builder methods:
 ```fsharp
 type TaskBuilder =
     static member RunDynamic: code: TaskCode<'T, 'T> -> Task<'T>
@@ -567,7 +567,7 @@ The allocation performance of the current approach should be:
 
 See [option.fs](https://github.com/dotnet/fsharp/blob/feature/tasks/tests/fsharp/perf/tasks/FS/option.fs)
 
-Consider an typical`option { ... }` computation expression builder:
+The use is as for a typical `option { ... }` computation expression builder:
 
 ```fsharp
 let testOption i = 
@@ -577,56 +577,6 @@ let testOption i =
         return x1 + x2
     } 
 ```
-Here is a sample implementation using a struct state machine:
-```fsharp
-[<Struct; NoEquality; NoComparison>]
-type OptionStateMachine<'T> =
-    [<DefaultValue(false)>]
-    val mutable Result : 'T option
-
-    static member Run(sm: byref<'K> when 'K :> IAsyncStateMachine) = sm.MoveNext()
-
-    interface IAsyncStateMachine with 
-        member sm.MoveNext() = failwith "no dynamic impl"
-        member sm.SetStateMachine(state: IAsyncStateMachine) = failwith "no dynamic impl"
-
-type OptionCode<'T> = delegate of byref<OptionStateMachine<'T>> -> unit
-
-type OptionBuilder() =
-
-    member inline __.Delay(__expand_f : unit -> OptionCode<'T>) : OptionCode<'T> = OptionCode (fun sm -> (__expand_f()).Invoke &sm)
-
-    member inline __.Combine(__expand_task1: OptionCode<unit>, __expand_task2: OptionCode<'T>) : OptionCode<'T> =
-        OptionCode(fun sm -> 
-            let mutable sm2 = OptionStateMachine<unit>()
-            __expand_task1.Invoke &sm2
-            __expand_task2.Invoke &sm)
-
-    member inline __.Bind(res1: 'T1 option, __expand_task2: ('T1 -> OptionCode<'T>)) : OptionCode<'T> =
-        OptionCode(fun sm -> 
-            match res1 with 
-            | None -> ()
-            | Some v -> (__expand_task2 v).Invoke &sm)
-
-    member inline __.Return (value: 'T) : OptionCode<'T> =
-        OptionCode(fun sm ->
-            sm.Result <- ValueSome value)
-
-    member inline __.Run(__expand_code : OptionCode<'T>) : 'T option = 
-        if __useResumableStateMachines then
-            __resumableStateMachineStruct<OptionStateMachine<'T>, 'T option>
-                (MoveNextMethod<_>(fun sm -> __expand_code.Invoke(&sm)))
-                (SetMachineStateMethod<_>(fun sm state -> ()))
-                (AfterMethod<_,_>(fun sm -> 
-                    OptionStateMachine<_>.Run(&sm)
-                    sm.Result))
-        else
-            // The reflective implementation directly invokves the code and runs it synchronously
-            let mutable sm = OptionStateMachine<'T>()
-            __expand_code.Invoke(&sm)
-            sm.ToOption()
-```
-
 
 ## Example: `sync { ... }`
 
