@@ -492,41 +492,24 @@ type TaskMachineFunc<'TOverall> = delegate of byref<TaskStateMachine<'TOverall>>
 ```fsharp
 namespace FSharp.Core.CompilerServices
 
-/// Defines the implementation of the MoveNext method for a struct state machine.
 type MoveNextMethod<'Template> = delegate of byref<'Template> -> unit
 
-/// Defines the implementation of the SetMachineState method for a struct state machine.
 type SetMachineStateMethod<'Template> = delegate of byref<'Template> * IAsyncStateMachine -> unit
 
-/// Defines the implementation of the code reun after the creation of a struct state machine.
 type AfterMethod<'Template, 'Result> = delegate of byref<'Template> -> 'Result
 
 /// Contains compiler intrinsics related to the definition of state machines.
 module StateMachineHelpers = 
 
-/// Statically determines whether resumable code is being used
-val __useResumableCode<'T> : bool 
+    val __useResumableStateMachines<'T> : bool 
 
-/// Indicates a resumption point within resumable code
-val __resumableEntry: unit -> int option
+    val __resumableStateMachine<'T> : _obj: 'T -> 'T
 
-/// Indicates to jump to a resumption point within resumable code.
-/// If the 'pc' is statically known then this is a 'goto' into resumable code.  If the 'pc' is not statically
-/// known it must be a valid resumption point within this block of resumable code.
-val __resumeAt : pc: int -> 'T
+    val __resumableStateMachineStruct<'Template, 'Result> : moveNext: MoveNextMethod<'Template> -> _setMachineState: SetMachineStateMethod<'Template> -> after: AfterMethod<'Template, 'Result> -> 'Result
 
-/// Attempts to convert a computation description to a state machine with resumable code 
-val __resumableObject<'T> : _obj: 'T -> 'T
+    val __resumableEntry: unit -> int option
 
-/// Within a compiled state machine, indicates the given methods provide implementations of the
-/// IAsyncStateMachine functionality for a struct state machine.
-///
-/// The template type guides the generation of a new struct type.  Any mention of the template in
-/// any of the code is rewritten to the new struct type.  'moveNext' and 'setMachineState' are
-/// used to implement the methods on the interface implemented by the struct type. The 'after'
-/// method is executed after the state machine has been created.
-[<MethodImpl(MethodImplOptions.NoInlining)>]
-val __resumableStruct<'Template, 'Result> : moveNext: MoveNextMethod<'Template> -> _setMachineState: SetMachineStateMethod<'Template> -> after: AfterMethod<'Template, 'Result> -> 'Result
+    val __resumeAt : pc: int -> 'T   
 ```
 
 ### Library additions (priorities for SRTP witnesses)
