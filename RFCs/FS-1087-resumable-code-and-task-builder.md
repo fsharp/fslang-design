@@ -95,7 +95,7 @@ Tasks are executed immediately to their first await point. For example:
 
 ## Feature: Resumable state machines
 
-Tasks are implemented via library definitions utilising a more general feature called "resumable state machines".
+Tasks are implemented via library definitions utilising a more general feature called "resumable state machines". The implementation can be found [here](https://github.com/dotnet/fsharp/blob/feature/tasks/src/fsharp/FSharp.Core/tasks.fs).
 
 ### Design Philosophy and Principles
 
