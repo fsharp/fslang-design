@@ -13,7 +13,7 @@ This RFC covers the detailed proposal for this suggestion.
 
 We add a `task { .. }` builder to the F# standard library.
 
-To implement this efficiently, we add the ability to specify and emit resumable
+To implement this efficiently, we add a general capability to specify and emit resumable
 code hosted in a state machine objects to the F# compiler, and to allow F#
 computation expressions to be implemented via resumable code.
 
@@ -21,8 +21,7 @@ computation expressions to be implemented via resumable code.
 
 `task { ... }` support is needed in F# with good quality, low-allocation generated code.
 
-Further, implementing this via a more general feature for resumable state machines allows
-low-allocation implementations of other computation expressions. Some applications are asynchronous
+Further, there is a need for low-allocation implementations of other computation expressions. Some applications are asynchronous
 sequences, faster list/array comprehensions and faster `option` and `result` computation expressions.
 
 # Detailed design
