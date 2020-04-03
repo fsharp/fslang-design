@@ -537,7 +537,7 @@ type IPriority1 = interface inherit IPriority2 end
 
 # Performance
 
-Recent perf status is as https://github.com/dotnet/fsharp/tree/feature/tasks/BenchmarkDotNet.Artifacts/results
+[Recent perf status of implementation](https://github.com/dotnet/fsharp/blob/feature/tasks/BenchmarkDotNet.Artifacts/results/TaskPerf.Benchmarks-report-github.md)
 
 ## Expected allocation profile for task { ... }
 
