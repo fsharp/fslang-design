@@ -819,8 +819,11 @@ This is roughly what compiled `seq { ... }` code looks like in F# today and what
 
 # Unresolved questions
 
-* [ ] When and how to take the design elements out of preview
 * [ ] ContextInsensitiveTasks
 * [ ] `let rec` not supported in state machines, possibly other constructs too
+* [ ] Consider adding `Unchecked` to names of primitives.  
+* [ ] Document the ways the mechanism can be cheated.  For example, the `__resumeAt` can be cheated by using an arbitrary integer for the destination. The code won't actually be unverifiable, and it will be the equivalent of a drop-through the switch statement generated for a `__resumeAt`, but it likely still warrants an `Unchecked`. 
+
+
 
 TBD
