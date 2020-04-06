@@ -114,6 +114,8 @@ The design philosophy for the "resumable state machines" feature is as follows:
 4. The feature is designed for use only by highly skilled F# developers to implement low-allocation computation
    expression builders.
 
+5. Semantically, there's nothing you can do with resumable state machines that you can't already do with existing workflows. It is better to think of them as a performance feature, a compiler optimization partly implemented in workflow library code.
+
 Tasks are implemented via the more general mechanism of resumable state machines.
 
 ### Specifying a resumable state machine (reference types)
@@ -646,6 +648,9 @@ consuming unbounded stack and heap resources. Thus the following will work for `
 Aside: See [this paper](https://www.microsoft.com/en-us/research/publication/the-f-asynchronous-programming-model/) for more
 information on asynchronous tailcalls in the F# async programming model.
 
+TODO: consider warnings for this. This is also akin to another gotcha quoted from http://tomasp.net/blog/csharp-async-gotchas.aspx/ - the most common gotcha is that tail-recursive functions must use `return!` instead of `do!` to avoid leaks.
+
+
 # Drawbacks
 
 Complexity
@@ -821,8 +826,6 @@ This is roughly what compiled `seq { ... }` code looks like in F# today and what
 * [ ] ContextInsensitiveTasks
 * [ ] `let rec` not supported in state machines, possibly other constructs too
 * [ ] Consider adding `Unchecked` to names of primitives.  
-* [ ] Document the ways the mechanism can be cheated.  For example, the `__resumeAt` can be cheated by using an arbitrary integer for the destination. The code won't actually be verifiable, and it will be the equivalent of a drop-through the switch statement generated for a `__resumeAt`, but it likely still warrants an `Unchecked`. 
+* [ ] Document the ways the mechanism can be cheated.  For example, the `__resumeAt` can be cheated by using an arbitrary integer for the destination. The code will still be verifiable, however it will be the equivalent of a drop-through the switch statement generated for a `__resumeAt`. Because of this it likely still warrants an `Unchecked`. 
+* [ ] consider warnings for the lack of asynchronous tailcalls.
 
-
-
-TBD
