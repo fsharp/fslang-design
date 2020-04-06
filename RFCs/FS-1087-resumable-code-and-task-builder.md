@@ -829,3 +829,7 @@ This is roughly what compiled `seq { ... }` code looks like in F# today and what
 * [ ] Document the ways the mechanism can be cheated.  For example, the `__resumeAt` can be cheated by using an arbitrary integer for the destination. The code will still be verifiable, however it will be the equivalent of a drop-through the switch statement generated for a `__resumeAt`. Because of this it likely still warrants an `Unchecked`. 
 * [ ] consider warnings for the lack of asynchronous tailcalls.
 
+* [ ] "I have a design question. Is there any reason magic naming (i.e. __expand_) was used over, say, attributes? Was it ease of implementation, or because of limitations of attributes? Or something else?"
+
+  > This is all still open for discussion.  Basically, attributes aren't allowed on expression-locals in F# today, and I was looking for something sufficiently weird to highlight that this is a here-be-dragons compiler optimization feature.
+
