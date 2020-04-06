@@ -14,7 +14,7 @@ This RFC covers the detailed proposal for this suggestion.
 We add a `task { .. }` builder to the F# standard library.
 
 To implement this efficiently, we add a general capability to specify and emit resumable
-code hosted in a state machine objects to the F# compiler, and to allow F#
+code hosted in state machine objects recognized by the F# compiler, and to allow F#
 computation expressions to be implemented via resumable code.
 
 # Motivation
@@ -114,18 +114,20 @@ The design philosophy for the "resumable state machines" feature is as follows:
 4. The feature is designed for use only by highly skilled F# developers to implement low-allocation computation
    expression builders.
 
+5. Semantically, there's nothing you can do with resumable state machines that you can't already do with existing workflows. It is better to think of them as a performance feature, a compiler optimization partly implemented in workflow library code.
+
 Tasks are implemented via the more general mechanism of resumable state machines.
 
 ### Specifying a resumable state machine (reference types)
 
 Resumable state machines of reference type are specified using the ``__resumableStateMachine`` compiler primitive, giving a state machine expression:
-```
+```fsharp
     if __useResumableStateMachines then
         __resumableStateMachine
             { new SomeStateMachineType() with 
                 member __.Step ()  = 
                    <resumable code>
-           }
+            }
     else
         <dynamic-implementation>
 ```
@@ -135,19 +137,19 @@ Notes
 
 * A value-type state machine may also be used to host the resumable code, see below. 
 
-* Here `SomeStateMachineType` can be any user-defined reference type, and the object expression must contain a single method.
+* Here `SomeStateMachineType` can be any user-defined reference type, and the object expression must contain a single `Step` method.
 
 * The `if __useResumableCode then` is needed because the compilation of resumable code is only activated when code is compiled.
   The `<dynamic-implementation>` is used for reflective execution, e.g. quotation interpretation.
   In prototyping it can simply raise an exception. It should be semantically identical to the other branch.
   
-* The above construct should be seen as a language feature.  First-class uses of of constructs such as `__resumableObject` are not allowed except in the exact pattern above.
+* The above construct should be seen as a language feature.  First-class uses of constructs such as `__resumableObject` are not allowed except in the exact pattern above.
 
 ### Specifying resumable code
 
 Resumable code is made of the following grammar:
 
-* An call to an inlined function defining further resumable code, e.g. 
+* A call to an inlined function defining further resumable code, e.g. 
 
       <rcode> :=
           let inline f () = <rcode>
@@ -155,23 +157,23 @@ Resumable code is made of the following grammar:
           f(); f() 
 
   Such a function can have function parameters using the `__expand_` naming, e.g. 
-
-      let inline callTwice __expand_f = __expand_f(); __expand_f()
-      let inline print() = printfn "hello"
+    ```fsharp
+    let inline callTwice __expand_f = __expand_f(); __expand_f()
+    let inline print() = printfn "hello"
       
-      callTwice print
-
+    callTwice print
+    ```
   These parameters give rise the expansion bindings, e.g. the above is equivalent to
-  
-      let __expand_f = print
-      __expand_f()
-      __expand_f()
-
+    ```fsharp  
+    let __expand_f = print
+    __expand_f()
+    __expand_f()
+    ```
    Which is equivalent to
-   
-      print()
-      print()
-
+     ```fsharp   
+     print()
+     print()
+     ```
 * An expansion binding definition (normally arising from the use of an inline function):
 
       <rcode> :=
@@ -206,19 +208,19 @@ Resumable code is made of the following grammar:
   
   The `Some` branch usually suspends execution by saving `contID` into the state machine
   for later use with a `__resumeAt` execution at the entry to the method. For example:
-  
-      let inline returnFrom (task: Task<'T>) =
-          let mutable awaiter = task.GetAwaiter()
-          match __resumableEntry() with 
-          | Some contID ->
-              sm.ResumptionPoint <- contID
-              sm.MethodBuilder.AwaitUnsafeOnCompleted(&awaiter, &sm)
-              false
-          | None ->
-              sm.Result <- awaiter.GetResult()
-              true
-
-  Note a resumption expression can return a result - in the above the resumption expression indicates whether the
+    ```fsharp
+    let inline returnFrom (task: Task<'T>) =
+        let mutable awaiter = task.GetAwaiter()
+        match __resumableEntry() with 
+        | Some contID ->
+            sm.ResumptionPoint <- contID
+            sm.MethodBuilder.AwaitUnsafeOnCompleted(&awaiter, &sm)
+            false
+        | None ->
+            sm.Result <- awaiter.GetResult()
+            true
+    ```
+  Note that, a resumption expression can return a result - in the above the resumption expression indicates whether the
   task ran to completion or not.
 
 * A `resumeAt` expression:
@@ -226,8 +228,7 @@ Resumable code is made of the following grammar:
       <rcode> :=
           __resumeAt <expr>
 
-  Here <expr> is an integer-valued expression indicating a resumption point, which must be eith 0 or a `contID` arising from a resumption
-  point resumable code expression on a previous execution.
+  Here <expr> is an integer-valued expression indicating a resumption point, which must be either 0 or a `contID` arising from a resumption point resumable code expression on a previous execution.
   
 * A sequential exection of two resumable code blocks:
 
@@ -247,14 +248,14 @@ Resumable code is made of the following grammar:
   means it is not guaranteed that the first `<rcode>` will be executed before the
   second - a `__resumeAt` call can jump straight into the second code when the method is executed to resume previous execution.
   As a result, `__stack_step` should always be consumed prior to any resumption points. For example:
-   
-      let inline combine (__expand_task1: (unit -> bool), __expand_task2: (unit -> bool)) =
-          let __stack_step = __expand_task1()
-          if __stack_step then 
-              __expand_task2()
-          else
-              false
-
+    ```fsharp
+    let inline combine (__expand_task1: (unit -> bool), __expand_task2: (unit -> bool)) =
+        let __stack_step = __expand_task1()
+        if __stack_step then 
+            __expand_task2()
+        else
+            false
+     ```
 * A resumable `while` expression:
 
       <rcode> :=
@@ -424,7 +425,7 @@ module TaskBuilder =
     val task : TaskBuilder
 ```
 
-The following are added to support `Bind` and `ReturnFrom`` on Tasks and task-like patterns
+The following are added to support `Bind` and `ReturnFrom` on Tasks and task-like patterns
 ```fsharp
 namespace Microsoft.FSharp.Control
 
@@ -611,7 +612,7 @@ See [seq2.fs](https://github.com/dotnet/fsharp/blob/feature/tasks/tests/fsharp/p
 This is a resumable machine emitting to a mutable context held in a struct state machine. The state holds the current
 value of the iteration.
 
-This is akin to `seq { ... }` expressions, for which we bake-in state machine compilation into the F# compiler today. 
+This is akin to `seq { ... }` expressions, for which we have a baked-in state machine compilation in the F# compiler today. 
 
 ## Example: low-allocation list and array builders
 
@@ -623,7 +624,7 @@ The sample defines  `list { .. }`, `array { .. }` and `rsarray { .. }` for colle
 The overall result is a `list { ... }` builder that runs up to 4x faster than the built-in `[ .. ]` for generated lists of
 computationally varying shape (i.e. `[ .. ]` that use conditionals, `yield` and so on).
 
-F#'s existing `[ .. ]` and `[| ... |]` and `seq { .. } |> Seq.toResizeArray` all use an intermediate `IEnumerable` which is then iterated to populate a `ResizeArray` and then converted to the final immutable collection. In contrast, generating directly into a `ResizeArray` is potentially more efficient (and for `list { ... }` further perf improvements are possible if we put this in `FSharp.Core` and use the mutate-tail-cons-cell trick to generate the list directly). This technique has been known for a while and can give faster collection generation but it has not been possible to get good code generation for the expressions in many cases. Note these aren't really "state machines" because there are no resumption points - there is just an implicit collection we are yielding into in otherwise synchronous code.
+F#'s existing `[ .. ]` and `[| ... |]` and `seq { .. } |> Seq.toResizeArray` all use an intermediate `IEnumerable` which is then iterated to populate a `ResizeArray` and then converted to the final immutable collection. In contrast, generating directly into a `ResizeArray` is potentially more efficient (and for `list { ... }` further perf improvements are possible if we put this in `FSharp.Core` and use the mutate-tail-cons-cell trick to generate the list directly). This technique has been known for a while and can give faster collection generation but it has not been possible to get good code generation for the expressions in many cases. Note that, these aren't really "state machines" because there are no resumption points - there is just an implicit collection we are yielding into in otherwise synchronous code.
 
 # Limitations
 
@@ -647,6 +648,9 @@ consuming unbounded stack and heap resources. Thus the following will work for `
 Aside: See [this paper](https://www.microsoft.com/en-us/research/publication/the-f-asynchronous-programming-model/) for more
 information on asynchronous tailcalls in the F# async programming model.
 
+TODO: consider warnings for this. This is also akin to another gotcha quoted from http://tomasp.net/blog/csharp-async-gotchas.aspx/ - the most common gotcha is that tail-recursive functions must use `return!` instead of `do!` to avoid leaks.
+
+
 # Drawbacks
 
 Complexity
@@ -654,7 +658,7 @@ Complexity
 # Alternatives
 
 1. Don't do it.
-2. Don't generalise it (just to it for tasks)
+2. Don't generalise it (just do it for tasks)
 
 # Compatibility
 
@@ -815,15 +819,13 @@ The heart of a typical state machine is a `MoveNext` or `Step` function that tak
 
 ```
 
-This is roughly what compiled `seq { ... }` code looks like in F# today and what compiled async/await code looks like in C#, at a very high level. Note you can't write this kind of code directly in F# - there is no `goto` and especially not a `goto` that can jump directly into other code, resuming from the last step of the state machine.  
+This is roughly what compiled `seq { ... }` code looks like in F# today and what compiled async/await code looks like in C#, at a very high level. Note that, you can't write this kind of code directly in F# - there is no `goto` and especially not a `goto` that can jump directly into other code, resuming from the last step of the state machine.  
 
 # Unresolved questions
 
 * [ ] ContextInsensitiveTasks
 * [ ] `let rec` not supported in state machines, possibly other constructs too
 * [ ] Consider adding `Unchecked` to names of primitives.  
-* [ ] Document the ways the mechanism can be cheated.  For example, the `__resumeAt` can be cheated by using an arbitrary integer for the destination. The code won't actually be unverifiable, and it will be the equivalent of a drop-through the switch statement generated for a `__resumeAt`, but it likely still warrants an `Unchecked`. 
+* [ ] Document the ways the mechanism can be cheated.  For example, the `__resumeAt` can be cheated by using an arbitrary integer for the destination. The code will still be verifiable, however it will be the equivalent of a drop-through the switch statement generated for a `__resumeAt`. Because of this it likely still warrants an `Unchecked`. 
+* [ ] consider warnings for the lack of asynchronous tailcalls.
 
-
-
-TBD
