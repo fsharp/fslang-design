@@ -5,7 +5,7 @@ There is an approved-in-principle [proposal](http://fslang.uservoice.com/forums/
 
 * [ ] Discussion: [under discussion](https://github.com/fsharp/fslang-design/issues/368)
 
-* [ ] Implementation: [in progress](https://github.com/dotnet/fsharp/pull/6770)
+* [ ] Implementation: [in progress](https://github.com/dotnet/fsharp/pull/8907)
 
 ### Summary
 
