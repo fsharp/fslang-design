@@ -141,7 +141,23 @@ There is also some overlap here with extensible `sprintf` formatting so perhaps 
     * One proposal is to restrict to identifiers and dotted names.
 
 * Depending on the restriction, this may exclude valid use cases. Many examples given include simple computations and function calls. Also a restriction increases complexity, as parsing and checking in an embedded expression has different rules which need to be checked and implemented separately.
-    
+
+From a quick glance over the C# spec, things we need to do:
+
+* `{{` and `}}` for escaping
+
+Things we need to consider:
+
+* .NET style formatting annotations, e.g. `$"The speed of light is {speedOfLight:N3}."`;. These would have to be separate to `%` formats and probably each interpoalted string should only use one or the other
+
+* "If an interpolated string has the type string, it's typically transformed into a `String.Format` method call. The compiler may replace `String.Format` with `String.Concat` if the analyzed behavior would be equivalent to concatenation."
+
+* "If an interpolated string has the type `IFormattable` or `FormattableString`, the compiler generates a call to the `FormattableStringFactory.Create` method."
+
+Are there any limitations to nested expressions in C#? I don't see any on a quick glance over the spec
+
+
+
 ### Links
 
 * [F# printf formats](https://msdn.microsoft.com/en-us/visualfsharpdocs/conceptual/core.printf-module-%5Bfsharp%5D?f=255&MSPPError=-2147217396)
