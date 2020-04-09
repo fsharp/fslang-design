@@ -101,6 +101,7 @@ We disallow a mix of `%d` and `%d{expr}` specifiers in a single format string, a
 
 Note that `null` is formatted as the empty string for interpolated strings, and as `<null>` for any `%O` in existing `printf` format strings.
 
+Byte strings, such as `"abc"B` do not support interoplation.
 
 ### Tooling
 
