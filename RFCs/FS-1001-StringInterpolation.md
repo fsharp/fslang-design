@@ -103,6 +103,17 @@ Note that `null` is formatted as the empty string for interpolated strings, and 
 
 Byte strings, such as `"abc"B` do not support interoplation.
 
+### Indentation
+
+An interpolated string fill expression creates a new offside context for the purposes of indentation processing.  For example:
+
+```fsharp
+    $"abc {let x = 3
+           x + x} def {let x = 3
+                       x + x} xyz"
+```
+is a legitimate expression.
+
 ### Tooling
 
 The compiler service tooling is adjusted to account for understanding when we're in an interoplated context (and complete the `}` with brace completion). It is expected that autocompletion will work in an interoplated context, as will any navigational features that work with symbols in a document.
@@ -134,28 +145,19 @@ The leading `f` indicates that `sprintf` like formatting is to be used, but we c
 There is also some overlap here with extensible `sprintf` formatting so perhaps a middle ground is to allow the leading character to specify the processing of the arguments like you can do with `kprintf` as for example described [here](https://bugsquash.blogspot.co.uk/2010/07/abusing-printfformat-in-f.html).
 
 
+### Resolved issues
+
+> Should the embedded expressions be restricted to some subset of possible F# expressions to prevent abuse? If so, how are the expression restricted?
+
+  One proposal was to restrict to identifiers and dotted names. However we decided to follow the C# spec and allow more complex expressions.
+
+> Do we want to perform this codegen?  *"If an interpolated string has the type string, it's typically transformed into a `String.Format` method call. The compiler may replace `String.Format` with `String.Concat` if the analyzed behavior would be equivalent to concatenation." "If an interpolated string has the type `IFormattable` or `FormattableString`, the compiler generates a call to the `FormattableStringFactory.Create` method."* 
+
+  Resolution: no, we won't do this, it would be irregular and an explicit call to String.Format can be used instead.
+
 ### Open questions:
 
-* Should the embedded expressions be restricted to some subset of possible F# expressions to prevent abuse? If so, how are the expression restricted?
-
-    * One proposal is to restrict to identifiers and dotted names.
-
-* Depending on the restriction, this may exclude valid use cases. Many examples given include simple computations and function calls. Also a restriction increases complexity, as parsing and checking in an embedded expression has different rules which need to be checked and implemented separately.
-
-From a quick glance over the C# spec, things we need to do:
-
-* `{{` and `}}` for escaping
-
-Things we need to consider:
-
-* .NET style formatting annotations, e.g. `$"The speed of light is {speedOfLight:N3}."`;. These would have to be separate to `%` formats and probably each interpoalted string should only use one or the other
-
-* "If an interpolated string has the type string, it's typically transformed into a `String.Format` method call. The compiler may replace `String.Format` with `String.Concat` if the analyzed behavior would be equivalent to concatenation."
-
-* "If an interpolated string has the type `IFormattable` or `FormattableString`, the compiler generates a call to the `FormattableStringFactory.Create` method."
-
-Are there any limitations to nested expressions in C#? I don't see any on a quick glance over the spec
-
+None
 
 
 ### Links
