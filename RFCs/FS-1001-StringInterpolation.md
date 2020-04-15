@@ -36,70 +36,36 @@ Use cases include any for which printf and variants are currently used: console 
 
    * Type-checked printf style fills: `%printfFormat{<interpolationExpression>}`, e.g. `%d{x}` or `%20s{text}`.
  
-   * Unchecked ".NET-style" fills: `{<interpolationExpression>[,<dotnetAlignment>][:<dotnetFormatString>]}`, e.g. `{x}` or `{y:N4}`.
-
-   .NET-style fills are actually a shortcut for a `%O` printf pattern .....`%(dotnetAlignment,dotnetFormatString)O{interpolationExpression}..."`.
+   * Unchecked ".NET-style" fills: `{<interpolationExpression>[,<dotnetAlignment>][:<dotnetFormatString>]}`, e.g. `{x}` or `{y:N4}` of `{z,10:N4}`
 
    A verbatim interpolation string `$@"...{}..."` or `@$"...{}...` is the interpolated counterpart of a verbatim string; A multiline interpolation string `$"""...{}..."""` is the interpolated counterpart of a multiline string.
 
    A literal `{` or `}` character, paired or not, must be escaped (by doubling) in an interpolation string.
 
-
-2. An interpolation string is checked as type `string`, `PrintfFormat`, `FormattableString` or `IFormattable`. The choice is based on the known type against which the expression is checked. We first try to unify to `string` and, if that fails, test for the other known types without unifying.
-
-   Existing string literals continue to be interpreted as type `string` or `PrintfFormat` unchanged. The choice is based on the known type against which the expression is checked.
-
-   Some background information about the types:
-
-   - A `FormattableString` is a C#-style format string with parameters captured. It allows one to first pack the format string and the parameters, and then format with different cultural conventions later -- the `ToString` method accepts a `IFormatProvider` which carries cultural formatting conventions. 
-
-   - A `IFormatProvider` is the standard way of supplying cultural formatting conventions, and custom formatting behaviors in .NET; For example, `System.Globalization.CultureInfo` implements `IFormatProvider`.
-
-   - A `IFormattable` is an abstraction of formattable stuff. The `FormattableString` implements this (so, basically the same thing). Note that `FormattableString` is net46+ only.
+2. An interpolation string is checked as type `string`. The choice is based on the known type against which the expression is checked. We first try to unify to `string` and, if that fails, test for the other known types without unifying.
 
 3. Interpolation fills (e.g `%d{x}`) may only be used in interpolation strings.  Unfilled printf-style placeholders (e.g. `%d`) may only be present for existing string literals.
 
-4. The elaborated form of an interpolated string is as follows:
+4. The elaborated form of an interpolated string is to a call to `Printf.isprintf` with a format string where interpolation holes have been replaces by `%P(dotnetFormatString)`. Some exmaples:
 
-   - If interpreted as type `string` an implicit call to `sprintf` is inserted along with the creation of a `PrintfFormat` capturing the interpolated fills.
+       "abc{x}" --> Printf.isprintf "abc%P()" x
+       "abc{x,5}" --> Printf.isprintf "abc%5P()" x
+       "abc{x:N3}" --> Printf.isprintf "abc%P(N3)" x
+       "abc %d{x}" --> Printf.isprintf "abc%d%P()" x
 
-   - If interpreted as type `PrintfFormat` then an implicit creation of a `PrintfFormat` capturing the interpolated fills.
+   `isprintf` executes as for `sprintf` except
    
-   - If interpreted as type `FormattableString` or `IFormattable` then an implicit creation of a `PrintfFormat` capturing the interpolated fills followed by `.ToFormattableString()` and an upcast if necessary.
-
-5. The set of acceptable printf formats is extended to include `%O` patterns with .NET formatting, using `%(dotnetAlignment,dotnetFormatString)O`.  Once a value is available such an expression is formatted using `System.String.Format("{0:dotnetAlignment,dotnetFormatString}", value)`.  If `dotnetAlignment` and `dotnetFormatString` are both missing then this is equivalent to `value.ToString()` if `value` is non-null.  If `value` is `null` then for non-interpolated format strings this is formatted as `<null>`.  For interpolated format strings it is formatted as the empty string.
-
-   NOTE: this is not yet implemented
+   a. `%P` patterns generate the string produced by `System.String.Format("{0:dotnetAlignment,dotnetFormatString}", value)`
    
-6. (UNDER REVIEW - not part of the implementation) The `PrintfFormat` type in FSharp.Core is extended as follows:
+   b. a `%P()` pattern immediately following a `%d` or other `sprintf` format is ignored (since the processing of the fill will have been completed via the `%d`).
+   
+   c. If a value is `null` then it is formatted as the empty string.
 
-```fsharp
-open System
+A mix of `%d` and `%d{expr}` specifiers is not allowed in a single format string, as shown in 3. To put it the other way, an interpolation string does not have unfilled parameters or curried forms, and a "conventional" string does not have filled parameters.
 
-type PrintfFormat<'Printer,'State,'Residue,'Result>
-    // Existing
-    new: value: string -> PrintfFormat<'Printer,'State,'Residue,'Result>
-    member Value: string
-    
-    // New
-    new: value: string * captures: obj[] * types: Type[] -> PrintfFormat<'Printer,'State,'Residue,'Result>
-    member Captures: obj[]
-    member Types: Type[]
-    member FormatProvider: IFormatProvider
-    member ToFormattableString: unit -> FormattableString
-    member WithFormatProvider : IFormatProvider -> PrintfFormat<'Printer,'State,'Residue,'Result>
+A mix of type-checked and unchecked fills **is** allowed in a single format string.
 
-type PrintfFormat<'Printer,'State,'Residue,'Result,'Tuple>
-    //Exisiting
-    new: value: string -> PrintfFormat<'Printer,'State,'Residue,'Result,'Tuple>
-    
-    // New
-    new: value: string * captures: obj[] * types: Type[] -> PrintfFormat<'Printer,'State,'Residue,'Result,'Tuple>
-```
-
-We disallow a mix of `%d` and `%d{expr}` specifiers in a single format string, as shown in 3. To put it the other way, an interpolation string does not have unfilled parameters or curried forms, and a "conventional" string does not have filled parameters.
-
-Note that `null` is formatted as the empty string for interpolated strings, and as `<null>` for any `%O` in existing `printf` format strings.
+A type-checked fill (such as `%d{x}`) may not use .NET alignment and format strings.  To align use, for example `%6d`.
 
 Byte strings, such as `"abc"B` do not support interoplation.
 
