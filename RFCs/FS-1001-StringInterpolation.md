@@ -34,26 +34,32 @@ Use cases include any for which printf and variants are currently used: console 
 
 1. `$"....{}..."` is a new form called an "interpolation string", and can contain either:
 
-   * Type-checked printf style fills: `%printfFormat{<interpolationExpression>}`, e.g. `%d{x}` or `%20s{text}`.
+   * Type-checked "printf-style" fills: `%printfFormat{<interpolationExpression>}`, e.g. `%d{x}` or `%20s{text}`.
  
    * Unchecked ".NET-style" fills: `{<interpolationExpression>[,<dotnetAlignment>][:<dotnetFormatString>]}`, e.g. `{x}` or `{y:N4}` of `{z,10:N4}`
-
-   A verbatim interpolation string `$@"...{}..."` or `@$"...{}...` is the interpolated counterpart of a verbatim string; A multiline interpolation string `$"""...{}..."""` is the interpolated counterpart of a multiline string.
+   
+   A verbatim interpolation string `$@"...{}..."` or `@$"...{}...` is the interpolated counterpart of a verbatim string.
+   
+   A triple-quote interpolation string `$"""...{}..."""` is the interpolated counterpart of a triple-quote string.
 
    A literal `{` or `}` character, paired or not, must be escaped (by doubling) in an interpolation string.
 
-2. An interpolation string is checked as type `string`. The choice is based on the known type against which the expression is checked. We first try to unify to `string` and, if that fails, test for the other known types without unifying.
+2. An interpolation string is checked as type `string` or, if that fails, as type `System.FormattableString`. The choice is based on the known type against which the expression is checked. 
 
-3. Interpolation fills (e.g `%d{x}`) may only be used in interpolation strings.  Unfilled printf-style placeholders (e.g. `%d`) may only be present for existing string literals.
+   Printf-style fills (e.g `%d{x}`) may only be used in interpolation strings typed as type `string`.
+   
+   .NET fills (e.g `{x}` or `{x:N}`) may be used in either interpolation strings typed as type `string` or `FormattableString`
+   
+   Unfilled printf-style (e.g. `%d`) may not be used in interpolation strings.
 
-4. The elaborated form of an interpolated string is to a call to `Printf.isprintf` with a format string where interpolation holes have been replaces by `%P(dotnetFormatString)`. Some exmaples:
+2. The elaborated form of an interpolated string is to a call to `Printf.isprintf` (for type `string`) and `Printf.ifsprintf` (for `FormattableString`) with a format string where interpolation holes have been replaces by `%P(dotnetFormatString)`. Some examples:
 
        "abc{x}" --> Printf.isprintf "abc%P()" x
        "abc{x,5}" --> Printf.isprintf "abc%5P()" x
        "abc{x:N3}" --> Printf.isprintf "abc%P(N3)" x
        "abc %d{x}" --> Printf.isprintf "abc%d%P()" x
 
-   `isprintf` executes as for `sprintf` except
+3. `Printf.isprintf` executes as for `sprintf` except
    
    a. `%P` patterns generate the string produced by `System.String.Format("{0:dotnetAlignment,dotnetFormatString}", value)`
    
@@ -61,13 +67,15 @@ Use cases include any for which printf and variants are currently used: console 
    
    c. If a value is `null` then it is formatted as the empty string.
 
-A mix of `%d` and `%d{expr}` specifiers is not allowed in a single format string, as shown in 3. To put it the other way, an interpolation string does not have unfilled parameters or curried forms, and a "conventional" string does not have filled parameters.
+4. Expressions used in fills for single-quote strings or verbatim strings **may not** include further string literals.
 
-A mix of type-checked and unchecked fills **is** allowed in a single format string.
+   Expressions used in fills for triple-quote strings **may** include single quote or verbatim string literals but not triple-quote literals.
 
-A type-checked fill (such as `%d{x}`) may not use .NET alignment and format strings.  To align use, for example `%6d`.
+   A mix of type-checked and unchecked fills **is** allowed in a single format string when typed as type `string`.
 
-Byte strings, such as `"abc"B` do not support interoplation.
+   A type-checked fill (such as `%d{x}`) may not use .NET alignment and format strings.  To align use, for example `%6d`.
+
+   Byte strings, such as `"abc"B` do not support interoplation.
 
 ### Indentation
 
@@ -123,7 +131,7 @@ There is also some overlap here with extensible `sprintf` formatting so perhaps 
 
 ### Open questions:
 
-None
+* Should code generation for interpolation strings not using printf-style patterns be simpler (and much more efficient)?
 
 
 ### Links
