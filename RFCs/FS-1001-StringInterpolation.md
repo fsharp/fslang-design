@@ -44,38 +44,44 @@ Use cases include any for which printf and variants are currently used: console 
 
    A literal `{` or `}` character, paired or not, must be escaped (by doubling) in an interpolation string.
 
-2. An interpolation string is checked as type `string` or, if that fails, as type `System.FormattableString`. The choice is based on the known type against which the expression is checked. 
+2. An interpolation string is checked as type `string` or, if that fails, as type `System.FormattableString` or, if that fails, as type `System.IFormattable`. The choice is based on the known type against which the expression is checked. 
 
    Printf-style fills (e.g `%d{x}`) may only be used in interpolation strings typed as type `string`.
    
-   .NET fills (e.g `{x}` or `{x:N}`) may be used in either interpolation strings typed as type `string` or `FormattableString`
+   .NET fills (e.g `{x}` or `{x:N}`) may be used in any interpolation string.
    
    Unfilled printf-style (e.g. `%d`) may not be used in interpolation strings.
 
-2. The elaborated form of an interpolated string is to a call to `Printf.isprintf` (for type `string`) and `Printf.ifsprintf` (for `FormattableString`) with a format string where interpolation holes have been replaces by `%P(dotnetFormatString)`. Some examples:
+2. The elaborated form of an interpolated string with type `string` is to a call to `Printf.isprintf` with a format string where interpolation holes have been replaced by `%P(dotnetFormatString)`.  If an interpolated string has the type `FormattableString` or `IFormattable`, the elaborated form is a call to the `FormattableStringFactory.Create` method. Some examples:
 
-       "abc{x}" --> Printf.isprintf "abc%P()" x
-       "abc{x,5}" --> Printf.isprintf "abc%5P()" x
-       "abc{x:N3}" --> Printf.isprintf "abc%P(N3)" x
-       "abc %d{x}" --> Printf.isprintf "abc%d%P()" x
+       $"abc{x}" --> Printf.isprintf "abc%P()" x
+       $"abc{x,5}" --> Printf.isprintf "abc%5P()" x
+       $"abc{x:N3}" --> Printf.isprintf "abc%P(N3)" x
+       $"abc %d{x}" --> Printf.isprintf "abc%d%P()" x
+       ($"abc {x} {y:N}" : FormattableString) 
+           --> System.Runtime.CompilerServices.FormattableStringFactory.Create("abc {0} {1:N}", [| box x; box y |])
 
-3. `Printf.isprintf` executes as for `sprintf` except
+   `Printf.isprintf` executes as for `sprintf`. The behaviour of `sprintf` is augmented with the following:
    
-   a. `%P` patterns generate the string produced by `System.String.Format("{0:dotnetAlignment,dotnetFormatString}", value)`
+   * `%P` patterns generate the string produced by `System.String.Format("{0,dotnetAlignment:dotnetFormatString}", value)`
    
-   b. a `%P()` pattern immediately following a `%d` or other `sprintf` format is ignored (since the processing of the fill will have been completed via the `%d`).
+   * a `%P()` pattern immediately following a `%d` or other `sprintf` format is ignored (since the processing of the fill will have been completed via the `%d`).
    
-   c. If a value is `null` then it is formatted as the empty string.
+   * If a value is `null` then it is formatted as the empty string.
 
-4. Expressions used in fills for single-quote strings or verbatim strings **may not** include further string literals.
 
-   Expressions used in fills for triple-quote strings **may** include single quote or verbatim string literals but not triple-quote literals.
+4. The following restrictions apply:
 
-   A mix of type-checked and unchecked fills **is** allowed in a single format string when typed as type `string`.
+   * Expressions used in fills for single-quote strings or verbatim strings **may not** include further string literals.
 
-   A type-checked fill (such as `%d{x}`) may not use .NET alignment and format strings.  To align use, for example `%6d`.
+   * Expressions used in fills for triple-quote strings **may** include single quote or verbatim string literals but not triple-quote literals.
+   
+   * A type-checked fill (such as `%d{x}`) may not use .NET alignment and format strings.  To align use, for example `%6d`.
 
-   Byte strings, such as `"abc"B` do not support interoplation.
+   * Byte strings, such as `"abc"B` do not support interoplation.
+
+A mix of type-checked and unchecked fills **is** allowed in a single format string when typed as type `string`. For example `$" abc %d{3} def {5}"` is allowed.
+
 
 ### Indentation
 
@@ -91,6 +97,13 @@ is a legitimate expression.
 ### Tooling
 
 The compiler service tooling is adjusted to account for understanding when we're in an interoplated context (and complete the `}` with brace completion). It is expected that autocompletion will work in an interoplated context, as will any navigational features that work with symbols in a document.
+
+### Performance expectations
+
+* The performance when used at type "string" will be about the same as `sprintf`, which will be slower than C#.  I think any performance work we do should be to do compile-time optimizations that apply to both `sprintf` and interpolated strings.
+
+* The performance when used at type "FormattableString" will be the same as C# as the code generated is the same.
+
 
 ### Drawbacks
 
@@ -118,20 +131,19 @@ The leading `f` indicates that `sprintf` like formatting is to be used, but we c
 
 There is also some overlap here with extensible `sprintf` formatting so perhaps a middle ground is to allow the leading character to specify the processing of the arguments like you can do with `kprintf` as for example described [here](https://bugsquash.blogspot.co.uk/2010/07/abusing-printfformat-in-f.html).
 
-
 ### Resolved issues
 
 > Should the embedded expressions be restricted to some subset of possible F# expressions to prevent abuse? If so, how are the expression restricted?
 
   One proposal was to restrict to identifiers and dotted names. However we decided to follow the C# spec and allow more complex expressions.
 
-> Do we want to perform this codegen?  *"If an interpolated string has the type string, it's typically transformed into a `String.Format` method call. The compiler may replace `String.Format` with `String.Concat` if the analyzed behavior would be equivalent to concatenation." "If an interpolated string has the type `IFormattable` or `FormattableString`, the compiler generates a call to the `FormattableStringFactory.Create` method."* 
+> Do we want to perform this codegen?  *"If an interpolated string has the type string, it's typically transformed into a `String.Format` method call. The compiler may replace `String.Format` with `String.Concat` if the analyzed behavior would be equivalent to concatenation." 
 
   Resolution: no, we won't do this, it would be irregular and an explicit call to String.Format can be used instead.
 
 ### Open questions:
 
-* Should code generation for interpolation strings not using printf-style patterns be simpler (and much more efficient)?
+* Should code generation for interpolation strings not using printf-style patterns be simpler (and thus also more efficient)?
 
 
 ### Links
