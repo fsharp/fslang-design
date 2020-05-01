@@ -104,8 +104,12 @@ A mix of type-checked and unchecked fills **is** allowed in a single format stri
 
 ### Activation
 
-The feature is only activated when an FSharp.Core library supporting the feature is referenced at compile-time.  This is determined
-by the presence of the following constructor:
+The feature is only activated when both:
+
+1. The appropriate `--langversion` is selected, initially `--langversion:preview`
+
+2. An FSharp.Core library supporting the feature is referenced at compile-time.  This is determined by the presence of the following constructor:
+
 ```fsharp
 type PrintfFormat<'Printer,'State,'Residue,'Result,'Tuple> = 
 
