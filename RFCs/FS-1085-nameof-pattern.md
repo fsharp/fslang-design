@@ -4,7 +4,7 @@ The design suggestion [Allow using nameof as a constant in pattern matching](htt
 
 * [x] Approved in principle
 * [x] [Suggestion](https://github.com/fsharp/fslang-suggestions/issues/841)
-* [ ] RFC Discussion
+* [x] [RFC Discussion](https://github.com/fsharp/fslang-design/issues/451)
 * [x] [Implementation: in progress](https://github.com/dotnet/fsharp/pull/8754)
 
 # Summary
