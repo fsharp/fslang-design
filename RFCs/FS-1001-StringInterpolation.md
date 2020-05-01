@@ -5,7 +5,7 @@ There is an approved-in-principle [proposal](http://fslang.uservoice.com/forums/
 
 * [ ] Discussion: [under discussion](https://github.com/fsharp/fslang-design/issues/368)
 
-* [ ] Implementation: [in progress](https://github.com/dotnet/fsharp/pull/8907)
+* [ ] Implementation: [ready for review](https://github.com/dotnet/fsharp/pull/8907)
 
 ### Summary
 
@@ -15,10 +15,16 @@ A new expresssion form called an interpolated string is added.
 let x = 1
 let pi = 3.1414
 let text = "cats"
-$"I say {x} is one and %0.2f{pi} is pi and %20s{text} are dogs"
+
+let s = $"I say {x} is one and %0.2f{pi} is pi and %10s{text} are dogs"
+//val s : string =  "I say 1 is one and 3.14 is pi and       cats are dogs"
+
+printfn $"I say again {x} is one and %0.2f{pi} is pi"
+// output: I say again 1 is one and 3.14 is pi
 ```
 
 Interpolation fills can be both untyped `{x}` or typed `%d{x}`.  Untyped locations are interpreted as `%O{x}`, except that `null` values are formatted as the empty string.
+
 
 ### Motivation
 
@@ -44,31 +50,44 @@ Use cases include any for which printf and variants are currently used: console 
 
    A literal `{` or `}` character, paired or not, must be escaped (by doubling) in an interpolation string.
 
-2. An interpolation string is checked as type `string` or, if that fails, as type `System.FormattableString` or, if that fails, as type `System.IFormattable`. The choice is based on the known type against which the expression is checked. 
+2. An interpolation string is checked as type `string` or, if that fails, as type `System.FormattableString` or, if that fails, as type `System.IFormattable`, or, if that fails, as type `PrintfFormat<'Result, 'State, 'Residue, 'Result>`. The choice is based on the known type against which the expression is checked. 
 
-   Printf-style fills (e.g `%d{x}`) may only be used in interpolation strings typed as type `string`.
+   Printf fills such as `%a{...}` implying multiple arguments may not be used in interpolation strings.
    
-   .NET fills (e.g `{x}` or `{x:N}`) may be used in any interpolation string.
+   Printf fills such as `%d{x}`) may not be used in interpolation strings typed as type `FormattableString` or `IFormattable`
+
+   .NET fills such as `{x}` or `{x:N}` may be used in any interpolation string.
    
-   Unfilled printf-style (e.g. `%d`) may not be used in interpolation strings.
+   Unfilled printf fills such as `%d` may not be used in interpolation strings.
 
-2. The elaborated form of an interpolated string with type `string` is to a call to `Printf.isprintf` with a format string where interpolation holes have been replaced by `%P(dotnetFormatString)`.  If an interpolated string has the type `FormattableString` or `IFormattable`, the elaborated form is a call to the `FormattableStringFactory.Create` method. Some examples:
+3. The elaborated form of an interpolated string depends on its type:
 
-       $"abc{x}" --> Printf.isprintf "abc%P()" x
-       $"abc{x,5}" --> Printf.isprintf "abc%5P()" x
-       $"abc{x:N3}" --> Printf.isprintf "abc%P(N3)" x
-       $"abc %d{x}" --> Printf.isprintf "abc%d%P()" x
+   An interpolated string with type `string` is elaborated to a call to `Printf.sprintf` with a format string where interpolation holes have been replaced by `%P(dotnetFormatString)`. 
+
+   * An interpolated string with the type `FormattableString` or `IFormattable` is elaborated to a call to the `FormattableStringFactory.Create` method.
+
+   * An interpolated string with type `PrintfFormat<...>` is elaborated to a call to `new PrintfFormat<...>(format, array-of-captured-args)`
+
+   Some examples:
+
+       $"abc{x}" --> Printf.sprintf "abc%P()" x
+       $"abc{x,5}" --> Printf.sprintf "abc%5P()" x
+       $"abc{x:N3}" --> Printf.sprintf "abc%P(N3)" x
+       $"abc %d{x}" --> Printf.sprintf "abc%d%P()" x
+
        ($"abc {x} {y:N}" : FormattableString) 
-           --> System.Runtime.CompilerServices.FormattableStringFactory.Create("abc {0} {1:N}", [| box x; box y |])
+           --> FormattableStringFactory.Create("abc {0} {1:N}", [| box x; box y |])
 
-   `Printf.isprintf` executes as for `sprintf`. The behaviour of `sprintf` is augmented with the following:
+       printfn $"abc {x} {y:N}" 
+           --> printfn (new PrintfFormat<...>("abc %P() %P(N)", [| box x; box y |]))
+
+   The behaviour of `sprintf` is augmented with the following:
    
    * `%P` patterns generate the string produced by `System.String.Format("{0,dotnetAlignment:dotnetFormatString}", value)`
    
-   * a `%P()` pattern immediately following a `%d` or other `sprintf` format is ignored (since the processing of the fill will have been completed via the `%d`).
+   * a `%P()` pattern immediately following a `%d` or other `printf` format is ignored (the processing of the fill will have been completed via the `%d`).
    
-   * If a value is `null` then it is formatted as the empty string.
-
+   * an interpolated value whose runtime representation is `null` is formatted as the empty string
 
 4. The following restrictions apply:
 
