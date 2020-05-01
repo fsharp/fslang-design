@@ -102,6 +102,17 @@ Use cases include any for which printf and variants are currently used: console 
 A mix of type-checked and unchecked fills **is** allowed in a single format string when typed as type `string`. For example `$" abc %d{3} def {5}"` is allowed.
 
 
+### Activation
+
+The feature is only activated when an FSharp.Core library supporting the feature is referenced at compile-time.  This is determined
+by the presence of the following constructor:
+```fsharp
+type PrintfFormat<'Printer,'State,'Residue,'Result,'Tuple> = 
+
+    new: value:string * captures: obj[] -> PrintfFormat<'Printer,'State,'Residue,'Result,'Tuple>
+```
+
+
 ### Indentation
 
 An interpolated string fill expression creates a new offside context for the purposes of indentation processing.  For example:
@@ -159,10 +170,6 @@ There is also some overlap here with extensible `sprintf` formatting so perhaps 
 > Do we want to perform this codegen?  *"If an interpolated string has the type string, it's typically transformed into a `String.Format` method call. The compiler may replace `String.Format` with `String.Concat` if the analyzed behavior would be equivalent to concatenation." 
 
   Resolution: no, we won't do this, it would be irregular and an explicit call to String.Format can be used instead.
-
-### Open questions:
-
-* Should code generation for interpolation strings not using printf-style patterns be simpler (and thus also more efficient)?
 
 
 ### Links
