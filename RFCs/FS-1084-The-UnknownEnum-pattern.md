@@ -23,20 +23,13 @@ An `UnknownEnum` pattern would be an ideal solution to this, as it matches all c
 
 # Detailed design
 
-A new active pattern, named `UnknownEnum` will be added to FSharp.Core:
-```fs
-type private UnknownEnumLookup<'Enum>() =
-    static member val Values = typeof<'Enum>.GetEnumValues() :?> 'Enum[]
-let (|UnknownEnum|_|) (enum:'Enum when 'Enum : enum<'Underlying>) =
-    if Array.IndexOf(UnknownEnumLookup<'Enum>.Values, enum) < 0 then
-        Some <| LanguagePrimitives.EnumToValue enum
-    else None
-```
-This pattern deconstructs the underlying value of the enum for concise logging and error reporting.
+A new active pattern, named `UnknownEnum` will be added to FSharp.Core.
 
-The compiler will need to be updated to recognize this pattern and consider all unknown enum cases handled in match completeness analysis. As a result, when this pattern is used, FS0104 will be silenced.
+In the compiler's view, it will match all enum members statically available. Therefore, the compiler will need to be updated to recognize this pattern and consider all unknown enum cases handled in match completeness analysis and IL generation. As a result, when this pattern is used, FS0104 will be silenced.
 
-`match` expressions on enums can use this pattern:
+This pattern will also deconstruct the underlying value of the enum for concise logging and error reporting.
+
+`match` expressions on enums can then use this pattern:
 ```fs
 type E = A = 1 | B = 2
 // No warnings
@@ -54,6 +47,17 @@ match enum<E> 0 with
 | E.A -> "Case A" 
 | E.B -> "Case B" 
 | UnknownEnum x -> sprintf "Unknown case: %d" x // Unknown case: 0
+```
+
+To support dynamically invoking this active pattern, e.g. through reflection, a dynamic implementation will be provided in FSharp.Core.
+
+```fs
+type private UnknownEnumLookup<'Enum>() =
+    static member val Values = typeof<'Enum>.GetEnumValues() :?> 'Enum[]
+let (|UnknownEnum|_|) (enum:'Enum when 'Enum : enum<'Underlying>) =
+    if Array.IndexOf(UnknownEnumLookup<'Enum>.Values, enum) < 0 then
+        Some <| LanguagePrimitives.EnumToValue enum
+    else None
 ```
 
 For enumerations with the `Flags` attribute, use of this pattern will result in a warning.
