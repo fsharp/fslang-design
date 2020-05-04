@@ -50,7 +50,14 @@ Use cases include any for which printf and variants are currently used: console 
 
    A literal `{` or `}` character, paired or not, must be escaped (by doubling) in an interpolation string.
 
-2. An interpolation string is checked as type `string` or, if that fails, as type `System.FormattableString` or, if that fails, as type `System.IFormattable`, or, if that fails, as type `PrintfFormat<'Result, 'State, 'Residue, 'Result>`. The choice is based on the known type against which the expression is checked. 
+2. An interpolation string is checked as:
+
+   1. type `string` or,
+   2. if that fails, as type `System.FormattableString` or,
+   3. if that fails, as type `System.IFormattable`, or
+   4. if that fails, as type `PrintfFormat<'Result, 'State, 'Residue, 'Result>`.
+   
+   The choice is based on the known type against which the expression is checked. 
 
    Printf fills such as `%a{...}` implying multiple arguments may not be used in interpolation strings.
    
@@ -62,32 +69,44 @@ Use cases include any for which printf and variants are currently used: console 
 
 3. The elaborated form of an interpolated string depends on its type:
 
-   An interpolated string with type `string` is elaborated to a call to `Printf.sprintf` with a format string where interpolation holes have been replaced by `%P(dotnetFormatString)`. 
+   * An interpolated string with type `string` is elaborated to a call to `Printf.sprintf` with a format string where interpolation holes have been replaced by `%P(dotnetFormatString)` and the format string is built with a call to `new PrintfFormat<...>(format, array-of-captured-args, array-of-typeof-for-parcent-A-fills)`
 
    * An interpolated string with the type `FormattableString` or `IFormattable` is elaborated to a call to the `FormattableStringFactory.Create` method.
 
-   * An interpolated string with type `PrintfFormat<...>` is elaborated to a call to `new PrintfFormat<...>(format, array-of-captured-args)`
+   * An interpolated string with type `PrintfFormat<...>` is elaborated to a call to `new PrintfFormat<...>(format, array-of-captured-args, array-of-typeof-for-parcent-A-fills)`
 
    Some examples:
 
-       $"abc{x}" --> Printf.sprintf "abc%P()" x
-       $"abc{x,5}" --> Printf.sprintf "abc%5P()" x
-       $"abc{x:N3}" --> Printf.sprintf "abc%P(N3)" x
-       $"abc %d{x}" --> Printf.sprintf "abc%d%P()" x
+       $"abc{x}" --> Printf.sprintf (new PrintfFormat("abc%P()", [| x |], null))
+       
+       $"abc{x,5}" --> Printf.sprintf (new PrintfFormat("abc%5P()", [| x |], null))
+       
+       $"abc{x:N3}" --> Printf.sprintf (new PrintfFormat("abc%P(N3)", [| x |], null))
+       
+       $"abc %d{x}" --> Printf.sprintf (new PrintfFormat("abc%P()", [| x |], null))
+       
+       $"1 %A{x: int option} 2" --> Printf.sprintf (PrintfFormat("1 %P() 2", [| x |], [| typeof<int option> |]))
+
+       printfn $"abc {x} {y:N}" --> printfn (new PrintfFormat("abc %P() %P(N)", [| box x; box y |]))
 
        ($"abc {x} {y:N}" : FormattableString) 
            --> FormattableStringFactory.Create("abc {0} {1:N}", [| box x; box y |])
 
-       printfn $"abc {x} {y:N}" 
-           --> printfn (new PrintfFormat<...>("abc %P() %P(N)", [| box x; box y |]))
+   Note that if `%A` patterns are used then `array-of-typeof-for-parcent-A-fills` is filled with the relevant static types, one for each `%A` in the pattern. These are used to correctly print `null` values with respect to their static type, e.g. `None` of type `option`, so 
 
-   The behaviour of `sprintf` is augmented with the following:
+       $"1 %A{x: int option} 2"
+
+   evaluates to
+
+       $"1 None 2"
+
+   The behaviour of `sprintf` is augmented with the following (this is not directly visible to the user):
    
    * `%P` patterns generate the string produced by `System.String.Format("{0,dotnetAlignment:dotnetFormatString}", value)`
    
    * a `%P()` pattern immediately following a `%d` or other `printf` format is ignored (the processing of the fill will have been completed via the `%d`).
    
-   * an interpolated value whose runtime representation is `null` is formatted as the empty string
+   * for `%P` patterns an interpolated value whose runtime representation is `null` is formatted as the empty string
 
 4. The following restrictions apply:
 
