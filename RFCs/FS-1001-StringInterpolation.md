@@ -5,7 +5,7 @@ There is an approved-in-principle [proposal](http://fslang.uservoice.com/forums/
 
 * [ ] Discussion: [under discussion](https://github.com/fsharp/fslang-design/issues/368)
 
-* [ ] Implementation: [ready for review](https://github.com/dotnet/fsharp/pull/8907)
+* [x] Implementation: [ready for review](https://github.com/dotnet/fsharp/pull/8907)
 
 ### Summary
 
@@ -38,87 +38,86 @@ Use cases include any for which printf and variants are currently used: console 
 
 ### Detailed Design
 
-1. `$"....{}..."` is a new form called an "interpolation string", and can contain either:
+`$"....{}..."` is a new form called an "interpolation string", and can contain either:
 
-   * Type-checked "printf-style" fills: `%printfFormat{<interpolationExpression>}`, e.g. `%d{x}` or `%20s{text}`.
+* Type-checked "printf-style" fills: `%printfFormat{<interpolationExpression>}`, e.g. `%d{x}` or `%20s{text}`.
  
-   * Unchecked ".NET-style" fills: `{<interpolationExpression>[,<dotnetAlignment>][:<dotnetFormatString>]}`, e.g. `{x}` or `{y:N4}` of `{z,10:N4}`
+* Unchecked ".NET-style" fills: `{<interpolationExpression>[,<dotnetAlignment>][:<dotnetFormatString>]}`, e.g. `{x}` or `{y:N4}` of `{z,10:N4}`
    
-   A verbatim interpolation string `$@"...{}..."` or `@$"...{}...` is the interpolated counterpart of a verbatim string.
+A _verbatim interpolation string_ `$@"...{}..."` or `@$"...{}...` is the interpolated counterpart of a verbatim string.
    
-   A triple-quote interpolation string `$"""...{}..."""` is the interpolated counterpart of a triple-quote string.
+A _triple-quote interpolation string_ `$"""...{}..."""` is the interpolated counterpart of a triple-quote string.
 
-   A literal `{` or `}` character, paired or not, must be escaped (by doubling) in an interpolation string.
+A literal `{` or `}` character, paired or not, must be escaped (by doubling) in an interpolation string.
 
-2. An interpolation string is checked as:
-
-   1. type `string` or,
-   2. if that fails, as type `System.FormattableString` or,
-   3. if that fails, as type `System.IFormattable`, or
-   4. if that fails, as type `PrintfFormat<'Result, 'State, 'Residue, 'Result>`.
+Expression fills for single-quote or verbatim interpolation strings **may not** include further string literals.
+Expression fills for triple-quote interpolation strings **may** include single quote or verbatim string literals but not triple-quote literals.
    
-   The choice is based on the known type against which the expression is checked. 
+Byte strings, such as `"abc"B` do not support interoplation.
 
-   Printf fills such as `%a{...}` implying multiple arguments may not be used in interpolation strings.
+An interpolation string is checked as:
+
+1. type `string` or,
+2. if that fails, as type `System.FormattableString` or,
+3. if that fails, as type `System.IFormattable`, or
+4. if that fails, as type `PrintfFormat<'Result, 'State, 'Residue, 'Result>`.
    
-   Printf fills such as `%d{x}`) may not be used in interpolation strings typed as type `FormattableString` or `IFormattable`
+The choice is based on the known type against which the expression is checked. 
 
-   .NET fills such as `{x}` or `{x:N}` may be used in any interpolation string.
+The following restrictions apply:
+
+* Printf-style fills such as `%a{...}` implying multiple arguments may not be used in interpolation strings.
    
-   Unfilled printf fills such as `%d` may not be used in interpolation strings.
+* Printf-style fills such as `%d{x}`) may not be used in interpolation strings typed as type `FormattableString` or `IFormattable`
 
-3. The elaborated form of an interpolated string depends on its type:
+* Printf-style fills such as `%d{x}` may not use .NET alignment or formats `%d{x:3,N}`.  To align use, for example `%6d`.
 
-   * An interpolated string with type `string` is elaborated to a call to `Printf.sprintf` with a format string where interpolation holes have been replaced by `%P(dotnetFormatString)` and the format string is built with a call to `new PrintfFormat<...>(format, array-of-captured-args, array-of-typeof-for-parcent-A-fills)`
-
-   * An interpolated string with the type `FormattableString` or `IFormattable` is elaborated to a call to the `FormattableStringFactory.Create` method.
-
-   * An interpolated string with type `PrintfFormat<...>` is elaborated to a call to `new PrintfFormat<...>(format, array-of-captured-args, array-of-typeof-for-parcent-A-fills)`
-
-   Some examples:
-
-       $"abc{x}" --> Printf.sprintf (new PrintfFormat("abc%P()", [| x |], null))
-       
-       $"abc{x,5}" --> Printf.sprintf (new PrintfFormat("abc%5P()", [| x |], null))
-       
-       $"abc{x:N3}" --> Printf.sprintf (new PrintfFormat("abc%P(N3)", [| x |], null))
-       
-       $"abc %d{x}" --> Printf.sprintf (new PrintfFormat("abc%P()", [| x |], null))
-       
-       $"1 %A{x: int option} 2" --> Printf.sprintf (PrintfFormat("1 %P() 2", [| x |], [| typeof<int option> |]))
-
-       printfn $"abc {x} {y:N}" --> printfn (new PrintfFormat("abc %P() %P(N)", [| box x; box y |]))
-
-       ($"abc {x} {y:N}" : FormattableString) 
-           --> FormattableStringFactory.Create("abc {0} {1:N}", [| box x; box y |])
-
-   Note that if `%A` patterns are used then `array-of-typeof-for-parcent-A-fills` is filled with the relevant static types, one for each `%A` in the pattern. These are used to correctly print `null` values with respect to their static type, e.g. `None` of type `option`, so 
-
-       $"1 %A{x: int option} 2"
-
-   evaluates to
-
-       $"1 None 2"
-
-   The behaviour of `sprintf` is augmented with the following (this is not directly visible to the user):
-   
-   * `%P` patterns generate the string produced by `System.String.Format("{0,dotnetAlignment:dotnetFormatString}", value)`
-   
-   * a `%P()` pattern immediately following a `%d` or other `printf` format is ignored (the processing of the fill will have been completed via the `%d`).
-   
-   * for `%P` patterns an interpolated value whose runtime representation is `null` is formatted as the empty string
-
-4. The following restrictions apply:
-
-   * Expressions used in fills for single-quote strings or verbatim strings **may not** include further string literals.
-
-   * Expressions used in fills for triple-quote strings **may** include single quote or verbatim string literals but not triple-quote literals.
-   
-   * A type-checked fill (such as `%d{x}`) may not use .NET alignment and format strings.  To align use, for example `%6d`.
-
-   * Byte strings, such as `"abc"B` do not support interoplation.
+* Printf-style fills such as `%d` without a fill expression may not be used in interpolation strings.
 
 A mix of type-checked and unchecked fills **is** allowed in a single format string when typed as type `string`. For example `$" abc %d{3} def {5}"` is allowed.
+
+### Detailed Design - Elaborated Form
+
+The elaborated form of an interpolated string depends on its type:
+
+* An interpolated string with type `string` is elaborated to a call to `Printf.sprintf` with a format string where interpolation holes have been replaced by `%P(dotnetFormatString)` and the format string is built with a call to `new PrintfFormat<...>(format, array-of-captured-args, array-of-typeof-for-parcent-A-fills)`
+
+* An interpolated string with the type `FormattableString` or `IFormattable` is elaborated to a call to the `FormattableStringFactory.Create` method.
+
+* An interpolated string with type `PrintfFormat<...>` is elaborated to a call to `new PrintfFormat<...>(format, array-of-captured-args, array-of-typeof-for-parcent-A-fills)`
+
+Some examples:
+
+    $"abc{x}" --> Printf.sprintf (new PrintfFormat("abc%P()", [| x |], null))
+       
+    $"abc{x,5}" --> Printf.sprintf (new PrintfFormat("abc%5P()", [| x |], null))
+       
+    $"abc{x:N3}" --> Printf.sprintf (new PrintfFormat("abc%P(N3)", [| x |], null))
+       
+    $"abc %d{x}" --> Printf.sprintf (new PrintfFormat("abc%P()", [| x |], null))
+       
+    $"1 %A{x: int option} 2" --> Printf.sprintf (PrintfFormat("1 %P() 2", [| x |], [| typeof<int option> |]))
+
+    printfn $"abc {x} {y:N}" --> printfn (new PrintfFormat("abc %P() %P(N)", [| box x; box y |]))
+
+    ($"abc {x} {y:N}" : FormattableString) 
+        --> FormattableStringFactory.Create("abc {0} {1:N}", [| box x; box y |])
+
+Note that if `%A` patterns are used then `array-of-typeof-for-parcent-A-fills` is filled with the relevant static types, one for each `%A` in the pattern. These are used to correctly print `null` values with respect to their static type, e.g. `None` of type `option`, so 
+
+    $"1 %A{x: int option} 2"
+
+evaluates to
+
+    $"1 None 2"
+
+The runtime behaviour of `sprintf` is augmented with the following (note, this is not directly visible to the user since it deals with hidden `%P` patterns introduced by the compiler for interpolation fills):
+   
+* `%P` patterns generate the string produced by `System.String.Format("{0,dotnetAlignment:dotnetFormatString}", value)`
+   
+* a `%P()` pattern immediately following a `%d` or other `printf` format is ignored (the processing of the fill will have been completed via the `%d`).
+   
+* for `%P` patterns an interpolated value whose runtime representation is `null` is formatted as the empty string
 
 
 ### Activation
