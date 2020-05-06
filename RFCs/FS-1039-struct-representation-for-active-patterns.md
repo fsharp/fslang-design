@@ -40,17 +40,14 @@ let (|Int|_|) str =
    | _ -> None
 ```
 
-Put the `StructAttribute` on the active pattern definition.
+Put the `ValueSome`/`ValueNone` instead of `Some`/`None` cases.
 
 ```fsharp
-[<Struct>]
 let (|Int|_|) str =
    match System.Int32.TryParse(str) with
-   | (true,int) -> VSome(int)
-   | _ -> VNone
+   | (true,int) -> ValueSome(int)
+   | _ -> ValueNone
 ```
-
-You might to note in struct version different names of `Some`/`None` cases are used. This is because of the need to distinguish between struct and non-struct versions of the `option` type.
 
 **3. It should be possible to compile total `(|A|B|)` active patterns to use struct choices**
 
