@@ -17,6 +17,57 @@ resolution of SRTP constraints. This means these quotations can't be accurately 
 This RFC addresses this problem by incorporating the necessary
 information into both quotations and the code laid down for dynamic interpretation of quotations.
 
+# Motivation
+
+One motivation for this feature is in the use of F# for AI model programming (and indeed many other language-integrated DSL programming examples).
+
+It's reasonable to program an AI model as a module od code with `ReflectedDefinition` on it, like [this example](https://github.com/fsprojects/fsharp-ai-tools/blob/3c46023521f2456ed3748e853ff4665735626d81/examples/dsl/NeuralStyleTransfer-dsl.fsx#L48):
+
+```
+[<ReflectedDefinition>]
+module NeuralStyles = 
+    ...
+
+    // Set up a convolution layer in the DNN
+    let conv_layer (out_channels, filter_size, stride, name) input = 
+        let filters = variable (fm.truncated_normal() * v 0.1) (name + "/weights") 
+        fm.conv2d (input, filters, out_channels, stride=stride, filter_size=filter_size)
+        |> instance_norm name
+
+    ...
+    
+    // The style-transfer DNN
+    let PretrainedFFStyleVGGCore (image: DT<double>) = 
+        image
+        |> conv_layer (32, 9, 1, "conv1") |> relu
+        |> conv_layer (64, 3, 2, "conv2") |> relu
+        |> conv_layer (128, 3, 2, "conv3") |> relu
+        |> residual_block (3, "resid1")
+        |> residual_block (3, "resid2")
+        |> residual_block (3, "resid3")
+        |> residual_block (3, "resid4")
+        |> residual_block (3, "resid5")
+        |> conv_transpose_layer (64, 3, 2, "conv_t1") |> relu
+        |> conv_transpose_layer (32, 3, 2, "conv_t2") |> relu
+        |> conv_layer (3, 9, 1, "conv_t3")
+        |> to_pixel_value 
+        |> clip 0.0 255.0
+
+```
+
+Once you have an accurate quotation of an AI model you can do a huge number of
+things - translate it out of F# into PyTorch or ONNX, or transform it and compile it to
+some other tensor platform, or add debugging augmentation to it, or visualise it.  
+In a sense, quotations give you ultra-light meta-programming without needing to build any new analysis tools.
+
+By it's nature AI models will use generic math code like "+", that's kind of unavoidable.
+Even more so when [RFC FS-1043](https://github.com/fsharp/fslang-design/blob/master/RFCs/FS-1043-extension-members-for-operators-and-srtp-constraints.md) is accepted.
+
+Without accurate information about how generic math operators like "+" really resolve, the quotation
+meta-programming is inaccurate and often full of bugs. You can workaround each instance but solving
+the problem more generally is much better.
+
+
 # Detailed Description of Problem
 
 F# quotations using SRTP-constrained generic code (such as `+` or `List.sumBy`) does not carry any information about
