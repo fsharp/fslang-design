@@ -23,7 +23,7 @@ One motivation for this feature is in the use of F# for AI model programming (an
 
 It's reasonable to program an AI model as a module od code with `ReflectedDefinition` on it, like [this example](https://github.com/fsprojects/fsharp-ai-tools/blob/3c46023521f2456ed3748e853ff4665735626d81/examples/dsl/NeuralStyleTransfer-dsl.fsx#L48):
 
-```
+```fsharp
 [<ReflectedDefinition>]
 module NeuralStyles = 
     ...
