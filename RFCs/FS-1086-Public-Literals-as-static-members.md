@@ -25,7 +25,7 @@ The following code will be compilable:
 type Class() =
     [<Literal>]
     static member PublicLiteral = 1
-type [<Struct>] Struct() =
+type [<Struct>] Struct =
     [<Literal>]
     static member PublicLiteral = 2
 type Record = { Field:int } with
