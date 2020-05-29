@@ -1,4 +1,4 @@
-# F# RFC FS-1086 - Public [<Literal>]s as static members
+# F# RFC FS-1086 - Public [\<Literal>]s as static members
 
 The design suggestion https://github.com/fsharp/fslang-suggestions/issues/746 has been marked "approved in principle".
 
