@@ -48,16 +48,30 @@ NOTE: These design principles vary from C#.  For example:
 
 1. `nameof(M)` in C# can resolve to an instance member.  F# doesn't support unqualified resolution of instance members, so a dummy `this` argument is needed, e.g. `nameof(Unchecked.defaultof<C>.M)` or `nameof(this.M)` etc.
 
-2. `nameof(M)` in C# doesn't need annotation for an overloaded member. This results in ambiguity when `M` is renamed.  In F# additional information must be added to identify the precise member, so that if renaming occurs the symbol is accurately renamed.  
+2. `nameof(M)` in C# doesn't need annotation for an overloaded member. This results in ambiguity when `M` is renamed.  In F# additional information must be added to identify the precise member, so that if renaming occurs the symbol is accurately renamed.
 
+## Syntax
 
+There are two forms of `nameof` syntactically:
+
+```fsharp
+nameof x // 'nameof(x)' as well, parentheses required to disambiguate as with other functions
+
+nameof<'Type>
+```
+
+The first form is the most common, for taking names of anything that isn't a type parameter.
+
+The second form is for taking the name of a type parameter. This follows the same syntax as other operators like `typeof<_>` and `typedefof<_>`.
 
 ### Detailed Processing Rules for `nameof expr`
 
 A library function `FSharp.Core.Operators.nameof` is added.  When used we adjust the processing of the expression form
+
 ```fsharp
-    nameof expr
+nameof expr
 ```
+
 Here `expr` is syntactically an expression and is processed as follows:
 1. If `expr` is of the form `(expr2)` then the parentheses are ignored and `expr` is processed
 
@@ -74,7 +88,7 @@ Here `expr` is syntactically an expression and is processed as follows:
 
 ### Naming 
 
-The name of the operator is `nameof`. It is an intrinsic in FSharp.Core
+The name of the operator is `nameof`. It is an intrinsic in FSharp.Core.
 
 ### Scope of use
 
@@ -150,6 +164,8 @@ nameof c.M2 // Yay :)
 nameof Unchecked.defaultof<C>.M2 // Yay :)
 ```
 
+This is an intentional divergence from the C# design, where you can take a name of an instance member without an instance. This requirement for an instance is also present when constructing quotations in F#, and in general is consistent with how the compiler resolves names and how that surfaces to the user. The design opts for consistency over a special kind of name resolution in this case.
+
 ### Names of overloaded members require a type annotation
 
 When selecting an overloaded member, a type annotation may be necessary to select a precise member:
@@ -171,21 +187,21 @@ type MethodGroupNameOfTests() =
         let b = nameof(this.MethodGroup1 : (float * int64 -> _))
         Assert.AreEqual("MethodGroup1",b)
 ```
-See note above for the design rationale, i.e. precise symbol renaming.
 
-### Names of operators reveal the compiled name of the operator
+This is intentional and in keeping with how selecting the correct overload for F# very often requires a type annotation.
 
-In general `nameof` does *not* reveal the compiled name of a symbol.  For example
+### Names of operators reveal the name of the symbol in source
+
+Operators are tricky constructs in F#, since their compiled name is very different from their name in source. Ultimately, we felt that the name of the operator as it is in source is a more accurate name for the feature.
+
 ```fsharp
-nameof(List.map)   // gives "map" not "Map" (the CompiledName)
-nameof(List<int>)   // gives "List"
-nameof(list<int>)   // gives "list" even though List<T> = list<T> is a type abbreviation
-nameof(System.DateTime.Now)   // gives "Now" 
-nameof(System.DateTime.get_Now)   // gives "get_Now" 
+nameof(+)   // gives "+"
 ```
-However, for operators the compiled name is revealed.  For example:
+
+That said, you can also take a name of the compiled name of the same operator. If you do that, then the compiled name is revaled:
+
 ```fsharp
-nameof(+)   // gives "op_Addition"
+
 nameof(op_Addition)   // gives "op_Addition"
 ```
 
@@ -204,11 +220,18 @@ nameof(C3)      // gives "C3"
 nameof(C3<_>)   // gives "C3"
 ```
 
-### `nameof` on generic type parameters is not permitted
+### `nameof` on generic type parameters is permitted when the type parameter is in scope
 
-In the preview release, the `nameof` construct can't be used with type arguments, `let f<'t> (x : 't) = nameof 't`.  This is because syntactically the argument to `nameof` is an expression, and not a type.
+When a generic type parameter is in scope, you can take its name:
 
-NOTE: this was by design for the preview, but is being reconsidered, see unresolved issues below.
+```fsharp
+type C<'TTT> =
+    let nm = nameof<'TTT>
+    
+    static member GetName() = nameof<'TTT>
+```
+
+Note that the syntax is different: it is `nameof<'TTT>` and not `nameof 'TTT`. This is intentional and consistent with processing generic type names in other FSharp.Core intrinsic operators like `typeof` and `typedefof`.
 
 ### `nameof` of a function using `RequiresExplicitTypeArguments` may require explicit type parameters
 
@@ -218,38 +241,39 @@ F# functions labeled with the `RequiresExplicitTypeArguments` require the use of
 nameof(typeof<_>)
 ```
 
-NOTE: this attribute is used very rarely.  
+This attribute is used very rarely, so it is unlikely to come up
 
 ### Literals
 
-It is permitted to use `nameof` in a literal, e.g.., `let rec [<Literal>] Foo = nameof Foo`
+From a design standpoint, it is permitted to use `nameof` in a literal like so:
 
-### Performance considerations
+```fsharp
+let rec [<Literal>] SomeTag = nameof SomeTag
 
-This substitution should be done at compile time, no performance impact expected
+module rec M =
+    let [<Literal>] OtherTag = nameof OtherTag
+```
+
+However, this is not possible in the current implementation due to deficiences in processing literal values recursively. The work for this is tracked in the following language suggestion: https://github.com/fsharp/fslang-suggestions/issues/889
 
 ## Alternatives
 
 See also unresolved issues below.
 
-### Alternative: formalize the notion of a named entity
+### Alternative: formalize the notion of a named entity and specialize its name resolution
 
-In the [C# version of this feature](https://github.com/dotnet/csharplang/blob/master/spec/expressions.md#nameof-expressions), the `nameof` expression takes a `named_entity` as input. A named entity is a valid expression, with one key
-distinction: instance members that fail to resolve due to being in a static context **do not** fail to
-resolve when in the context of a `nameof` expression. It is also an error for a named entity designating
-a method group to have type arguments.
+In the [C# version of this feature](https://github.com/dotnet/csharplang/blob/master/spec/expressions.md#nameof-expressions), the `nameof` expression takes a `named_entity` as input. A named entity is a valid expression, with one key distinction: instance members that fail to resolve due to being in a static context **do not** fail to resolve when in the context of a `nameof` expression. It is also an error for a named entity designating a method group to have type arguments.
 
-For F#, we have instead adopted the principle that, like in F# quotations, enough information should be given to specify a
-precise symbol resolution, rather than adding this new concept to the language definition just for this one feature.
+For F#, we have instead adopted the principle that, like in F# quotations, enough information should be given to specify a precise symbol resolution, rather than adding this new concept to the language definition just for this one feature.
 
-Further, F# doesn't support unqualified resolution of instance members, and it would be unnatural and complexifying to add that
-capability here.
+Further, F# doesn't support unqualified resolution of instance members, and it would be unnatural and complexifying to add that capability here.
+
+This could be revisited in the future, though it's worth noting that the amount of work required to enable this specific scenario would be very high relative to the overall benefit of no requiring an instance. Given this, it is unlikely that we will revisit this design.
 
 #### Alternative: use a keyword not a library intrinsic
 
 This would have been a breaking change.
 
-## Unresolved issues (based on preview)
+## Unresolved issues
 
 None
-
