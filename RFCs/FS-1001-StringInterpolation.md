@@ -36,6 +36,14 @@ String interpolation embeds the arguments into the format string, which results 
 
 Use cases include any for which printf and variants are currently used: console output, pretty printing, custom `ToString` implementations, construction of SQL statements, and so on.
 
+### Design Principles
+
+* Support the same syntax, use cases and technical features as C# interpolated strings.
+
+* Unify printf formatting and interpolation strings.  They are the same thing, in as many way as possible, they become one integrated feature.  You can use knowledge of printf formatting when writing interpolation strings.  You can use interpolations in printf/fprintf/sprintf formatting.
+
+* Keep the value of strong typing of printf formatting as an option, so changing `sprintf "the number is %d today" result` to `$"the number is %d{result} today"` is just as strongly typed.  
+
 ### Detailed Design
 
 `$"....{}..."` is a new form called an "interpolation string", and can contain either:
