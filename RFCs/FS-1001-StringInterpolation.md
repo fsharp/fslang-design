@@ -44,6 +44,25 @@ Use cases include any for which printf and variants are currently used: console 
 
 * Keep the value of strong typing of printf formatting as an option, so changing `sprintf "the number is %d today" result` to `$"the number is %d{result} today"` is just as strongly typed.  
 
+* Allow incremental typesafe adoption in any circumstance where printf formatting is supported, e.g. given a library using printf formatting:
+
+      let log fmt = Printf.kprintf (fun s -> System.Console.Error.WriteLine("LOG: " + s)) fmt
+  
+  then 
+  
+      log "hello!"
+      log "the number is %d today" result
+ 
+  can be incrementally and accurately changed to this:
+
+      log $"hello!" 
+      log $"the number is %d{result} today" 
+
+   without changing the library `log` function to take strings as arguments (it continues to take a PrintfFormat<...>), and without adjust all callsites of `log` all at once,
+   and without losing type safety.
+
+* Do not regress performance of `sprintf`, and have interpoaltion formatting be at least as fast as `printf`. (It is a non-goal to always be as performant as C# for all interpolation formatting)
+
 ### Detailed Design
 
 `$"....{}..."` is a new form called an "interpolation string", and can contain either:
