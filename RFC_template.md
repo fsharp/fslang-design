@@ -6,8 +6,9 @@ This RFC covers the detailed proposal for this suggestion.
 
 - [x] Approved in principle
 - [ ] [Suggestion](https://github.com/fsharp/fslang-suggestions/issues/fill-me-in)
-- [ ] [RFC Discussion](https://github.com/fsharp/fslang-design/issues/FILL-ME-IN)
 - [ ] [Implementation](https://github.com/dotnet/fsharp/pull/FILL-ME-IN)
+- [ ] Design Review Meeting(s) with @dsyme and others invitees
+- [Discussion](https://github.com/fsharp/fslang-design/issues/PLEASE-ADD-A-DISCUSSION-ISSUE-AND-LINK-HERE)
 
 # Summary
 
