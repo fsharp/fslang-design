@@ -5,9 +5,9 @@ The design suggestion [Allow use of 'string' everywhere, and optimize generated 
 This RFC covers the detailed proposal for this suggestion.
 
 - [ ] Approved in principle (only in issue comment, so: not yet)
-- [ ] [Suggestion](https://github.com/fsharp/fslang-suggestions/issues/890)
-- [ ] [Implementation](https://github.com/dotnet/fsharp/pull/9549) under discussion
-- [ ] Design Review Meeting(s) with @dsyme and others invitees (n/a)
+- [x] [Suggestion](https://github.com/fsharp/fslang-suggestions/issues/890)
+- [x] [Implementation](https://github.com/dotnet/fsharp/pull/9549) under development
+- Design Review Meeting(s) with @dsyme and others invitees (n/a)
 - [Discussion](https://github.com/fsharp/fslang-suggestions/issues/890)
 
 # Summary
