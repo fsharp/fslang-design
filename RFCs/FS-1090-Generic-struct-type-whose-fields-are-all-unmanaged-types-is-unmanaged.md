@@ -11,7 +11,7 @@ This RFC covers the detailed proposal for this suggestion.
 
 [summary]: #summary
 
-Allow generic structs to be `unmanaged` at construction if all fields are `unmanaged` types, so they can be used where `unmanaged` constraint is applied.
+Allow generic structs to be `unmanaged` at construction if all fields are `unmanaged` types.
 
 # Motivation
 
