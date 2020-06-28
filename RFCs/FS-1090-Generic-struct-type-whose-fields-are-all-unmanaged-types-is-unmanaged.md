@@ -24,7 +24,7 @@ Allow generic structs to be `unmanaged` at construction if all fields are `unman
 
 [design]: #detailed-design
 
-Currently, it is not possible to have an `unmanaged` constraint on generic struct types.
+Currently, it is not possible to have an `unmanaged` constraint working on generic struct types.
 
 Consider following code:
 
@@ -41,12 +41,13 @@ let error = Test<Test<int>>()
 Prior to this RFC, the example above will fail to compile with:
 
 ```less
-stdin(27,1): error FS0001: A generic construct requires that the type 'Test<int>' is an `unmanaged` type
+let error = Test<Test<int>>()
+  ------------^^^^^^^^^^^^^^^
+
+stdin(6,13): error FS0001: A generic construct requires that the type 'Test<int>' is an unmanaged type
 ```
 
 This proposal aims to eliminate this restriction by treating generic struct type `unmanaged` if all its fields are `unmanaged`.
-
-The
 
 ## Examples
 
