@@ -56,7 +56,7 @@ Prior to this RFC, the example above will fail to compile with:
 let error = Test<MyStructGeneric<int>>()
   ------------^^^^^^^^^^^^^^^
 
-stdin(6,13): error FS0001: A generic construct requires that the type 'Test<int>' is an unmanaged type
+stdin(6,13): error FS0001: A generic construct requires that the type 'MyStructGeneric<int>' is an unmanaged type
 ```
 
 This proposal aims to eliminate this restriction by treating generic struct type `unmanaged` if all its fields are `unmanaged`.
