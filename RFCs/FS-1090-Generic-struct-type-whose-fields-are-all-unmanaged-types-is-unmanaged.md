@@ -26,7 +26,7 @@ Allow generic structs to be `unmanaged` at construction if all fields are `unman
 
 Currently, it is not possible to have an `unmanaged` constraint working on generic struct types.
 
-Consider following code:
+Consider the following code:
 
 ```fsharp
 [<Struct>]
