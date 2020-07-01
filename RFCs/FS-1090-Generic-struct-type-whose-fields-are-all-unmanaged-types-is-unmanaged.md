@@ -80,14 +80,11 @@ In other words, an unmanaged-type is one of the following:
 
 ## Supported types
 
-* Generic struct types.
-* Struct records.
-* Anonymous struct records.
-* Struct tuples.
-  * Struct tuples are thread as unmanaged as long as all the elements are unmanaged;
-* Struct unions.
-  * Single-case unions types are treated as unmanaged as long as underlying type is unmanaged.
-  * Multi-case unions are treated as unmanaged as long as all underlying types are unmanaged.
+* Generic struct types whose fields are unmanaged
+* Struct records with unmanaged fields
+* Anonymous struct records with unmanaged fields
+* Struct tuples with unmanaged values
+* Struct unions (single and multi-case) whose fields are all unmanaged
 
 ## Examples
 
