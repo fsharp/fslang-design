@@ -30,12 +30,24 @@ Consider the following code:
 
 ```fsharp
 [<Struct>]
+type MyStruct(x: int, y: int) =
+    member _.X = x
+    member _.Y = y
+    
+[<Struct>]
+type MyStructGeneric<'T when 'T: unmanaged>(x: 'T, y: 'T) =
+    member _.X = x
+    member _.Y = y
+
+[<Struct>]
 type Test<'T when 'T: unmanaged> =
-        val element: 'T
-
+    val element: 'T
+        
 let works = Test<int>()
-let error = Test<Test<int>>()
+let works2 = Test<MyStruct>()
 
+// error FS0001: A generic construct requires that the type 'MyStructGeneric<int>' is an unmanaged type
+let error = Test<MyStructGeneric<int>>()
 ```
 
 Prior to this RFC, the example above will fail to compile with:
