@@ -53,7 +53,7 @@ let error = Test<MyStructGeneric<int>>()
 Prior to this RFC, the example above will fail to compile with:
 
 ```less
-let error = Test<Test<int>>()
+let error = Test<MyStructGeneric<int>>()
   ------------^^^^^^^^^^^^^^^
 
 stdin(6,13): error FS0001: A generic construct requires that the type 'Test<int>' is an unmanaged type
