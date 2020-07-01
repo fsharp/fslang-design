@@ -24,7 +24,7 @@ Allow generic structs to be `unmanaged` at construction if all fields are `unman
 
 [design]: #detailed-design
 
-Currently, it is not possible to have an `unmanaged` constraint working on generic struct types.
+Currently, it is not possible to define a generic struct with the `unmanaged` constraint and substitute the type with another generic struct, even if its type is also constrained to be `unmanaged`.
 
 Consider the following code:
 
