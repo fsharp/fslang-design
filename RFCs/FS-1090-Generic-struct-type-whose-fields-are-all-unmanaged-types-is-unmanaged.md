@@ -61,7 +61,7 @@ stdin(6,13): error FS0001: A generic construct requires that the type 'MyStructG
 
 This proposal aims to eliminate this restriction by treating generic struct type `unmanaged` if all its fields are `unmanaged`.
 
-## Definition
+## Adjusted definition of an unmanaged type
 
 An unmanaged-type is any type that isn't a reference-type and contains no fields whose type is not an unmanaged-type.
 
