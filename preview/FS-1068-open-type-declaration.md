@@ -178,7 +178,7 @@ These rules are very similar when using `inherit` in a type definition.
 
 #### Exception
 
-You cannot open byref/inref/outref.
+You cannot open `byref<'T>`/`inref<'T>`/`outref<'T>`.
 
 ```fsharp
 open type byref<int> // Compile error
