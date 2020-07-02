@@ -187,7 +187,7 @@ Issues to do with potential breaking changes coming from changes in shadowing le
 
 See original discussion here: https://github.com/fsharp/fslang-design/issues/352#issuecomment-499146012.  
 
-#### Combining overloaded methods from different types
+### Combining overloaded methods from different types
 
 We will **not** allow combination of method overloads from different types according to C# rules. The reasoning is for interactivity; we need to be able to shadow method groups in order to not have old method overloads from previous types in scope.
 
