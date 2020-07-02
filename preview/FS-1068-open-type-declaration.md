@@ -189,7 +189,7 @@ See original discussion here: https://github.com/fsharp/fslang-design/issues/352
 
 #### Combining overloaded methods from different types
 
-We will **not** allow combination of method overloads from different types according to C# rules. The reasoning is for interactivity; we need to be able to shadow method groups in order to not constantly have old method overloads exist.
+We will **not** allow combination of method overloads from different types according to C# rules. The reasoning is for interactivity; we need to be able to shadow method groups in order to not have old method overloads from previous types in scope.
 
 When multiple methods of the same name are in scope, they can be overloaded provided that their signatures are unique. If we did, this is an example:
 
