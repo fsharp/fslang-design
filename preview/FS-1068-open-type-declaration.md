@@ -161,6 +161,21 @@ open System.Numerics
 open type Vector<_> // Compile error
 ```
 
+### Named Types
+
+Named, or nominal, types are only allowed. It means you cannot open a function, tuple, or anonymous record:
+```fsharp
+open type (int * int) // Compile error, named types are only allowed
+```
+
+Using an abbreviation will still not allow it:
+```fsharp
+type MyAbbrev = (int * int)
+open type MyAbbrev // Compile error, named types are only allowed
+```
+
+These rules are very similar when using `inherit` in a type definition.
+
 ## Drawbacks
 [drawbacks]: #drawbacks
 
