@@ -1,18 +1,18 @@
-# F# RFC FS-1089 - Allow use of 'string' everywhere and optimize generated IL
+# F# RFC FS-1089 - Prevent FS0670 with 'string' and optimize generated IL
 
-The design suggestion [Allow use of 'string' everywhere, and optimize generated IL](https://github.com/fsharp/fslang-suggestions/issues/890) has been marked "approved in principle" (only in issue comment).
+The design suggestion [Optimize 'string', prevent FS0670, and generate less bloated IL](https://github.com/fsharp/fslang-suggestions/issues/890) has been marked "approved in principle" (only in issue comment).
 
 This RFC covers the detailed proposal for this suggestion.
 
 - [ ] Approved in principle (only in issue comment, so: not yet)
 - [x] [Suggestion](https://github.com/fsharp/fslang-suggestions/issues/890)
-- [x] [Implementation](https://github.com/dotnet/fsharp/pull/9549) under development
+- [x] [Implementation](https://github.com/dotnet/fsharp/pull/9549) _In progress_
 - Design Review Meeting(s) with @dsyme and others invitees (n/a)
 - [Discussion](https://github.com/fsharp/fslang-suggestions/issues/890)
 
 # Summary
 
-* Remove `inline` from the definition of `string` to allow its use in places that would otherwise be forbidden.
+* Remove SRTP `^T` syntax and use `'T` syntax in the definition of `string` to prevent FS0670 in generic contexts.
 * Optimize the IL generation.
 * Original semantics remain identical.
 
@@ -59,20 +59,19 @@ let inline string (value: ^T) =
 
 The following changes will be implemented:
 
-* The keyword `inline` will be droppped.
+* `^T` changes to `'T`
 * The special-case for `struct` will be placed lower, so that native types that cannot also be `Enum` will get special treatment.
-* Instead of the `when ^T: type` syntax, we'll adopt `when 'T: type` syntax, which will still lead to inlined code when the compiler encounters the special cases.
-* The calls to `anyToString` lead to redundant IL, this will be dropped in favor of a `struct`-specific call, since this can never be `null`.
+* Instead of the `when ^T: type` syntax, we'll adopt `when 'T: type` syntax, which will be optimized in the call-site by the compiler.
+* The calls to `anyToString` led to redundant IL and boxing, this will be dropped in favor of a `struct`-specific call, since this can never be `null`.
 * Using `"g"` will be dropped in favor of `null`, which has the same effect and requires a more optimized IL instruction.
 * The fall-through case for any other object will remain: anything that implements `IFormattable` will continue to call `IFormattable::ToString(null, CultureInfo.InvariantCulture)`. This ensures compatibility.
-* Possibly other optimizations or special-casing for common `System` types, to allow optimal IL generation.
 
 
 New code will be structured something like this:
 
 ```f#
 [<CompiledName("ToString")>]
-let string (value: 'T) = 
+let inline string (value: 'T) = 
     anyToString "" value
     when 'T: float      = (# "" value : float      #).ToString("g",CultureInfo.InvariantCulture)
     when 'T: float32    = (# "" value : float32    #).ToString("g",CultureInfo.InvariantCulture)
@@ -86,39 +85,32 @@ let string (value: 'T) =
 
 # Drawbacks
 
-While currently there already is a bug that creates bloated code, one might be tempted to keep the `inline` behavior. This would have the advantage that the code would indeed always inline.
-
-However, since the generated code, after this change, will be small, it is expected that the JIT will inline this anyway. Experimental tests with this have already shown that both F# and the JIT indeed do inline the code, even after we drop the `inline`.
-
-Another drawback is that an `inline` function has slightly different semantics in F#:
+A small drawback is that an `inline` function with SRTP vs without, has slightly different semantics in F#:
 
 ### Before: 
 
 ```f#
-// val myStr : x:obj -> string
+// val myStr : x:obj -> string (only the implementation, not on call site)
 let myStr x = string x
 ```
 
 ### After:
 
 ```f#
-// val string : x:'a -> string
+// val string : x:'a -> string (only the implementation, not on call site)
 let myStr x = string x
 ```
 
-Though the effect will be minimal, as once the function `myStr` is called in code, it will take on the actual type.
+Though the effect will be minimal, as once the function `myStr` is called in code, it will take on the actual type per the type inferrence and inlining rules of F#.
 
 # Alternatives
 
 Some alternatives can be considered:
 
 1. Not doing this. Functionally it is currently correct and most users won't notice the sub-optimal code being generated.
-2. Keep it `inline`, but apply the other changes. That would not solve the issue that `string` currently cannot be used in certain generic context as shown above.
-3. Drop special-casing `Enum`. This would be a backward-compatibility issue, although it would allows for better optimized code.
-4. Drop special-casing altogether. Essentially this is the status-quo, we would only remove the dead code.
-5. Add ability to detect `Enum` statically to the compiler. While this would certainly help, it may not be for a while until this is possible with the compiler. By that time we can revisit this code.
-6. Special-case `string` itself for not raising FS0670. I believe this should be done on a broader scale, where the compiler can detect that it is safe to ignore FS0670 cases.
-7. Broaden the scope to allow `string` on refs as well. Several suggestions are underway to allow refs in more scenarios, it is better to wait until these materialize.
+2. Drop special-casing altogether. Essentially this is the status-quo, we would only remove the dead code.
+3. Add ability to detect `Enum` statically to the compiler to improve generated code for _integral types_, that need different code paths for Enum vs integer.
+4. Generalize further to allow `string` on refs as well. Several suggestions are underway to allow refs in more scenarios, it is better to wait until these materialize.
 
 # Compatibility
 
@@ -139,7 +131,7 @@ Please address all necessary compatibility questions:
 
 * If this is a change or extension to FSharp.Core, what happens when previous versions of the F# compiler encounter this construct?
 
-  They continue to work, since previously, the `string` function was always inlined, so no reference to the function exists.
+  They continue to work, since previously, the `string` function was always inlined, so no reference to the function in FSharp.Core.dll exists.
 
 
 Any existing compiled binaries will continue to work without recompilation, even when linked to newer versions of `FSharp.Core.dll`.
