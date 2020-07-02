@@ -110,7 +110,7 @@ type System.Math with
 
 open type System.Math
 
-let result = MyPI // works!
+MyPI // works!
 ```
 
 Resolving members on optional type extensions works the same as with non-static extensions. These rules are not adjusted. That is, members defined in type extensions don't get magically attached to an already-opened static class. The following code will not compile because the `N` member is not in scope:
