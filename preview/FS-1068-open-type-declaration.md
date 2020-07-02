@@ -176,6 +176,14 @@ open type MyAbbrev // Compile error, named types are only allowed
 
 These rules are very similar when using `inherit` in a type definition.
 
+#### Exception
+
+You cannot open byref/inref/outref.
+
+```fsharp
+open type byref<int> // Compile error
+```
+
 ## Drawbacks
 [drawbacks]: #drawbacks
 
