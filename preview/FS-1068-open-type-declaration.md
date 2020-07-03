@@ -200,15 +200,7 @@ We have resolved to use `open type C`.
 
 Issues to do with potential breaking changes do to changes in shadowing led to a change of heart, see https://github.com/fsharp/fslang-design/issues/352#issuecomment-522533863
 
-See original discussion here: https://github.com/fsharp/fslang-design/issues/352#issuecomment-499146012.  
-
-### Open non-static-classes
-
-In 'preview', we could only open static classes and not any class or type. 
-
-Issues to do with potential breaking changes coming from changes in shadowing led to a change of heart, see https://github.com/fsharp/fslang-design/issues/352#issuecomment-522533863
-
-See original discussion here: https://github.com/fsharp/fslang-design/issues/352#issuecomment-499146012.  
+See original discussion here: https://github.com/fsharp/fslang-design/issues/352#issuecomment-499146012.
 
 ### Combining overloaded methods from different types
 
