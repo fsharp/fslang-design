@@ -184,6 +184,10 @@ You cannot open `byref<'T>`/`inref<'T>`/`outref<'T>`.
 open type byref<int> // Compile error
 ```
 
+### Tooling
+
+Updates to FCS are made to understand `open type` to display a list of types that can be opened.
+
 ## Drawbacks
 [drawbacks]: #drawbacks
 
