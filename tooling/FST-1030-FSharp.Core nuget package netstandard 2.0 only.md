@@ -18,7 +18,7 @@ From late 2017 to early 2020, the FSharp.Core package on NuGet has used multitar
 ## Implementation
 The implementation is easy.  We will remove the build for the desktop clr and all multi-fsharp.core testing support. This will make the build of FSharp.Core emit a single assembly that targets `netstandard2.0`.
 
-This will work well, because the Windows desktop and netstandard FSharp.Core dll's have identical public surfaces.  And net472 automagically modifies references to netstandard to load the specific net4X version of the api.
+Both binaries today have identical public API surface areas, so there is no concern about missing APIs by moving to `netstandard2.0` only. All API ability and behavior is tied to the existing behavior of .NET Standard 2.0 and .NET Framework - that is, everything "just works" if you are targeting .NET Framework 4.7.2 or higher. If you are targeting a lower .NET Framework version, there is a small chance that something could throw `PlatformNotSupportedException`. However, this is unlikely given the small amount of .NET APIs that are actually in use by FSharp.Core.
 
 ## Assumptions
 For the purposes of this RFC we will assume that:
