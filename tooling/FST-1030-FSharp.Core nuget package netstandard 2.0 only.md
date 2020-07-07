@@ -19,7 +19,7 @@ For the last 3 years the package has been released as a signed nuget package sup
 ## implementation
 The implementation is easy.  Today at the fsharp oss project site: https://github.com/dotnet/fsharp, the fsharp.core nuget package and signed dll's are built.  We will remove the build for the desktop clr and all multi-fsharp.core testing support.
 
-This will work well, because the Windows desktop and netstandard FSharp.Core dll's have identical public surfaces.  And net472 automagically modiifies references to netstandard to load the specific net4X version of the api.
+This will work well, because the Windows desktop and netstandard FSharp.Core dll's have identical public surfaces.  And net472 automagically modifies references to netstandard to load the specific net4X version of the api.
 
 ## Assumptions
 For the purposes of this RFC we will assume that:
