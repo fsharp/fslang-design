@@ -3,7 +3,8 @@ NOTE: This is a draft and remains to be reviewed by key contributors. Please con
 
 The purpose of this RFC document is to develop a shared plan of record for the delivery of FSharp.Core in NuGet package form as a netstandard2.0 library.
 
-Discussion thread: https://github.com/fsharp/fslang-suggestions/issues/893
+Discussion thread: https://github.com/fsharp/fslang-design/issues/482
+Suggestion thread: https://github.com/fsharp/fslang-suggestions/issues/893
 
 ## Background
 Historically FSharp.Core.dll was compiled and delivered by Microsoft as a .NET 4.x binary installed under "Reference Assemblies". The DLL was signed and strong-named by Microsoft. Way, way back in time it was called fslib.dll.
