@@ -13,8 +13,7 @@ Subsequently, FSharp.Core.dll has been recompiled for "trimmed down" platforms: 
 
 Many years ago, the F# Core Engineering Group created a NuGet package called FSharp.Core, partly to avoid a proliferation of "homebrew" packages appearing at that time.  3 years ago, this package was treated as the primary distribution mechanism for FSharp.Core in all scenarios. It is built, managed, and distributed from the F# development repository: https://github.com/dotnet/fsharp
 
-Today
-For the last 3 years the package has been released as a signed nuget package supporting both net45+ and netstandard2.0 TFMs.
+From late 2017 to early 2020, the FSharp.Core package on NuGet has used multitargeting, providing two binaries: one that targets `net45` and another that targets `netstandard2.0`.
 
 ## Implementation
 The implementation is easy.  Today at the fsharp oss project site: https://github.com/dotnet/fsharp, the fsharp.core nuget package and signed dll's are built.  We will remove the build for the desktop clr and all multi-fsharp.core testing support.
