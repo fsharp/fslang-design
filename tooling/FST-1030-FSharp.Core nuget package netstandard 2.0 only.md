@@ -11,7 +11,7 @@ Historically FSharp.Core.dll was compiled and delivered by Microsoft as a .NET 4
 
 Subsequently, FSharp.Core.dll has been recompiled for "trimmed down" platforms: portable profiles, Xamarin profiles, .NET Core, .NET Standard and .NET Framework. There is even a version of FSharp.Core for the "Xamarin iOS TV" profile. When provided by Microsoft, these were signed, strong-named and installed under "Reference Assemblies" on Windows. For other F# compilation environments like Xamarin, Mono, CloudSharper, FSharp.Formatting, Azure Notebooks, Azure Functions there was a bit of a mess (made considerably worse by the separation of sigdata/optdata files, now addressed in the F# compiler)
 
-The F# Core Engineering Group created a NuGet package called FSharp.Core, partly to avoid a proliferation of "homebrew" packages appearing at that time.  For the last 3 years management and distribution of this nuget package has occured at the fsharp OSS site: https://github.com/dotnet/fsharp
+Many years ago, the F# Core Engineering Group created a NuGet package called FSharp.Core, partly to avoid a proliferation of "homebrew" packages appearing at that time.  3 years ago, this package was treated as the primary distribution mechanism for FSharp.Core in all scenarios. It is built, managed, and distributed from the F# development repository: https://github.com/dotnet/fsharp
 
 Today
 For the last 3 years the package has been released as a signed nuget package supporting both net45+ and netstandard2.0 TFMs.
