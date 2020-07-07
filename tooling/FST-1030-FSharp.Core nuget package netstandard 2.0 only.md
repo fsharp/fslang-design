@@ -54,6 +54,6 @@ Instead of building against a single netstandard2.0 framework we additionally ta
 
 Response:
 Future frameworks are targetting release specific framework rids, I.e. netcoreapp3.0, netcoreapp3.1, net5 ... beyond.
-If we chose to target specific frameworks with FSharp.Core developerslibrary developers 281299 would be responsible for picking, developing and deploying rid specific FSharp.Cores.  Right now FSharp.Core doesn't need any rid specific code and so we will ship a single FSharp.Core with the widest reach possible.
+If we chose to target specific frameworks with FSharp.Core developers library developers would be responsible for picking, developing and deploying rid specific FSharp.Cores.  Right now FSharp.Core doesn't need any rid specific code and so we will ship a single FSharp.Core with the widest reach possible.
 
 # Acknowledgements
