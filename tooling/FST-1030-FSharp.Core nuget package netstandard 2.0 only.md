@@ -16,7 +16,7 @@ Many years ago, the F# Core Engineering Group created a NuGet package called FSh
 From late 2017 to early 2020, the FSharp.Core package on NuGet has used multitargeting, providing two binaries: one that targets `net45` and another that targets `netstandard2.0`.
 
 ## Implementation
-The implementation is easy.  Today at the fsharp oss project site: https://github.com/dotnet/fsharp, the fsharp.core nuget package and signed dll's are built.  We will remove the build for the desktop clr and all multi-fsharp.core testing support.
+The implementation is easy.  We will remove the build for the desktop clr and all multi-fsharp.core testing support. This will make the build of FSharp.Core emit a single assembly that targets `netstandard2.0`.
 
 This will work well, because the Windows desktop and netstandard FSharp.Core dll's have identical public surfaces.  And net472 automagically modifies references to netstandard to load the specific net4X version of the api.
 
