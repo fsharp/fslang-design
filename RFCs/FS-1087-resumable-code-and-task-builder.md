@@ -101,20 +101,30 @@ Tasks are implemented via library definitions utilising a more general feature c
 
 The design philosophy for the "resumable state machines" feature is as follows:
 
-1. We treat this as a compiler feature. The actual feature is barely surfaced
+1. No new syntax is added to the F# language. 
+
+2. The F# metadata format is unchanged. Like `nameof` and other F# features,
+   resumable state machines are encoded within existing TypedTree constructs using a combination of known compiler intrinsics
+   and TypedTree expresions.
+
+3. We treat this as a compiler feature. The actual feature is barely surfaced
    as a language feature, but is rather a set of idioms known to the F# compiler, together used to build efficient computation
    expression implementations.
 
-2. The feature is activated in compiled code.  An alternative implementation of the primitives can be
+4. The feature is activated in compiled code.  An alternative implementation of the primitives can be
    given for reflective execution, e.g. for interpretation of quotation code.
 
-3. The feature is not fully checked during type checking, but rather checks are made as code is emitted. This means
-   mis-implemented resumable code may be detected late in the compilation process, potentially when compiling user code.
+5. The feature is not fully checked during type checking, but rather checks are made as code is emitted. This means
+   mis-implemented resumable code may be detected late in the compilation process, potentially when compiling user code. (NOTE: we will review this)
 
-4. The feature is designed for use only by highly skilled F# developers to implement low-allocation computation
+6. The feature is designed for use only by highly skilled F# developers to implement low-allocation computation
    expression builders.
 
-5. Semantically, there's nothing you can do with resumable state machines that you can't already do with existing workflows. It is better to think of them as a performance feature, a compiler optimization partly implemented in workflow library code.
+7. Semantically, there's nothing you can do with resumable state machines that you can't already do with existing
+   workflows. It is better to think of them as a performance feature, a compiler optimization partly implemented
+   in workflow library code.
+
+Points 1-2 guide many of the decisions below.
 
 Tasks are implemented via the more general mechanism of resumable state machines.
 
