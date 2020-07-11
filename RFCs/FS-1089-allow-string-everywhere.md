@@ -12,9 +12,8 @@ This RFC covers the detailed proposal for this suggestion.
 
 # Summary
 
-* Remove SRTP `^T` syntax and use `'T` syntax in the definition of `string` to prevent FS0670 in generic contexts.
-* Optimize the IL generation.
-* Original semantics remain identical.
+* Change `string` such that it can be used in any context, this prevents `FS0670` to be thrown.
+* Special-case for known types, remove boxing.
 
 # Motivation
 
@@ -26,15 +25,15 @@ type Either<'L, 'R> =
     | Right of 'R
     override this.ToString() =
         match this with
-        | Left x -> string x    // not possible
-        | Right x -> string x   // not possible
+        | Left x -> string x    // not possible, FS0670
+        | Right x -> string x   // not possible, FS0670
 ```
 
 After this change, the error FS0670 will not be raised anymore, allowing the use of the omnipresent `string` function in more places, and aiding in rapid proto-typing of DU's.
 
-Motivation for optimizing the IL generation is simple: currently, the statically inlined function `string` creates a lot of non-optimized code, leading to slow execution and less chance for optimizations. Examples of this are in the [original language suggestion](https://github.com/fsharp/fslang-suggestions/issues/890) and several user-reported issues, like [#9153](https://github.com/dotnet/fsharp/issues/9153).
+Motivation for optimizing the IL generation is simple: currently, the statically inlined function `string` always emits the same boxing code, leading to slow execution and less chance for JIT optimizations. Examples of this are in the [original language suggestion](https://github.com/fsharp/fslang-suggestions/issues/890) and several user-reported issues, like [#9153](https://github.com/dotnet/fsharp/issues/9153).
 
-A further motivation is re-instating the original intended mode of operation for `string`. There's a lot of statically-resolvable code that is never hit, which appears to be there to special-case the native types `int`, `float` etc. After this change, these optimizable cases will be re-instated, while respecting `enum` special treatment.
+Note that the current code includes optimizations, but this is dead code and are never hit, because everything fits in the first `when struct` case.
 
 # Detailed design
 
@@ -60,12 +59,7 @@ let inline string (value: ^T) =
 The following changes will be implemented:
 
 * `^T` changes to `'T`
-* The special-case for `struct` will be placed lower, so that native types that cannot also be `Enum` will get special treatment.
-* Instead of the `when ^T: type` syntax, we'll adopt `when 'T: type` syntax, which will be optimized in the call-site by the compiler.
-* The calls to `anyToString` led to redundant IL and boxing, this will be dropped in favor of a `struct`-specific call, since this can never be `null`.
-* Using `"g"` will be dropped in favor of `null`, which has the same effect and requires a more optimized IL instruction.
-* The fall-through case for any other object will remain: anything that implements `IFormattable` will continue to call `IFormattable::ToString(null, CultureInfo.InvariantCulture)`. This ensures compatibility.
-
+* Restructuring to allow optimizations for known types and remove the current dead code
 
 New code will be structured something like this:
 
@@ -83,34 +77,11 @@ let inline string (value: 'T) =
 ```
 
 
-# Drawbacks
-
-A small drawback is that an `inline` function with SRTP vs without, has slightly different semantics in F#:
-
-### Before: 
-
-```f#
-// val myStr : x:obj -> string (only the implementation, not on call site)
-let myStr x = string x
-```
-
-### After:
-
-```f#
-// val string : x:'a -> string (only the implementation, not on call site)
-let myStr x = string x
-```
-
-Though the effect will be minimal, as once the function `myStr` is called in code, it will take on the actual type per the type inferrence and inlining rules of F#.
+This will allow most system types, when used with `string`, to emit non-boxing optimized code.
 
 # Alternatives
 
-Some alternatives can be considered:
-
-1. Not doing this. Functionally it is currently correct and most users won't notice the sub-optimal code being generated.
-2. Drop special-casing altogether. Essentially this is the status-quo, we would only remove the dead code.
-3. Add ability to detect `Enum` statically to the compiler to improve generated code for _integral types_, that need different code paths for Enum vs integer.
-4. Generalize further to allow `string` on refs as well. Several suggestions are underway to allow refs in more scenarios, it is better to wait until these materialize.
+The main alternative is: do not do this, and leave the status quo (that is, no special-casing for known types, boxing remains, and FS0670 error will be thrown).
 
 # Compatibility
 
@@ -142,4 +113,4 @@ If existing code is recompiled, the resulting IL will be different for the place
 
 * What parts of the design are still TBD?
 
-  There are no unresolved questions.
+  None
