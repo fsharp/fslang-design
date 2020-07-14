@@ -196,6 +196,13 @@ let x = One // "x" is of type "Vector<float>"
 
 `open type` only makes accessible static members and nested types declared in the specified type. Inherited members are not imported.
 
+### C# Extension members
+
+C#-style extension members are declared as static members with the `[<Extension>]` attribute.
+
+`open type` makes extension methods declared in the specified type available for extension method lookup.
+However, the names of the extension methods are not imported into scope for unqualified reference in code.
+
 
 ### Named Types
 
