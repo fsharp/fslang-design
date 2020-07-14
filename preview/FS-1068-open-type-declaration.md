@@ -194,8 +194,7 @@ let x = One // "x" is of type "Vector<float>"
 
 ### Inherited members
 
-`open typ` only accessible static members and nested types declared in the specified type. Inherited members are not imported.
-
+`open type` only makes accessible static members and nested types declared in the specified type. Inherited members are not imported.
 
 
 ### Named Types
