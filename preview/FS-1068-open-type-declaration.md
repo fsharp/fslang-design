@@ -14,7 +14,11 @@ This RFC covers the detailed proposal for this suggestion.
 ## Summary
 [summary]: #summary
 
-Add support for opening types to gain access to static members and nested types, e.g. `open type System.Math`. For example
+A new declaration form is added
+
+    open type <type>
+
+This allows unqualified  access to static members and nested types. For example:
 
 ```fsharp
 > open type System.Math;;
@@ -37,20 +41,25 @@ Additionally, important C# DSL APIs are starting to appear that effectively requ
 ## Detailed design
 [design]: #detailed-design
 
-Opening of types allows for treating a type somewhat as if it were a module with module-bound functions inside of it. For example:
+A new declaration form is added
+
+    open type <type>
+
+Here `<type>` can be a (possibly instantiated) type definition or a type abbreviation. For example:
 
 ```fsharp
 type A() =
     static member M(x: int) = x * 2
+    static member P = 2+2
 
 open type A
 
 M(2)
+P
 ```
 
-However, **members are not functions**, so very different rules apply beyond simple cases like the above. This primarily concerns name resolution when overloads are involved, or when considering whether or not we resolve a method or a property first.
 
-Additionally, visible static fields should also be accessible. Example:
+Visible static fields and properties are also be accessible. For example:
 
 ```fsharp
 open type System.Data.Common.DbMetaDataColumnNames
@@ -58,13 +67,14 @@ open type System.Data.Common.DbMetaDataColumnNames
 printfn "%s" ColumnSize
 ```
 
-Visible consts should also be allowed. Example:
+Visible literal constants are accessible. Example:
 
 ```fsharp
 open type System.Math
 
 PI
 ```
+
 
 ### Attributes
 
@@ -100,9 +110,19 @@ M(2) // Can call 'M' without opening 'A'
 
 When opening a .NET type (or a provided type), any accessible nested types also become accessible without qualification.
 
+For example:
+
+```fsharp
+let e1 = new System.Collections.Generic.List<int>.Enumerator();;
+
+open System.Collections.Generic.List<int>
+
+let e2 = new Enumerator();;
+```
+
 ### Extending types
 
-It is possible to use optional type extensions to extend types. Members defined as type extensions are visible when opening these types:
+If F# type extensions extend a type with static members, then these type extensions are visible when opening these types:
 
 ```fsharp
 type System.Math with
@@ -145,7 +165,7 @@ N(2.0) // Works!
 
 ### Opening types with generic parameter instantiations
 
-You can open types with generic parameter instantiations:
+A generic type may be opened with a generic parameter instantiation:
 
 ```fsharp
 open System.Numerics
@@ -154,7 +174,7 @@ open type Vector<int>
 let x = One // "x" is of type "Vector<int>"
 ```
 
-But, you cannot have any anonymous parameters:
+Anonymous or unsolved type parameters may not be used:
 
 ```fsharp
 open System.Numerics
@@ -163,18 +183,16 @@ open type Vector<_> // Compile error
 
 ### Named Types
 
-Named, or nominal, types are only allowed. It means you cannot open a function, tuple, or anonymous record:
+Named, or nominal, types are the only types allowed in `open type` declarations. This means you cannot open a function, tuple, or anonymous record:
 ```fsharp
 open type (int * int) // Compile error, named types are only allowed
 ```
 
-Using an abbreviation will also not allow it:
+Using an abbreviation of a non-nominal type is not allowed:
 ```fsharp
 type MyAbbrev = (int * int)
 open type MyAbbrev // Compile error, named types are only allowed
 ```
-
-These rules are very similar to when you use `inherit` in a type definition.
 
 #### Exception
 
@@ -184,6 +202,50 @@ You cannot open `byref<'T>`/`inref<'T>`/`outref<'T>`.
 open type byref<int> // Compile error
 ```
 
+### Opening types with conflicting/overlapping overload sets
+
+When two different types are opened, there is a potential that this will introduce overlapping and/or conflicting overloads. C#'s corresponding feature allows this.
+
+However
+
+1. Incremental evaluation scenarios such as FSI or Jupyter Notebooks are particularly affected by this: if method groups combine then repeated definition and opening of a type with the same name becomes problematic. 
+
+2. Code that utilises combination of method overloads becomes extremely difficult to understand.
+
+As a result, in F#, overload sets are considered to out-scope (i.e. shadow) other overload sets for methods of the same name.
+
+For example:
+```fsharp
+type A() =
+    static member M(x: int) = x * 2
+
+type B() =
+    static member M(x: float) = x * 2.0
+
+open type A
+open type B
+
+M(1.0) // this is resolved
+M(1) // this is NOT resolved
+```
+and this:
+```fsharp
+type A() =
+    static member M(x: int) = x * 2
+
+type B() =
+    static member M(x: int) = x * 2
+
+open type A
+open type B
+
+// Calls B
+M(1)
+```
+
+If the signatures for `M` are not unique, Full qualification is required, or if the source is available, a change to one of the methods is required.
+
+
 ### Tooling
 
 Updates to FCS are made to understand `open type` to display a list of types that can be opened.
@@ -192,7 +254,9 @@ Updates to FCS are made to understand `open type` to display a list of types tha
 [drawbacks]: #drawbacks
 
 * This introduces another avenue to encounter issues when resolving overloads
+
 * This introduces more avenues to mix overloaded members with type inference, which can lead to source breaking changes if APIs defining those members add overloads over time
+
 * Code using this feature could be harder to understand without editor tooling
 
 ## Alternatives
@@ -208,58 +272,7 @@ See original discussion here: https://github.com/fsharp/fslang-design/issues/352
 
 ### Combining overloaded methods from different types
 
-We will **not** allow combination of method overloads from different types according to C# rules. Scenarios such as FSI or Jupyter Notebooks: we need to be able to shadow method groups in order to not have old method overloads from previous types in scope.
-
-When multiple methods of the same name are in scope, they can be overloaded provided that their signatures are unique. If we did, this is an example:
-
-```fsharp
-type A() =
-    static member M(x: int) = x * 2
-
-type B() =
-    static member M(x: float) = x * 2.0
-
-open type A
-open type B
-
-// Both methods are resolved
-M(1)
-M(1.0)
-```
-
-If the signatures for `M` were not unique, then it would not be possible to call `M`. Full qualification is required, or if the source is available, a change to one of the methods is required:
-
-```fsharp
-type A() =
-    static member M(x: int) = x * 2
-
-type B() =
-    static member M(x: int) = x * 2
-
-open type A
-open type B
-
-// Error: ambiguous call
-M(1)
-```
-
-Because overloads coming from multiple opened types are not resolved in the context of a type, we would not require compatibility with the existing rules for resolution.
-
-Because APIs utilizing static members generally use methods instead of properties, we prefer methods over properties and adjust the previous ordered-list as such:
-
-Try to resolve `member-ident` to one of the following, in order:
-
-1. A union case.
-2. **A method group.**
-3. A property group.
-4. A field.
-5. An event.
-6. **A method group of extension members, by consulting the `ExtensionsInScope` table.**
-7. A property group of extension members , by consulting the `ExtensionsInScope` table.
-8. A nested type `type-nested`. Recursively resolve .rest if it is present, otherwise return `type-nested`
-
-That is to say, we will resolve methods over properties in the context of opening static classes or static members extending a static class.
-
+We considered following the C# design for combining method overload sets from different types.  See the discussion above.
 
 ## Compatibility
 [compatibility]: #compatibility
