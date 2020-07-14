@@ -89,7 +89,7 @@ As with modules, application of this attribute to a type in F# will require full
 type A() =
     static member M(x: int) = x * 2
 
-open type C // Compile error
+open type A // Compile error
 
 M(2) // 'M' is not recognized
 ```
@@ -157,7 +157,7 @@ type A() =
 type A with
     static member N(x: float) = ()
 
-open type C
+open type A
 
 M(2)
 N(2.0) // Works!
