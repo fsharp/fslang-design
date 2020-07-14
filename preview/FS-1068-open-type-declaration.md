@@ -168,7 +168,7 @@ Named, or nominal, types are only allowed. It means you cannot open a function, 
 open type (int * int) // Compile error, named types are only allowed
 ```
 
-Using an abbreviation will still not allow it:
+Using an abbreviation will also not allow it:
 ```fsharp
 type MyAbbrev = (int * int)
 open type MyAbbrev // Compile error, named types are only allowed
