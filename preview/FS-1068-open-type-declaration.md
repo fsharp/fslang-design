@@ -30,7 +30,7 @@ val it : float = 1.0
 
 This greatly increases the expressivity of F# DSLs by allowing method-API facilities such as named arguments, optional arguments and type-directed overloading to be used in the DSL design.
 
-Type providers can provide static classes, hence this would allow type providers to provide "unqualified" names. This useful for some projections where the natural thing is unqualified, e.g. the "R" type provider always required `R.plot` etc. With this feature, `R.plot` can now be `plot`.
+Type providers can provide static classes, hence this would allow type providers to provide "unqualified" names. This is useful for some projections where the natural thing is unqualified, e.g. the "R" type provider always required `R.plot` etc. With this feature, `R.plot` can now be `plot`.
 
 Additionally, important C# DSL APIs are starting to appear that effectively require this.
 
