@@ -174,7 +174,7 @@ type MyAbbrev = (int * int)
 open type MyAbbrev // Compile error, named types are only allowed
 ```
 
-These rules are very similar when using `inherit` in a type definition.
+These rules are very similar to when you use `inherit` in a type definition.
 
 #### Exception
 
@@ -270,4 +270,3 @@ This is a non-breaking change.
 [unresolved]: #unresolved-questions
 
 None
-
