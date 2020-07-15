@@ -1,7 +1,7 @@
 # F# Tooling RFC FST-1030 - Make FSharp.Core nuget package netstandard2.0 only
 NOTE: This is a draft and remains to be reviewed by key contributors. Please contribute to the discussion and submit adjustments to the draft.
 
-The purpose of this RFC document is to develop a shared plan of record for the delivery of FSharp.Core in NuGet package form as a netstandard2.0 library.
+The purpose of this RFC document is to develop a shared plan of record for the delivery of FSharp.Core in NuGet package form as a netstandard2.0-only library.
 
 Discussion thread: https://github.com/fsharp/fslang-design/issues/482
 Suggestion thread: https://github.com/fsharp/fslang-suggestions/issues/893
