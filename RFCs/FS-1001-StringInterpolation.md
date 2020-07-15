@@ -5,7 +5,7 @@ There is an approved-in-principle [proposal](http://fslang.uservoice.com/forums/
 
 * [Discussion](https://github.com/fsharp/fslang-design/issues/368)
 * [x] Implementation: [ready for review](https://github.com/dotnet/fsharp/pull/8907)
-* [x] Design review meeting (26/06/2020, online, @dsyme, @cartermp, @TIHan, @jonsequitur)
+* [x] Design review meeting (26/06/2020, online, @dsyme, @cartermp, @TIHan, @jonsequitur), [notes](https://github.com/dotnet/fsharp/pull/8907#issuecomment-650304311)
 
 ### Summary
 
