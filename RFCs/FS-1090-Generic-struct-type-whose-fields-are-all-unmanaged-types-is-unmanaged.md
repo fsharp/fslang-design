@@ -109,7 +109,7 @@ type MyStructGeneric<'T when 'T: unmanaged>(x: 'T, y: 'T) =
     member _.X = x
     member _.Y = y
 
-// Will be unmanaged, asl long as 'T is unmanaged.
+// Can be considered unmanaged, as long as 'T is unmanaged.
 [<Struct>]
 type MyStructGenericWithNoConstraint<'T>(x: 'T, y: 'T) =
     member _.X = x
