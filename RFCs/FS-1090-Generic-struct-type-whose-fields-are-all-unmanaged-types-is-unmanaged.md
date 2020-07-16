@@ -122,7 +122,7 @@ type MyStructGenericWithUnusedUnmanagedParameter<'T>(x: 'T, y: 'T, z: obj) =
     member _.X = x
     member _.Y = y
 
-// Not unmanaged, since it has a field with a non-unmanaged type.
+// Not unmanaged, since it has a field with a managed type.
 [<Struct>]
 type MyStructGenericWithUnmanagedField<'T>(x: 'T, y: 'T, z: obj) =
     member _.X = x
