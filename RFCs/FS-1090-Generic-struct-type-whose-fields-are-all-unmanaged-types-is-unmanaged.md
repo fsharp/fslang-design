@@ -148,7 +148,7 @@ type MyStructGenericWithUnmanagedField<'T>(x: 'T, y: 'T, z: obj) =
 
 ## Examples
 
-The following examples are not possible now and will be once feature is implemented.
+The following examples are now possible with this feature:
 
 Basic examples:
 
