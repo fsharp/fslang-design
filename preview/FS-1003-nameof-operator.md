@@ -28,6 +28,21 @@ let add x y =
     x + y
 ```
 
+The construct may also be used as a pattern:
+
+```fsharp
+type MyEvent =
+    | A of string
+    | B of string
+
+let deserialize (tag: string) (data: string) : MyEvent =
+    match tag with
+    | nameof A -> A data
+    | nameof B -> B data
+    | t -> failwithf "Invalid EventType: %s" t
+```
+
+
 ### Design Principles
 
 The design principles for F# `nameof` are as follows.
@@ -73,18 +88,20 @@ nameof expr
 ```
 
 Here `expr` is syntactically an expression and is processed as follows:
+
 1. If `expr` is of the form `(expr2)` then the parentheses are ignored and `expr` is processed
 
 2. If `expr` is of the form `expr2 : type` then `type` is processed and `expr2` is processed using the resulting known type
 
 3. If `expr` is a long  identifier e.g. `id1.id2.id3` then it is resolved as either
 
-   a. a namespace or module
-   
-   b. a type name
-   
-   c. is checked as a long identifier expression (using any available known type from a type annotation)
+   a. a long identifier expression (excluding type names or type applications, and using any available known type from a type annotation), or
 
+   b. a type name or type application, or
+   
+   c. a namespace or module
+
+The exact symbol resolution is recorded by the F# compiler and made available to F# tooling for rename-refactor, symbol search and other interactions.
 
 ### Naming 
 
