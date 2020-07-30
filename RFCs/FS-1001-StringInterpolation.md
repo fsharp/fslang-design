@@ -4,8 +4,9 @@
 There is an approved-in-principle [proposal](http://fslang.uservoice.com/forums/245727-f-language/suggestions/6002107-steal-nice-println-syntax-from-swift) to extend the existing printf functionality in the F# language design with string interpolation. 
 
 * [Discussion](https://github.com/fsharp/fslang-design/issues/368)
-* [x] Implementation: [ready for review](https://github.com/dotnet/fsharp/pull/8907)
+* [x] Implementation: [under final review](https://github.com/dotnet/fsharp/pull/8907)
 * [x] Design review meeting (26/06/2020, online, @dsyme, @cartermp, @TIHan, @jonsequitur), [notes](https://github.com/dotnet/fsharp/pull/8907#issuecomment-650304311)
+* [x] Implementation review meeting with @cartermap and @TIHan, [notes](https://gist.github.com/dsyme/dc86bf86de81b83b75557d4944db43c2).
 
 ### Summary
 
@@ -120,8 +121,10 @@ Some examples:
     $"abc{x,5}" --> Printf.sprintf (new PrintfFormat("abc%5P()", [| x |], null))
        
     $"abc{x:N3}" --> Printf.sprintf (new PrintfFormat("abc%P(N3)", [| x |], null))
+    
+    $"abc{x:5,N3}" --> Printf.sprintf (new PrintfFormat("abc%5P(N3)", [| x |], null))       
        
-    $"abc %d{x}" --> Printf.sprintf (new PrintfFormat("abc%P()", [| x |], null))
+    $"abc %d{x}" --> Printf.sprintf (new PrintfFormat("abc%d%P()", [| x |], null))
        
     $"1 %A{x: int option} 2" --> Printf.sprintf (PrintfFormat("1 %P() 2", [| x |], [| typeof<int option> |]))
 
@@ -179,7 +182,7 @@ The compiler service tooling is adjusted to account for understanding when we're
 
 ### Performance expectations
 
-* The performance when used at type "string" will be about the same as `sprintf`, which will be slower than C#.  I think any performance work we do should be to do compile-time optimizations that apply to both `sprintf` and interpolated strings.
+* The performance when used at type "string" will be about the same as `sprintf`, which will be slower than C#.  
 
 * The performance when used at type "FormattableString" will be the same as C# as the code generated is the same.
 
