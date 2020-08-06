@@ -85,8 +85,8 @@ namespace MyLibrary.Core
 ## `<category>`
 
 The `<category>` tag gives a category for an entity or member for the purposes of documentation generation.  It can have one
-attribute `Index` used to give a suggested ordering for the categories in documentation generation. If multiple
-`Index` entries are given for one category then the lowest is used.
+attribute `index` used to give a suggested ordering for the categories in documentation generation. If multiple
+`index` entries are given for one category then the lowest is used.
 
 For example:
 
@@ -97,7 +97,7 @@ namespace MyLibrary.Core
 
     /// <summary>The main type.</summary>
     ///
-    /// <category Index="1">Basic Types</category>
+    /// <category index="1">Basic Types</category>
     type MyType() = 
        member x.P = 1
 
@@ -109,7 +109,7 @@ namespace MyLibrary.Core
        
     /// <summary>A type you learn later.</summary>
     ///
-    /// <category Index="3">Advanced Types</category>
+    /// <category index="3">Advanced Types</category>
     type MyAdvancedType() = 
        member x.P = 1
 ```
