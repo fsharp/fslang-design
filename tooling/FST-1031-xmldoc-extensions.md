@@ -136,6 +136,27 @@ namespace MyLibrary.Core
        member x.P = 1
 ```
 
+## `<note>`
+
+The `<note>` section indicates additional text that goes beyond the description in `<remarks>`. 
+
+> NOTE: this tag is also used by the Sandcastle tool so it seems sensible to support it.
+
+For example:
+
+```fsharp
+namespace MyLibrary.Core
+
+    open System
+
+    /// <summary>Thisis a good type.</summary>
+    ///
+    /// <note>Thanks to Joe for this type.</note>
+    ///
+    type MyType() = 
+       member x.P = 1
+```
+
 ## `<a>`, `<b>`, `<i>`
 
 XML doc sections such as `<summary>` can't officially contain HTML tags such as `<a>`, nor is the use of these excluded.
