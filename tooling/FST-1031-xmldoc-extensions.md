@@ -2,8 +2,8 @@
 
 NOTE: This is a draft
 
-It is well known that the information present in .NET XML documentation files is not sufficient for quality documentation generation.
-The purpose of this tooling RFC is to describe minor but imporant new documentation tags supported by the `FSharp.Formatting` API documentation generation tooling.
+It is well known that the information present in .NET XML documentation files is not quite sufficient for quality API documentation generation.
+The purpose of this tooling RFC is to describe minor but imporant new documentation tags. They are supported by the `FSharp.Formatting` API documentation generation tooling.
 
 ## Background
 
