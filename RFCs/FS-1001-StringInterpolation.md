@@ -62,7 +62,7 @@ Use cases include any for which printf and variants are currently used: console 
    without changing the library `log` function to take strings as arguments (it continues to take a PrintfFormat<...>), and without adjust all callsites of `log` all at once,
    and without losing type safety.
 
-* Do not regress performance of `sprintf`, and have interpoaltion formatting be at least as fast as `printf`. (It is a non-goal to always be as performant as C# for all interpolation formatting)
+* Do not regress performance of `sprintf`, and have interpolation formatting be at least as fast as `printf`. (It is a non-goal to always be as performant as C# for all interpolation formatting)
 
 ### Detailed Design
 
@@ -108,11 +108,11 @@ A mix of type-checked and unchecked fills **is** allowed in a single format stri
 
 The elaborated form of an interpolated string depends on its type:
 
-* An interpolated string with type `string` is elaborated to a call to `Printf.sprintf` with a format string where interpolation holes have been replaced by `%P(dotnetFormatString)` and the format string is built with a call to `new PrintfFormat<...>(format, array-of-captured-args, array-of-typeof-for-parcent-A-fills)`
+* An interpolated string with type `string` is elaborated to a call to `Printf.sprintf` with a format string where interpolation holes have been replaced by `%P(dotnetFormatString)` and the format string is built with a call to `new PrintfFormat<...>(format, array-of-captured-args, array-of-typeof-for-percent-A-fills)`
 
 * An interpolated string with the type `FormattableString` or `IFormattable` is elaborated to a call to the `FormattableStringFactory.Create` method.
 
-* An interpolated string with type `PrintfFormat<...>` is elaborated to a call to `new PrintfFormat<...>(format, array-of-captured-args, array-of-typeof-for-parcent-A-fills)`
+* An interpolated string with type `PrintfFormat<...>` is elaborated to a call to `new PrintfFormat<...>(format, array-of-captured-args, array-of-typeof-for-percent-A-fills)`
 
 Some examples:
 
@@ -133,7 +133,7 @@ Some examples:
     ($"abc {x} {y:N}" : FormattableString) 
         --> FormattableStringFactory.Create("abc {0} {1:N}", [| box x; box y |])
 
-Note that if `%A` patterns are used then `array-of-typeof-for-parcent-A-fills` is filled with the relevant static types, one for each `%A` in the pattern. These are used to correctly print `null` values with respect to their static type, e.g. `None` of type `option`, so 
+Note that if `%A` patterns are used then `array-of-typeof-for-percent-A-fills` is filled with the relevant static types, one for each `%A` in the pattern. These are used to correctly print `null` values with respect to their static type, e.g. `None` of type `option`, so 
 
     $"1 %A{x: int option} 2"
 
