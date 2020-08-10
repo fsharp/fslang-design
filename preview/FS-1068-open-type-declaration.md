@@ -115,7 +115,7 @@ For example:
 ```fsharp
 let e1 = new System.Collections.Generic.List<int>.Enumerator();;
 
-open System.Collections.Generic.List<int>
+open type System.Collections.Generic.List<int>
 
 let e2 = new Enumerator();;
 ```
