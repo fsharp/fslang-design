@@ -217,7 +217,7 @@ type MyAbbrev = (int * int)
 open type MyAbbrev // Compile error, named types are only allowed
 ```
 
-#### Exception
+#### Exceptions
 
 You cannot open `byref<'T>`/`inref<'T>`/`outref<'T>`.
 
@@ -267,6 +267,37 @@ M(1)
 ```
 
 If the signatures for `M` are not unique, Full qualification is required, or if the source is available, a change to one of the methods is required.
+
+### Opening union types
+
+Consider `open type Namespace.UnionType` and `open type Namespace.RecordType` (where `UnionType`/`RecordType` are not `RequireQualifiedAccess`).
+
+In these cases, union cases and record field labels should count as static content when processing open type and thus brought into scope.
+
+TBD: example
+
+### Opening types that contain operator definitions
+
+Opening types that contain operator definitions, e.g.
+
+```
+type C() = 
+
+    // What about this?  Is this static content in C#??  
+    static member (+) (a,b) = ...
+
+open type C
+```
+
+In C#, the operator is never directly callable and while op_Addition is brought into scope, the resolution of 1+1 is not changed.
+
+In F# we should omit all static members with an operator name (beginning with op_) from static content when processing open type.
+
+> NOTE: If we don't do this, then this wipes out the `FSharp.Core.Operators.(+)` (known to F# as `op_Addition`). This means `1+1` no longer resolver. 
+> The danger is that C# types with operators are designed for opening, but take no consideration that simply adding a + operator will 
+> affect the `+` operator of F# (where it is completely irrelevant in the C# version of the opening feature). If the C# feature isn't
+> affecting the resolution of + then I don't think the F# import of that feature should nuke 1+1.
+
 
 
 ### Tooling
