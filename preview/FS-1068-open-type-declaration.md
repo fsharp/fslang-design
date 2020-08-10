@@ -163,6 +163,38 @@ M(2)
 N(2.0) // Works!
 ```
 
+This also applies when the methods have the same name, and hence form one overload group:
+
+```fsharp
+namespace FSharpTest
+
+type Test =
+    static member M(x: int) = ()
+
+module Test =
+    type Test with
+        static member M(x: float) : int = 5
+
+module DoesCompile = 
+    open Test
+    open type Test
+
+    let test () : int =
+        M(1)
+        M(2.0)
+
+module DoesNotCompile = 
+    open type Test
+    open Test
+    
+    let test () : int =
+        M(1)
+        M(2.0)  // This does not compile.  The type was opened before the extension method was brought into scope
+
+```
+
+
+
 ### Opening types with generic parameter instantiations
 
 A generic type may be opened with a generic parameter instantiation:
