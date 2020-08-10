@@ -274,7 +274,36 @@ Consider `open type Namespace.UnionType` and `open type Namespace.RecordType` (w
 
 In these cases, union cases and record field labels should count as static content when processing open type and thus brought into scope.
 
-TBD: example
+Example for unions:
+
+```fsharp
+namespace MyNamespace
+
+type Union = A | B of string
+```
+
+then
+
+```fsharp
+open MyNamespace.Union 
+
+let x = (A, B "3") // unqualified access
+```
+Example for records:
+
+```fsharp
+namespace MyNamespace
+
+type Record = { A: int; B: string }
+```
+
+then
+
+```fsharp
+open MyNamespace.Record
+
+let x = { A=3; B="text" } // unqualified access to A and B
+```
 
 ### Opening types that contain operator definitions
 
@@ -293,7 +322,7 @@ In C#, the operator is never directly callable and while op_Addition is brought 
 
 In F# we should omit all static members with an operator name (beginning with op_) from static content when processing open type.
 
-> NOTE: If we don't do this, then this wipes out the `FSharp.Core.Operators.(+)` (known to F# as `op_Addition`). This means `1+1` no longer resolver. 
+> NOTE: If we don't do this, then this wipes out the `FSharp.Core.Operators.(+)` (known to F# as `op_Addition`). This means `1+1` no longer resolves. 
 > The danger is that C# types with operators are designed for opening, but take no consideration that simply adding a + operator will 
 > affect the `+` operator of F# (where it is completely irrelevant in the C# version of the opening feature). If the C# feature isn't
 > affecting the resolution of + then I don't think the F# import of that feature should nuke 1+1.
