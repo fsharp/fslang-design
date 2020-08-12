@@ -34,6 +34,8 @@ val c<'T>: int // Error, thinks `:` is part of an operator
 val c<'T> : int
 ```
 
+Issue tracked here: https://github.com/dotnet/fsharp/issues/6650
+
 ## Detailed Design
 
 This is arguably just a bug in the parser, which currently assumes that `<^` is an operator in all contexts, as if it were a user-defined operator:
