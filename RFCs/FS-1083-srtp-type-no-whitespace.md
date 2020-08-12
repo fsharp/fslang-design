@@ -1,4 +1,4 @@
-# F# RFC FS-1083 - Don't require a space before SRTP type parameter
+# F# RFC FS-1083 - Don't require a spaces around `>` or `<`
 
 The design suggestion [Don't require a space before SRTP type parameter](https://github.com/fsharp/fslang-suggestions/issues/668) has been marked "approved in principle".
 This RFC covers the detailed proposal for this suggestion and some related design relaxations.
@@ -25,6 +25,15 @@ type C<'T> = class end
 let f<'T> (x:'T) = ()
 ```
 
+This also affects specifying the type of a generic function or member, like so:
+
+```fsharp
+val c<'T>: int // Error, thinks `:` is part of an operator
+
+// Workaround - add a space
+val c<'T> : int
+```
+
 ## Detailed Design
 
 This is arguably just a bug in the parser, which currently assumes that `<^` is an operator in all contexts, as if it were a user-defined operator:
@@ -33,7 +42,7 @@ This is arguably just a bug in the parser, which currently assumes that `<^` is 
 let inline ( <^ ) x y = x + y
 ```
 
-This is not the correct behavior. To address this, the parsing of type argument declaractions should be adjusted to account for this case. It currently does assume that `'ident` (`| QUOTE ident` is the parser rule) is a type argument.
+This is not the correct behavior. To address this, the parsing of type argument declaractions should be adjusted to account for this case. It currently does assume that `'ident` (`| QUOTE ident` is the parser rule) is a type argument. Similar assumptions have to be ironed out.
 
 ## Drawbacks
 
