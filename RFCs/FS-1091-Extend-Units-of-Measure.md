@@ -8,7 +8,7 @@ This RFC covers the detailed proposal for this suggestion.
 - [x] [Suggestion](https://github.com/fsharp/fslang-suggestions/issues/901)
 - [x] [Implementation](https://github.com/dotnet/fsharp/pull/9978)
 - [ ] Design Review Meeting(s) with @dsyme and others invitees
-- [Discussion](https://github.com/fsharp/fslang-design/issues/PLEASE-ADD-A-DISCUSSION-ISSUE-AND-LINK-HERE)
+- [ ] [Discussion](https://github.com/fsharp/fslang-design/issues/PLEASE-ADD-A-DISCUSSION-ISSUE-AND-LINK-HERE)_(n.b. pending the acceptance of this RFC)_
 
 # Summary
 
@@ -114,27 +114,27 @@ The approach is solid. However there are two questions of scope:
 
 In order to help explain/address the second question, the following table presents the current state of affairs:
 
- F# alias     | CLR Type                     | units? | this RFC?
---------------|------------------------------|--------|-------------------------
- `float32`    | `System.Single`              | yes    | no
- `single`     | "                            | _no_   | _MAYBE?_
- `float`      | `System.Double`              | yes    | no
- `double`     | "                            | _no_   | _MAYBE?_
- `decimal`    | `System.Decimal`             | yes    | no
- `sbyte`      | `System.SByte`               | yes    | no
- `int8`       | "                            | _no_   | _MAYBE?_
- `int16`      | `System.Int16`               | yes    | no
- `int`        | `System.Int32`               | yes    | no
- `int32`      | "                            | _no_   | _MAYBE?_
- `int64`      | `System.In64`                | yes    | no
- `byte`       | `System.Byte`                | _no_   | **YES**
- `uint8`      | "                            | _no_   | **YES**
- `uint16`     | `System.UInt16`              | _no_   | _MAYBE?_
- `uint`       | `System.UInt32`              | _no_   | **YES**
- `uint32`     | "                            | _no_   | _MAYBE?_
- `uint64`     | `System.UIn64`               | _no_   | **YES**
- `nativeint`  | `System.IntPtr`              | _no_   | _MAYBE?_
- `unativeint` | `System.UIntPtr`             | _no_   | _MAYBE?_
+ F# alias     | CLR Type                     | Currently supports units? | Target for this RFC?
+--------------|------------------------------|---------------------------|-------------------------
+ `float32`    | `System.Single`              | yes                       | no
+ `single`     | "                            | _no_                      | _MAYBE?_
+ `float`      | `System.Double`              | yes                       | no
+ `double`     | "                            | _no_                      | _MAYBE?_
+ `decimal`    | `System.Decimal`             | yes                       | no
+ `sbyte`      | `System.SByte`               | yes                       | no
+ `int8`       | "                            | _no_                      | _MAYBE?_
+ `int16`      | `System.Int16`               | yes                       | no
+ `int`        | `System.Int32`               | yes                       | no
+ `int32`      | "                            | _no_                      | _MAYBE?_
+ `int64`      | `System.In64`                | yes                       | no
+ `byte`       | `System.Byte`                | _no_                      | **YES**
+ `uint8`      | "                            | _no_                      | **YES**
+ `uint16`     | `System.UInt16`              | _no_                      | _MAYBE?_
+ `uint`       | `System.UInt32`              | _no_                      | **YES**
+ `uint32`     | "                            | _no_                      | _MAYBE?_
+ `uint64`     | `System.UIn64`               | _no_                      | **YES**
+ `nativeint`  | `System.IntPtr`              | _no_                      | _MAYBE?_
+ `unativeint` | `System.UIntPtr`             | _no_                      | _MAYBE?_
 
 
 [1]: https://github.com/fsharp/fslang-suggestions/issues/563
