@@ -1,20 +1,19 @@
 # F# RFC FS-1089 - Prevent FS0670 with 'string' and optimize generated IL
 
-The design suggestion [Optimize 'string', prevent FS0670, and generate less bloated IL](https://github.com/fsharp/fslang-suggestions/issues/890) has been marked "approved in principle" (but no tag has been added yet).
+The design suggestion [Allow use of 'string' everywhere, and optimize generated IL](https://github.com/fsharp/fslang-suggestions/issues/890) has been marked "approved in principle" (PR was accepted, but no tag has been added yet to the suggestion).
 
 This RFC covers the detailed proposal for this suggestion.
 
-- [x] Approved in principle (in comment, tag was not added)
+- [x] Approved in principle ([PR was accepted](https://github.com/dotnet/fsharp/pull/9549))
 - [x] [Suggestion](https://github.com/fsharp/fslang-suggestions/issues/890)
-- [x] [Implementation](https://github.com/dotnet/fsharp/pull/9549) _In progress_
+- [x] [Implementation](https://github.com/dotnet/fsharp/pull/9549) _Completed_
 - Design Review Meeting(s) with @dsyme and others invitees (n/a)
 - [Discussion](https://github.com/fsharp/fslang-suggestions/issues/890)
 
 # Summary
 
-* Prevent `FS0670` to be thrown when using the `string` function.
-* Optimize for known struct types, remove boxing.
-* Remove redundant casts and null checks.
+* Prevent `FS0670` to be thrown when using the `string` function in overrides.
+* Optimize IL for known struct types, remove boxing.
 
 # Motivation
 
@@ -32,11 +31,21 @@ type Either<'L, 'R> =
 
 After this change, the error FS0670 will not be raised anymore, allowing the use of the omnipresent `string` function in more places, and aiding in rapid proto-typing of DU's.
 
-Motivation for optimizing the IL generation is simple: currently, the statically inlined function `string` always emits the same boxing code, leading to slow execution and less chance for JIT optimizations. Examples of this are in the [original language suggestion](https://github.com/fsharp/fslang-suggestions/issues/890) and several user-reported issues, like [#9153](https://github.com/dotnet/fsharp/issues/9153).
+Motivation for optimizing the IL generation is simple: currently, the statically inlined function `string` always emits the same boxing code, leading to slow execution and less chance for JIT optimizations. See reports:
+
+* [Original language suggestion](https://github.com/fsharp/fslang-suggestions/issues/890) 
+* [Issue #9153](https://github.com/dotnet/fsharp/issues/9153).
+* [Issue #7958](https://github.com/dotnet/fsharp/issues/7958)
 
 # Detailed design
 
-The current implementation has dead code:
+Three things need to happen:
+
+* Rewrite the function `string` such that the error is not raised anymore. This can be done by removing the statically resolved `^T` for the dynamically resolved `'T`. The function remains to be `inline`.
+* Restructure the code such that the dead code becomes live code
+* Add known optimizable types like `string`, `DateTime` etc.
+
+Current situation with dead code:
 
 ```f#
 let inline anyToString nullStr x = 
@@ -48,16 +57,11 @@ let inline anyToString nullStr x =
 let inline string (value: ^T) = 
     anyToString "" value
     when ^T struct = anyToString "" value  // always true for any struct type
+    // any following line is never hit, because `struct` hits first
     when ^T : float = (# "" value : float #).ToString("g",CultureInfo.InvariantCulture)  // dead code
     when ^T : float32    =  ...  // dead code
     ... etc  // all dead code
 ```
-
-The following changes will be implemented:
-
-* `^T` changes to `'T`.
-* Restructuring to allow optimizations for known types and remove the current dead code.
-* Add known `System` struct types to prevent boxing: `Guid`, `DateTime`, `DateTimeOffset`.
 
 New code will be structured like this:
 
@@ -79,7 +83,7 @@ This will allow most system types, when used with `string`, to emit non-boxing o
 
 # Alternatives
 
-Users can implement their own `string` version if they want better optimized code.
+There are no alternatives other than to "roll your own string function".
 
 # Compatibility
 
