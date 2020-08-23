@@ -1,6 +1,6 @@
 # F# RFC FS-1089 - Prevent FS0670 with 'string' and optimize generated IL
 
-The design suggestion [Allow use of 'string' everywhere, and optimize generated IL](https://github.com/fsharp/fslang-suggestions/issues/890) has been marked "approved in principle" (PR was accepted, but no tag has been added yet to the suggestion).
+The design suggestion [Allow use of 'string' everywhere, and optimize generated IL](https://github.com/fsharp/fslang-suggestions/issues/890) has been marked "approved in principle".
 
 This RFC covers the detailed proposal for this suggestion.
 
