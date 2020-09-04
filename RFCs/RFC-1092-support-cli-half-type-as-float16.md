@@ -8,7 +8,7 @@ This RFC covers the detailed proposal for this suggestion.
 - [x] [Suggestion](https://github.com/fsharp/fslang-suggestions/issues/909)
 - [ ] [Implementation] tbd
 - [x] Design Review Meeting(s) with @dsyme and others invitees: n/a
-- [x] [Discussion](https://github.com/fsharp/fslang-design/issues/TBD)
+- [x] [Discussion](https://github.com/fsharp/fslang-design/issues/500)
 
 # Summary
 
