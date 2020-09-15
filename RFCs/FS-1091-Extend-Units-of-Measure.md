@@ -48,6 +48,26 @@ This work provides the following benefits:
 1. Provide more consistency/uniformity across primitive numeric types.
 1. Reduce the number of "quirks", or "gotchas!", one encounters when learning Units of Measure.
 
+# Scope
+
+For clarity's sake, the following table outlines the type abbreviations targeted by this RFC.
+All others should be considered out-of-scope (i.e. addressed by other RFCs).
+
+ F# alias     | CLR Type
+--------------|------------------
+ `single`     | `System.Single`
+ `double`     | `System.Double`
+ `int8`       | `System.SByte`
+ `int32`      | `System.Int32`
+ `byte`       | `System.Byte`
+ `uint8`      | `System.Byte`
+ `uint16`     | `System.UInt16`
+ `uint`       | `System.UInt32`
+ `uint32`     | `System.UInt32`
+ `uint64`     | `System.UIn64`
+ `nativeint`  | `System.IntPtr`
+ `unativeint` | `System.UIntPtr`
+
 # Detailed design
 
 The proposed approach is to simply use the same mechanism currently employed (e.g., for `float`s).
@@ -107,34 +127,8 @@ Please address all necessary compatibility questions:
 
 # Unresolved questions
 
-The approach is solid. However there are two questions of scope:
+None.
 
-1. Should "native integers" (i.e. `nativeint` and `unativeint`) be included?
-1. For types which have multiple abbreviations, should _all_ abbreviations be covered?
-
-In order to help explain/address the second question, the following table presents the current state of affairs:
-
- F# alias     | CLR Type                     | Currently supports units? | Target for this RFC?
---------------|------------------------------|---------------------------|-------------------------
- `float32`    | `System.Single`              | yes                       | no
- `single`     | "                            | _no_                      | _MAYBE?_
- `float`      | `System.Double`              | yes                       | no
- `double`     | "                            | _no_                      | _MAYBE?_
- `decimal`    | `System.Decimal`             | yes                       | no
- `sbyte`      | `System.SByte`               | yes                       | no
- `int8`       | "                            | _no_                      | _MAYBE?_
- `int16`      | `System.Int16`               | yes                       | no
- `int`        | `System.Int32`               | yes                       | no
- `int32`      | "                            | _no_                      | _MAYBE?_
- `int64`      | `System.In64`                | yes                       | no
- `byte`       | `System.Byte`                | _no_                      | **YES**
- `uint8`      | "                            | _no_                      | **YES**
- `uint16`     | `System.UInt16`              | _no_                      | _MAYBE?_
- `uint`       | `System.UInt32`              | _no_                      | **YES**
- `uint32`     | "                            | _no_                      | _MAYBE?_
- `uint64`     | `System.UIn64`               | _no_                      | **YES**
- `nativeint`  | `System.IntPtr`              | _no_                      | _MAYBE?_
- `unativeint` | `System.UIntPtr`             | _no_                      | _MAYBE?_
 
 
 [1]: https://github.com/fsharp/fslang-suggestions/issues/563
