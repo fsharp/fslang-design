@@ -10,40 +10,23 @@
 
 The following extensions to `#r` are proposed:
 
-a) built-in:
-
-* `#r "project: <project-name>"`
-* `#r "impl: <path-to-implementation-assembly>"`
-* `#r "ref: <path-to-reference-assembly>"`
-
-b) via .dll extension (see Handler resolution);
-
 * `#r "[dependency manager]: <dependency manager command>"` like
    * `#r "paket: <paket command>"`
    * `#r "nuget: <package-name>, <package-version>"`
 
-This extends the "language" of `#r` to support implementation and reference assemblies, NuGet packages, Paket dependencies, and potentially more.
+This extends the "language" of `#r` to support NuGet packages, Paket dependencies, and potentially more.
 
 # Motivation
 [motivation]: #motivation
 
-Motivation for this change is twofold:
-
-1. There is a [strong desire](https://github.com/fsharp/fslang-suggestions/issues/542) to reference packages via `#r` instead of assemblies.  There has also been [experimental work](https://github.com/Microsoft/visualfsharp/pull/2483) to support Paket in this way.
-2. .NET Core uses both Reference Assemblies and Implementation Assemblies, which FSI must understand.  It does not understand this split today.
+There is a [strong desire](https://github.com/fsharp/fslang-suggestions/issues/542) to reference packages via `#r` instead of assemblies.  There has also been [experimental work](https://github.com/Microsoft/visualfsharp/pull/2483) to support Paket in this way.
 
 # Detailed design
 [design]: #detailed-design
 
-Supporting this design requires significant changes in how FSI references assemblies.  As stated above, .NET Core (and .NET Standard) introduces a new model by which assemblies are used and laid out on disk.  FSI cannot assume everything will be in the same place as it is in a .NET Framework world.  Furthermore, when interactive with .NET Standard-based things, code is compiled against *Reference Assemblies* and ran against *Implementation Assemblies*.
-
 To begin, existing behavior with `#r` will remain unchanged for FSI.  That is, if you reference an assembly today via `#r`, it will always continue to work in the same way that it always has.
 
-On .NET Core, however, `#r "ref: <path-to-reference-assembly>"` will be used for referencing *Reference Assemblies*.  To handle *Implementation Assemblies*, we use the notion of `#r impl: <path-to-implementation-assembly>`.  This is needed to directly reference implementation assemblies pulled down in packages or in the .NET Core Shared Framework.
-
-This split for .NET Core necessitates the introduction of `#r "nuget: name, version"` and `#r "paket: paket-command"` to simplify referencing dependencies in F# script files for .NET Core.  The intention is that FSI Scripts in the future will always specify dependencies via `#r "nuget` or `#r "paket` (or a future extended command, like `#r "project"`), allowing only FSI to be concerned with referencing the correct assemblies.
-
-There are two primary considerations here: design-time behavior and runtime behavior.
+.NET Core necessitates the introduction of `#r "nuget: name, version"` and `#r "paket: paket-command"` to simplify referencing dependencies in F# script files for .NET Core.  The intention is that FSI Scripts in the future will always specify dependencies via `#r "nuget` or `#r "paket` (or a future extended command, like `#r "project"`), allowing only FSI to be concerned with referencing the correct assemblies.
 
 ## Design-Time
 
@@ -145,6 +128,17 @@ This is the interactive scenario.  Interactively in an active FSI session, someo
 
 As above, if they somehow specify something which is already loaded, we should just let FSI attempt to load it and generate the error.
 
+
+### Referencing packages containing native DLLs 
+
+Referencing packages containing native DLLs is supported with some limitations.  
+
+The support is achieved by  adding an event handler to the .NET Core event `AssemblyLoadContext.Default.ResolvingUnmanagedDll`, which is triggered when resolving an unmanaged assembly in the context of a .NET assembly (e.g. a DllImport).   
+
+This handler consults current architecture and platform settings plus resolved package metadata and files across all dynamically referenced packages to look for a matching native DLL and then dynamically loads that DLL using an internal NativeAssemblyLoadContext that implements `LoadNativeLibrary` via `LoadUnmanagedDllFromPath`.  
+
+This process is not triggered for transitive native-to-native references, which are resolved with respect to the native DLL using standard rules of the operating system. Normally this means any transitive native dependencies must sit next to the native DLL at time of load.
+
 ## Errors
 
 FSI will have to display errors from the underlying assembly resolver.  For example, if someone specifies `#r "paket: <paket-command>"` and Paket generates an error, FSI must display that.
@@ -182,12 +176,14 @@ In context of tooling, the location are scanned initially once per interactive s
 
 If a handler key (such as `nuget` or `paket`) is found several times, report a warning showing location of assemblies and showing which one was picked (we apply same order of precedence as for finding the assemblies).
 
+# Tooling
+
+Language service and FCS tooling must be efficient given incremental editing of files.
+
 # Drawbacks
 [drawbacks]: #drawbacks
 
 A potential for increased complexity in Scripting.  This also has downstream effects in documentation and the general mindshare on how to reference assemblies for F# scripting.
-
-Also, using `#r "impl:"` (or `#r-impl`) in general should be discouraged since it's more of a way to implement a mechanism required for .NET Core.  Having a new directive or capability that people *could* use, but *shouldn't* use, always opens things up for abuse.
 
 # Alternatives
 [alternatives]: #alternatives
