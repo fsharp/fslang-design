@@ -176,9 +176,20 @@ In context of tooling, the location are scanned initially once per interactive s
 
 If a handler key (such as `nuget` or `paket`) is found several times, report a warning showing location of assemblies and showing which one was picked (we apply same order of precedence as for finding the assemblies).
 
-# Tooling
+# Tooling and FSharp.Compiler.Service 
 
 Language service and FCS tooling must be efficient given incremental editing of files.
+
+Design-time resolution of scripts is orthogonal to runtime and carries some concerns:
+
+* Editor performance
+
+* A delay in various tooling due to nuget resolution happening in the background (and the user not knowing why this is happening)
+
+* Ensuring that we don't re-resolve things unnecessarily
+
+* Future extensions to indicate background work is happening for script editing, like how project integration tooling does today
+
 
 # Drawbacks
 [drawbacks]: #drawbacks
