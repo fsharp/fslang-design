@@ -135,7 +135,7 @@ Referencing packages containing native DLLs is supported with some limitations.
 
 The support is achieved by  adding an event handler to the .NET Core event `AssemblyLoadContext.Default.ResolvingUnmanagedDll`, which is triggered when resolving an unmanaged assembly in the context of a .NET assembly (e.g. a DllImport).   
 
-This handler consults current architecture and platform settings plus resolved package metadata and files across all dynamically referenced packages to look for a matching native DLL and then dynamically loads that DLL using an internal NativeAssemblyLoadContext that implements `LoadNativeLibrary` via `LoadUnmanagedDllFromPath`.  
+This handler consults current architecture and platform settings plus resolved package metadata and files across all dynamically referenced packages to look for a matching native DLL and then dynamically loads that DLL using an internal `NativeAssemblyLoadContext` that implements `LoadNativeLibrary` via `LoadUnmanagedDllFromPath`.  
 
 This process is not triggered for transitive native-to-native references, which are resolved with respect to the native DLL using standard rules of the operating system. Normally this means any transitive native dependencies must sit next to the native DLL at time of load.
 
@@ -210,5 +210,4 @@ A drawback here is that this is not something that C# would likely do in C# scri
 * Comment here:
 
 > At the high level I'm just wondering if we can use .targets/.props in the nuget package to compute the relevant type provider references, and incorporate this into the #r "nuget: Foo" and/or #r "paket: Foo" mechanism for incrementally added references during scripting.
-
 
