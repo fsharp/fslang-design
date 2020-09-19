@@ -26,7 +26,7 @@ There is a [strong desire](https://github.com/fsharp/fslang-suggestions/issues/5
 
 To begin, existing behavior with `#r` will remain unchanged for FSI.  That is, if you reference an assembly today via `#r`, it will always continue to work in the same way that it always has.
 
-.NET Core necessitates the introduction of `#r "nuget: name, version"` and `#r "paket: paket-command"` to simplify referencing dependencies in F# script files for .NET Core.  The intention is that FSI Scripts in the future will always specify dependencies via `#r "nuget` or `#r "paket` (or a future extended command, like `#r "project"`), allowing only FSI to be concerned with referencing the correct assemblies.
+.NET Core necessitates the introduction of `#r "nuget: name, version"` to simplify referencing dependencies in F# script files for .NET Core.  The intention is that FSI Scripts in the future will always specify dependencies via `#r "nuget:...` (or other extensions, like `#r "paket:..."`, `#r "frameworkreference:...", `#r "project:..."`, etc.), allowing only FSI to be concerned with referencing the correct assemblies.
 
 ## Design-Time
 
@@ -210,6 +210,5 @@ A drawback here is that this is not something that C# would likely do in C# scri
 * Comment here:
 
 > At the high level I'm just wondering if we can use .targets/.props in the nuget package to compute the relevant type provider references, and incorporate this into the #r "nuget: Foo" and/or #r "paket: Foo" mechanism for incrementally added references during scripting.
-
 
 
