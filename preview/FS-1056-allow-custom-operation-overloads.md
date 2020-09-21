@@ -149,4 +149,11 @@ This is not a breaking change.
 # Unresolved questions
 [unresolved]: #unresolved-questions
 
-None
+A later review of the implementation of the RFC raised some more issues that need to be addressed:
+
+* When a group of overloads have inconsistent attribute (e.g. only one has MaintainsVarSpace) - what happens?  We should give an error on use when there is any inconsistency like this, and tests need to be added for these cases
+
+
+
+
+
