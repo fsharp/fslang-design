@@ -2,7 +2,7 @@
 
 
 * [Approved in principle](https://github.com/fsharp/fslang-suggestions/issues/69#issuecomment-388558877)
-* Implementation: [In Progress](https://github.com/Microsoft/visualfsharp/pull/4949)
+* Implementation: [In Progress](https://github.com/Microsoft/visualfsharp/pull/4949), [Part 2](https://github.com/dotnet/fsharp/pull/10171)
 * Discussion: https://github.com/fsharp/fslang-design/issues/301
 
 # Summary
@@ -130,6 +130,15 @@ The same rules as calling this code will apply for the computation expressions.
 The restriction of having a 1:1 match on the method and keyword names for the overloads is kept as it keeps the intent clear. Howevere the overloads don't need to be marked with `[<CustomOperation>]` again.
 
 
+### Consistency of attributes
+
+When a group of overloads for a custom operator have inconsistent attribute (e.g. only one has MaintainsVarSpace) an error is given at 
+any attempted use of tha operator.
+
+A particular case is to do with ProjectionParameter.  A parameter at position 'i' is considered to have ProjectionParameter attribute for the translation
+if all overloads have an argument at that position and have ProjectionParameter attribute.
+
+
 # Drawbacks
 [drawbacks]: #drawbacks
 
@@ -149,11 +158,6 @@ This is not a breaking change.
 # Unresolved questions
 [unresolved]: #unresolved-questions
 
-A later review of the implementation of the RFC raised some more issues that need to be addressed:
-
-* When a group of overloads have inconsistent attribute (e.g. only one has MaintainsVarSpace) - what happens?  We should give an error on use when there is any inconsistency like this, and tests need to be added for these cases
-
-
-
+None
 
 
