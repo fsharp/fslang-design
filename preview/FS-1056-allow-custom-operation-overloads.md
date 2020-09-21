@@ -2,7 +2,7 @@
 
 
 * [Approved in principle](https://github.com/fsharp/fslang-suggestions/issues/69#issuecomment-388558877)
-* Implementation: [In Progress](https://github.com/Microsoft/visualfsharp/pull/4949)
+* Implementation: [In Progress](https://github.com/Microsoft/visualfsharp/pull/4949), [Part 2](https://github.com/dotnet/fsharp/pull/10171)
 * Discussion: https://github.com/fsharp/fslang-design/issues/301
 
 # Summary
