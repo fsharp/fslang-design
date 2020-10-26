@@ -2,6 +2,10 @@
 
 This RFC discusses a path forward to add F# analyzers to heart of F# tooling, at the level of the FSharp.Compiler.Service.  
 
+[F# Analyzers](https://github.com/ionide/FSharp.Analyzers.SDK#fsharpanalyzerssdk) exist today for use with toolchains based
+on FSharp.AutoComplete.  However they must be recompiled on each update to FSharp.AutoComplete.  The problems discussed here
+are mostly to do with the binary compatibility of information being drawn from FCS by analyzers, and what we might do about that.
+
 Links:
 
 * [F# Analyzers](https://github.com/ionide/FSharp.Analyzers.SDK#fsharpanalyzerssdk)
@@ -9,8 +13,6 @@ Links:
 * [Roslyn analyzers](https://github.com/dotnet/roslyn-analyzers)
 
 * [FSharpLint](https://github.com/fsprojects/FSharpLint)
-
-
 
 ### Background
 
@@ -30,8 +32,14 @@ This is because one motivating use of analyzers is to provide additional informa
 We consider the following of long term interest but they are not part of this RFC:
 
 * additional go-to-definition info
+
 * additional F1 help info
+
 * additional auto-complete info
+
+* aligning the mechanism with code optimizers that return new expression trees
+
+* aligning the mechanism with code generators or type providers that return new declarations
 
 ### What information does an analyzer need?
 
@@ -170,10 +178,12 @@ type Message =
       Range: range
       Fixes: Fix list }
 
+type IQuickInfo = ...
+
 // implemented by analyzer
 type IAnalyzer =
-    abstract GetDiagnostics: IAnalyzerContext * fileName: string * source: ISourceText -> Async<IMessage list>
-    abstract GetQuickInfo: IAnalyzerContext * fileName: string * source: ISourceText * position -> Async<IQuickInfo list>
+    abstract GetDiagnostics: IAnalyzerContext * fileName: string * source: ISourceText -> Async<Message list>
+    abstract GetQuickInfo: IAnalyzerContext * fileName: string * source: ISourceText * position -> Async<QuickInfo list>
 
 ```
 
@@ -191,8 +201,12 @@ using reflection out of process - more like a testing tool - and not even within
 
 Given this starting point we could then iterate towards expanding the functionality available in the context.
 
-NOTE: I'm not sure how else to make progress in a reasonable timeframe, short of expecting analyzers to be recompiled.
+### Discussion Summary
 
-NOTE: The Visual F# Tools use FSharp.Compiler.Private, so it's not possible to hand off values to F# Analyzers today.  Even if they
+This RFC is inteded to start a discussion and iterate towards steps forward.  We'll try to summarise the discussion here:
+
+@dsyme says: I'm not sure how else to make progress in a reasonable timeframe, short of expecting analyzers to be recompiled.
+
+@dsyme says: The Visual F# Tools use FSharp.Compiler.Private, so it's not possible to hand off values to F# Analyzers today.  Even if they
 shifted to FSharp.Compiler.Service we would face the problem of binary compatibility.
 
