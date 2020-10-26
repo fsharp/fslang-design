@@ -10,7 +10,7 @@ The design suggestion [Add non-nullable instantiations of nullable types, and in
 ## Summary
 [summary]: #summary
 
-This feature allows F# to interoperate with the future .NET ecosystem where reference types will be non-nullable by default.
+This feature allows F# to interoperate with the C# 8.0 .NET ecosystem where reference types will be non-nullable by default.
 This will be done by providing syntax and behavior that distinguishes between nullable and non-nullable reference types.
 
 Conceptually, reference types can be thought of as having two forms:
@@ -192,22 +192,36 @@ Code can only be generic over either nullable reference types or nullable value 
 
 > NOTE: This treatment of value types is NYI in the prototype
 
-#### Pattern matching 
+#### Pattern matching (current prototype)
 
 Nullness annotations are normally eliminated using pattern matching.
 
 ```fsharp
 let len (str: string?) =
     match str with
-    | null -> -1
+    | Null -> -1
     | NonNull s -> s.Length // OK - we know 's' is string
 ```
 
-The `NonNull` pattern is defined in the FSharp.Core library.
+The `(|Null|NonNull|)` pattern is defined in the FSharp.Core library.  
 
 In the previous code sample, `str` is of type `string?`, but `s` is now of type `string`. This is because we know that based on the `null` has been accounted for by the `null` pattern.
 
-It is also proposed that the `NonNull` can be omitted for variable patterns preceded by an unqualified `null` pattern:
+The use of `(|Null|NonNull|)` can incur an overhead, for this case the `NonNullQuick` pattern can be used:
+
+```fsharp
+let len (str: string?) =
+    match str with
+    | null -> -1
+    | NonNullQuick s -> s.Length // OK - we know 's' is string
+```
+
+
+#### Pattern matching (future planned iteration)
+
+
+NOTE: It is proposed that `(|Null|NonNull|)` and  `NonNullQuick` be removed and the compiler automaticlly treat `null` patterns as a multi-case total pattern
+like `(|Null|NonNull|)`. This allows the use of this code:
 ```fsharp
 let len (str: string?) =
     match str with
@@ -215,8 +229,8 @@ let len (str: string?) =
     | s -> s.Length // OK - we know 's' is string
 ```
 
-> NOTE: It is proposed that this only applies to pattern matching where the first pattern rule is exactly the `null` pattern.  It does _not_ (yet apply to column-based matching, e.g.:
-> 
+NOTE: It is proposed that this only applies to pattern matching where the first pattern rule is exactly the `null` pattern.  It does _not_ (yet apply to column-based matching, e.g.:
+ 
 ```fsharp
 let len (str1: string?) (str2: string?) =
     match str1, str2 with
@@ -224,8 +238,10 @@ let len (str1: string?) (str2: string?) =
     | _, null -> -1
     | s1, s2 -> s1.Length + s2.Length // in the prototype no extra information is gained about s1 and s2
 ```
-> This is a tricky thing to implement as in the F# compiler type checking proceeds before pattern column analysis.
-> For the code above, an explicit use of `NonNull` is required:
+
+This is a tricky thing to implement as in the F# compiler type checking proceeds before pattern column analysis.
+For the code above, an explicit use of `NonNull` is required:
+
 ```fsharp
 let len (str1: string?) (str2: string?) =
     match str1, str2 with
@@ -266,10 +282,10 @@ The status of these library functions is TBD and the naming is quite hard to get
         val withNull: value:'T -> 'T? when 'T : not struct
         
         /// When used in a pattern asserts the value being matched is not null.
-        val (|NonNull|) : value: 'T? -> 'T when 'T : not struct
+        val (|NonNullQuick|) : value: 'T? -> 'T when 'T : not struct
 
         /// An active pattern which determines whether the given value is null.
-        val (|Null|NotNull|) : value: 'T? -> Choice<unit, 'T>  when 'T : not struct
+        val (|Null|NonNull|) : value: 'T? -> Choice<unit, 'T>  when 'T : not struct
 ```
 
 NOTE: `isNull` is already present in FSharp.Core and won't change signature. THe natural signature is:
@@ -306,11 +322,11 @@ val inline notNullV: value:'T? -> 'T when 'T : struct
 /// Equivalent to System.Nullable(value)
 val inline withNullV: value:'T -> 'T? when 'T : struct
 
-/// When used in a pattern asserts the value being matched is not null.
-val (|NonNullV|) : value: 'T? -> 'T when 'T : not struct
+/// When used in a pattern asserts the value being matched is not null. Will raise an exception if it is not.
+val (|NonNullQuickV|) : value: 'T? -> 'T when 'T : not struct
 
 /// An active pattern which determines whether the given value is null.
-val (|NullV|NotNullV|) : value: 'T? -> Choice<unit, 'T>  when 'T : not struct
+val (|NullV|NonNullV|) : value: 'T? -> Choice<unit, 'T>  when 'T : not struct
 ```
 
 #### The `not null` constraint
