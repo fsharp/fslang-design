@@ -14,6 +14,8 @@ Links:
 
 * [FSharpLint](https://github.com/fsprojects/FSharpLint)
 
+* [Discussion](https://github.com/fsharp/fslang-design/issues/508)
+
 ### Background
 
 Analyzers are design-time components that run during editing, compilation and (perhaps) prior to script execution.
