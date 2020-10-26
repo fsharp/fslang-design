@@ -45,8 +45,7 @@ We consider the following of long term interest but they are not part of this RF
 
 ### Existing F# Analyzer API (v0.3)
 
-[F# analyzer support already exists for the F# tools that build on the FsAutoComplete toolchain](https://github.com/ionide/FSharp.Analyzers.SDK#fsharpanalyzerssdk).
-The [API for an F# analyzer](https://github.com/ionide/FSharp.Analyzers.SDK/blob/master/src/FSharp.Analyzers.SDK/FSharp.Analyzers.SDK.fs)
+The [v0.3 API for an F# analyzer](https://github.com/ionide/FSharp.Analyzers.SDK/blob/master/src/FSharp.Analyzers.SDK/FSharp.Analyzers.SDK.fs)
 is simple enough:
 
 ```fsharp
