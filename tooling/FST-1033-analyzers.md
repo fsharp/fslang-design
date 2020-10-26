@@ -16,6 +16,7 @@ Links:
 
 * [Discussion](https://github.com/fsharp/fslang-design/issues/508)
 
+* [Related Discussion in F# Analyzer SDK](https://github.com/ionide/FSharp.Analyzers.SDK/issues/28)
 
 ### Background
 
