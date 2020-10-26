@@ -1,4 +1,4 @@
-# Towards towards F# Analyzer support in FSharp.Compiler.Service
+# Towards F# Analyzer support in FSharp.Compiler.Service
 
 This RFC discusses a path forward to add F# analyzers to heart of F# tooling, at the level of the FSharp.Compiler.Service.  
 
@@ -7,6 +7,10 @@ Links:
 * [F# Analyzers](https://github.com/ionide/FSharp.Analyzers.SDK#fsharpanalyzerssdk)
 
 * [Roslyn analyzers](https://github.com/dotnet/roslyn-analyzers)
+
+* [FSharpLint](https://github.com/fsprojects/FSharpLint)
+
+
 
 ### Background
 
@@ -21,7 +25,7 @@ In addition, for the purposes of this RFC, we are also interested in analyzers t
 
 * additional quick info (hover tips)
 
-This is because one motivating use of analyzers is to provide additional information from inference procedures (such as shape checking in the DiffSharp tooling).
+This is because one motivating use of analyzers is to provide additional information from inference procedures (such as [shape checking in the DiffSharp tooling](https://github.com/DiffSharp/DiffSharp/pull/207)).
 
 We consider the following of long term interest but they are not part of this RFC:
 
