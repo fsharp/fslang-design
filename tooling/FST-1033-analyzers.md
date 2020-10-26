@@ -204,6 +204,9 @@ Given this starting point we could then iterate towards expanding the functional
 
 * We could consider distributing F# Analyzers in source form :-)
 
+* We could iterate the existing F# Analyzer support but without *any* dependency in the F# Analyzer API on FCS, and instead incorporate many shims
+  and design with regard to the API reaching binary compatibility.  This would be a breaking change for F# analyzers.
+
 ### Discussion Summary
 
 This RFC is inteded to start a discussion and iterate towards steps forward.  We'll try to summarise the discussion here:
