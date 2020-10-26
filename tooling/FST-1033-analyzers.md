@@ -16,6 +16,7 @@ Links:
 
 * [Discussion](https://github.com/fsharp/fslang-design/issues/508)
 
+
 ### Background
 
 Analyzers are design-time components that run during editing, compilation and (perhaps) prior to script execution.
@@ -27,7 +28,7 @@ Analyzers (e.g. Roslyn analyzers) traditionally deliver the following to the dev
 
 In addition, for the purposes of this RFC, we are also interested in analyzers that deliver the following:
 
-* additional quick info (hover tips)
+* additional quick info (hover tips), see also [this issue](https://github.com/ionide/FSharp.Analyzers.SDK/issues/20)
 
 This is because one motivating use of analyzers is to provide additional information from inference procedures (such as [shape checking in the DiffSharp tooling](https://github.com/DiffSharp/DiffSharp/pull/207)).
 
@@ -217,3 +218,14 @@ This RFC is inteded to start a discussion and iterate towards steps forward.  We
 @dsyme says: The Visual F# Tools use FSharp.Compiler.Private, so it's not possible to hand off values to F# Analyzers today.  Even if they
 shifted to FSharp.Compiler.Service we would face the problem of binary compatibility.
 
+### TODO
+
+The [existing issues with F# analyzers](https://github.com/ionide/FSharp.Analyzers.SDK/issues) should all be considered, including
+
+* [Passing options](https://github.com/ionide/FSharp.Analyzers.SDK/issues/8)
+
+* [Cancellation](https://github.com/ionide/FSharp.Analyzers.SDK/issues/8)
+
+* [Tooltips](https://github.com/ionide/FSharp.Analyzers.SDK/issues/20), see above
+
+* [Making tooltips on-demand](https://github.com/ionide/FSharp.Analyzers.SDK/issues/27)
