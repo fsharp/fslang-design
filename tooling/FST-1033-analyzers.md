@@ -41,13 +41,10 @@ We consider the following of long term interest but they are not part of this RF
 
 * aligning the mechanism with code generators or type providers that return new declarations
 
-### What information does an analyzer need?
-
-Broadly speaking, analyzers must eventually operate on either the untyped syntax tree or the typed syntax tree (though there
-are some analyzers that can reasonably operate without access to these - e.g. one that simply flags some coding conventions.).
+### Existing F# Analyzer API (v0.3)
 
 [F# analyzer support already exists for the F# tools that build on the FsAutoComplete toolchain](https://github.com/ionide/FSharp.Analyzers.SDK#fsharpanalyzerssdk).
-The [API for an F# analyzer])https://github.com/ionide/FSharp.Analyzers.SDK/blob/master/src/FSharp.Analyzers.SDK/FSharp.Analyzers.SDK.fs)
+The [API for an F# analyzer](https://github.com/ionide/FSharp.Analyzers.SDK/blob/master/src/FSharp.Analyzers.SDK/FSharp.Analyzers.SDK.fs)
 is simple enough:
 
 ```fsharp
@@ -84,6 +81,8 @@ type Analyzer = Context -> Message list
 ```
 
 So an analyzer is just a producer of diagnostics with associated fixes.  This could easily be extended to allow additional production of quick info.
+
+### The problem of binary compatibility
 
 The big problem here is hidden in these four lines:
 ```
@@ -200,6 +199,10 @@ which is expensive but at least gets things started), and for the needs of the s
 using reflection out of process - more like a testing tool - and not even within the FSharp.AutoComplete process).
 
 Given this starting point we could then iterate towards expanding the functionality available in the context.
+
+### Alternatives
+
+* We could consider distributing F# Analyzers in source form :-)
 
 ### Discussion Summary
 
