@@ -98,14 +98,14 @@ However that's not a realistic assumption)
 
 ### Possible Path forward Part 1
 
-Full binary compatibility for FCS doesn't seem to be feasible in the short term, the exposed API is very large and sone elements in particular are changing.
+Full binary compatibility for FCS doesn't seem to be feasible in the short term, the exposed API is very large and some elements in particular are changing.
 
-Instead, I propose a path wehre we start carving out parts of the FCS API (e.g. FSharpSymbol/FSharpExpr) and putting them in a separate assembly.  Initially these
-types would *only* be simple records and interfaces.
+Instead, I propose a path where we aim to carve out parts of the FCS API (e.g. SyntaxTree/FSharpSymbol/FSharpExpr) and put them in a separate assembly
+as interfaces.  Initially these types would *only* be simple records and interfaces.
 
 In this situation we'd have
 
-* `FSharp.Compiler.Analyzers.dll` is a binary compatible component in the dotnet/fsharp repo, say v1.0.0.0, containing only interfaces.
+* `FSharp.Compiler.Analyzers.dll` is a binary compatible component in the dotnet/fsharp repo, say v1.0.0.0, containing only interfaces and (never-changing) records.
     
 * `MyAnalyzer.dll` consumes and implements some of these interfaces
     
