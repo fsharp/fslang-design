@@ -2,7 +2,7 @@
 
 The design suggestion [Struct representation for active patterns](https://github.com/fsharp/fslang-suggestions/issues/612) has been marked "approved in principle".
 
-This RFC covers the detailed proposal starting from this suggestion and elaborating into 7 parts.
+This RFC covers the detailed proposal starting from this suggestion and elaborating into 5 parts.
 
 # Summary
 [summary]: #summary
