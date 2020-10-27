@@ -9,11 +9,11 @@ This RFC covers the detailed proposal starting from this suggestion and elaborat
 
 This RFC covers 5 things:
 
-1. FSharp.Core should have unboxed (struct) versions of the `Choice` types
-2. It should be possible to compile partial `(|A|_|)` active patterns to use struct options
-3. It should be possible to compile total `(|A|B|)` active patterns to use struct choices
-4. It should be possible to use struct options in optional parameters, e.g. `[<Struct>] ?x : int` or `??x : int` or...
-5. FSharp.Core should contain `List/Seq/Array/Map.tryv*` operations which take/produce unboxed options
+1. It should be possible to compile partial `(|A|_|)` active patterns to use struct options
+2. It should be possible to use struct options in optional parameters, e.g. `[<Struct>] ?x : int` or `??x : int` or...
+3. FSharp.Core should contain `List/Seq/Array/Map.tryv*` operations which take/produce unboxed options
+4. FSharp.Core should have unboxed (struct) versions of the `Choice` types
+5. It should be possible to compile total `(|A|B|)` active patterns to use struct choices
 
 # Motivation
 
@@ -23,60 +23,23 @@ We should be able to provide better performance just via a simple attribute addi
 
 # Detailed design
 
-**1. FSharp.Core should have unboxed (struct) versions of the `Choice` types**
+These are sequeneced in expected order of being implemented.
 
-TBD. Naming would follow whatever is devised for struct options.
-
-**2. It should be possible to compile partial `(|A|_|)` active patterns to use struct options**
+**1. It should be possible to compile partial `(|A|_|)` active patterns to use struct options**
 
 TBD, likely to be moved to a separate RFC, but preliminary decisions should be considered here.
 
-How to use:
+How to use - add the attribute and put the `ValueSome`/`ValueNone` instead of `Some`/`None` cases.
 
 ```fsharp
-let (|Int|_|) str =
-   match System.Int32.TryParse(str) with
-   | (true,int) -> Some(int)
-   | _ -> None
-```
-
-Put the `ValueSome`/`ValueNone` instead of `Some`/`None` cases.
-
-```fsharp
+[<return: Struct>]
 let (|Int|_|) str =
    match System.Int32.TryParse(str) with
    | (true,int) -> ValueSome(int)
    | _ -> ValueNone
 ```
 
-**3. It should be possible to compile total `(|A|B|)` active patterns to use struct choices**
-
-TBD, likely to be moved to a separate RFC, but preliminary decisions should be considered here.
-
-How to use:
-
-```fsharp
-let (|Even|Odd|) n =
-    if n % 2 = 0 then
-        Even
-    else
-        Odd
-```
-
-Put the `StructAttribute` on the active pattern definition.
-
-```fsharp
-[<Struct>]
-let (|Even|Odd|) n =
-    if n % 2 = 0 then
-        Even
-    else
-        Odd
-```
-
-It should be compiled as function that returns struct version of `FSharpChoice<Unit, Unit>` union. It's possible to define struct discriminated unions, so we can avoid extra allocations.
-
-**4. It should be possible to use struct options in optional parameters**
+**2. It should be possible to use struct options in optional parameters**
 
 This is tricky partly because of the problem of finding a good signature syntax, e.g. for boxed options we use:
 ```fsharp
@@ -120,9 +83,40 @@ static member M : struct ?x : int -> string
 
 though in both cases it's not at all clear that `struct` is sufficiently disambiguated from its use as a type (I think it is not).
 
-**5. FSharp.Core should contain `List/Seq/Array/Map.tryv*` operations which take/produce unboxed options**
+**3. FSharp.Core should contain `List/Seq/Array/Map.tryv*` operations which take/produce unboxed options**
 
 TBD, likely to be moved to a separate RFC, but naming should be considered here.
+
+**4. FSharp.Core should have unboxed (struct) versions of the `Choice` types**
+
+TBD. Naming would follow whatever is devised for struct options.
+
+**5. It should be possible to compile total `(|A|B|)` active patterns to use struct choices**
+
+Requires 4. TBD, likely to be moved to a separate RFC, but preliminary decisions should be considered here.
+
+How to use:
+
+```fsharp
+let (|Even|Odd|) n =
+    if n % 2 = 0 then
+        Even
+    else
+        Odd
+```
+
+Put the `StructAttribute` on the active pattern definition.
+
+```fsharp
+[<return Struct>]
+let (|Even|Odd|) n =
+    if n % 2 = 0 then
+        Even
+    else
+        Odd
+```
+
+It should be compiled as function that returns struct version of `FSharpChoice<Unit, Unit>` union. It's possible to define struct discriminated unions, so we can avoid extra allocations.
 
 # Drawbacks
 
@@ -131,8 +125,11 @@ TBD, likely to be moved to a separate RFC, but naming should be considered here.
 # Alternatives
 
 - Don't do any of this
-- The "choice" and total-active-pattern parts of this are optional (parts 2 and 4)
+
+- The "choice" and total-active-pattern parts of this are optional (parts 4 and 5)
+
 - Require programmers to code complex matching by hands without expressiveness of active patterns
+
 - Provide better inlining and optimization for active patterns. It can be _hard_ to achieve.
 
 - Add a modality for "use structness for things declared in this scope", e.g.
