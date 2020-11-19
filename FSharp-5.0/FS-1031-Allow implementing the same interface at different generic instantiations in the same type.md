@@ -4,9 +4,9 @@ The design suggestion [Allow implementing the same interface at different generi
 This RFC covers the detailed proposal for this suggestion.
 
 * [x] Approved in principle
-* [ ] [Suggestion](https://github.com/fsharp/fslang-suggestions/issues/545)
-* [ ] Details: [under discussion](https://github.com/fsharp/FSharpLangDesign/issues/185)
-* [ ] Implementation: [In progress](https://github.com/Microsoft/visualfsharp/pull/2867)
+* [x] [Suggestion](https://github.com/fsharp/fslang-suggestions/issues/545)
+* [x] Details: [under discussion](https://github.com/fsharp/FSharpLangDesign/issues/185)
+* [x] Implementation: [Completed](https://github.com/Microsoft/visualfsharp/pull/2867)
 
 
 # Summary
