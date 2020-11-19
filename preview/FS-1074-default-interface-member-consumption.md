@@ -3,6 +3,8 @@
 The design suggestion [Default interface member interop](https://github.com/fsharp/fslang-suggestions/issues/679) has been marked "approved in principle".
 This RFC covers the detailed proposal for this suggestion.
 
+* [Implementation](https://github.com/dotnet/fsharp/pull/8628)
+
 # Summary
 
 .NET Core 3.0 will be adding a new runtime concept: default implementations for interface members. We extend the interface implementation mechanism of F# to allow for consuming default implementations. Production of default implementations is not supported.
