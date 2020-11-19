@@ -4,8 +4,8 @@ The design suggestion [Witness passing for quotations](https://github.com/fsharp
 This RFC covers the detailed proposal for this suggestion and some related design relaxations.
 
 * [x] Approved in principle
-* [c] [Discussion](https://github.com/fsharp/fslang-design/issues/357)
-* [x] [Implementation completed](https://github.com/Microsoft/visualfsharp/pull/6345)
+* [x] [Discussion](https://github.com/fsharp/fslang-design/issues/357)
+* [x] [Implementation completed](https://github.com/dotnet/fsharp/pull/6345)
 
 
 # Summary
