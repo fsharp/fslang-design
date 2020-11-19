@@ -4,10 +4,9 @@ The design suggestion [(link)](https://github.com/fsharp/fslang-suggestions/issu
 This RFC covers the detailed proposal for this suggestion.
 
 * [x] Approved in principle
-* [ ] [Suggestion](https://github.com/fsharp/fslang-suggestions/issues/700)
-* [ ] Details: [under discussion](https://github.com/fsharp/fslang-design/issues/393)
-* [ ] Implementation: Open
-
+* [x] [Suggestion](https://github.com/fsharp/fslang-suggestions/issues/700)
+* [x] Details: [under discussion](https://github.com/fsharp/fslang-design/issues/393)
+* [x] Implementation: [3d slicing](https://github.com/dotnet/fsharp/pull/7630), [4d slicing](https://github.com/dotnet/fsharp/pull/7720)
 
 # Summary
 [summary]: #summary
