@@ -128,13 +128,15 @@ TBD
 [unresolved]: #unresolved-questions
 
 
-* Initial implementation should not allow for using uom in erased unions? 
+* Initial implementation should not allow for using uom in erased unions when the underlying primitive is already part of union? 
 
     ```fsharp
     type [<Measure>] userid
     type UserId = int<userid>
     type IntOrUserId = (int|UserId)
     ```
+
+    Alternatively we could just warn when such constructs are used.
 
 * Initial implementation should not allow using generic type arguments in erased unions?
 
@@ -163,4 +165,5 @@ TBD
     let what = shape.What // error
     let what = (shape :> IShape).What // ok
     ```
-* Should exhaustive check in instance check be implemented across normal circumstances? https://github.com/dotnet/fsharp/issues/10615
+
+* Should exhaustive check in instance clause be implemented in normal circumstances? https://github.com/dotnet/fsharp/issues/10615
