@@ -84,7 +84,7 @@ However the following is valid:
 
 ```fsharp
 // inferred to (int|string)
-let intOrString = if true then 1 :> (int|string) else "Hello" :> _  invalid
+let intOrString = if true then 1 :> (int|string) else "Hello" :> _ 
 ```
 
 This respects the rules around where explicit upcasting is required including cases despite where type information being available. Although the later might change depending on the outcome of [fslang-suggestion#849](https://github.com/fsharp/fslang-suggestions/issues/849)
