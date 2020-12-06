@@ -39,8 +39,8 @@ type WorkManagerMessage = (RunWork | SubscribeProgressUpdate)
 
 let processWorkerMessage (msg: WorkerMessage) =
     match msg with
-    | :? RunWork -> ...
-    | :? RequestProgressUpdate -> ...
+    | :? RunWork as m -> ...
+    | :? RequestProgressUpdate m -> ...
 ```
 
 ```fsharp
@@ -127,8 +127,21 @@ TBD
 # Unresolved questions
 [unresolved]: #unresolved-questions
 
-* Initial implementation should not allow for using uom in erased unions?
+
+* Initial implementation should not allow for using uom in erased unions? 
+
+    ```fsharp
+    type [<Measure>] userid
+    type UserId = int<userid>
+    type IntOrUserId = (int|UserId)
+    ```
+
 * Initial implementation should not allow using generic type arguments in erased unions?
+
+    ```fsharp
+    type StringOr<'a> = ('a | string)
+    ```
+
 * Initial implementation should not allow for common members of the erased unions to be exposed without upcasting?
 
     ```fsharp
@@ -150,3 +163,4 @@ TBD
     let what = shape.What // error
     let what = (shape :> IShape).What // ok
     ```
+* Should exhaustive check in instance check be implemented across normal circumstances? https://github.com/dotnet/fsharp/issues/10615
