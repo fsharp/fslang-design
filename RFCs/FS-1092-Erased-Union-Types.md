@@ -46,10 +46,13 @@ let processWorkerMessage (msg: WorkerMessage) =
 ```fsharp
 type Username = Username of string
 type Password = Password of string
-type UserOrPass = (Password | UserName)
+type UserOrPass = (Password | UserName) // UserOrPass is a type alias
 
-// userOrPass binding is inferred to UserOrPass type
-let userOrPass = if (true) name :> UserOrPass else password :> UserOrPass
+// `getUserOrPass` is inferred to `unit -> UserOrPass`
+let getUserOrPass () = if (true) then name :> UserOrPass else password :> UserOrPass
+
+// `getUserOrPass2` binding is inferred to `unit -> (UserOrPass | Error)`
+let getUserOrPass2 () = if isErr() then err :> (UserOrPass | Error) else getUserOrPass() :> _
 ```
 
 # Detailed design
@@ -102,6 +105,7 @@ let prettyPrint (x: (int8|int16|int64|string)) =
 ```
 
 Similarly the following would also be considered exhaustive:
+
 ```fsharp
 let prettyPrint (x: (int8|int16|int64|string)) =
     match x with
@@ -110,9 +114,24 @@ let prettyPrint (x: (int8|int16|int64|string)) =
 ```
 
 ## Erased Type
+[erasedtype]: #erased-type
 
-The erased type for `(A | B)` is the _smallest intersection type_ of base
-types of `A` and `B`.
+The IL wrapping type for `(A | B)` is the _smallest intersection type_ of base
+types of `A` and `B`. For example:
+
+```fsharp
+type IntOrString = (int|string) // wrapping type is System.Object
+type IntOrString = (int8|int16|float) // wrapping type is System.ValueType
+type I = interface end
+type A = inherit I
+type B = inherit I
+type AorB = (A|B) // I is the wrapping type
+
+type I2 = interface end
+type C = inherit I inherit I2
+type D = inherit I inherit I2
+type CorD = (C|D) // Both I or I2 could be potential wrapping type. The compiler would choose I2 since its the earliest ancestor
+```
 
 # Drawbacks
 [drawbacks]: #drawbacks
@@ -127,8 +146,7 @@ TBD
 # Unresolved questions
 [unresolved]: #unresolved-questions
 
-
-* Initial implementation should not allow for using uom in erased unions when the underlying primitive is already part of union? 
+* Initial implementation should not allow for using uom in erased unions when the underlying primitive is already part of union ?
 
     ```fsharp
     type [<Measure>] userid
@@ -138,7 +156,7 @@ TBD
 
     Alternatively we could just warn when such constructs are used.
 
-* Initial implementation should not allow using generic type arguments in erased unions?
+* Initial implementation should not allow using static or generic type arguments in erased unions?
 
     ```fsharp
     type StringOr<'a> = ('a | string)
