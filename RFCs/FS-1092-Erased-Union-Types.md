@@ -72,6 +72,33 @@ let getUserOrPass2 () = if isErr() then err :> (UserOrPass | Error) else getUser
 
 * If `A :> C` and `B :> C` then `(A | B) :> C` where `T :> U` implicies T is subtype of C;
 
+### Hierarchies in Types
+[hierarchy]: #hierarchy-types
+
+For cases where, all cases in the union are disjoint, all cases must be exhaustively checked during pattern matching.
+However in situations where one of the case is a supertype of another case, the super type is chosen discarding the derived cases.
+
+For example:
+`I` is the base class, which class `A` and class `B` derives from. `C` and `D` subsequently derives from `B`
+
+```fsharp
+   ┌───┐
+   │ I │
+   └─┬─┘
+  ┌──┴───┐
+┌─┴─┐  ┌─┴─┐
+│ A │  │ B │
+└───┘  └─┬─┘
+      ┌──┴───┐
+    ┌─┴─┐  ┌─┴─┐
+    │ C │  │ D │
+    └───┘  └───┘
+
+type (A|B|I) // equal to type definition for I, since I is supertype of A and B
+type (A|B|C) // equal to type (A|B), since B is supertype of C
+type (A|C)   // disjoint as A and C both inherit from I but do not have relationship between each other.
+```
+
 ## Type inference
 [inference]: #type-inference
 
@@ -144,23 +171,6 @@ type C = inherit I inherit I2
 type D = inherit I inherit I2
 // Both I or I2 could be potential wrapping type. The compiler would choose I2 since its the earliest ancestor
 type CorD = (C|D) 
-```
-
-## Hierarchies in Types
-
-```
-   ┌───┐
-   │ I │
-   └─┬─┘
-  ┌──┴───┐
-┌─┴─┐  ┌─┴─┐
-│ A │  │ B │
-└───┘  └─┬─┘
-      ┌──┴───┐
-    ┌─┴─┐  ┌─┴─┐
-    │ C │  │ D │
-    └───┘  └───┘
-
 ```
 
 # Drawbacks
