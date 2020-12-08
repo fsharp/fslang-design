@@ -1,4 +1,4 @@
-# F# RFC FS-1092 - Erased Union Types
+﻿# F# RFC FS-1092 - Erased Union Types
 
 This RFC covers the detailed proposal for this suggestion. [Erased type-tagged anonymous union types](https://github.com/fsharp/fslang-suggestions/issues/538).
 
@@ -87,7 +87,7 @@ However the following is valid:
 
 ```fsharp
 // inferred to (int|string)
-let intOrString = if true then 1 :> (int|string) else "Hello" :> _ 
+let intOrString = if true then 1 :> (int|string) else "Hello" :> _
 ```
 
 This respects the rules around where explicit upcasting is required including cases despite where type information being available. Although the later might change depending on the outcome of [fslang-suggestion#849](https://github.com/fsharp/fslang-suggestions/issues/849)
@@ -101,6 +101,15 @@ If the selector of a pattern match is an erased union type, the match is conside
 let prettyPrint (x: (int8|int16|int64|string)) =
     match x with
     | :? (int8|int16|int64) as y -> prettyPrintNumber y
+    | :? string as y -> prettyPrintNumber y
+```
+
+The above is the same as F# in current form:
+
+```fsharp
+let prettyPrint (x: obj) =
+    match x with
+    | :? int8 | :? int16 | :? int64 as y -> prettyPrintNumber y
     | :? string as y -> prettyPrintNumber y
 ```
 
@@ -120,17 +129,38 @@ The IL wrapping type for `(A | B)` is the _smallest intersection type_ of base
 types of `A` and `B`. For example:
 
 ```fsharp
-type IntOrString = (int|string) // wrapping type is System.Object
-type IntOrString = (int8|int16|float) // wrapping type is System.ValueType
+// wrapping type is System.Object
+type IntOrString = (int|string)
+// wrapping type is System.ValueType
+type IntOrString = (int8|int16|float)
 type I = interface end
 type A = inherit I
 type B = inherit I
-type AorB = (A|B) // I is the wrapping type
+// I is the wrapping type
+type AorB = (A|B) 
 
 type I2 = interface end
 type C = inherit I inherit I2
 type D = inherit I inherit I2
-type CorD = (C|D) // Both I or I2 could be potential wrapping type. The compiler would choose I2 since its the earliest ancestor
+// Both I or I2 could be potential wrapping type. The compiler would choose I2 since its the earliest ancestor
+type CorD = (C|D) 
+```
+
+## Hierarchies in Types
+
+```
+   ┌───┐
+   │ I │
+   └─┬─┘
+  ┌──┴───┐
+┌─┴─┐  ┌─┴─┐
+│ A │  │ B │
+└───┘  └─┬─┘
+      ┌──┴───┐
+    ┌─┴─┐  ┌─┴─┐
+    │ C │  │ D │
+    └───┘  └───┘
+
 ```
 
 # Drawbacks
