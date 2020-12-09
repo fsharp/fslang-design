@@ -70,7 +70,7 @@ let getUserOrPass2 () = if isErr() then err :> (UserOrPass | Error) else getUser
 
     *`=:=` implies type equality and interchangable in all context*
 
-* If `A :> C` and `B :> C` then `(A | B) :> C` where `T :> U` implicies T is subtype of C;
+* If `A :> C` and `B :> C` then `(A | B) :> C` where `T :> U` implies T is subtype of C;
 
 ### Hierarchies in Types
 [hierarchy]: #hierarchy-types
@@ -102,7 +102,7 @@ type (A|C)   // disjoint as A and C both inherit from I but do not have relation
 ## Type inference
 [inference]: #type-inference
 
-Erased Union type is explicitly inferred meaning that at least one of the type in an expression must contain the erased union type.
+Erased Union type is explicitly inferred meaning that at least one of the types in an expression must contain the erased union type.
 
 i.e something like the following is invalid:
 
@@ -117,7 +117,7 @@ However the following is valid:
 let intOrString = if true then 1 :> (int|string) else "Hello" :> _
 ```
 
-This respects the rules around where explicit upcasting is required including cases despite where type information being available. Although the later might change depending on the outcome of [fslang-suggestion#849](https://github.com/fsharp/fslang-suggestions/issues/849)
+This respects the rules around where explicit upcasting is required including cases despite where type information being available. Although the latter might change depending on the outcome of [fslang-suggestion#849](https://github.com/fsharp/fslang-suggestions/issues/849)
 
 ## Exhaustivity checking
 [exhaustivity]: #exhaustivity-checking
