@@ -1369,3 +1369,27 @@ That is, the meaning of `unbox` in F# depends on whether the type carries a null
 
 The problem of course is that once (3) is allowed we have an issue - using the slow helper is now no longer correct and will raise an exception, i.e. `unbox<C?>(null)` will raise an exception.
 
+### Option.ofObj and friends
+
+Today `Option.ofObj` has this type:
+
+    val ofObj: value: 'T -> 'T option  when 'T : null
+    val toObj: value: 'T option -> 'T when 'T : null
+
+Ideally we want to change these to:
+
+    val ofObj: value: 'T? -> 'T option  when 'T : not struct and 'T : not null
+    val toObj: value: 'T option -> 'T? when 'T : not struct and 'T : not null
+
+This is a not a .NET binary breaking change and very little code is affected by it, but it does change some F# code, e.g. this code no longer compiles in the PR branch after this change (regardless of whether null checking is on or not)
+
+```
+open System
+
+type OverloadMeths =
+    static member Map(m: 'T when 'T:null, f) = m |> Option.ofObj |> Option.map f
+```
+
+This is part of test `Should compile with generic overloaded nullable methods` should has either been adjusted or disabled in the PR branch (check the code)
+
+There may be a fix where we only enable the new signatures when null checking is on.  Some code like the above would then simply not compile when null checking is enabled.
