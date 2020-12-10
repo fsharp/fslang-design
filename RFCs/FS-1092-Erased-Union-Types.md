@@ -55,6 +55,32 @@ let getUserOrPass () = if (true) then name :> UserOrPass else password :> UserOr
 let getUserOrPass2 () = if isErr() then err :> (UserOrPass | Error) else getUserOrPass() :> _
 ```
 
+The definition of operators for types becomes simpler.
+
+```fsharp
+type Decision =
+    // Fields
+    
+    abstract member (*) (a: float, b: Decision) : LinearExpression =
+        // member body
+    abstract member (*) (a: Decision, b: Decision) : LinearExpression =
+        // member body
+```
+
+Becomes
+
+``` fsharp
+type Decision =
+    // Fields
+    
+    abstract member (*) (a: (float|Decision), b:Decision) : LinearExpression =
+        match a with
+        | :> float as f -> // float action
+        | :> Decision as d -> // Decision action
+```
+
+The maintenance of libraries with large numbers of operator-overloads becomes simpler because the behavior is defined in one place.
+
 # Detailed design
 [design]: #detailed-design
 
