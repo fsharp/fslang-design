@@ -13,7 +13,7 @@ Links:
 * [Roslyn analyzers](https://github.com/dotnet/roslyn-analyzers)
 
   * [F# example part1](https://github.com/JetBrains/fsharp-support/blob/net211/ReSharper.FSharp/src/FSharp.Psi.Features/src/Daemon/Analyzers/RedundantNew.fs)
-  * [F# example part1](https://github.com/JetBrains/fsharp-support/blob/net211/ReSharper.FSharp/src/FSharp.Psi.Features/src/QuickFixes/RemoveRedundantNewFix.fs)
+  * [F# example part2](https://github.com/JetBrains/fsharp-support/blob/net211/ReSharper.FSharp/src/FSharp.Psi.Features/src/QuickFixes/RemoveRedundantNewFix.fs)
 
 * [FSharpLint](https://github.com/fsprojects/FSharpLint)
 
