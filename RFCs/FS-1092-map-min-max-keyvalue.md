@@ -50,18 +50,24 @@ or `Map.fold`, which requires iterating the whole entries in the worst case.
 
 # Detailed design
 
-I didn't look at the actual implementation of `Map` yet, but it should be
-straightforward to implement these functions. One can implement this by simply
-traversing the internal tree (`O(log n)`). For example, in order to find the
-minimum key-value pair, one can recursively follow the "left" of the tree.
+Since the `Map` is implementing the traditional self-balancing persistent tree,
+one can implement this by simply traversing the internal tree. The complexity
+should be `O(log n)`. For example, in order to find the minimum key-value pair,
+one can recursively follow the "left" of the tree.
 
-We may consider adding `tryMinKeyValue` and `tryMaxKeyValue`, too.
+In the case where the given map is empty, both the functions should raise
+`KeyNotFoundException` as in
+https://github.com/dotnet/fsharp/blob/main/src/fsharp/FSharp.Core/map.fs#L158.
+
+To gracefully handle exceptions without `try-with`, we may consider adding
+`tryMinKeyValue` and `tryMaxKeyValue`, too. These functions are only useful when
+the given map is empty, so this is not absolutely necessary.
 
 Example code:
 
 ```fsharp
-let x = Map.tryMaxKeyValue 42 db // Return an option
 let x = Map.maxKeyValue 42 db // Return the result or raise an exception
+let x = Map.maxKeyValue 42 Map.empty // This will raise an exception
 ```
 
 # Drawbacks
