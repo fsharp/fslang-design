@@ -134,6 +134,7 @@ Despite appearances, the approach to type checking without an "implicit conversi
 
 3. Adding type annotations to existing checked code using `: A` is "harmless" and rarely change elaboration
 
+4. Implicit boxing (i.e. representation changes) may occur
 
 Consider the following which now checks with this feature:
 ```fsharp
