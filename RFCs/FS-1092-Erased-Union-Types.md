@@ -6,18 +6,17 @@ This RFC covers the detailed proposal for this suggestion. [Erased type-tagged a
 * [ ] [Discussion](https://github.com/fsharp/fslang-design/discussions/519)
 * [ ] Implementation: [Prototype](https://github.com/dotnet/fsharp/pull/10566)
 
-
 # Summary
 [summary]: #summary
 
-Add erased union types as a feature to F#. Erased union types provide some of the benefits of structural ("duck") typing, within the confines of a nominative type system.
+Adds erased union types as an additional option for representing disjoint unions of data without requiring labels.
 
 # Motivation
 [motivation]: #motivation
 
-F# already supports discriminated union types, which used labels for tags and are nominal.  Additionally, anonymous tagged versions of these are available through partly through the generic "Choice" types of FSharp.Core.
+F# already supports discriminated union types.  Additionally, generic "Choice" types are available in FSharp.Core. In both cases these use labels (e.g. `Some`) for tags.
 
-This RFC adds an additional option to represent disjoint unions of data: label-free erased union types. These represent a subset of possible inputs without using either explicitly tagged inputs or lowest common denominator like `obj`.
+In some use-cases, especially in DSLs, the burden of requiring labels to inject into a disciminated union type is significant, as is the burden of requiring an explicit nominal type definition for the union at all, expecially when all cases are distinguished fully and sufficiently by runtime type information.  This RFC adds an additional option to represent disjoint unions of data: label-free erased union types which use runtime types as tags. 
 
 Practically speaking, the primary use-case is as an alternative to method overloading.  For example, and API for styling in an HTML-like DSL may accept string, integer or floating-point specifications of font sizes, and string or object descriptions of font families. With this feature this API may be authored as follows:
 
@@ -59,29 +58,71 @@ View.Font(FontFamily.SansSerif, FontSize.String "10px")
 If written in C# the API may have used `op_Implicit` conversions, which are not well supported in F# and tend to lead to
 significant type inference problems (though note this may be improved by other future design additions).
 
-The definition of operators for types can also become simpler:
+# Guidance
+
+In general, discriminated unions using labels should be preferred for the majority of F# code, especially implementation code.
+
+An erased anonymous union type should only be considered for whan a union is made up of disjoint cases where:
+
+1. Each case carries one item of significant data 
+
+2. An existing nominal type is available for the data carried by each case and fully describes each case
+
+3. The union values are internal or ephemeral, e.g. exists as an input or return value for an API and is immediately consumed on call or return
+
+4. The union type is non-recursive
+
+5. There is no possibility that future evolution of the type will involve new cases overlapping with the existing types.
+
+6. There is some identified, concrete, simply explained benefit over using labelled discriminated unions, e.g. "we have a simpler API with fewer overloads".
+
+For example, an erased union should **not** be considered for the following union type:
 
 ```fsharp
-type Decision =
-    // Fields
-    
-    abstract member (*) (a: float, b: Decision) : LinearExpression =
-        // member body
-    abstract member (*) (a: Decision, b: Decision) : LinearExpression =
-        // member body
+type Syntax = 
+    | Const of int
+    | Empty
+    | Combination of Syntax * Syntax
 ```
 
-Becomes
+This violates the above on many grounds:
 
-``` fsharp
-type Decision =
-    // Fields
-    
-    abstract member (*) (a: (float|Decision), b:Decision) : LinearExpression =
-        match a with
-        | :? float as f -> // float action
-        | :? Decision as d -> // Decision action
+❌ The type `int` is insufficient to characterise the `Const` node
+
+❌ The labels carry meaning, e.g. `Const` is important information in constituting that case.
+
+❌ Future additions to the syntax could easily add a new, different case carrying `int`.
+
+❌ The type is recursive
+
+❌ The case `Combination` carries multiple data elements
+
+❌ The values are unlikely to be internal or API-ephemeral.
+
+
+In contrast the following type is a reasonable candidate for replacing with `(int|string|float)`:
+
+```fsharp
+type FontSize = 
+    | Int of int
+    | String of string
+    | Float of float
 ```
+
+✔️ Each case carries one item of significant data 
+
+✔️ The labels are esssentially meaningless given the types
+
+✔️ An existing nominal type is available for the data carried by each case and fully describes each case
+
+✔️ The union values are internal or ephemeral, e.g. exists as an input or return value for an API and is immediately consumed on call or return
+
+✔️ The union type is non-recursive
+
+✔️ There is no possibility that future evolution of the type will involve new cases overlapping with the existing types.
+
+✔️ There is some identified, concrete, simply explained benefit over using labelled discriminated unions, e.g. "we have a simpler API with fewer overloads".
+
 
 # Detailed design
 [design]: #detailed-design
