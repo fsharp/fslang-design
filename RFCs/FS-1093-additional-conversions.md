@@ -38,7 +38,7 @@ let f () : A = if true then B() else C() // ❌ error FS0001: This expression wa
 
 Or, alternatively, at constructions of data such as options, consider this:
 
-```
+```fsharp
 type A() = class end
 type B() = inherit A()
 let f2 (x: A option) = ()
