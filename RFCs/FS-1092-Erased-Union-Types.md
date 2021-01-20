@@ -6,87 +6,156 @@ This RFC covers the detailed proposal for this suggestion. [Erased type-tagged a
 * [ ] [Discussion](https://github.com/fsharp/fslang-design/discussions/519)
 * [ ] Implementation: [Prototype](https://github.com/dotnet/fsharp/pull/10566)
 
-
 # Summary
 [summary]: #summary
 
-Add erased union types as a feature to F#. Erased Union types provide some of the benefits of structural ("duck") typing, within the confines of a nominative type system.
+Adds erased union types as an additional option for representing disjoint unions of data without requiring labels.
 
 # Motivation
 [motivation]: #motivation
 
-Supporting erased union types in the language allows us to move more type information with the usual advantages this brings:
+F# already supports discriminated union types.  Additionally, generic "Choice" types are available in FSharp.Core. In both cases these use labels (e.g. `Some`) for tags.
 
-* They serve as an alternative to function overloading.
-* They obey subtyping rules.
-* They allow representing subset of protocols as a type without needing to resort to the lowest common denominator like `obj`.
-* Types are actually enforced, so mistakes can be caught early.
-* They allow representing more than one type
-* Because they are enforced, type information is less likely to become outdated or miss edge-cases.
-* Types are checked during inheritance, enforcing the Liskov Substitution Principle.
+In some use-cases, especially in DSLs, the burden of requiring labels to inject into a disciminated union type is significant, as is the burden of requiring an explicit nominal type definition for the union at all, expecially when all cases are distinguished fully and sufficiently by runtime type information.  This RFC adds an additional option to represent disjoint unions of data: label-free erased union types which use runtime types as tags. 
+
+Practically speaking, the primary use-case is as an alternative to method overloading.  For example, and API for styling in an HTML-like DSL may accept string, integer or floating-point specifications of font sizes, and string or object descriptions of font families. With this feature this API may be authored as follows:
 
 ```fsharp
-let distance(x: (Point|Location), y: (Point|Location)) = ...
+type View =
+    static member Font(name: (string|FontFamily), size: (float|int|string)) = ...
+
+View.Font("Sans Serif", 12.0)
+View.Font(FontFamily.SansSerif, "10px")
 ```
+
+Prior to this RFC the API may have used method overloading, e.g.
 
 ```fsharp
-type RunWork = RunWork of args: string
-type RequestProgressUpdate = RequestProgressUpdate of workId: int
-type SubscribeProgressUpdate = SubscribeProgressUpdate of receiver: string
-type WorkerMessage = (RunWork | RequestProgressUpdate)
-type WorkManagerMessage = (RunWork | SubscribeProgressUpdate)
-
-let processWorkerMessage (msg: WorkerMessage) =
-    match msg with
-    | :? RunWork as m -> ...
-    | :? RequestProgressUpdate m -> ...
+type View =
+    static member Font(name: string, size: float) = ...
+    static member Font(name: string, size: int) = ...
+    static member Font(name: string, size: string) = ...
+    static member Font(name: FontFamily, size: float) = ...
+    static member Font(name: FontFamily, size: int) = ...
+    static member Font(name: FontFamily, size: string) = ...
 ```
+
+Alternatively the API may have used tagging or other forms of labelling via object types, e.g.
+
+type FontName 
+```fsharp
+type FontSize =
+    | Float of float
+    | String of string
+
+type View =
+    static member Font(name: FontFamily, size: FontSize) = ...
+
+View.Font(FontFamily("Sans Serif"), FontSize.Float 12.0)
+View.Font(FontFamily.SansSerif, FontSize.String "10px")
+```
+
+If written in C# the API may have used `op_Implicit` conversions, which are not well supported in F# and tend to lead to
+significant type inference problems (though note this may be improved by other future design additions).
+
+# Guidance
+
+In general, discriminated unions using labels should be preferred for the majority of F# code, especially implementation code.
+
+An erased anonymous union type should only be considered for whan a union is made up of disjoint cases where:
+
+1. Each case carries one item of significant data 
+
+2. An existing nominal type is available for the data carried by each case and fully describes each case
+
+3. The union values are internal or ephemeral, e.g. exists as an input or return value for an API and is immediately consumed on call or return
+
+4. The union type is non-recursive
+
+5. There is no possibility that future evolution of the type will involve new cases overlapping with the existing types.
+
+6. There is some identified, concrete, simply explained benefit over using labelled discriminated unions, e.g. "we have a simpler API with fewer overloads".
+
+For example, an erased union should **not** be considered for the following union type:
 
 ```fsharp
-type Username = Username of string
-type Password = Password of string
-type UserOrPass = (Password | UserName) // UserOrPass is a type alias
-
-// `getUserOrPass` is inferred to `unit -> UserOrPass`
-let getUserOrPass () = if (true) then name :> UserOrPass else password :> UserOrPass
-
-// `getUserOrPass2` binding is inferred to `unit -> (UserOrPass | Error)`
-let getUserOrPass2 () = if isErr() then err :> (UserOrPass | Error) else getUserOrPass() :> _
+type Syntax = 
+    | Const of int
+    | Empty
+    | Combination of Syntax * Syntax
 ```
 
-The definition of operators for types becomes simpler.
+This violates the above on many grounds:
+
+❌ The type `int` is insufficient to characterise the `Const` node
+
+❌ The labels carry meaning, e.g. `Const` is important information in constituting that case.
+
+❌ Future additions to the syntax could easily add a new, different case carrying `int`.
+
+❌ The type is recursive
+
+❌ The case `Combination` carries multiple data elements
+
+❌ The values are unlikely to be internal or API-ephemeral.
+
+
+In contrast the following type is a reasonable candidate for replacing with `(int|string|float)`:
 
 ```fsharp
-type Decision =
-    // Fields
-    
-    abstract member (*) (a: float, b: Decision) : LinearExpression =
-        // member body
-    abstract member (*) (a: Decision, b: Decision) : LinearExpression =
-        // member body
+type FontSize = 
+    | Int of int
+    | String of string
+    | Float of float
 ```
 
-Becomes
+✔️ Each case carries one item of significant data 
 
-``` fsharp
-type Decision =
-    // Fields
-    
-    abstract member (*) (a: (float|Decision), b:Decision) : LinearExpression =
-        match a with
-        | :> float as f -> // float action
-        | :> Decision as d -> // Decision action
-```
+✔️ The labels are esssentially meaningless given the types
 
-The maintenance of libraries with large numbers of operator-overloads becomes simpler because the behavior is defined in one place.
+✔️ An existing nominal type is available for the data carried by each case and fully describes each case
+
+✔️ The union values are internal or ephemeral, e.g. exists as an input or return value for an API and is immediately consumed on call or return
+
+✔️ The union type is non-recursive
+
+✔️ There is no possibility that future evolution of the type will involve new cases overlapping with the existing types.
+
+✔️ There is some identified, concrete, simply explained benefit over using labelled discriminated unions, e.g. "we have a simpler API with fewer overloads".
+
 
 # Detailed design
 [design]: #detailed-design
 
-## Subtyping rules
-[subtyping]: #subtyping-rules
+The syntax of types is extended with anonumyous union types:
 
-* Erased union are commutative and associative:
+```
+type =
+    | ...
+    | '(' type '|' ... '|' type ')'
+```
+
+The parentheses are always required.  
+
+## Type elaboration and well-formedness
+
+* A union type is elaborated by elaborating its constituent parts and flattening contained union types.
+
+* Immediately after such a type is elaborated, no possibility of overlap or runtime-type-identity ambiguity (after erasure) is permitted.  For example all of these are disallowed:
+
+  - `(int | int)`  (one type is fully included in another  w.r.t. runtime type tests)
+  - `(System.ValueType | int)`  (one type is fully included in another  w.r.t. runtime type tests)
+  - `(System.IComparable | string)`  (one type is fully included in another  w.r.t. runtime type tests)
+  - `(obj | int)` (one type is fully included in another w.r.t. runtime type tests)
+  
+* Generic type arguments may not be used as naked in erased unions. For these purposes each type variable or wildcard occuring syntactically in the types is considered separately and independently. For example all of these are disallowed:
+  - `('T | int)` 
+  - `(_ | int)`
+  - `(list<'T> | list<'U>)`
+  - `(list<'T> | list<int>)`
+  - `type StringOr<'a> = ('a | string)`
+
+* Erased union are commutative and associative and internally are immediately flattened and normalised.
 
     ```fsharp
     (A | B) =:= (B | A)
@@ -95,75 +164,54 @@ The maintenance of libraries with large numbers of operator-overloads becomes si
 
     *`=:=` implies type equality and interchangable in all context*
 
+* Erasure takes into account units-of-measure, tuple elimination and `FSharpFunc` elimination. For example all of these are disallowed:
+
+  - `(int|int<userid>)`
+  - `((int -> int) | FSharpFunc<int,int>)` (one type is fully included in another w.r.t. runtime type tests)
+  - `((int * int) | System.Tuple<int,int>)`
+
+## Type relations
+[subtyping]: #subtyping-rules
+
+* Two erased union types are equivalent if their constituent parts are all equivalent.
+
 * If `A :> C` and `B :> C` then `(A | B) :> C` where `T :> U` implies T is subtype of C;
-
-### Hierarchies in Types
-[hierarchy]: #hierarchy-types
-
-For cases where, all cases in the union are disjoint, all cases must be exhaustively checked during pattern matching.
-However in situations where one of the case is a supertype of another case, the super type is chosen discarding the derived cases.
-
-For example:
-`I` is the base class, which class `A` and class `B` derives from. `C` and `D` subsequently derives from `B`
-
-```fsharp
-   ┌───┐
-   │ I │
-   └─┬─┘
-  ┌──┴───┐
-┌─┴─┐  ┌─┴─┐
-│ A │  │ B │
-└───┘  └─┬─┘
-      ┌──┴───┐
-    ┌─┴─┐  ┌─┴─┐
-    │ C │  │ D │
-    └───┘  └───┘
-
-type (A|B|I) // equal to type definition for I, since I is supertype of A and B
-type (A|B|C) // equal to type (A|B), since B is supertype of C
-type (A|C)   // disjoint as A and C both inherit from I but do not have relationship between each other.
-```
 
 ## Type inference
 [inference]: #type-inference
 
-Erased Union type is explicitly inferred meaning that at least one of the types in an expression must contain the erased union type.
+This RFC will build on a separate RFC for additional implicit conversions guided by type annotations. (Note, RFC TBD, see  [fslang-suggestion#849](https://github.com/fsharp/fslang-suggestions/issues/849).
 
-i.e something like the following is invalid:
+Assuming this, a new implicit conversion is added for expressions where, if the known type information for of an expression is "must convert to" an erased union type,
+and the type of the expression is a nominal type prior to its commitment point, then that type must convert to one of the consituent types of the 
+erased union type.
+
+This means the following is valid because the known type information for expressions `true` and `"Hello"` is in both cases "must convert to `(int|string)`".
+
+```fsharp
+// inferred to 
+let intOrString : (int|string) = if true then 1 else "Hello"
+```
+The following is invalid, because there is no known type information for any of the sub-expressions on the right-hand-side of the binding.
 
 ```fsharp
 let intOrString = if true then 1 else "Hello" // invalid
 ```
 
-However the following is valid:
+## Pattern matching
 
-```fsharp
-// inferred to (int|string)
-let intOrString = if true then 1 :> (int|string) else "Hello" :> _
+Erased union values may only be used to either pass to other functions or methods expecting erased union values (or their super-types), or eliminated
+by using pattern matching:
 ```
-
-This respects the rules around where explicit upcasting is required including cases despite where type information being available. Although the latter might change depending on the outcome of [fslang-suggestion#849](https://github.com/fsharp/fslang-suggestions/issues/849)
-
-## Exhaustivity checking
-[exhaustivity]: #exhaustivity-checking
-
-If the selector of a pattern match is an erased union type, the match is considered exhaustive if all parts of the erased union are covered. There would be no need for fallback switch.
-
-```fsharp
 let prettyPrint (x: (int8|int16|int64|string)) =
     match x with
-    | :? (int8|int16|int64) as y -> prettyPrintNumber y
-    | :? string as y -> prettyPrintNumber y
+    | :? int8 -> prettyPrintInt8 x
+    | :? int16 -> prettyPrintInt16 x
+    | :? int64 -> prettyPrintInt64 x
+    | :? string as y -> prettyPrintString y
 ```
 
-The above is the same as F# in current form:
-
-```fsharp
-let prettyPrint (x: obj) =
-    match x with
-    | :? int8 | :? int16 | :? int64 as y -> prettyPrintNumber y
-    | :? string as y -> prettyPrintNumber y
-```
+The match is considered exhaustive if all parts of the erased union are covered. 
 
 Similarly the following would also be considered exhaustive:
 
@@ -174,14 +222,15 @@ let prettyPrint (x: (int8|int16|int64|string)) =
     | :? string as y -> prettyPrintNumber y
 ```
 
+EDITOR NOTE (Don Syme): I'm not convinced the complexity added by this last case is worth it.
+
 ## Erased Type
 [erasedtype]: #erased-type
 
-The IL wrapping type for `(A | B)` is the _smallest intersection type_ of base
-types of `A` and `B`. For example:
+The compiled representation type for `(A | B)` is the best or first common ancestor of `A` and `B`. For example:
 
 ```fsharp
-// wrapping type is System.Object
+// compiled representation type is System.Object
 type IntOrString = (int|string)
 // wrapping type is System.ValueType
 type IntOrString = (int8|int16|float)
@@ -194,59 +243,40 @@ type AorB = (A|B)
 type I2 = interface end
 type C = inherit I inherit I2
 type D = inherit I inherit I2
-// Both I or I2 could be potential wrapping type. The compiler would choose I2 since its the earliest ancestor
+// Both I or I2 could be potential wrapping type. The compiler would choose I since its the earliest ancestor
 type CorD = (C|D) 
 ```
+
+NOTE: we need to be more precise here.  For example `int` and `string` both support many common interfaces like `System.IComparable`.  It is possible that
+for compialtion stability we should always only use `obj`.
+
 
 # Drawbacks
 [drawbacks]: #drawbacks
 
-TBD
+Erased union types are designed for convenient untagged representations of possible inputs.
+
+1. This adds an alternative to label-tagged unions.  This can lead to confusion about which to use.
+
+2. The mechanism relies on type annotations and implicit inference conversions which can make certain parts of code harder to understand (though the presence of tags may also decrease code reusability).
+
+3. The mechanism can encourage "hierarchy thinking" where the user wastes precious thought time on trying to find a perfect "classification" of disparate cases into a set of hierarchically organised types.  This kind of activity is normally unproductive, leading to fragile code and "false" attempts at finding commonality.
+
+4. The method requires struct values to be boxed when participating in a union.  This can lead to performance degradation.
+
+5. Users can falsely rely on erased union types to ascribe additional semantics to union types, e.g. using `(int|unit)` to represent a database value (including `unit` for `NULL`), with the expectation that these values can be combined algebraically.
+
+6. The mechanism relies on allowing additional implicit conversions in F# code, which itself can have drawbacks.
 
 # Alternatives
 [alternatives]: #alternatives
 
-TBD
+There is a slippery slope where an additional typing mechanism may be desired for some APIs
+for types representing atomic values, e.g. `(int|float|"auto"|"*")` representing specific allowed string values.
+
 
 # Unresolved questions
 [unresolved]: #unresolved-questions
 
-* Initial implementation should not allow for using uom in erased unions when the underlying primitive is already part of union ?
+* Should pattern matching type tests have to match the available type structure explicitly or should subtype-inclusion be permitted?
 
-    ```fsharp
-    type [<Measure>] userid
-    type UserId = int<userid>
-    type IntOrUserId = (int|UserId)
-    ```
-
-    Alternatively we could just warn when such constructs are used.
-
-* Initial implementation should not allow using static or generic type arguments in erased unions?
-
-    ```fsharp
-    type StringOr<'a> = ('a | string)
-    ```
-
-* Initial implementation should not allow for common members of the erased unions to be exposed without upcasting?
-
-    ```fsharp
-    type IShape =
-        abstract member What: string
-
-    type Circle =
-        | Circle of r: float
-        interface IShape with
-            member _.What = "Circle"
-
-    type Square =
-        | Square of l: float
-        interface IShape with
-            member _.What = "Square"
-
-    /// example
-    let shape = Circle(1.0) :> (Circle | Square) // erased type IShape
-    let what = shape.What // error
-    let what = (shape :> IShape).What // ok
-    ```
-
-* Should exhaustive check in instance clause be implemented in normal circumstances? https://github.com/dotnet/fsharp/issues/10615
