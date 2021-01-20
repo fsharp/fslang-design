@@ -1,6 +1,6 @@
-﻿# F# RFC FS-1092 - Erased Union Types
+﻿# F# RFC FS-1092 - Anonymous Type-tagged Union Types
 
-This RFC covers the detailed proposal for this suggestion. [Erased type-tagged anonymous union types](https://github.com/fsharp/fslang-suggestions/issues/538).
+This RFC covers the detailed proposal for this suggestion. [Type-tagged anonymous union types](https://github.com/fsharp/fslang-suggestions/issues/538).
 
 * [x] [Suggestion approved in principle](https://github.com/fsharp/fslang-suggestions/issues/538)
 * [ ] [Discussion](https://github.com/fsharp/fslang-design/discussions/519)
@@ -9,35 +9,38 @@ This RFC covers the detailed proposal for this suggestion. [Erased type-tagged a
 # Summary
 [summary]: #summary
 
-Adds erased union types as an additional option for representing disjoint unions of data without requiring labels.
+Adds "anonymous type-tagged union types" for representing disjoint unions of data where each case is fully described by the type of data carried by that case
 
 # Motivation
 [motivation]: #motivation
 
-F# already supports discriminated union types.  Additionally, generic "Choice" types are available in FSharp.Core. In both cases these use labels (e.g. `Some`) for tags.
+F# already supports discriminated union types.  Additionally, generic "Choice" types are available in FSharp.Core. In both cases these use labels (e.g. `Some` or `Choice1Of2`) for tags.
 
-In some use-cases, especially in DSLs, the burden of requiring labels to inject into a disciminated union type is significant, as is the burden of requiring an explicit nominal type definition for the union at all, expecially when all cases are distinguished fully and sufficiently by runtime type information.  This RFC adds an additional option to represent disjoint unions of data: label-free erased union types which use runtime types as tags. 
+In some use-cases, especially in DSLs, the burden of requiring labels to inject into a disciminated union type is significant, as is the burden of requiring an explicit nominal type definition for the union at all - expecially when all cases are distinguished fully and sufficiently by the type of data carried by each case.  This RFC addresses this by adding an additional option to represent disjoint unions of data: type-tagged anonymous union types. 
 
-Practically speaking, the primary use-case is as an alternative to method overloading.  For example, and API for styling in an HTML-like DSL may accept string, integer or floating-point specifications of font sizes, and string or object descriptions of font families. With this feature this API may be authored as follows:
+One primary use-case is for reducing method overloading.  For example, consider a styling API, implemented as follows when using this feature:
 
 ```fsharp
 type View =
-    static member Font(name: (string|FontFamily), size: (float|int|string)) = ...
+    static member Font(name: (string|FontFamily), ?size: (float|int|string)) = ...
 
 View.Font("Sans Serif", 12.0)
 View.Font(FontFamily.SansSerif, "10px")
 ```
 
-Prior to this RFC the API may have used method overloading, e.g.
+Prior to this RFC the API may have used a large number of method overloads, e.g.
 
 ```fsharp
 type View =
-    static member Font(name: string, size: float) = ...
-    static member Font(name: string, size: int) = ...
-    static member Font(name: string, size: string) = ...
-    static member Font(name: FontFamily, size: float) = ...
-    static member Font(name: FontFamily, size: int) = ...
-    static member Font(name: FontFamily, size: string) = ...
+    static member Font(name: string, ?size: float) = ...
+    static member Font(name: string, ?size: int) = ...
+    static member Font(name: string, ?size: string) = ...
+    static member Font(name: FontFamily, ?size: float) = ...
+    static member Font(name: FontFamily, ?size: int) = ...
+    static member Font(name: FontFamily, ?size: string) = ...
+
+View.Font("Sans Serif", 12.0)
+View.Font(FontFamily.SansSerif, "10px")
 ```
 
 Alternatively the API may have used tagging or other forms of labelling via object types, e.g.
@@ -55,14 +58,14 @@ View.Font(FontFamily("Sans Serif"), FontSize.Float 12.0)
 View.Font(FontFamily.SansSerif, FontSize.String "10px")
 ```
 
-If written in C# the API may have used `op_Implicit` conversions, which are not well supported in F# and tend to lead to
-significant type inference problems (though note this may be improved by other future design additions).
+> NOTE: If written in C# the API may have used `op_Implicit` conversions, which are not well supported in F# and tend to lead to
+> significant type inference problems (though note this may be improved by other future design additions).
 
 # Guidance
 
 In general, discriminated unions using labels should be preferred for the majority of F# code, especially implementation code.
 
-An erased anonymous union type should only be considered for whan a union is made up of disjoint cases where:
+A anonymous type-tagged union type should only be considered for whan a union is made up of disjoint cases where:
 
 1. Each case carries one item of significant data 
 
@@ -76,7 +79,7 @@ An erased anonymous union type should only be considered for whan a union is mad
 
 6. There is some identified, concrete, simply explained benefit over using labelled discriminated unions, e.g. "we have a simpler API with fewer overloads".
 
-For example, an erased union should **not** be considered for the following union type:
+For example, an anonymous type-tagged union should **not** be considered for the following union type:
 
 ```fsharp
 type Syntax = 
@@ -127,7 +130,7 @@ type FontSize =
 # Detailed design
 [design]: #detailed-design
 
-The syntax of types is extended with anonumyous union types:
+The syntax of types is extended with an anonymous type-tagged union types:
 
 ```
 type =
@@ -139,7 +142,7 @@ The parentheses are always required.
 
 ## Type elaboration and well-formedness
 
-* A union type is elaborated by elaborating its constituent parts and flattening contained union types.
+* An anonymous type-tagged type is elaborated by elaborating its constituent parts and flattening contained union types.
 
 * Immediately after such a type is elaborated, no possibility of overlap or runtime-type-identity ambiguity (after erasure) is permitted.  For example all of these are disallowed:
 
@@ -173,7 +176,7 @@ The parentheses are always required.
 ## Type relations
 [subtyping]: #subtyping-rules
 
-* Two erased union types are equivalent if their constituent parts are all equivalent.
+* Two anonymous type-tagged union types are equivalent if their constituent parts are all equivalent.
 
 * If `A :> C` and `B :> C` then `(A | B) :> C` where `T :> U` implies T is subtype of C;
 
@@ -200,7 +203,7 @@ let intOrString = if true then 1 else "Hello" // invalid
 
 ## Pattern matching
 
-Erased union values may only be used to either pass to other functions or methods expecting erased union values (or their super-types), or eliminated
+Values having an anonymous type-tagged union type may be used to either passed to other functions or methods, or eliminated
 by using pattern matching:
 ```
 let prettyPrint (x: (int8|int16|int64|string)) =
@@ -222,7 +225,7 @@ let prettyPrint (x: (int8|int16|int64|string)) =
     | :? string as y -> prettyPrintNumber y
 ```
 
-EDITOR NOTE (Don Syme): I'm not convinced the complexity added by this last case is worth it.
+EDITOR NOTE (Don Syme): I'm not convinced the complexity added by this last case is worth it but I suppose we should do it.
 
 ## Erased Type
 [erasedtype]: #erased-type
@@ -254,7 +257,7 @@ for compialtion stability we should always only use `obj`.
 # Drawbacks
 [drawbacks]: #drawbacks
 
-Erased union types are designed for convenient untagged representations of possible inputs.
+See "Guidance" above.
 
 1. This adds an alternative to label-tagged unions.  This can lead to confusion about which to use.
 
@@ -271,12 +274,11 @@ Erased union types are designed for convenient untagged representations of possi
 # Alternatives
 [alternatives]: #alternatives
 
-There is a slippery slope where an additional typing mechanism may be desired for some APIs
-for types representing atomic values, e.g. `(int|float|"auto"|"*")` representing specific allowed string values.
-
-
 # Unresolved questions
 [unresolved]: #unresolved-questions
 
 * Should pattern matching type tests have to match the available type structure explicitly or should subtype-inclusion be permitted?
+
+* There is a slippery slope where an additional typing mechanism may be desired for some APIs for types representing atomic values, e.g. `(int|float|"auto"|"*")` representing specific allowed string values.
+
 
