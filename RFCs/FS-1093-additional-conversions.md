@@ -56,15 +56,7 @@ let (data: A option) = Some (B() :> _)
 f2 (Some (B() :> _)
 ```
 
-Despite appearances, this approach to type checking has significant advantages:
-
-1. When a sub-expression is extracted to a `let` binding for a value or function, its inferred type rarely changes (it may just become more general)
-
-2. Information loss is made explicit
-
-3. Adding type annotations to existing checked code using `: A` is "harmless" and rarely change elaboration
-
-Despite these advantages, the requirement to make upcasts is surprising and counter-intuitive.
+The requirement to make upcasts is surprising and counter-intuitive, though came with benefits (see 'Drawbacks').
 
 There are several existing techniques in the F# language to reduce the occurence of upcasts and to ensure resulting code is as general
 as possible.  These include:
@@ -132,6 +124,15 @@ instead maximise the flow of type information from destination (here `Plot`) int
 # Drawbacks
 
 ### Expressions may change type when extracted
+
+Despite appearances, the approach to type checking without an "implicit conversion" rule has significant advantages:
+
+1. When a sub-expression is extracted to a `let` binding for a value or function, its inferred type rarely changes (it may just become more general)
+
+2. Information loss is made explicit
+
+3. Adding type annotations to existing checked code using `: A` is "harmless" and rarely change elaboration
+
 
 Consider the following which now checks with this feature:
 ```fsharp
