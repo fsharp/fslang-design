@@ -1,6 +1,6 @@
-﻿# F# RFC FS-1092 - Anonymous Type-tagged Union Types
+﻿# F# RFC FS-1092 - Anonymous Type-tagged Unions
 
-This RFC covers the detailed proposal for this suggestion. [Type-tagged anonymous union types](https://github.com/fsharp/fslang-suggestions/issues/538).
+This RFC adds [anonymous type-tagged unions](https://github.com/fsharp/fslang-suggestions/issues/538).
 
 * [x] [Suggestion approved in principle](https://github.com/fsharp/fslang-suggestions/issues/538)
 * [ ] [Discussion](https://github.com/fsharp/fslang-design/discussions/519)
@@ -9,14 +9,14 @@ This RFC covers the detailed proposal for this suggestion. [Type-tagged anonymou
 # Summary
 [summary]: #summary
 
-Adds "anonymous type-tagged union types" for representing disjoint unions of data where each case is fully described by the type of data carried by that case
+Adds "anonymous type-tagged unions" for representing disjoint unions of data where each case is fully described by the type of data carried by that case
 
 # Motivation
 [motivation]: #motivation
 
-F# already supports discriminated union types.  Additionally, generic "Choice" types are available in FSharp.Core. In both cases these use labels (e.g. `Some` or `Choice1Of2`) for tags.
+F# already supports discriminated unions.  Additionally, generic "Choice" discriminated union types are available in FSharp.Core. In both cases these use labels (e.g. `Some` or `Choice1Of2`) for tags.
 
-In some use-cases, especially in DSLs, the burden of requiring labels to inject into a discriminated union type is significant, as is the burden of requiring an explicit nominal type definition for the union at all - especially when all cases are distinguished fully and sufficiently by the type of data carried by each case.  This RFC addresses this by adding an additional option to represent disjoint unions of data: type-tagged anonymous union types. 
+In some use-cases, especially in DSLs, the burden of requiring labels to inject into a discriminated union type is significant, as is the burden of requiring an explicit nominal type definition for the union at all - especially when all cases are distinguished fully and sufficiently by the type of data carried by each case.  This RFC addresses this by adding an additional option to represent disjoint unions of data: anonymous type-tagged unions. 
 
 One primary use-case is for reducing method overloading.  For example, consider a styling API, implemented as follows when using this feature:
 
@@ -132,7 +132,7 @@ type FontSize =
 # Detailed design
 [design]: #detailed-design
 
-The syntax of types is extended with an anonymous type-tagged union types:
+The syntax of types is extended with an anonymous type-tagged unions:
 
 ```
 type =
@@ -144,7 +144,7 @@ The parentheses are always required.
 
 ## Type elaboration and well-formedness
 
-* An anonymous type-tagged type is elaborated by elaborating its constituent parts and flattening contained union types.
+* An anonymous type-tagged type is elaborated by elaborating its constituent parts and flattening contained unions.
 
 * Immediately after such a type is elaborated, no possibility of overlap or runtime-type-identity ambiguity (after erasure) is permitted.  For example all of these are disallowed:
 
@@ -178,7 +178,7 @@ The parentheses are always required.
 ## Type relations
 [subtyping]: #subtyping-rules
 
-* Two anonymous type-tagged union types are equivalent if their constituent parts are all equivalent.
+* Two anonymous type-tagged unions are equivalent if their constituent parts are all equivalent.
 
 * If `A :> C` and `B :> C` then `(A | B) :> C` where `T :> U` implies T is subtype of C;
 
@@ -270,7 +270,7 @@ See "Guidance" above.
 
 4. The method requires struct values to be boxed when participating in a union.  This can lead to performance degradation.
 
-5. Users can falsely rely on erased union types to ascribe additional semantics to union types, e.g. using `(int|unit)` to represent a database value (including `unit` for `NULL`), with the expectation that these values can be combined algebraically.
+5. Users can falsely rely on anonymous type-tagged union types to ascribe additional semantics to union types, e.g. using `(int|unit)` to represent a database value (including `unit` for `NULL`), with the expectation that these values can be combined algebraically.
 
 6. The mechanism relies on allowing additional implicit conversions in F# code, which itself can have drawbacks.
 
