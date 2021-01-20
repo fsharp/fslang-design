@@ -6,6 +6,8 @@ This RFC adds [anonymous type-tagged unions](https://github.com/fsharp/fslang-su
 * [ ] [Discussion](https://github.com/fsharp/fslang-design/discussions/519)
 * [ ] Implementation: [Early Prototype](https://github.com/dotnet/fsharp/pull/10566), [Latest Prototype](https://github.com/dotnet/fsharp/pull/10896)
 
+This RFC builds on a separate RFC for [additional implicit conversions guided by type annotations](https://github.com/fsharp/fslang-design/discussions/525).
+
 # Summary
 [summary]: #summary
 
@@ -185,7 +187,7 @@ The parentheses are always required.
 ## Type inference
 [inference]: #type-inference
 
-This RFC will build on a separate RFC for additional implicit conversions guided by type annotations. (Note, RFC TBD, see  [fslang-suggestion#849](https://github.com/fsharp/fslang-suggestions/issues/849).
+This RFC builds on a separate RFC for [additional implicit conversions guided by type annotations](https://github.com/fsharp/fslang-design/discussions/525).
 
 Assuming this, a new implicit conversion is added for expressions where, if the known type information for of an expression is "must convert to" an erased union type,
 and the type of the expression is a nominal type prior to its commitment point, then that type must convert to one of the constituent types of the 
