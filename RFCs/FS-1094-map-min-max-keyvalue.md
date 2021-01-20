@@ -1,4 +1,4 @@
-# F# RFC FS-1092- Add Map.maxKeyValue and Map.minKeyValue functions
+# F# RFC FS-1094- Add Map.maxKeyValue and Map.minKeyValue functions
 
 The design suggestion [Add Map.maxBinding and Map.minBinding functions](https://github.com/fsharp/fslang-suggestions/issues/933) has been marked "approved in principle".
 
