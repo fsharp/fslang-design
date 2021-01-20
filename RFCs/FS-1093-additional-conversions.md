@@ -11,6 +11,8 @@ This RFC covers the detailed proposal for this suggestion.
 # Summary
 
 This RFC extends F# to include type-directed conversions when known type information is available.
+A type-directed conversion is used as an option of last resort, at leaf expressions, so different types
+may be returned on each bracnh of compound structures like `if .. then ... else`.
 
 # Motivation
 
@@ -68,7 +70,6 @@ as possible.  These include:
 
 - Auto-introduction of conversions for assignments into mutable record fields and some other places with known type information.
 
-This RFC adds an extra type-directed conversion as an option of last resort, and propagates that option over structures like `if .. then ... else`.
 
 # Detailed design
 
