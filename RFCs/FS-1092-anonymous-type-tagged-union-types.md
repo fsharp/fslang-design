@@ -61,6 +61,16 @@ View.Font(FontFamily.SansSerif, FontSize.String "10px")
 > NOTE: If written in C# the API may have used `op_Implicit` conversions, which are not well supported in F# and tend to lead to
 > significant type inference problems (though note this may be improved by other future design additions).
 
+Another use-case is for describing heterogeneous data, e.g.
+
+```fsharp
+let data: (string * (int|float|string)) list = 
+    [ "name", "Joe"
+      "age", 16
+      "address", "here"
+      "height", "5'10''" ]
+```
+
 # Guidance
 
 In general, discriminated unions using labels should be preferred for the majority of F# code, especially implementation code.
@@ -71,13 +81,11 @@ A anonymous type-tagged union type should only be considered for whan a union is
 
 2. An existing nominal type is available for the data carried by each case and fully describes each case
 
-3. The union values are internal or ephemeral, e.g. exists as an input or return value for an API and is immediately consumed on call or return
+3. The union type is non-recursive
 
-4. The union type is non-recursive
+4. There is no possibility that future evolution of the type will involve new cases overlapping with the existing types.
 
-5. There is no possibility that future evolution of the type will involve new cases overlapping with the existing types.
-
-6. There is some identified, concrete, simply explained benefit over using labelled discriminated unions, e.g. "we have a simpler API with fewer overloads".
+5. There is some identified, concrete, simply explained benefit over using labelled discriminated unions, e.g. "we have a simpler API with fewer overloads".
 
 For example, an anonymous type-tagged union should **not** be considered for the following union type:
 
@@ -100,9 +108,6 @@ This violates the above on many grounds:
 
 ❌ The case `Combination` carries multiple data elements
 
-❌ The values are unlikely to be internal or API-ephemeral.
-
-
 In contrast the following type is a reasonable candidate for replacing with `(int|string|float)`:
 
 ```fsharp
@@ -117,8 +122,6 @@ type FontSize =
 ✔️ The labels are esssentially meaningless given the types
 
 ✔️ An existing nominal type is available for the data carried by each case and fully describes each case
-
-✔️ The union values are internal or ephemeral, e.g. exists as an input or return value for an API and is immediately consumed on call or return
 
 ✔️ The union type is non-recursive
 
