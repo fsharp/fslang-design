@@ -284,4 +284,5 @@ See "Guidance" above.
 
 * There is a slippery slope where an additional typing mechanism may be desired for some APIs for types representing atomic values, e.g. `(int|float|"auto"|"*")` representing specific allowed string values.
 
+* See above: "NOTE: we need to be more precise here. For example int and string both support many common interfaces like System.IComparable."
 
