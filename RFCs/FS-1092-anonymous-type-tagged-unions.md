@@ -74,7 +74,7 @@ let data: (string * (int|float|string)) list =
 
 In general, discriminated unions using labels should be preferred for the majority of F# code, especially implementation code.
 
-A anonymous type-tagged union type should only be considered for when a union is made up of disjoint cases where:
+An anonymous type-tagged union type should only be considered for when a union is made up of disjoint cases where:
 
 1. Each case carries one item of significant data 
 
