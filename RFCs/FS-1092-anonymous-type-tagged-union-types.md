@@ -4,7 +4,7 @@ This RFC covers the detailed proposal for this suggestion. [Type-tagged anonymou
 
 * [x] [Suggestion approved in principle](https://github.com/fsharp/fslang-suggestions/issues/538)
 * [ ] [Discussion](https://github.com/fsharp/fslang-design/discussions/519)
-* [ ] Implementation: [Prototype](https://github.com/dotnet/fsharp/pull/10566)
+* [ ] Implementation: [Early Prototype](https://github.com/dotnet/fsharp/pull/10566), [Latest Prototype](https://github.com/dotnet/fsharp/pull/10896)
 
 # Summary
 [summary]: #summary
