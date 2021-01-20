@@ -16,7 +16,7 @@ Adds "anonymous type-tagged union types" for representing disjoint unions of dat
 
 F# already supports discriminated union types.  Additionally, generic "Choice" types are available in FSharp.Core. In both cases these use labels (e.g. `Some` or `Choice1Of2`) for tags.
 
-In some use-cases, especially in DSLs, the burden of requiring labels to inject into a disciminated union type is significant, as is the burden of requiring an explicit nominal type definition for the union at all - expecially when all cases are distinguished fully and sufficiently by the type of data carried by each case.  This RFC addresses this by adding an additional option to represent disjoint unions of data: type-tagged anonymous union types. 
+In some use-cases, especially in DSLs, the burden of requiring labels to inject into a discriminated union type is significant, as is the burden of requiring an explicit nominal type definition for the union at all - especially when all cases are distinguished fully and sufficiently by the type of data carried by each case.  This RFC addresses this by adding an additional option to represent disjoint unions of data: type-tagged anonymous union types. 
 
 One primary use-case is for reducing method overloading.  For example, consider a styling API, implemented as follows when using this feature:
 
@@ -45,7 +45,6 @@ View.Font(FontFamily.SansSerif, "10px")
 
 Alternatively the API may have used tagging or other forms of labelling via object types, e.g.
 
-type FontName 
 ```fsharp
 type FontSize =
     | Float of float
@@ -65,7 +64,7 @@ View.Font(FontFamily.SansSerif, FontSize.String "10px")
 
 In general, discriminated unions using labels should be preferred for the majority of F# code, especially implementation code.
 
-A anonymous type-tagged union type should only be considered for whan a union is made up of disjoint cases where:
+A anonymous type-tagged union type should only be considered for when a union is made up of disjoint cases where:
 
 1. Each case carries one item of significant data 
 
@@ -114,7 +113,7 @@ type FontSize =
 
 ✔️ Each case carries one item of significant data 
 
-✔️ The labels are esssentially meaningless given the types
+✔️ The labels are essentially meaningless given the types
 
 ✔️ An existing nominal type is available for the data carried by each case and fully describes each case
 
@@ -151,7 +150,7 @@ The parentheses are always required.
   - `(System.IComparable | string)`  (one type is fully included in another  w.r.t. runtime type tests)
   - `(obj | int)` (one type is fully included in another w.r.t. runtime type tests)
   
-* Generic type arguments may not be used as naked in erased unions. For these purposes each type variable or wildcard occuring syntactically in the types is considered separately and independently. For example all of these are disallowed:
+* Generic type arguments may not be used as naked in erased unions. For these purposes each type variable or wildcard occurring syntactically in the types is considered separately and independently. For example all of these are disallowed:
   - `('T | int)` 
   - `(_ | int)`
   - `(list<'T> | list<'U>)`
@@ -165,7 +164,7 @@ The parentheses are always required.
     (A | (B | C)) =:= (( A | B ) | C)
     ```
 
-    *`=:=` implies type equality and interchangable in all context*
+    *`=:=` implies type equality and interchangeable in all context*
 
 * Erasure takes into account units-of-measure, tuple elimination and `FSharpFunc` elimination. For example all of these are disallowed:
 
@@ -186,7 +185,7 @@ The parentheses are always required.
 This RFC will build on a separate RFC for additional implicit conversions guided by type annotations. (Note, RFC TBD, see  [fslang-suggestion#849](https://github.com/fsharp/fslang-suggestions/issues/849).
 
 Assuming this, a new implicit conversion is added for expressions where, if the known type information for of an expression is "must convert to" an erased union type,
-and the type of the expression is a nominal type prior to its commitment point, then that type must convert to one of the consituent types of the 
+and the type of the expression is a nominal type prior to its commitment point, then that type must convert to one of the constituent types of the 
 erased union type.
 
 This means the following is valid because the known type information for expressions `true` and `"Hello"` is in both cases "must convert to `(int|string)`".
@@ -205,7 +204,8 @@ let intOrString = if true then 1 else "Hello" // invalid
 
 Values having an anonymous type-tagged union type may be used to either passed to other functions or methods, or eliminated
 by using pattern matching:
-```
+
+```fsharp
 let prettyPrint (x: (int8|int16|int64|string)) =
     match x with
     | :? int8 -> prettyPrintInt8 x
@@ -235,8 +235,8 @@ The compiled representation type for `(A | B)` is the best or first common ances
 ```fsharp
 // compiled representation type is System.Object
 type IntOrString = (int|string)
-// wrapping type is System.ValueType
-type IntOrString = (int8|int16|float)
+// compiled representation type is System.ValueType
+type Num = (int8|int16|float)
 type I = interface end
 type A = inherit I
 type B = inherit I
@@ -251,7 +251,7 @@ type CorD = (C|D)
 ```
 
 NOTE: we need to be more precise here.  For example `int` and `string` both support many common interfaces like `System.IComparable`.  It is possible that
-for compialtion stability we should always only use `obj`.
+for compilation stability we should always only use `obj`.
 
 
 # Drawbacks
