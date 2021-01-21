@@ -1,4 +1,4 @@
-# F# RFC FS-1093 - Block for ImmutableArray
+# F# RFC FS-1094 - `block` as FSharp.Core collection, an abbreviation for System.Collections.Immutable.ImmutableArray
 
 The design suggestion [A normative immutable array type](https://github.com/fsharp/fslang-suggestions/issues/619) has been marked "approved in principle".
 
