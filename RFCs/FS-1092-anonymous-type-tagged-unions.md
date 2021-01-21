@@ -288,3 +288,10 @@ See "Guidance" above.
 
 * See above: "NOTE: we need to be more precise here. For example int and string both support many common interfaces like System.IComparable."
 
+* Are naked generic parameters supported, e.g. see https://github.com/fsharp/fslang-design/discussions/519#discussioncomment-298820. 
+
+  - "this could only be supported if the erased type is always "obj", since the erased type must be stable under instantiation of generic parameters.
+  
+  - "we need to think further about whether this extensibility can be supported"
+
+
