@@ -14,7 +14,7 @@ A new collection type `'T block` will be added to FSharp.Core, and FSharp.Core w
 
 # Motivation
 
-Prior to this RFCS F# programming has no strong opinion on an immutable array data structure in regular F# coding.
+Prior to this RFC F# programming has no strong opinion on an immutable array data structure in regular F# coding.
 There are lots of use cases for this and it is easy enough to implement efficiently.
 
 Fable and the Elmish design patterns are popularizing the use of immutable data for important model descriptions
@@ -27,6 +27,15 @@ module making it look and feel like a normal F# collection.
 
 
 # Detailed design
+
+### Syntax additions
+
+Expressions and patterns are extended with the syntax `[: ... :]` for block expressions and patterns.
+
+
+### FSharp.Core additions
+
+The additions follow a standard FSharp.Core collection design:
 
 ```fsharp
 namespace FSharp.Collections
@@ -45,7 +54,8 @@ module Block =
     ...
 ```
 
-etc. with the standard interface.
+etc. with the standard functions and values.
+
 
 ### Structural equality, hashing and comparison
 
@@ -77,3 +87,6 @@ This doesn't extend the F# metadata format.
 # Unresolved questions
 
 * Full API design
+
+* Consider the extension property `IsEmpty`.
+
