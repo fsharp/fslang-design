@@ -10,7 +10,7 @@ This RFC covers the detailed proposal for this suggestion.
 
 # Summary
 
-A new collection type `'T block` will be added to FSharp.Core, and FSharp.Core will now be dependent on System.Collections.Immutable
+A new collection type `'T block` will be added to FSharp.Core, and FSharp.Core will now depend on System.Collections.Immutable
 
 # Motivation
 
