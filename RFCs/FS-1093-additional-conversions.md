@@ -73,21 +73,45 @@ as possible.  These include:
 
 # Detailed design
 
-The "known type" of an expression is annotated with a flag as to whether it is "must convert to" or "must equal". 
+The "known type" of an expression is annotated with a flag as to whether it is "must convert to" or "must equal". The flag is set for:
 
-- The right-hand side of a binding is "must convert to" the expression type
-- The body of a function is "must convert to" the return type
-- If an `if-then-else` expression has known type is "must convert to `ty`" then this same known type information is used for each branch.
+- The right-hand side of a binding 
 
-If an expresson has a known type is "must convert to `ty`" and, after checking, the type of the expression `ty2` is nominal, but different to `ty`,
-then a coercion constraint is added from `ty2 :> ty`, and a coercion operation is added to the elaborated expression.
+- The body of a function or lambda
 
-For existing cases where the known type is relevant to type checking, the same existing known type is used.
+- Each expression used in argument position
+
+- If an if-then-else or match expression has the flag, then the flag is set for each branch.
+
+- If a let, let-rec, try-finally or try-catch has the flag, then the flag is set for the body.
+
+If an expresson has a known type `ty` with the flag set, and, after checking, the type of the expression `ty2` is different to `ty`,
+then a type-directed conversion is attempted by
+
+1. Trying to add a coercion constraint from `ty2 :> ty`. If this succeeds, a coercion operation is added to the elaborated expression.
+
+2. Trying to convert a function type to a delegate type by the standard rules. If this succeeds, a delegate construction operation is added to the elaborated expression.
+
+3. Trying the special conversions `int32` to `int64`, `int32` to `single`, `int32` to `double`. If this succeeds, a numeric conversion is added to the elaborated expression.
+
+4. Searching for an `op_Implicit` method on either `ty` or `ty2`. If this succeeds, a call to the `op_Implicit` is added to the elaborated expression.
 
 For existing cases where an inference variable and flexibility constraint is added for a known type (e.g. when checking an element of a list),
-the checking process is unchanged
+the checking process is unchanged.
+
+These conversions also apply for optional arguments, for example:
+
+```fsharp
+type C() = 
+    static member M1(?x:int64) = 1
+C.M1(x=2)
+```
 
 TODO: show the more subtle ramifications of these rules
+
+TODO: check the details with the implementation - there are some cases we pre-asset a subsumption constraint
+
+NOTE: not all C# numeric widenings are supported, by design.
 
 NOTE: Branches of an if-then-else or `match` may have different types even when checked against the same known type, e.g. 
 
@@ -98,6 +122,7 @@ is elaborated to
 ```fsharp
 let f () : A = if true then (B() :> A) else (C() :> A)
 ```
+
 
 ### Not covered - upcast without known type information
 
