@@ -14,7 +14,23 @@ This RFC extends F# to include type-directed conversions when known type informa
 A type-directed conversion is used as an option of last resort, at leaf expressions, so different types
 may be returned on each bracnh of compound structures like `if .. then ... else`.
 
+This RFC/PR does three things
+
+1. Puts in place a general backwards-compatible mechanism for type directed conversions (and one that works in conjunction with the existing techniques to allow subsumption at some specific places)
+
+2. Selects a particular set of type directed conversions to use.  These are currently
+   - the existing func --> delegate type directed conversions
+   - the existing delegate --> LINQ Expression type directed conversions
+   - upcasting
+   - int32 --> int64/float32/float64
+   - float32 --> float64 
+   - op_Implicit when both source and destination are nominal.
+
+3. Implements an opt-in warning when any of these are used (outside existing uses of upcasting)
+
 # Motivation
+
+### Motivation regarding explicit upcasts
 
 Explicit upcasts are some times required in F# coding and this can be unexpected. For example, prior to this RFC this is allowed:
 
@@ -69,6 +85,54 @@ as possible.  These include:
 - Auto-introduction of conversions for elements of lists with a type annotation, e.g. `let a : obj list = [1; 2; 3]`
 
 - Auto-introduction of conversions for assignments into mutable record fields and some other places with known type information.
+
+### Motivation for int32 --> int64 type-directed conversion
+
+The primary use case is using integer literals in int64 data.
+APIs using 64-bit integers are very common in some domains.  For example, in a typical tensor library shapes are given using `int64[]`. So it is
+frequent to write `[| 6L; 5L |]`.  There is a reasonable case to writing `[| 6; 5 |]` instead when the types are known.
+
+Note a non-array-literal expression of type `int[]` still need to be explicitly converted to `int64[]`.
+
+### Motivation for int32 --> single/double type-directed conversion
+
+The primary use case is using integer literals in floating point data such as `[| 1.1; 3.4; 6; 7 |]` when the types are known.  
+
+### Motivation for single --> double type-directed conversion
+
+The motivations for this is fairly weak.  For example it allows floating point utility code (e.g. printing) to use 64-bit floating point
+values, and yet be routinely usable with 32-bit values.  However a non-array-literal value of `single[]` still need to be converted to `double[]`.
+
+### Motivation for op_Implicit type-directed conversion
+
+* Certain newer .NET APIs, such as those in ASP.NET Core, make frequent use of `op_Implicit` conversions. For example,
+  many APIs in `Microsoft.Net.Http.Headers` make use of `StringSegment` arguments, where C# devs can just pass a
+  string, but F# devs must explicitly call op_Implicit all over the place
+
+* Some popular 3rd party libraries also use `op_Implicit`. E.g. MassTransit uses `RequestTimeout`, which has an `op_Implicit` conversion from `TimeSpan` as well as `int` (milliseconds), seemingly for a simpler API with fewer overloads.
+
+* One thing to watch out for is `op_Implicit` conversions to another type. E.g. `StringSegment` has conversions to `ReadOnlySpan<char>` and `ReadOnlyMemory<char>`. 
+
+# Design Principles
+
+The intent of this RFC is to give a user experience where:
+
+1. Interop is easier (including interop with some F# libraries, not just C#)
+
+2. Numeric int64/float32/float64 data in tuple, list and array expressions looks nicer
+
+3. Fewer upcasts are needed when programming with types that support subtyping
+
+4. You don't need to be cognisant of the mechanism when coding in F#, though you may inadvertently use the mechanism when coding with numeric data or data supporting subtyping.  
+5. Inadvertent use of the mechanism should not introduce confusion or bugs.
+
+That is, when you hit a library whose design activates it then "it's just nice". That is it's not really part of the F# programmer's actively used features of the language c.f. like the way the "you can use a lambda for a delegate" is not really an active part of the F# programmer's active feature set, it's just something that makes using particular libraries nice.
+
+There is no design goal to try to eliminate all explicit upcasts.
+
+There is no design goal to try to eliminate all explicit numeric widening.
+
+There is no design goal to try to eliminate all explicit calls to `op_Implicit`.
 
 
 # Detailed design
@@ -218,7 +282,26 @@ auto-coercion/widening is available, such as method calls.
 
 # Alternatives
 
-- Don't do this and maintain status quo
+
+#### Don't do this and maintain status quo
+
+Enough said
+
+#### Choices over which type-directed conversions
+
+The choices of type-directed conversions are potentially controversial. In order of controversy we have:
+
+    AutoCasting < Literal widening < Integer widening < Float widening < Int-to-Float widening < op_Implicit widening
+
+#### Generic numbers
+
+> it's better to implement generic numbers ...
+
+I understand this position, and we considered it for F# 1.0, though as I think we've discussed elsewhere I do not believe it's feasible to implement generic literals without making a significant breaking change - so I don't actually think it's a starter. The fact that `17` commits to type `int` immediately (if there is no known type) is very significant for a lot of F# code and there's no real way of escaping that.
+
+> do `op_Implicit` separately
+
+It seems likely that any discussion about `op_Implicit` and widening of integer types eventually iterates to "add additional type directed conversions for `op_Implicit` and numeric widenings".  Any proposed solution for these will later trend towards the use of this mechanism when further examples arise.  
 
 # Compatibility
 
@@ -230,6 +313,12 @@ There are no additions to FSharp.Core.
 
 # Unresolved questions
 
-TODO: consider the exact range of type-directed conversions to be included, specifically whether numeric widenings
-and `op_Implicit` are to be included.
+TODO: There are things to tune in this RFC, including
 
+1. The exact set of type-directed conversions included
+
+2. Whether warnings are given for these 
+
+3. Whether these warnings are opt-in or not
+
+4. Perhaps limiting the use of type-directed conversions to some specific syntactic locations, e.g. arguments.
