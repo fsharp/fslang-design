@@ -10,11 +10,7 @@ This RFC covers the detailed proposal for this suggestion.
 
 # Summary
 
-This RFC extends F# to include type-directed conversions when known type information is available.
-A type-directed conversion is used as an option of last resort, at leaf expressions, so different types
-may be returned on each bracnh of compound structures like `if .. then ... else`.
-
-This RFC/PR does three things
+This RFC extends F# to include type-directed conversions when known type information is available. It does three things:
 
 1. Puts in place a general backwards-compatible mechanism for type directed conversions (and one that works in conjunction with the existing techniques to allow subsumption at some specific places)
 
@@ -27,6 +23,9 @@ This RFC/PR does three things
    - op_Implicit when both source and destination are nominal.
 
 3. Implements an opt-in warning when any of these are used (outside existing uses of upcasting)
+
+Type-directed conversions are used as an option of last resort, at leaf expressions, so different types
+may be returned on each bracnh of compound structures like `if .. then ... else`.
 
 # Motivation
 
