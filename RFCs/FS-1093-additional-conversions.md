@@ -123,10 +123,14 @@ The intent of this RFC is to give a user experience where:
 
 3. Fewer upcasts are needed when programming with types that support subtyping
 
-4. You don't need to be cognisant of the mechanism when coding in F#, though you may inadvertently use the mechanism when coding with numeric data or data supporting subtyping.  
-5. Inadvertent use of the mechanism should not introduce confusion or bugs.
+4. Fewer widening conversions are needed when micing int32, float32 and float64.
+
+5. You don't need to be cognisant of the mechanism when coding in F#, though you may inadvertently use the mechanism when coding with numeric data or data supporting subtyping.  
+6. Inadvertent use of the mechanism should not introduce confusion or bugs.
 
 That is, when you hit a library whose design activates it then "it's just nice". That is it's not really part of the F# programmer's actively used features of the language c.f. like the way the "you can use a lambda for a delegate" is not really an active part of the F# programmer's active feature set, it's just something that makes using particular libraries nice.
+
+There is no design goal to mimic all the numeric widenings of C#.
 
 There is no design goal to try to eliminate all explicit upcasts.
 
