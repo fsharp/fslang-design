@@ -123,8 +123,21 @@ is elaborated to
 let f () : A = if true then (B() :> A) else (C() :> A)
 ```
 
+### Overload resolution 
 
-### Not covered - upcast without known type information
+Overloads not making use of type-directed conversion are always preferred to overloads with type-directed conversion in overload resolution.
+
+### Opt-in warning for type directed conversions (`--warnon:3386`)
+
+Type-directed conversions can cause problems in understanding and debugging code.
+
+As a result, an opt-in warning `--warnon:3386` (off by default) is available to report a warning whenever a type-directed conversion is used in code. A typical warning is as follows:
+
+```
+tests\fsharp\core\auto-widen\preview\test.fsx(169,18): warning FS3386: This expression uses an implicit conversion to convert type 'Y' to type 'X'. Warnings are enabled for implicit conversions. Consider using an explicit conversion or disabling this warning.
+```
+
+### No upcast without known type information
 
 Consider this example:
 
