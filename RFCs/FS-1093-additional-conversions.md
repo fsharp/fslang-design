@@ -27,6 +27,34 @@ This RFC extends F# to include type-directed conversions when known type informa
 Type-directed conversions are used as an option of last resort, at leaf expressions, so different types
 may be returned on each bracnh of compound structures like `if .. then ... else`.
 
+# Design Principles
+
+The intent of this RFC is to give a user experience where:
+
+1. Interop is easier (including interop with some F# libraries, not just C#)
+
+2. You don't notice the feature and are barely even aware of its existence.
+
+3. Fewer upcasts are needed when programming with types that support subtyping
+
+4. Fewer widening conversions are needed when mixing int32, float32 and float64.
+
+5. Numeric int64/float32/float64 data in tuple, list and array expressions looks nicer
+
+6. Working with new numeric types such as System.Half whose design includes op_Implicit should be less irritating
+
+7. Inadvertent use of the mechanism should not introduce confusion or bugs
+
+NOTE: The aim is to make a feature which is trustworthy and barely noticed. It's not the sort of feature where you tell people "hey, go use this" - instead the aim is that you don't need to be cognisant of the feature when coding in F#, though you may end up using the mechanism when calling a library, or when coding with numeric data, or when using data supporting subtyping.  Technical knowledge of the feature is not intended to be part of the F# programmer's working knowledge, it's just something that makes using particular libraries nice and coding less irritating, without making it less safe.
+
+There is no design goal to mimic all the numeric widenings of C#.
+
+There is no design goal to eliminate all explicit upcasts.
+
+There is no design goal to eliminate all explicit numeric widening.
+
+There is no design goal to eliminate all explicit calls to `op_Implicit`, though in practice we'd expect `op_Implicit` calls to largely disappear.
+
 # Motivation
 
 ### Motivation regarding explicit upcasts
@@ -111,31 +139,6 @@ values, and yet be routinely usable with 32-bit values.  However a non-array-lit
 * Some popular 3rd party libraries also use `op_Implicit`. E.g. MassTransit uses `RequestTimeout`, which has an `op_Implicit` conversion from `TimeSpan` as well as `int` (milliseconds), seemingly for a simpler API with fewer overloads.
 
 * One thing to watch out for is `op_Implicit` conversions to another type. E.g. `StringSegment` has conversions to `ReadOnlySpan<char>` and `ReadOnlyMemory<char>`. 
-
-# Design Principles
-
-The intent of this RFC is to give a user experience where:
-
-1. Interop is easier (including interop with some F# libraries, not just C#)
-
-2. Numeric int64/float32/float64 data in tuple, list and array expressions looks nicer
-
-3. Fewer upcasts are needed when programming with types that support subtyping
-
-4. Fewer widening conversions are needed when micing int32, float32 and float64.
-
-5. You don't need to be cognisant of the mechanism when coding in F#, though you may inadvertently use the mechanism when coding with numeric data or data supporting subtyping.  
-6. Inadvertent use of the mechanism should not introduce confusion or bugs.
-
-That is, when you hit a library whose design activates it then "it's just nice". That is it's not really part of the F# programmer's actively used features of the language c.f. like the way the "you can use a lambda for a delegate" is not really an active part of the F# programmer's active feature set, it's just something that makes using particular libraries nice.
-
-There is no design goal to mimic all the numeric widenings of C#.
-
-There is no design goal to try to eliminate all explicit upcasts.
-
-There is no design goal to try to eliminate all explicit numeric widening.
-
-There is no design goal to try to eliminate all explicit calls to `op_Implicit`.
 
 
 # Detailed design
