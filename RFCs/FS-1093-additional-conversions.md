@@ -296,15 +296,32 @@ The choices of type-directed conversions are potentially controversial. In order
 
     AutoCasting < Literal widening < Integer widening < Float widening < Int-to-Float widening < op_Implicit widening
 
-#### Generic numbers
+#### Generic numbers by default
+
+Some of the motivation for this RFC relates to numeric literals. The discussion has raised some possible alternative approaches to these.
+
+@gusty says:
 
 > it's better to implement generic numbers ...
 
-I understand this position, and we considered it for F# 1.0, though as I think we've discussed elsewhere I do not believe it's feasible to implement generic literals without making a significant breaking change - so I don't actually think it's a starter. The fact that `17` commits to type `int` immediately (if there is no known type) is very significant for a lot of F# code and there's no real way of escaping that.
+@dsyme says: I understand this position, and we considered it for F# 1.0, though as I think we've discussed elsewhere I do not believe it's feasible to implement generic literals without making a significant breaking change - so I don't actually think it's a starter. The fact that `17` commits to type `int` immediately (if there is no known type) is very significant for a lot of F# code and there's no real way of escaping that.
 
 > do `op_Implicit` separately
 
 It seems likely that any discussion about `op_Implicit` and widening of integer types eventually iterates to "add additional type directed conversions for `op_Implicit` and numeric widenings".  Any proposed solution for these will later trend towards the use of this mechanism when further examples arise.  
+
+### Generic numbers by opt-in
+
+There is an alternative solution to generic literals which is to enhance the existing literal mechanism to allow the user to implement their own, namely:
+
+* Allow the user opening a module NumericLiteralD (where D stands for default) which will be called when no suffix is used in number literals.
+* Allow the user to define the default constraint, which will in anycase make the language more consistent.
+* Introduce an optional method to interpret float-like literals, something like FromDecimal
+* Implement this optimization https://github.com/fsharp/fslang-suggestions/issues/602#issuecomment-510754929
+
+Having this in place would result in a more consisting language, instead of adding another half-way feature, you complete an existing half-way feature and make it full usable. And now the problem of a specific library is solved by another library.
+
+TODO: This is an interesting potential alternative and could potentially result in the removal of numeric widenings from this RFC.  
 
 # Compatibility
 
@@ -313,6 +330,17 @@ This is not a breaking change. The elaboration of existing code that passes type
 This doesn't extend the F# metadata format.
 
 There are no additions to FSharp.Core.
+
+#### Overload resolution
+
+This RFC allows overloads to succeed where previously they would have failed. However overloads not using type-directed conversions are preferred to those using it.
+
+@gusty says:
+
+> I suspect that rule will result in breaking changes as there are some cases where type information is not complete.
+
+@dsyme says: In principle I don't think so, as a type-directed conversion (TDC) can only ever apply in cases where type checking of the overload was definitely going to fail. By preferring overloads that succeeded without TDC we first commit to any existing successful resolution that would have followed for existing code, and then allow new resolutions into the game.
+
 
 # Unresolved questions
 
@@ -325,3 +353,6 @@ TODO: There are things to tune in this RFC, including
 3. Whether these warnings are opt-in or not
 
 4. Perhaps limiting the use of type-directed conversions to some specific syntactic locations, e.g. arguments.
+
+TODO: See comment on generic literals by opt-in
+
