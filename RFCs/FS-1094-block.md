@@ -22,7 +22,7 @@ more and more and we should be helping improve the situation for that kind of pr
 
 The main question is to how to make on immutable array type normative in F# coding
 
-We have decided it is acceptable for FSHarp.Core to take a dependency on `System.Collections.Immutable`. We still want an FSharp.Core
+We have decided it is acceptable for FSharp.Core to take a dependency on `System.Collections.Immutable`. We still want an FSharp.Core
 module making it look and feel like a normal F# collection.
 
 
@@ -74,7 +74,7 @@ TBD: examples and test cases
 
 - Don't do this and maintain status quo
 
-- Make a separate package `FSharp.Cllections.Block.dll`
+- Make a separate package `FSharp.Collections.Block.dll`
 
 - Use a different name
 
