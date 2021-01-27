@@ -148,6 +148,9 @@ values, and yet be routinely usable with 32-bit values.  However a non-array-lit
 
 * One thing to watch out for is `op_Implicit` conversions to another type. E.g. `StringSegment` has conversions to `ReadOnlySpan<char>` and `ReadOnlyMemory<char>`. 
 
+### Motivation for completing the matrix of integer widenings
+
+If `op_Implicit` is accetped as a type-directed conversion then there is also an additional "consistency" motivation to include `int8` --> `int16` --> `int32` --> `int64` and similar widenings.  Specifically additional .NET numeric types such as `System.Half`, `System.Decimal` and `System.Complex` do allow certain implicit conversions via `op_Implicit`.  So if these types have widening from `int8`, `int16` and `int32` then why doesn't `System.Int64`? 
 
 # Detailed design
 
