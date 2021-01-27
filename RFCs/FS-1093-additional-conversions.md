@@ -57,6 +57,14 @@ There is no design goal to eliminate all explicit calls to `op_Implicit`, though
 
 # Motivation
 
+There are a number of motivations both for the general mechanism and the specific type-directed conversions admitted.
+
+
+### Motivation for general mechanism
+
+The mechanism is required for type-directed features adding more implicit (i.e. auto-upcast) structural subtyping to F# such as [Anonymous Type-tagged Unions](https://github.com/fsharp/fslang-design/blob/master/RFCs/FS-1092-anonymous-type-tagged-unions.md).
+
+
 ### Motivation regarding explicit upcasts
 
 Explicit upcasts are some times required in F# coding and this can be unexpected. For example, prior to this RFC this is allowed:
