@@ -258,6 +258,10 @@ type CorD = (C|D)
 NOTE: we need to be more precise here.  For example `int` and `string` both support many common interfaces like `System.IComparable`.  It is possible that
 for compilation stability we should always only use `obj`.
 
+## Resolved issues
+
+It is tempting to have anonymous tagged unions should support the "equality" and "comparison" constraints if every element supports this constraint (https://github.com/fsharp/fslang-design/discussions/519#discussioncomment-345984).   However, we must be careful here, `(int|string)` may not be comparable to `(int|string)` because in .NET `int` is not comparable to `string`.
+
 
 # Drawbacks
 [drawbacks]: #drawbacks
