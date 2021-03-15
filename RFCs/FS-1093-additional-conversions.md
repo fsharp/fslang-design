@@ -368,5 +368,7 @@ TODO: There are things to tune in this RFC, including
 
 4. Perhaps limiting the use of type-directed conversions to some specific syntactic locations, e.g. arguments.
 
+5. Consider impact on tailcalls https://github.com/fsharp/fslang-design/discussions/525#discussioncomment-484473
+
 TODO: See comment on generic literals by opt-in
 
