@@ -843,3 +843,5 @@ This is roughly what compiled `seq { ... }` code looks like in F# today and what
 
   > This is all still open for discussion.  Basically, attributes aren't allowed on expression-locals in F# today, and I was looking for something sufficiently weird to highlight that this is a here-be-dragons compiler optimization feature.
 
+* [ ] "Will task and taskSeq handle both Task and ValueTask? Will it require that all tasks use the same type, or is there some way to await a mix of the two types?"
+
