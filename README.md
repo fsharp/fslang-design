@@ -23,7 +23,9 @@ All tooling RFCs (typically for cross-cutting, cross-editor tooling) live under 
 
    * to pick the RFC numbered identifier, you can run `dotnet fsi find.next.id.fsx`
    * to name the file, tooling RFCs are prefixed with `FST-`, language RFC are prefixed with `FS-`, use `-` and lower casing (relaxed for code identifiers), giving descriptive name
-   * TODO: describe how to pick the right folder
+   * the file location is always under RFCs and get moved by owners of the repository when it ships in a preview or a release.
+
+
 
 3. Implementations and testing are submitted to the [dotnet/fsharp repository](https://github.com/dotnet/fsharp).
 
