@@ -82,3 +82,5 @@ Whether the attribute would find a way to the BCL and support by other compilers
 Does the compiler errors if the attribute is used on a function? or a warning? or ignored?
 
 What happens when the attribute is put on a virtual method but not on an overriden one?
+
+What happens when the attribute is put on a method defined in an interface but not on the implementation?
