@@ -10,7 +10,7 @@ This RFC covers the detailed proposal for this suggestion.
 - [ ] [Suggestion](https://github.com/fsharp/fslang-suggestions/issues/414)
 - [ ] [Implementation](https://github.com/dotnet/fsharp/pull/FILL-ME-IN)
 - [ ] Design Review Meeting(s) with @dsyme and others invitees
-- [Discussion](https://github.com/fsharp/fslang-design/issues/PLEASE-ADD-A-DISCUSSION-ISSUE-AND-LINK-HERE)
+- [Discussion](https://github.com/fsharp/fslang-design/discussions/538)
 
 # Summary
 
