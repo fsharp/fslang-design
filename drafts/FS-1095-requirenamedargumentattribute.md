@@ -1,4 +1,4 @@
-# F# RFC FS-NNNN - [<RequireNamedArgument>] attribute
+# F# RFC FS-1095 - RequireNamedArgument attribute
 
 The design suggestion [Add an attribute enforcing the use of named argument at callsite
 ](https://github.com/fsharp/fslang-suggestions/issues/414) has been marked "approved in principle".
@@ -7,7 +7,7 @@ The design suggestion [Add an attribute enforcing the use of named argument at c
 This RFC covers the detailed proposal for this suggestion.
 
 - [x] Approved in principle
-- [ ] [Suggestion](https://github.com/fsharp/fslang-suggestions/issues/fill-me-in)
+- [ ] [Suggestion](https://github.com/fsharp/fslang-suggestions/issues/414)
 - [ ] [Implementation](https://github.com/dotnet/fsharp/pull/FILL-ME-IN)
 - [ ] Design Review Meeting(s) with @dsyme and others invitees
 - [Discussion](https://github.com/fsharp/fslang-design/issues/PLEASE-ADD-A-DISCUSSION-ISSUE-AND-LINK-HERE)
