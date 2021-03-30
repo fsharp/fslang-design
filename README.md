@@ -17,11 +17,15 @@ All tooling RFCs (typically for cross-cutting, cross-editor tooling) live under 
 2. Ideas which get "approved in principle" get an [RFC entry](https://github.com/fsharp/fslang-design/tree/master/RFCs) based on the [template](https://github.com/fsharp/fslang-design/blob/master/RFC_template.md), and a corresponding [RFC discussion thread](https://github.com/fsharp/fslang-design/issues)
 
    There is currently a backlog of approved ideas. If an idea has been approved and you'd
-   like to accelerate the creation of an RFC,  send a PR creating the RFC document for any approved-in-principle issue.
+   like to accelerate the creation of an RFC, send a PR creating the RFC document for any approved-in-principle issue.   
    First in first served.  To "grab the token" send a PR doing nothing but creating or naming the RFC file, and
    then fill in the further details with additional commits to the PR.
 
-3. Implementations and testing are submitted to the [dotnet/fsharp repository](https://github.com/Microsoft/visualfsharp).
+   * to pick the RFC numbered identifier, you can run `dotnet fsi find.next.id.fsx`
+   * to name the file, tooling RFCs are prefixed with `FST-`, language RFC are prefixed with `FS-`, use `-` and lower casing (relaxed for code identifiers), giving descriptive name
+   * TODO: describe how to pick the right folder
+
+3. Implementations and testing are submitted to the [dotnet/fsharp repository](https://github.com/dotnet/fsharp).
 
 When RFCs are implemented and a version of F# is revved, the RFCs which correspond to the F# version they were implemented in are archived under the appropriate folder.
 
