@@ -4,6 +4,8 @@ The design suggestion [Make .Tag and .Is* discriminated union properties visible
 
 This RFC covers the detailed proposal.
 
+- [ ] Implementation: [Proposed](https://github.com/dotnet/fsharp/pull/11394)
+
 # Summary
 
 F# discriminated unions have a number of generated public members that were created for C# interoperability and are hidden from F# code. These include an instance property `IsFoo : bool` per case `Foo`.
