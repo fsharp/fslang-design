@@ -23,8 +23,9 @@ This allows an API designer to enforce call sites abide to design choices in sim
 Applying the `RequireNamedArgument` attribute to the method definition will enforce call sites to use the named argument syntax.
 
 This is useful when
+* designing object oriented APIs, with similar feel to Smalltalk or Objective-C where method and argument names form a complete message signature
 * describing the domain, and wanting the developers who is working on it to mindfully notice what they are passing into the method
-* subsequent arguments of same type can be confusing or prone to introducing bugs at call sites or during refactorings
+* using subsequent arguments of same type can be confusing or prone to introducing bugs at call sites or during refactorings
 
 This impacts some type providers where the order of parameter of a type provided member may switch due to adjustment of the input provided to a type provider.
 
@@ -87,4 +88,26 @@ What happens when the attribute is put on a virtual method but not on an overrid
 
 What happens when the attribute is put on a method defined in an interface but not on the implementation?
 
+What happens with optional parameters?
+
 Should the feature support applying the attribute to only a subset of arguments, on argument by argument basis as well? How does it play out with restriction about named arguments coming last in the call site?
+
+# Appendix
+
+## Language Zoo
+
+```smalltalk
+'hello world' indexOf: $o startingAt: 6
+```
+
+```objectivec
+[helloWorldString indexOf: o startingAt: 6];
+```
+
+```csharp
+"hello world".Substring(startIndex:1);
+```
+
+```fsharp
+"hello world".Substring(startIndex=1)
+```
