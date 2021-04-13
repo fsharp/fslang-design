@@ -22,7 +22,9 @@ This allows an API designer to enforce call sites abide to design choices in sim
 
 Applying the `RequireNamedArgument` attribute to the method definition will enforce call sites to use the named argument syntax.
 
-This is most useful in cases where subsequent arguments of same type can be confusing or prone to introducing bugs at call sites or during refactorings. 
+This is useful when
+* describing the domain, and wanting the developers who is working on it to mindfully notice what they are passing into the method
+* subsequent arguments of same type can be confusing or prone to introducing bugs at call sites or during refactorings
 
 This impacts some type providers where the order of parameter of a type provided member may switch due to adjustment of the input provided to a type provider.
 
