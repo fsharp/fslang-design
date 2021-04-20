@@ -4,7 +4,9 @@ The design suggestion [Make .Tag and .Is* discriminated union properties visible
 
 This RFC covers the detailed proposal.
 
-- [ ] Implementation: [Proposed](https://github.com/dotnet/fsharp/pull/11394)
+- [x] Implementation: [Proposed](https://github.com/dotnet/fsharp/pull/11394)
+- [x] [Discussion](https://github.com/fsharp/fslang-design/discussions/517)
+- [x] [Suggestion](https://github.com/fsharp/fslang-suggestions/issues/222)
 
 # Summary
 
