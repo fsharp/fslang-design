@@ -11,17 +11,20 @@ This RFC covers the detailed proposal for this suggestion.
 
 # Summary
 
-We add a `task { .. }` builder to the F# standard library.
-
-To implement this efficiently, we add a general capability to specify and emit resumable
+We add a general capability to specify and emit resumable
 code hosted in state machine objects recognized by the F# compiler, and to allow F#
 computation expressions to be implemented via resumable code.
+
+We use this to add a `task { .. }` builder to the F# standard library.
+
+In other RFCs we will also use this to add `option { ... }`, `voption { ... }`, `result { ... }`, `taskSeq { ... }` and more efficient `[ ... ]` and `[| ... |]` computation/collection expressions.
+
 
 # Motivation
 
 `task { ... }` support is needed in F# with good quality, low-allocation generated code.
 
-Further, there is a need for low-allocation implementations of other computation expressions. Some applications are asynchronous
+Further, there is a need for low-allocation implementations of many other computation expressions. Some applications are asynchronous
 sequences, faster list/array comprehensions and faster `option` and `result` computation expressions.
 
 # Detailed design
@@ -93,9 +96,19 @@ Tasks are executed immediately to their first await point. For example:
     printfn "x = %d" x // prints "x = 1"
 ```
 
+### ValueTask and other bindable values
+
+For `task { ... }`, the constructs  `let!` and `return!` can bind to any `Task` or `ValueTask` or `Async` corresponding
+to the appropriate design pattern. See the SRTP constraints for `Bind` and `ReturnFrom` in the design below.
+
+There is no direct way to produce a `ValueTask` using the `task { ... }` builder.  
+
+
 ## Feature: Resumable state machines
 
-Tasks are implemented via library definitions utilising a more general feature called "resumable state machines". The implementation can be found [here](https://github.com/dotnet/fsharp/blob/feature/tasks/src/fsharp/FSharp.Core/tasks.fs).
+Tasks are implemented via library definitions utilising a more general feature called "resumable code" and "resumable state machines". 
+
+The implementation can be found [here](https://github.com/dotnet/fsharp/blob/feature/tasks/src/fsharp/FSharp.Core/tasks.fs).
 
 ### Design Philosophy and Principles
 
@@ -130,11 +143,11 @@ Tasks are implemented via the more general mechanism of resumable state machines
 
 ### Specifying a resumable state machine (reference types)
 
-Resumable state machines of reference type are specified using the ``__resumableStateMachine`` compiler primitive, giving a state machine expression:
+Resumable state machines of reference type are specified using the ``ResumableCode`` attribute on a single method of a host object:
 ```fsharp
     if __useResumableStateMachines then
-        __resumableStateMachine
             { new SomeStateMachineType() with 
+                [<ResumableCode>]
                 member __.Step ()  = 
                    <resumable code>
             }
@@ -143,82 +156,84 @@ Resumable state machines of reference type are specified using the ``__resumable
 ```
 Notes
 
-* `__useResumableStateMachines` and `__resumableStateMachine` are well-known compiler intrinsics in `FSharp.Core.CompilerServices.StateMachineHelpers`
+* `__useResumableStateMachines` and an object expression with a single `ResumableCode` method are well-known to the F# compiler.  
 
-* A value-type state machine may also be used to host the resumable code, see below. 
+* A struct state machine may also be used to host the resumable code, see below. 
 
-* Here `SomeStateMachineType` can be any user-defined reference type, and the object expression must contain a single `Step` method.
+* Here `SomeStateMachineType` can be any user-defined reference type, and the object expression must contain a single `Step` method with the `ResumableCode` attribute.
 
 * The `if __useResumableCode then` is needed because the compilation of resumable code is only activated when code is compiled.
-  The `<dynamic-implementation>` is used for reflective execution, e.g. quotation interpretation.
+
+* The `<dynamic-implementation>` is used for reflective execution, e.g. quotation interpretation.
   In prototyping it can simply raise an exception. It should be semantically identical to the other branch.
   
-* The above construct should be seen as a language feature.  First-class uses of constructs such as `__resumableObject` are not allowed except in the exact pattern above.
+* Uses of `ResumableCode` are not allowed except in the exact patterns described in this RFC.
 
 ### Specifying resumable code
 
-Resumable code is made of the following grammar:
+Resumable code is a new low-level primitive form of compositional re-entrant code suitable only for writing
+high-performance compiled implementations of computation expressions.
 
-* A call to an inlined function defining further resumable code, e.g. 
+Resumable code is specified by using compositions of calls to functions or methods whose parameters and/or return
+are annotated with the `ResumableCode` attribute. These methods are usually part of a computation expression
+builder or its implementation.
 
-      <rcode> :=
-          let inline f () = <rcode>
-      
-          f(); f() 
+To describe the allowed compositions of resumable code, consider the following indicative set of functions or methods,
+which is sufficient to covers the range of compositions allowed.  Note the names `Leaf`, `Composition` and `Consume` 
+are indicative, and each method can take other non-`ResumableCode` parameters.
+ 
+```fsharp
+    [<return: ResumableCode>]
+    let inline Leaf(x: int) = ...
+ 
+    [<return: ResumableCode>]
+    let inline Composition([<ResumableCode>] __expand_code1, [<ResumableCode>] __expand_code2) = ...
+     
+    // note no 'ResumableCode' on return, this consumes resumable code.
+    let inline Consume([<ResumableCode>] __expand_code1)  = ...
+```
+     
+Anything taking a `ResumableCode` parameter must be 'inline'.  This is because resumable code is always statically composed
+at compilation-time.  All `ResumableCode` parameters should have name `__expand_*` and be of function or delegate type (this can include a function returning a delegate).
 
-  Such a function can have function parameters using the `__expand_` naming, e.g. 
-    ```fsharp
-    let inline callTwice __expand_f = __expand_f(); __expand_f()
-    let inline print() = printfn "hello"
-      
-    callTwice print
-    ```
-  These parameters give rise the expansion bindings, e.g. the above is equivalent to
-    ```fsharp  
-    let __expand_f = print
-    __expand_f()
-    __expand_f()
-    ```
-   Which is equivalent to
-     ```fsharp   
-     print()
-     print()
-     ```
-* An expansion binding definition (normally arising from the use of an inline function):
+A method with `return: ResumableCode` must be non-abstract and must return a _resumable expression_. A resumable expression is:
 
-      <rcode> :=
-          let __expand_abc <args> = <expr> in <rcode>
+1. A delegate expression with resumable body
 
-  Any name beginning with `__expand_` can be used.
-  Such an expression is treated as `<rcode>` with all uses of `__expand_abc` macro-expanded and beta-var reduced.
-  Expansion binding definitions usually arise from calls to inline functions taking function parameters, see above.
+   `Delegate(fun sm -> <resumable-expr>)`
 
-* An invocation of a function known to be a lambda expression via an expansion binding:
+2. A function-expression with resumable body
 
-      <rcode> :=
-          __expand_abc <args>
+   `(fun sm -> <resumable-expr>)`
 
-  An invocation can also be of a delegate known to be a delegate creation expression via an expansion binding:
+3. A call to a function or method returning `ResumableCode`.  
 
-      <rcode> :=
-          __expand_abc.Invoke <args>
+   `Leaf(x)`
+   `Composition(<resumable-expr>, <resumable-expr>)`
 
-  NOTE: Using delegates to form compositional code fragments is particularly useful because a delegate may take a byref parameter, normally
-  the address of the enclosing value type state machine.
+   Any `ResumableCode` parameters must be passed a resumable statements for the composition to qualify as a resumable statement.
+   A warning is emitted if the expression passed to a `ResumableCode` parameter is not determined to be a valid resumable statement.
+   In this case, the expression is compiled as a normal expression where its inlined-expansion assumes `__useResumableCode` is false.
 
-* A resumption point:
+4. A optional resumable expression:
 
-      <rcode> :=
-          match __resumableEntry() with
-          | Some contID -> <rcode>
-          | None -> <rcode>
+       if __useResumableCode then <resumable-expr> else <expr>
+
+   The alternative implementation is used if resumable code is not being generated, e.g. if the overall construct doesn't form resumable code.
+
+5. A resumption point:
+
+       match __resumableEntry() with
+       | Some contId -> <resumable-expr>
+       | None -> <resumable-expr>
 
   If such an expression is executed, the first `Some` branch is taken. However a resumption point is also defined which,
-  if a resumption is performed, executes the `None` branch.
+  if a resumption is performed using `__resumeAt`, executes the `None` branch.
   
   The `Some` branch usually suspends execution by saving `contID` into the state machine
   for later use with a `__resumeAt` execution at the entry to the method. For example:
-    ```fsharp
+  
+  ```fsharp
     let inline returnFrom (task: Task<'T>) =
         let mutable awaiter = task.GetAwaiter()
         match __resumableEntry() with 
@@ -229,92 +244,149 @@ Resumable code is made of the following grammar:
         | None ->
             sm.Result <- awaiter.GetResult()
             true
-    ```
+  ```
+  
   Note that, a resumption expression can return a result - in the above the resumption expression indicates whether the
   task ran to completion or not.
 
-* A `resumeAt` expression:
+  At runtime, `__resumeAt contId` will jump directly to 'None' branch of the corresponding `match __resumableEntry ... `.
+  All `__stack_*` locals in scope will be zero-initialized on resumption.
 
-      <rcode> :=
-          __resumeAt <expr>
+6. A `let` binding of a stack-bound variable initialized to zero on resumption.
 
-  Here <expr> is an integer-valued expression indicating a resumption point, which must be either 0 or a `contID` arising from a resumption point resumable code expression on a previous execution.
-  
-* A sequential exection of two resumable code blocks:
+       let __stack_var = ... in <resumable-expr> 
 
-      <rcode> :=
-          <rcode>; <rcode>
-
-  Note that, because the code is resumable, each `<rcode>` may contain zero or more resumption points.
-  This means it is **not** guaranteed that the first `<rcode>` will be executed before the
-  second - a `__resumeAt` call can jump straight into the second code when the method is executed to resume previous execution.
-
-* A binding sequential exection. The identifier ``__stack_step`` must be used precisely.
-
-      <rcode> :=
-          let __stack_step = <rcode> in <rcode>
-
-  Note that, because the code is resumable, each `<rcode>` may contain zero or more resumption points.  Again this
-  means it is not guaranteed that the first `<rcode>` will be executed before the
-  second - a `__resumeAt` call can jump straight into the second code when the method is executed to resume previous execution.
-  As a result, `__stack_step` should always be consumed prior to any resumption points. For example:
+   Within resumable code, the name `__stack_*` indicates that the variable is always stack-bound and given the default value on resumption.
+   
+   Note that, because the code is resumable, the  `<resumable-expr>` may contain zero or more resumption points.  Again this
+   means it is not guaranteed that the first `<resumable-expr>` will be executed before the
+   second - a `__resumeAt` call can jump straight into the second code when the method is executed to resume previous execution.
+   As a result, the variable should always be consumed prior to any resumption points and re-assigned if used after any resumption points. For example:
     ```fsharp
-    let inline combine (__expand_task1: (unit -> bool), __expand_task2: (unit -> bool)) =
-        let __stack_step = __expand_task1()
-        if __stack_step then 
-            __expand_task2()
-        else
-            false
+    let inline combine ([<ResumableCode>] __expand_task1: (unit -> bool), __expand_task2: (unit -> bool)) : [<ResumableCode>] (unit -> bool)  =
+        (fun () -> 
+            let __stack_step = __expand_task1()
+            if __stack_step then 
+                __expand_task2()
+            else
+               false)
      ```
-* A resumable `while` expression:
 
-      <rcode> :=
-          while <rcode> do <rcode>
+7. A resumable try/with expression:
 
-  Note that, because the code is resumable, each `<rcode>` may contain zero or more resumption points.  The execution
-  of the method may thus "begin" (via `__resumeAt`) in the middle of such a loop.
+       try <resumable-expr> with <expr>
 
-* A resumable `try-catch` expression:
+   Because the body of the try/with is resumable, the `<resumable-expr>` may contain zero or more resumption points.  The execution
+   of the code may thus branch (via `__resumeAt`) into the middle of the `try` expression.
+   
+   > Note that the rules of .NET IL prohibit jumping directly into the code block of a try/with.  Instead the F# compiler
+   > arranges that a jump is performed to the `try` and a subsequent jump is performed after the `try`.
+   
+   The `with` block is not resumable code and can't contain a resumption point.
 
-      <rcode> :=
-          try <rcode> with exn -> <rcode>
+8. A resumable try/finally expression:
 
-  Note that, because the code is resumable, each `<rcode>` may contain zero or more resumption points.  The execution
-  of the code may thus "begin" (via `__resumeAt`) in the middle of either the `try` expression or `with` handler.
+       try <resumable-expr> finally <expr>
 
-* If no previous case applies, a resumable `match` expression:
+   Similar rules apply as for `try-with`. Because the body of the try/finally  is resumable, the `<resumable-expr>` may contain zero or more resumption points.  The execution
+   of the code may thus branch (via `__resumeAt`) into the middle of the `try` expression.
+   
+   > Note that the rules of .NET IL prohibit jumping directly into the code block of a try/with.  Instead the F# compiler
+   > arranges that a jump is performed to the `try` and a subsequent jump is performed after the `try` is entered.
+   
+9. A resumable while-loop
 
-      <rcode> :=
+       while <expr> do <resumable-expr>
+
+   Note that, because the code is resumable, the `<resumable-expr>` may contain zero or more resumption points.   The execution
+   of the code may thus branch (via `__resumeAt`) into the middle of the `while` expression.
+
+   The guard expression is not resumable code and can't contain a resumption point.  Asynchronous while loops that
+   contain asynchronous while conditions must be handled by placing the resumable code for the guard expression
+   separately, see examples.
+
+10. A sequential execution of resumable code
+
+        <resumable-stmt>; <resumable-stmt>
+
+  Note that, because the code is resumable, each `<resumable-stmt>` may contain zero or more resumption points.
+  This means it is **not** guaranteed that the first `<resumable-stmt>` will be executed before the
+  second - a `__resumeAt` call can jump straight into the second code.
+
+11. A call/invoke of a `ResumableCode` delegate/function parameter, e.g.
+
+        __expand_code arg
+        __expand_code.Invoke(&sm)
+        (__expand_code arg).Invoke(&sm)
+
+    NOTE: Using delegates to form compositional code fragments is particularly useful because a delegate may take a byref parameter, normally
+    the address of the enclosing value type state machine.
+
+12. If no previous case applies, a resumable `match` expression:
+
           match <expr> with
-          | ...  -> <rcode>
-          | ...  -> <rcode>
+          | ...  -> <resumable-stmt>
+          | ...  -> <resumable-stmt>
 
-  Note that, because the code is resumable, each `<rcode>` may contain zero or more resumption points.  The execution
+  Note that, because the code is resumable, each `<resumable-stmt>` may contain zero or more resumption points.  The execution
   of the code may thus "begin" (via `__resumeAt`) in the middle of the code on each branch.
 
-* If no previous case applies, a binding expression:
+13. Any other F# expression excluding `for` loops and `let rec` bindings. 
 
-      <rcode> :=
-          let <pat> = <expr> in <rcode>
+        <expr>
+        
+    In this case, the expression may not contain resumable code constructs, and is simply executed.
 
-  Note that, because the code is resumable, the `<rcode>` may contain zero or more resumption points.  The binding
-  `let <pat> = <expr>` may thus not have been executed.
-  
-  All variables in `<pat>` used beyond the first resumption
-  point are stored in the enclosing state machine to ensure their initialized value is valid on resumption.
-  
-  However, if a variable bound in `<pat>` has name beginning with `__stack_` then it is not given
-  storage in the enclosing state machine,  but rather remains a `local` within the code of the method.
+### Hosting resumable code in an object
 
-* If no previous case applies, then an arbitrary leaf expression
+A resumable state machine expression is:
 
-      <expr>
+```fsharp
+{ new StateMachine() with 
+     [<ResumableCode>]
+     member x.M() = 
+       <resumable-stmt>
+}
+```
+or similarly with
+```fsharp
+__resumableStateMachineStruct(....)
+```
+as described further below.  
 
-Resumable code may **not** contain `let rec` bindings.  These must be lifted out.
+### The semantics of resumable code
 
 The execution of resumable code is best understood in terms of the direct translation of the constructs into a .NET method.
 For example, `__resumeAt` corresponds either to a `goto` (for a known label) or a switch table (for a computed label at the
 start of a method).
+
+If a `ResumableCode` expression is determined to be valid resumable code, then the semantics of the
+method or function hosting the resumable code is detemined by the following:
+
+1. All implementations are inlined under the static assumption `__useResumableCode` is true.
+
+2. All resumption points `match __resumableEntry() with Some contId -> <stmt1> | None -> <stmt2>` are removed by the static allocation of a unique integer within the resumable code for `contID` and using `<stmt1>` as the primary implementation.  `stmt2` is placed as the target for `contID` in a single implied jump table for the overall resumable code.
+
+3. Any `__stack_*` variables are represented as locals of the method. These are zero-initialized each time the method is invoked.
+
+4. Any non `__stack_*` variables are represented as locals of the host object. (Note, if the variables are not used in or after continuation branches then they may be represented as locals of the method).
+
+5. Any uses of `__resumeAt <expr>` are represented as an invocation of the implied jump table.
+
+   - If `<expr>` is a statically-determined code label (e.g. a `contID`) then this is effectively a `goto` statement
+     to the `None` branch of the resumption point corresponding to the `contID`. 
+
+   - If `<expr>` is not a statically-determined code label then the `__resumeAt` must be the first statement within the method.
+     If at runtime the `<expr>` doesn't correspond to a valid resumption point within the method then execution continues subsequent to the `__resumeAt`.
+   
+### Static checking of resumable code
+
+Many static checks are performed for the construction of resumable code as outlined above. However, there may still be cases where the
+application of the semantics of resumable code fails.  The static checking of resumable code is primarily designed to ensure compositions
+of resumable code are checked to form resumable code, and a warning is emitted if this is not statically determined.
+
+Resumable code may **not** contain `let rec` bindings.  These must be lifted out or a warning will be emitted.
+
 
 ### Specifying resumable state machine structs
 
@@ -331,20 +403,18 @@ A struct may be used to host a resumable state machine using the following formu
 ```
 Notes:
 
-1. The `__resumableStateMachineStruct` construct must be used instead of `__resumableStateMachine`
+1. A "template" struct type must be given at a type parameter to `__resumableStateMachineStruct`, in this example it is `StructStateMachine`, a user-defined type normally in the same file.  This must have exactly one interface, and be marked `NoComparison` and `NoEquality`, and if it has methods they must all be non-virtual and marked `inline`.
 
-2. A "template" struct type must be given at a type parameter to `__resumableStateMachineStruct`, in this example it is `StructStateMachine`, a user-defined type normally in the same file.
+2. The template struct type must implement one interface, the [`IAsyncMachine`](https://docs.microsoft.com/en-us/dotnet/api/system.runtime.compilerservices.iasyncstatemachine) interface. 
 
-3. The template struct type must implement one interface, the `IAsyncMachine` interface. 
-
-4. The three delegate parameters specify the implementations of the `MoveNext`, `SetMachineState` methods, plus an `After` code
+3. The three delegate parameters specify the implementations of the `MoveNext`, `SetMachineState` methods, plus an `After` code
    block that is run on the state machine immediately after creation.  Delegates are used as they can receive the address of the
    state machine.
 
-5. For each use of this construct, the template struct type is copied to to a new (internal) struct type, the state variables
+4. For each use of this construct, the template struct type is copied to to a new (internal) struct type, the state variables
    from the resumable code are added, and the `IAsyncMachine` interface is filled in using the supplied methods.
 
-NOTE: Reference-typed resumable state machines are expressed using object expressions, which can
+NOTE: By way of explanation, reference-typed resumable state machines are expressed using object expressions, which can
 have additional state variables.  However F# object-expressions may not be of struct type, so it is always necessary
 to fabricate an entirely new struct type for each state machine use. There is no existing construct in F#
 for the anonymous specification of struct types whose methods can capture a closure of variables. The above
@@ -658,8 +728,6 @@ consuming unbounded stack and heap resources. Thus the following will work for `
 Aside: See [this paper](https://www.microsoft.com/en-us/research/publication/the-f-asynchronous-programming-model/) for more
 information on asynchronous tailcalls in the F# async programming model.
 
-TODO: consider warnings for this. This is also akin to another gotcha quoted from http://tomasp.net/blog/csharp-async-gotchas.aspx/ - the most common gotcha is that tail-recursive functions must use `return!` instead of `do!` to avoid leaks.
-
 
 # Drawbacks
 
@@ -706,22 +774,22 @@ Now the meaning of the above code depends on the definition of the builder `task
 
 ```fsharp
 let rec state0() = 
-        printfn "intro"
-        let t = task1()
-        let awaiter = t.GetAwaiter()
-        if t.IsCompleted then 
-            state1 (awaiter.GetResult())
-        else
-            awaiter.AwaitOnCompleted(fun () -> state1 (awaiter.GetResult()))
+    printfn "intro"
+    let t = task1()
+    let awaiter = t.GetAwaiter()
+    if t.IsCompleted then 
+        state1 (awaiter.GetResult())
+    else
+        awaiter.AwaitOnCompleted(fun () -> state1 (awaiter.GetResult()))
 
 and state1(x) = 
-        printfn "hello"
-        let t = task2()
-        let awaiter = t.GetAwaiter()
-        if t.IsCompleted then 
-            state2 (x, awaiter.GetResult())
-        else
-            awaiter.AwaitOnCompleted(fun () -> state2 (x, awaiter.GetResult()))
+    printfn "hello"
+    let t = task2()
+    let awaiter = t.GetAwaiter()
+    if t.IsCompleted then 
+        state2 (x, awaiter.GetResult())
+    else
+        awaiter.AwaitOnCompleted(fun () -> state2 (x, awaiter.GetResult()))
 
 and state2(x, y) = 
         printfn "world"
@@ -738,26 +806,26 @@ let mutable xv = Unchecked.defaultof<_>
 let mutable awaiter2 = Unchecked.defaultof<_>
 let mutable yv = Unchecked.defaultof<_>
 let rec state0() = 
-        printfn "intro"
-        awaiter1 <- task1().GetAwaiter()
-        if awaiter1.IsCompleted then 
-            state1 ()
-        else
-            awaiter1.AwaitOnCompleted(fun () -> state1 ())
+    printfn "intro"
+    awaiter1 <- task1().GetAwaiter()
+    if awaiter1.IsCompleted then 
+        state1 ()
+    else
+        awaiter1.AwaitOnCompleted(fun () -> state1 ())
 
 and state1() = 
-        xvar <- awaiter1.GetResult()
-        printfn "hello"
-        awaiter2 <- task2().GetAwaiter()
-        if awaiter2.IsCompleted then 
-            state2 ()
-        else
-            awaiter2.AwaitOnCompleted(fun () -> state2 ())
+    xvar <- awaiter1.GetResult()
+    printfn "hello"
+    awaiter2 <- task2().GetAwaiter()
+    if awaiter2.IsCompleted then 
+        state2 ()
+    else
+        awaiter2.AwaitOnCompleted(fun () -> state2 ())
 
 and state2() = 
-        yvar <- awaiter2.GetResult()
-        printfn "world"
-        Task.FromResult(xvar + yvar)
+    yvar <- awaiter2.GetResult()
+    printfn "world"
+    Task.FromResult(xvar + yvar)
 
 task.Run ( task.Delay (fun () -> state0()))
 ```
@@ -804,6 +872,7 @@ This is a sketch to demonstrate the progression from monadic computation express
 Note:
 
 * the above kind of transformation is **not** valid for all computation expressions - it depends on the implementation details of the computation expression.  It also depends on doing this transformation for a finite number of related binds (i.e. doing it for all of a single `task { ... }` or other CE expression), which allows the use of a compact sequence of integers to represent the different states.   
+
 * The transformation where values passed between states become "state machine variables" is also not always valid - this can extend the lifetime of values in subtle ways, though the state machine generation can also generally zero out the variables at appropriate points.
 
 * If the computation expression contains conditional control flow (`if ... then... else` and `match` and `while` and `for`) then the AWAIT points can occur in the middle of generated code, and thus the initial `match` in the integer-based version can branch into the middle of control-flow.
@@ -813,19 +882,18 @@ Note:
 The heart of a typical state machine is a `MoveNext` or `Step` function that takes an integer `program counter` (`pc`) and jumps to a target:
 
 ```fsharp
-      member __.MoveNext() = 
-            match pc with
-               | 1 -> goto L1 
-               | 2 -> goto L2 
-               | _ -> goto L0
+    member __.MoveNext() = 
+        match pc with
+           | 1 -> goto L1 
+           | 2 -> goto L2 
+           | _ -> goto L0
+        L0: ...
+            ... this code can return, first setting "pc <- L1"...
 
-            L0: ...
-                ... this code can return, first setting "pc <- L1"...
+        L1: ...
+            ... this code can return, e.g. first setting "pc <- L2"...
 
-            L1: ...
-                ... this code can return, e.g. first setting "pc <- L2"...
-
-            L2: ...
+        L2: ...
 
 ```
 
@@ -834,14 +902,7 @@ This is roughly what compiled `seq { ... }` code looks like in F# today and what
 # Unresolved questions
 
 * [ ] ContextInsensitiveTasks
-* [ ] `let rec` not supported in state machines, possibly other constructs too
-* [ ] Consider adding `Unchecked` to names of primitives.  
-* [ ] Document the ways the mechanism can be cheated.  For example, the `__resumeAt` can be cheated by using an arbitrary integer for the destination. The code will still be verifiable, however it will be the equivalent of a drop-through the switch statement generated for a `__resumeAt`. Because of this it likely still warrants an `Unchecked`. 
-* [ ] consider warnings for the lack of asynchronous tailcalls.
 
-* [ ] "I have a design question. Is there any reason magic naming (i.e. __expand_) was used over, say, attributes? Was it ease of implementation, or because of limitations of attributes? Or something else?"
+* [ ] consider warnings for the lack of asynchronous tailcalls in `task { ... }`
 
-  > This is all still open for discussion.  Basically, attributes aren't allowed on expression-locals in F# today, and I was looking for something sufficiently weird to highlight that this is a here-be-dragons compiler optimization feature.
-
-* [ ] "Will task and taskSeq handle both Task and ValueTask? Will it require that all tasks use the same type, or is there some way to await a mix of the two types?"
 
