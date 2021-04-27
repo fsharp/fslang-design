@@ -5,7 +5,7 @@ The design suggestion [Native support for task { ... } ](https://github.com/fsha
 - [x] Approved in principle
 - [x] [Suggestion](https://github.com/fsharp/fslang-suggestions/issues/581)
 - [x] [RFC Discussion](https://github.com/fsharp/fslang-design/issues/455)
-- [x] [Prototype](https://github.com/dotnet/fsharp/pull/6811)
+- [x] [Implementation](https://github.com/dotnet/fsharp/pull/6811)
 
 # Summary
 
