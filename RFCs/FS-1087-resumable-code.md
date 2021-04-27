@@ -53,33 +53,26 @@ Points 1-3 guide many of the decisions below.
 
 # Detailed design
 
-### Specifying a resumable state machine (reference types)
+### Hosting resumable code in a resumable state machine
 
-Resumable state machines of reference type are specified using the ``ResumableCode`` attribute on a single method of a host object:
+Resumable code is always ultimately hosted in a resumable state machine.  State machines of reference type are specified using the ``ResumableCode`` attribute on a single method of a host object:
 ```fsharp
     { new SomeStateMachineType() with 
         [<ResumableCode>]
         member __.Step ()  = 
-           if __useResumableCode then
-               <resumable code>
-           else
-               <normal-code>
+           <resumable-expr>
     }
 ```
 Notes
 
 * `__useResumableCode` and an object expression with a single `ResumableCode` method are well-known to the F# compiler.  
 
+* Here `SomeStateMachineType` can be any user-defined reference type, however the object expression must contain a single method with the `ResumableCode` attribute.
+
+* Uses of `ResumableCode` are not allowed except in the exact patterns described in this RFC.
+
 * A struct state machine may also be used to host the resumable code, see below. 
 
-* Here `SomeStateMachineType` can be any user-defined reference type, and the object expression must contain a single `Step` method with the `ResumableCode` attribute.
-
-* The `if __useResumableCode then` is needed because the compilation of resumable code is only activated when code is compiled.
-
-* The `<dynamic-implementation>` is used for reflective execution, e.g. quotation interpretation.
-  In prototyping it can simply raise an exception. It should be semantically identical to the other branch.
-  
-* Uses of `ResumableCode` are not allowed except in the exact patterns described in this RFC.
 
 ### Specifying resumable code
 
@@ -276,22 +269,6 @@ A method with `return: ResumableCode` must be non-abstract and must return a _re
         
     In this case, the expression may not contain resumable code constructs, and is simply executed.
 
-### Hosting resumable code in an object
-
-A resumable state machine expression is:
-
-```fsharp
-{ new StateMachine() with 
-     [<ResumableCode>]
-     member x.M() = 
-       <resumable-stmt>
-}
-```
-or similarly with
-```fsharp
-__resumableStateMachineStruct(....)
-```
-as described further below.  
 
 ### The semantics of resumable code
 
