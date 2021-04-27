@@ -338,64 +338,6 @@ intrinsic effectively adds a limited version of a capability to use an existing 
 anonymous specification of an implicit, closure-capturing struct type.  The anonymous struct type must be immediately
 eliminated (i.e. used) in the `AfterMethod`.  
 
-## Feature: Respecting Zero methods in computation expressions 
-
-Prior to this RFC, the `do! expr` construct in final position of a computation branch
-in an F# computation expressions was processed as follows:
-
-1. If a `Return` method is present, process as if `builder.Bind(expr, fun () -> builder.Return ())`
-
-2. Otherwise, process as `builder.Bind(expr, fun () -> builder.Zero ())`
-
-The new rule has an extra condition as follows:
-
-1. If a `Return` method is present and there is no `Zero` method present with `DefaultValue` attribute, process as if `builder.Bind(expr, fun () -> builder.Return ())`
-
-2. Otherwise, process as `builder.Bind(expr, fun () -> builder.Zero ())`
-
-For example,
-```fsharp
-    task {
-        if true then 
-            do! Task.Delay(100)
-        return 4
-    }
-```
-
-is de-sugared to
-
-```fsharp
-task.Combine(
-    (if true then task.Bind(Task.Delay(100), fun () -> task.Zero()) else task.Zero()),
-    task.Delay(fun () -> task.Return(4)))`.
-```
-
-rather than
-
-```fsharp
-task.Combine(
-    (if true then task.Bind(Task.Delay(100), fun () -> task.Return()) else task.Zero()),
-    task.Delay(fun () -> task.Return(4)))`.
-```
-
-Motivation: This corrects a minor problem with F# computation expressions.
-This allows builders ensure `Return` is not implicitly required by `do!` expressions in final position by adding the `DefaultValue`
-attribute to the `Zero` method on the builder type.  This brings the treatment of `do!` in line with the treatment of
-the implicit result on an implicit `else` branch in `if .. then` constructs, and allows `Return` to have a more
-restrictive signature than `Zero`.  In particular in the task builder, we have
-
-```fsharp
-type TaskBuilder =
-    member inline Return: x: 'T -> TaskCode<'T, 'T>
-
-    [<DefaultValue>]
-    member inline Zero: unit -> TaskCode<'TOverall, unit>
-```
-
-Here implicit `Zero` values (implied by `do!` and `if .. then ..`) can now occur anywhere in a computation expression, regardless
-of the overall type of the task being returned by  the CE.  In contrast, `Return` values (in an explicit `return`) must
-match the type returned by the overall task.
-
 
 ## Library additions
 
