@@ -225,13 +225,13 @@ A method with `return: ResumableCode` must be non-abstract and must return a _re
        | Some contId -> <resumable-expr>
        | None -> <resumable-expr>
 
-  If such an expression is executed, the first `Some` branch is taken. However a resumption point is also defined which,
-  if a resumption is performed using `__resumeAt`, executes the `None` branch.
+   If such an expression is executed, the first `Some` branch is taken. However a resumption point is also defined which,
+   if a resumption is performed using `__resumeAt`, executes the `None` branch.
   
-  The `Some` branch usually suspends execution by saving `contID` into the state machine
-  for later use with a `__resumeAt` execution at the entry to the method. For example:
+   The `Some` branch usually suspends execution by saving `contID` into the state machine
+   for later use with a `__resumeAt` execution at the entry to the method. For example:
   
-  ```fsharp
+   ```fsharp
     let inline returnFrom (task: Task<'T>) =
         let mutable awaiter = task.GetAwaiter()
         match __resumableEntry() with 
@@ -242,13 +242,13 @@ A method with `return: ResumableCode` must be non-abstract and must return a _re
         | None ->
             sm.Result <- awaiter.GetResult()
             true
-  ```
+   ```
   
-  Note that, a resumption expression can return a result - in the above the resumption expression indicates whether the
-  task ran to completion or not.
+   Note that, a resumption expression can return a result - in the above the resumption expression indicates whether the
+   task ran to completion or not.
 
-  At runtime, `__resumeAt contId` will jump directly to 'None' branch of the corresponding `match __resumableEntry ... `.
-  All `__stack_*` locals in scope will be zero-initialized on resumption.
+   At runtime, `__resumeAt contId` will jump directly to 'None' branch of the corresponding `match __resumableEntry ... `.
+   All `__stack_*` locals in scope will be zero-initialized on resumption.
 
 6. A `let` binding of a stack-bound variable initialized to zero on resumption.
 
