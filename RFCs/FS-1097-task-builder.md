@@ -1,8 +1,6 @@
 # F# RFC FS-1097 - Tasks 
 
-The design suggestion [Native support for task { ... } ](https://github.com/fsharp/fslang-suggestions/issues/581) has been marked "approved in principle".
-
-This RFC covers the detailed proposal for this suggestion.
+The design suggestion [Native support for task { ... } ](https://github.com/fsharp/fslang-suggestions/issues/581) has been marked "approved in principle". This RFC covers the detailed proposal for this suggestion.
 
 - [x] Approved in principle
 - [x] [Suggestion](https://github.com/fsharp/fslang-suggestions/issues/581)
@@ -11,7 +9,7 @@ This RFC covers the detailed proposal for this suggestion.
 
 # Summary
 
-We add a `task { .. }` builder to the F# standard library.
+We add a `task { .. }` builder to the F# standard library, implemented using [resumable code](https://github.com/fsharp/fslang-design/blob/master/RFCs/FS-1087-resumable-code.md).
 
 # Motivation
 
