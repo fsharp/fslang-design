@@ -14,6 +14,8 @@ We add a general capability to specify and emit statically compositional resumab
 code hosted in state machine objects recognized by the F# compiler. This allows some F#
 computation expressions to be implemented via resumable code specified as part of the computation expression implementation.
 
+This is used to implement [RFC FS-1097 - tasks](https://github.com/fsharp/fslang-design/blob/master/RFCs/FS-1097-task-builder.md).
+
 # Motivation
 
 `task { ... }` and other computation expressions need low-allocation implementations. Some other examples are asynchronous
