@@ -114,24 +114,27 @@ The design philosophy for the "resumable state machines" feature is as follows:
 
 1. No new syntax is added to the F# language. 
 
-2. The F# metadata format is unchanged. Like `nameof` and other F# features,
+2. The primary aim is for _statically composable_ resumable code. That is, chunks of resumable code specified in FSharp.Core and other libraries that can be merged
+   to form an overall resumable state machine in user code.
+
+3. The F# metadata format is unchanged. Like `nameof` and other F# features,
    resumable state machines are encoded within existing TypedTree constructs using a combination of known compiler intrinsics
    and TypedTree expresions.
 
-3. We treat this as a compiler feature. The actual feature is barely surfaced
+4. We treat this as a compiler feature. The actual feature is barely surfaced
    as a language feature, but is rather a set of idioms known to the F# compiler, together used to build efficient computation
    expression implementations.
 
-4. The feature is activated in compiled code.  An alternative implementation of the primitives can be
+5. The feature is activated in compiled code.  An alternative implementation of the primitives can be
    given for reflective execution, e.g. for interpretation of quotation code.
 
-5. The feature is not fully checked during type checking, but rather checks are made as code is emitted. This means
+6. The feature is not fully checked during type checking, but rather checks are made as code is emitted. This means
    mis-implemented resumable code may be detected late in the compilation process, potentially when compiling user code. (NOTE: we will review this)
 
-6. The feature is designed for use only by highly skilled F# developers to implement low-allocation computation
+7. The feature is designed for use only by highly skilled F# developers to implement low-allocation computation
    expression builders.
 
-7. Semantically, there's nothing you can do with resumable state machines that you can't already do with existing
+8. Semantically, there's nothing you can do with resumable state machines that you can't already do with existing
    workflows. It is better to think of them as a performance feature, a compiler optimization partly implemented
    in workflow library code.
 
@@ -143,18 +146,18 @@ Tasks are implemented via the more general mechanism of resumable state machines
 
 Resumable state machines of reference type are specified using the ``ResumableCode`` attribute on a single method of a host object:
 ```fsharp
-    if __useResumableStateMachines then
-            { new SomeStateMachineType() with 
-                [<ResumableCode>]
-                member __.Step ()  = 
-                   <resumable code>
-            }
-    else
-        <dynamic-implementation>
+    { new SomeStateMachineType() with 
+        [<ResumableCode>]
+        member __.Step ()  = 
+           if __useResumableCode then
+               <resumable code>
+           else
+               <normal-code>
+    }
 ```
 Notes
 
-* `__useResumableStateMachines` and an object expression with a single `ResumableCode` method are well-known to the F# compiler.  
+* `__useResumableCode` and an object expression with a single `ResumableCode` method are well-known to the F# compiler.  
 
 * A struct state machine may also be used to host the resumable code, see below. 
 
@@ -391,7 +394,7 @@ Resumable code may **not** contain `let rec` bindings.  These must be lifted out
 A struct may be used to host a resumable state machine using the following formulation:
 
 ```fsharp
-    if __useResumableStateMachines then
+    if __useResumableCode then
         __resumableStateMachineStruct<StructStateMachine<'T>, _>
             (MoveNextMethod(fun sm -> <resumable-code>))
             (SetMachineStateMethod(fun sm state -> ...))
@@ -584,7 +587,7 @@ type AfterMethod<'Template, 'Result> = delegate of byref<'Template> -> 'Result
 /// Contains compiler intrinsics related to the definition of state machines.
 module StateMachineHelpers = 
 
-    val __useResumableStateMachines<'T> : bool 
+    val __useResumableCode<'T> : bool 
 
     val __resumableStateMachine<'T> : _obj: 'T -> 'T
 
@@ -617,6 +620,32 @@ type IPriority2 = interface inherit IPriority3 end
 /// all else being equal.
 type IPriority1 = interface inherit IPriority2 end
 ```
+
+### Library additions (for future List builders and high-performance list functions)
+
+In the future we will use resumable code to add more efficient list and array builders.
+It is not yet decided if such a builder should be in FSharp.Core.
+To support the definition of such a list builder outside FSharp.Core, we expose a library intrinsic to allow the tail-mutation of
+lists. Like other constructs in FSharp.Core this is a low-level primitive not for use in user-code and carries a warning.
+
+```fsharp
+namespace Microsoft.FSharp.Core.CompilerServices
+
+    [<RequireQualifiedAccess>]
+    module RuntimeHelpers = 
+        ...
+    
+        [<Experimental("Experimental library feature, requires '--langversion:preview'")>]
+        [<CompilerMessage("This function is for use by compiled F# code and should not be used directly", 1204, IsHidden=true)>]
+        val inline FreshConsNoTail: head: 'T -> 'T list
+        
+        [<Experimental("Experimental library feature, requires '--langversion:preview'")>]
+        [<MethodImpl(MethodImplOptions.NoInlining)>]
+        [<CompilerMessage("This function is for use by compiled F# code and should not be used directly", 1204, IsHidden=true)>]
+        val SetFreshConsTail: cons: 'T list -> tail: 'T list -> unit
+```
+
+This function can also be used for higher-performance list function implementations external to FSharp.Core, though must be used with care.
 
 # Performance
 
