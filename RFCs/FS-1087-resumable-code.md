@@ -115,16 +115,22 @@ A method with `return: ResumableCode` must be non-abstract and must return a _re
 
 1. A delegate expression with resumable body
 
-   `Delegate(fun sm -> <resumable-expr>)`
+   ```fsharp
+   Delegate(fun sm -> <resumable-expr>)
+   ```
 
 2. A function-expression with resumable body
 
-   `(fun sm -> <resumable-expr>)`
+   ```fsharp
+   (fun sm -> <resumable-expr>)
+   ```
 
 3. A call to a function or method returning `ResumableCode`.  
 
-   `Leaf(x)`
-   `Composition(<resumable-expr>, <resumable-expr>)`
+   ```fsharp
+   Leaf(x)
+   Composition(<resumable-expr>, <resumable-expr>)
+   ```
 
    Any `ResumableCode` parameters must be passed a resumable statements for the composition to qualify as a resumable statement.
    A warning is emitted if the expression passed to a `ResumableCode` parameter is not determined to be a valid resumable statement.
@@ -132,15 +138,19 @@ A method with `return: ResumableCode` must be non-abstract and must return a _re
 
 4. A optional resumable expression:
 
-       if __useResumableCode then <resumable-expr> else <expr>
+   ```fsharp
+   if __useResumableCode then <resumable-expr> else <expr>
+   ```
 
    The alternative implementation is used if resumable code is not being generated, e.g. if the overall construct doesn't form resumable code.
 
 5. A resumption point:
 
-       match __resumableEntry() with
-       | Some contId -> <resumable-expr>
-       | None -> <resumable-expr>
+   ```fsharp
+   match __resumableEntry() with
+   | Some contId -> <resumable-expr>
+   | None -> <resumable-expr>
+   ```
 
    If such an expression is executed, the first `Some` branch is taken. However a resumption point is also defined which,
    if a resumption is performed using `__resumeAt`, executes the `None` branch.
@@ -149,16 +159,16 @@ A method with `return: ResumableCode` must be non-abstract and must return a _re
    for later use with a `__resumeAt` execution at the entry to the method. For example:
   
    ```fsharp
-    let inline returnFrom (task: Task<'T>) =
-        let mutable awaiter = task.GetAwaiter()
-        match __resumableEntry() with 
-        | Some contID ->
-            sm.ResumptionPoint <- contID
-            sm.MethodBuilder.AwaitUnsafeOnCompleted(&awaiter, &sm)
-            false
-        | None ->
-            sm.Result <- awaiter.GetResult()
-            true
+   let inline returnFrom (task: Task<'T>) =
+       let mutable awaiter = task.GetAwaiter()
+       match __resumableEntry() with 
+       | Some contID ->
+           sm.ResumptionPoint <- contID
+           sm.MethodBuilder.AwaitUnsafeOnCompleted(&awaiter, &sm)
+           false
+       | None ->
+           sm.Result <- awaiter.GetResult()
+           true
    ```
   
    Note that, a resumption expression can return a result - in the above the resumption expression indicates whether the
@@ -169,7 +179,9 @@ A method with `return: ResumableCode` must be non-abstract and must return a _re
 
 6. A `let` binding of a stack-bound variable initialized to zero on resumption.
 
-       let __stack_var = ... in <resumable-expr> 
+   ```fsharp
+   let __stack_var = ... in <resumable-expr> 
+   ```
 
    Within resumable code, the name `__stack_*` indicates that the variable is always stack-bound and given the default value on resumption.
    
@@ -177,19 +189,22 @@ A method with `return: ResumableCode` must be non-abstract and must return a _re
    means it is not guaranteed that the first `<resumable-expr>` will be executed before the
    second - a `__resumeAt` call can jump straight into the second code when the method is executed to resume previous execution.
    As a result, the variable should always be consumed prior to any resumption points and re-assigned if used after any resumption points. For example:
-    ```fsharp
-    let inline combine ([<ResumableCode>] __expand_task1: (unit -> bool), __expand_task2: (unit -> bool)) : [<ResumableCode>] (unit -> bool)  =
-        (fun () -> 
-            let __stack_step = __expand_task1()
-            if __stack_step then 
-                __expand_task2()
-            else
-               false)
-     ```
+
+   ```fsharp
+   let inline combine ([<ResumableCode>] __expand_task1: (unit -> bool), __expand_task2: (unit -> bool)) : [<ResumableCode>] (unit -> bool)  =
+       (fun () -> 
+           let __stack_step = __expand_task1()
+           if __stack_step then 
+               __expand_task2()
+           else
+              false)
+   ```
 
 7. A resumable try/with expression:
 
-       try <resumable-expr> with <expr>
+   ```fsharp
+   try <resumable-expr> with <expr>
+   ```
 
    Because the body of the try/with is resumable, the `<resumable-expr>` may contain zero or more resumption points.  The execution
    of the code may thus branch (via `__resumeAt`) into the middle of the `try` expression.
@@ -201,7 +216,9 @@ A method with `return: ResumableCode` must be non-abstract and must return a _re
 
 8. A resumable try/finally expression:
 
-       try <resumable-expr> finally <expr>
+   ```fsharp
+   try <resumable-expr> finally <expr>
+   ```
 
    Similar rules apply as for `try-with`. Because the body of the try/finally  is resumable, the `<resumable-expr>` may contain zero or more resumption points.  The execution
    of the code may thus branch (via `__resumeAt`) into the middle of the `try` expression.
@@ -211,7 +228,9 @@ A method with `return: ResumableCode` must be non-abstract and must return a _re
    
 9. A resumable while-loop
 
-       while <expr> do <resumable-expr>
+   ```fsharp
+   while <expr> do <resumable-expr>
+   ```
 
    Note that, because the code is resumable, the `<resumable-expr>` may contain zero or more resumption points.   The execution
    of the code may thus branch (via `__resumeAt`) into the middle of the `while` expression.
@@ -222,33 +241,41 @@ A method with `return: ResumableCode` must be non-abstract and must return a _re
 
 10. A sequential execution of resumable code
 
-        <resumable-stmt>; <resumable-stmt>
+    ```fsharp
+    <resumable-stmt>; <resumable-stmt>
+    ```
 
-   Note that, because the code is resumable, each `<resumable-stmt>` may contain zero or more resumption points.
-   This means it is **not** guaranteed that the first `<resumable-stmt>` will be executed before the
-   second - a `__resumeAt` call can jump straight into the second code.
+    Note that, because the code is resumable, each `<resumable-stmt>` may contain zero or more resumption points.
+    This means it is **not** guaranteed that the first `<resumable-stmt>` will be executed before the
+    second - a `__resumeAt` call can jump straight into the second code.
 
 11. A call/invoke of a `ResumableCode` delegate/function parameter, e.g.
 
-        __expand_code arg
-        __expand_code.Invoke(&sm)
-        (__expand_code arg).Invoke(&sm)
+    ```fsharp
+    __expand_code arg
+    __expand_code.Invoke(&sm)
+    (__expand_code arg).Invoke(&sm)
+    ```
 
     NOTE: Using delegates to form compositional code fragments is particularly useful because a delegate may take a byref parameter, normally
     the address of the enclosing value type state machine.
 
 12. If no previous case applies, a resumable `match` expression:
 
-          match <expr> with
-          | ...  -> <resumable-stmt>
-          | ...  -> <resumable-stmt>
+    ```fsharp
+    match <expr> with
+    | ...  -> <resumable-expr>
+    | ...  -> <resumable-expr>
+    ```
 
    Note that, because the code is resumable, each `<resumable-stmt>` may contain zero or more resumption points.  The execution
    of the code may thus "begin" (via `__resumeAt`) in the middle of the code on each branch.
 
 13. Any other F# expression excluding `for` loops and `let rec` bindings. 
 
-        <expr>
+    ```fsharp
+    <expr>
+    ```
         
     In this case, the expression may not contain resumable code constructs, and is simply executed.
 
@@ -308,13 +335,13 @@ Resumable code may **not** contain `let rec` bindings.  These must be lifted out
 A struct may be used to host a resumable state machine using the following formulation:
 
 ```fsharp
-    if __useResumableCode then
-        __resumableStateMachineStruct<StructStateMachine<'T>, _>
-            (MoveNextMethod(fun sm -> <resumable-code>))
-            (SetMachineStateMethod(fun sm state -> ...))
-            (AfterMethod(fun sm -> ...))
-    else
-        ...
+if __useResumableCode then
+    __resumableStateMachineStruct<StructStateMachine<'T>, _>
+        (MoveNextMethod(fun sm -> <resumable-code>))
+        (SetMachineStateMethod(fun sm state -> ...))
+        (AfterMethod(fun sm -> ...))
+else
+    ...
 ```
 Notes:
 
@@ -360,13 +387,17 @@ For example,
         return 4
     }
 ```
+
 is de-sugared to
+
 ```fsharp
 task.Combine(
     (if true then task.Bind(Task.Delay(100), fun () -> task.Zero()) else task.Zero()),
     task.Delay(fun () -> task.Return(4)))`.
 ```
+
 rather than
+
 ```fsharp
 task.Combine(
     (if true then task.Bind(Task.Delay(100), fun () -> task.Return()) else task.Zero()),
@@ -386,6 +417,7 @@ type TaskBuilder =
     [<DefaultValue>]
     member inline Zero: unit -> TaskCode<'TOverall, unit>
 ```
+
 Here implicit `Zero` values (implied by `do!` and `if .. then ..`) can now occur anywhere in a computation expression, regardless
 of the overall type of the task being returned by  the CE.  In contrast, `Return` values (in an explicit `return`) must
 match the type returned by the overall task.
