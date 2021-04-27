@@ -15,9 +15,7 @@ We add a general capability to specify and emit resumable
 code hosted in state machine objects recognized by the F# compiler, and to allow F#
 computation expressions to be implemented via resumable code.
 
-We use this to add a `task { .. }` builder to the F# standard library.
-
-In other RFCs we will also use this to add `option { ... }`, `voption { ... }`, `result { ... }`, `taskSeq { ... }` and more efficient `[ ... ]` and `[| ... |]` computation/collection expressions.
+We use this to add a `task { .. }` builder to the F# standard library. In other RFCs we will also use this to add `option { ... }`, `voption { ... }`, `result { ... }`, `taskSeq { ... }` and more efficient `[ ... ]` and `[| ... |]` computation/collection expressions.
 
 
 # Motivation
