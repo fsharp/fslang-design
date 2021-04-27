@@ -307,9 +307,9 @@ A method with `return: ResumableCode` must be non-abstract and must return a _re
 
         <resumable-stmt>; <resumable-stmt>
 
-  Note that, because the code is resumable, each `<resumable-stmt>` may contain zero or more resumption points.
-  This means it is **not** guaranteed that the first `<resumable-stmt>` will be executed before the
-  second - a `__resumeAt` call can jump straight into the second code.
+   Note that, because the code is resumable, each `<resumable-stmt>` may contain zero or more resumption points.
+   This means it is **not** guaranteed that the first `<resumable-stmt>` will be executed before the
+   second - a `__resumeAt` call can jump straight into the second code.
 
 11. A call/invoke of a `ResumableCode` delegate/function parameter, e.g.
 
@@ -326,8 +326,8 @@ A method with `return: ResumableCode` must be non-abstract and must return a _re
           | ...  -> <resumable-stmt>
           | ...  -> <resumable-stmt>
 
-  Note that, because the code is resumable, each `<resumable-stmt>` may contain zero or more resumption points.  The execution
-  of the code may thus "begin" (via `__resumeAt`) in the middle of the code on each branch.
+   Note that, because the code is resumable, each `<resumable-stmt>` may contain zero or more resumption points.  The execution
+   of the code may thus "begin" (via `__resumeAt`) in the middle of the code on each branch.
 
 13. Any other F# expression excluding `for` loops and `let rec` bindings. 
 
