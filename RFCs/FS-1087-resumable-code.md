@@ -19,10 +19,7 @@ computation expressions to be implemented via resumable code specified as part o
 `task { ... }` and other computation expressions need low-allocation implementations. Some other examples are asynchronous
 sequences, faster list/array comprehensions and faster `option` and `result` computation expressions.
 
-# Detailed design
-
-
-### Design Philosophy and Principles
+# Design Philosophy and Principles
 
 The design philosophy is as follows:
 
@@ -52,9 +49,9 @@ The design philosophy is as follows:
    workflows. It is better to think of them as a performance feature, a compiler optimization partly implemented
    in workflow library code.
 
-Points 1-2 guide many of the decisions below.
+Points 1-3 guide many of the decisions below.
 
-Tasks are implemented via the more general mechanism of resumable state machines.
+# Detailed design
 
 ### Specifying a resumable state machine (reference types)
 
