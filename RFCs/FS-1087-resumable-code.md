@@ -1,4 +1,4 @@
-# F# RFC FS-1087 - Resumable state machines
+# F# RFC FS-1087 - Resumable code and Resumable state machines
 
 The design suggestion [Native support for task { ... } ](https://github.com/fsharp/fslang-suggestions/issues/581) has been marked "approved in principle".
 This RFC covers the detailed proposal for the resumable state machine support needed for this and other features.
