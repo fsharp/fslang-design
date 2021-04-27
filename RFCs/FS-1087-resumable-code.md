@@ -21,6 +21,9 @@ This is used to implement [RFC FS-1097 - tasks](https://github.com/fsharp/fslang
 `task { ... }` and other computation expressions need low-allocation implementations. Some other examples are asynchronous
 sequences, faster list/array comprehensions and faster `option` and `result` computation expressions.
 
+There are enough variations on such computation expressions that it is better to provide a general mechanism in F#
+that allows the efficient compilation of a large range of such constructs rather than baking each into the F# compiler.
+
 # Design Philosophy and Principles
 
 The design philosophy is as follows:
