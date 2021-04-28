@@ -12,7 +12,7 @@ This RFC covers the detailed proposal for the resumable state machine support ne
 
 We add a general capability to specify and emit statically compositional resumable
 code hosted in state machine objects recognized by the F# compiler. This allows some F#
-computation expressions to be implemented via resumable code specified as part of the computation expression implementation.
+computation expressions to be implemented highly efficiently.
 
 This is used to implement [RFC FS-1097 - tasks](https://github.com/fsharp/fslang-design/blob/master/RFCs/FS-1097-task-builder.md).
 
@@ -25,6 +25,12 @@ There are enough variations on such computation expressions that it is better to
 that allows the efficient compilation of a large range of such constructs rather than baking each into the F# compiler.
 
 # Design Philosophy and Principles
+
+The general mechanism has a very similar effect to adding [co-routines](https://en.wikipedia.org/wiki/Coroutine) to the F# language and runtime
+except we do not commit to any particular implementation of co-routines (which are not supported directly by the .NET runtime).
+Instead a general static code-weaving mechanism (built around the 'inline' mechanism) is used to build an
+overall state-machine and combine it with user-code, and this mechanism is part of the F# compiler. The mechanism can also be
+used to accurately statically combine non-resumable code fragments.
 
 The design philosophy is as follows:
 
@@ -473,12 +479,24 @@ F#'s existing `[ .. ]` and `[| ... |]` and `seq { .. } |> Seq.toResizeArray` all
 
 # Drawbacks
 
-Complexity
+### Complexity
+
+The mechanism is non-trivial.
+
 
 # Alternatives
 
-1. Don't do it.
-2. Don't generalise it (just do it for tasks)
+### Don't do it
+
+There's always an option not to.
+
+### Build in compiler support for each computation expression
+
+The C# compiler builds in specific support for tasks and asynchronous sequences.  This means the only user-code that can be efficiently resumable is code
+that returns these two types.
+
+
+
 
 # Compatibility
 
@@ -643,6 +661,115 @@ This is roughly what compiled `seq { ... }` code looks like in F# today and what
 
 # Unresolved questions
 
-None
+* [ ] tests for quotations of `if __useResumableCode then ...`
+
+
+### Potential for over-use
+
+The code-weaving mechanism of resumable code can also be used to accurately statically combine non-resumable code fragments. For example, this is
+done by the `list { .. }`, `option { .. }` and `voption { .. }` examples.
+
+The code achieved is more reliably efficient than that acheived by simply inlining all combinators, because user code is identified as resumable code and
+passed in via `ResumableCode` parameters which are statically inlined and flattened through the code weaving process.  Additionally, the control code and
+user code can be woven via delegates taking the "this" state machine argument as a byref to a struct state machine (e.g. see the `list` sample) which
+means zero allocations occur in the final resulting code.
+
+There is a risk that this mechanism will prove so effective at statically eliminating allocations of closures that there will
+it will start to be used to eliminate for synchronous code taking function parameters, resulting in subtle and obfuscated code.
+
+For example, a user may try to write a more optimized version of `Array.map`. The starting code is this:
+```fsharp
+module Array =
+    let inline map (f: 'T -> 'U) (arr: 'T[]) =
+        let res = Array.zeroCreate arr.Length
+        for i = 0 to arr.Length-1 do
+            res.[i] <- f arr.[i]
+        res
+```
+Let's assume the user has identified some cases where, despite the `inline`, the F# compiler has not inlined `f` even
+when 'f' is an explicit lambda (for example the compiler decides it is too large to inline). This
+will potentially avoid a closure allocation and a virtual function invocation in the middle of the loop.  There is no current
+way to _force_ 'f' to be inlined.
+
+So the user starts to play with resumable code.  For example:
+
+```fsharp
+module Array =
+    let inline fastMap ([<ResumableCode>] __expand_f: 'T -> 'U) (arr: 'T[]) =
+        let res = Array.zeroCreate arr.Length
+        for i = 0 to arr.Length-1 do
+            let v = __expand_f arr.[i]
+            res.[i] <- v
+```
+Here the user is trying to use code weaving to ensure that `__expand_f` is always inlined to its callsite if given an explicit lambda. This
+will potentially avoid a closure allocation and a virtual function invocation in the middle of the loop.
+However:
+
+(1) The body of `fastMap` is not actually generated as resumable code, since it is not in a state machine. No particular warning is given for this. 
+(2) Integer 'for' loops are not currently allowed in resumable code (they could be added, which may lead to a feature request)
+(3) A warning will be given if `Array.fastMap` is not given statically-identifiable resumable code, which starts to intrude on the
+    user's cognitive model.
+
+Restrictions (1) and (2) may lead the user to write this:
+
+```fsharp
+[<Struct; NoEquality; NoComparison>]
+type ArrayBuilderStateMachine<'T> =
+    [<DefaultValue(false)>]
+    val mutable Result : 'T[]
+
+    interface IAsyncStateMachine with 
+        member sm.MoveNext() = failwith "no dynamic impl"
+        member sm.SetStateMachine(state: IAsyncStateMachine) = failwith "no dynamic impl"
+
+    static member inline Run(sm: byref<'K> when 'K :> IAsyncStateMachine) = sm.MoveNext()
+
+module Array =
+    let inline fastMap ([<ResumableCode>] __expand_f: 'T -> 'U) (arr: 'T[]) =
+        if __useResumableCode then
+            __structStateMachine<ArrayBuilderStateMachine<'T>, _>
+                (MoveNextMethod<ArrayBuilderStateMachine<'T>>(fun sm -> 
+                       // ---- Start resumable code
+                       sm.Result <- Array.zeroCreate(arr.Length)
+                       let mutable i = 0
+                       let n = arr.Length
+                       while i < arr.Length do 
+                           let v = __expand_f arr.[i]
+                           sm.Result.[i] <- v
+                           i <- i + 1
+                       // ---- End resumable code
+                       ))
+
+                // SetStateMachine
+                (SetMachineStateMethod<_>(fun sm state -> 
+                    ()))
+
+                // Start
+                (AfterMethod<_,_>(fun sm -> 
+                    ArrayBuilderStateMachine<_>.Run(&sm)
+                    sm.Result))
+        else
+            let res = Array.zeroCreate arr.Length
+            for i = 0 to arr.Length-1 do
+                let v = __expand_f arr.[i]
+                res.[i] <- v
+```
+This is a huge amount of code - with potential bugs - just to eliminate a single potential closure allocation and corresponding virtual call.
+Additionally, the resumable code implementation may have subtle differences.
+
+However _many users will do anything to eliminate such costs in the middle of critical loops_. This means they will write this code if given a chance,
+and request to be able to write it if not. Once there's a hint of this there will also be requests to make the "guaranteed inlining" of `[<ResumableCode>] __expand_f`
+available more generally, whether as a specific feature or as a full macro system.  For example the user may request to simply be able to add `inline`
+to parameters, which might indicate an "optional" request for inlining should it be possible:
+
+```fsharp
+module Array =
+    let inline fastMap (inline f: 'T -> 'U) (arr: 'T[]) =
+        let res = Array.zeroCreate arr.Length
+        for i = 0 to arr.Length-1 do
+            let v = f arr.[i]
+            res.[i] <- v
+```
+This is not an unreasonable feature and is present by default for inlined functions in Kotlin for example. I'm now experimenting with using this as the basis for weaving in user-code.
 
 
