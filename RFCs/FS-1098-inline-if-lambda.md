@@ -68,6 +68,12 @@ One design option is to use the inline keyword at parameter position.  However t
 Putting these together an attribute seems more appropriate, as this is much more like the `AggressiveInliningAttribute` of .NET, rather than a semantic
 part of the F# language.
 
+### Use on non-lambda values
+
+Potentially this could be used on non-lambda arguments, requesting that the value be duplicated and copied if optimization information is known for it, and this
+optimization information is never trimmed.  For example, on values of union type.   
+
+
 # Compatibility
 
 This is a backward compatible addition.
@@ -75,5 +81,6 @@ This is a backward compatible addition.
 # Unresolved questions
 
 * [ ] Do we use this through FSharp.Core?  Yes, I believe so.
+
 
 
