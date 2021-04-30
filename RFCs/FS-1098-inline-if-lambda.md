@@ -3,9 +3,9 @@
 The design suggestion "Inline if lambda attributes on parameters" is approved in principle. This RFC covers the detailed proposal for this suggestion.
 
 - [x] Approved in principle
-- [x] [Suggestion](https://github.com/fsharp/fslang-suggestions/issues/581)
-- [x] [RFC Discussion](https://github.com/fsharp/fslang-design/issues/455)
-- [x] [Implementation](https://github.com/dotnet/fsharp/pull/6811)
+- [x] Suggestion
+- [x] RFC Discussion
+- [x] [Implementation](https://github.com/dotnet/fsharp/pull/6811)  (is part of this overall PR)
 
 # Summary
 
