@@ -81,7 +81,7 @@ This is a backward compatible addition.
 
 # Unresolved questions
 
-* [x] Do we use this through FSharp.Core where existing inline functions take function parameters?  Answer: Yes, we will.
+* [x] Do we use this through FSharp.Core where existing inline functions take function parameters?  Answer: Yes, we will, however in a separate PR and not directly part of RFC
 * [x] Is a warning or error given if used on a parameter of non-inline functions?   Answer: Yes, we will emit an error.
 
 
