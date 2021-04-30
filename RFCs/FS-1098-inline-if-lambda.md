@@ -3,8 +3,8 @@
 The design suggestion "Inline if lambda attributes on parameters" is approved in principle. This RFC covers the detailed proposal for this suggestion.
 
 - [x] Approved in principle
-- [x] Suggestion
-- [x] RFC Discussion
+- [x] [Suggestion](https://github.com/fsharp/fslang-design/blob/master/RFCs/FS-1087-resumable-code.md#potential-for-over-use)
+- [x] [RFC Discussion](https://github.com/fsharp/fslang-design/discussions/549)
 - [x] [Implementation](https://github.com/dotnet/fsharp/pull/6811)  (is part of this overall PR)
 
 # Summary
