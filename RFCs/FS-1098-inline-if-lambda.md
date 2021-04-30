@@ -80,7 +80,7 @@ This is a backward compatible addition.
 
 # Unresolved questions
 
-* [ ] Do we use this through FSharp.Core?  Yes, I believe so.
-
+* [x] Do we use this through FSharp.Core where existing inline functions take function parameters?  Answer: Yes, we will.
+* [x] Is a warning or error given if used on a parameter of non-inline functions?   Answer: Yes, we will emit an error.
 
 
