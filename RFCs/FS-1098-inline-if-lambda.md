@@ -1,4 +1,4 @@
-# F# RFC FS-1097 - inline-if-lambda attributes on parameters
+# F# RFC FS-1098 - inline-if-lambda attributes on parameters
 
 The design suggestion "Inline if lambda attributes on parameters" is approved in principle. This RFC covers the detailed proposal for this suggestion.
 
