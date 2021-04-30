@@ -19,6 +19,9 @@ they are often not inlined because the compiler deems them too large.  This caus
 
 This problem is particularly chronic for F# computation expression  builders which compute functions and pass them as functions.
 
+This problem is particularly motivated by the fact that [RFC FS-1087](https://github.com/fsharp/fslang-design/blob/master/RFCs/FS-1087-resumable-code.md#potential-for-over-use) proposes to perform more aggressive inlining for resumable code by default.  This raises the likelihood (a.k.a. certainty) that people would start to use resumable code to achieve higher performance for synchronous code, which would be a tragedy of epic proportions, resulting in a endless sea of unreadable and unmaintainable high performance code.
+
+
 # Detailed design
 
 We add `InlineIfLambdaAtttribute` to use on parameters of inlined functions and methods, indicating to the compiler that, if a lambda
