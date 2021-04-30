@@ -29,7 +29,8 @@ is supplied as a parameter, it should be inlined.
 
 The attribute is indicative only and may be ignored by the F# compiler.
 
-The attribute need only be present in an implementation file, as it forms part of the logic of the inlined annotation.  It is optional in a signature.
+The attribute need only be present in an implementation file, as it forms part of the logic of the inlined annotation.  It is optional in a signature.  If used
+in the signature it must be present in the implementation. 
 
 # Drawbacks
 
