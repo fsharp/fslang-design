@@ -16,6 +16,8 @@ computation expressions to be implemented highly efficiently.
 
 This is used to implement [RFC FS-1097 - tasks](https://github.com/fsharp/fslang-design/blob/master/RFCs/FS-1097-task-builder.md).
 
+This is also related to [RFC FS-1098 - inline if lambda attribute](https://github.com/fsharp/fslang-design/blob/master/RFCs/FS-1098-inline-if-lambda.md)
+
 # Motivation
 
 `task { ... }` and other computation expressions need low-allocation implementations. Some other examples are asynchronous
@@ -764,12 +766,14 @@ to parameters, which might indicate an "optional" request for inlining should it
 
 ```fsharp
 module Array =
-    let inline fastMap (inline f: 'T -> 'U) (arr: 'T[]) =
+    let inline fastMap ([<InlineIfLambda>] f: 'T -> 'U) (arr: 'T[]) =
         let res = Array.zeroCreate arr.Length
         for i = 0 to arr.Length-1 do
             let v = f arr.[i]
             res.[i] <- v
 ```
-This is not an unreasonable feature and is present by default for inlined functions in Kotlin for example. I'm now experimenting with using this as the basis for weaving in user-code.
+This is not an unreasonable feature and is the default behaviour for function parameters for inlined functions in Kotlin for example. 
+
+See https://github.com/fsharp/fslang-design/blob/master/RFCs/FS-1098-inline-if-lambda.md for the RFC for this
 
 
