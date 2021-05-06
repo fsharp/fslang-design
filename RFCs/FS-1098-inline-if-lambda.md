@@ -84,6 +84,12 @@ part of the F# language.
 Potentially this could be used on non-lambda arguments, requesting that the value be duplicated and copied if optimization information is known for it, and this
 optimization information is never trimmed.  For example, on values of union type.   
 
+### Automatically infer from single use
+
+We could automatically infer the InlineIfLambda status if a function parameter is only applied at one point in the code.
+
+There is no really good reason not to do this, except it feels like it is useful to be able to be explicit about the intent here.
+
 ### Example: low-allocation list and array builders
 
 See the collector examples in [list.fs](https://github.com/dotnet/fsharp/blob/feature/tasks/tests/fsharp/perf/tasks/FS/list.fs)
