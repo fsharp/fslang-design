@@ -18,6 +18,8 @@ This is used to implement [RFC FS-1097 - tasks](https://github.com/fsharp/fslang
 
 This is also related to [RFC FS-1098 - inline if lambda attribute](https://github.com/fsharp/fslang-design/blob/master/RFCs/FS-1098-inline-if-lambda.md)
 
+This is also related to [Tooling RFC FST-1034 - additional lambda optimizations](https://github.com/fsharp/fslang-design/blob/master/tooling/FST-1034-lambda-optimizations.md)
+
 # Motivation
 
 `task { ... }` and other computation expressions need low-allocation implementations. Some other examples are asynchronous
