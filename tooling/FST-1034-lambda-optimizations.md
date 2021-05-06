@@ -78,4 +78,14 @@ is partly to ensure we have test coverage for these.
    This applies to both function and F#-defined delegate invocations.
    
    
-   
+### Example: low-allocation list and array builders
+
+See the collector examples in [list.fs](https://github.com/dotnet/fsharp/blob/feature/tasks/tests/fsharp/perf/tasks/FS/list.fs)
+and [array.fs](https://github.com/dotnet/fsharp/blob/feature/tasks/tests/fsharp/perf/tasks/FS/array.fs) and compares them to examples
+using the resumable code mechanism.
+
+The sample defines  `listc { .. }`, `arrayc { .. }` for collections.
+The overall result is a list builder that runs up to 5x faster than the built-in `[ .. ]` for generated lists of
+computationally varying shape (i.e. `[ .. ]` that use conditionals, `yield` and so on).
+
+F#'s existing `[ .. ]` and `[| ... |]` and `seq { .. } |> Seq.toResizeArray` all use an intermediate `IEnumerable` which is then iterated to populate a `ResizeArray` and then converted to the final immutable collection. In contrast, generating directly into a `ResizeArray` is potentially more efficient (and for `list { ... }` further perf improvements are possible if we put this in `FSharp.Core` and use the mutate-tail-cons-cell trick to generate the list directly). This technique has been known for a while and can give faster collection generation but it has not been possible to get good code generation for the expressions in many cases. Note that, these aren't really "state machines" because there are no resumption points - there is just an implicit collection we are yielding into in otherwise synchronous code.
