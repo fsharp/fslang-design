@@ -38,7 +38,7 @@ The design philosophy is as follows:
 
 1. No new syntax is added to the F# language. 
 
-2. The primary aim is for _statically composable_ resumable code. That is, chunks of resumable code specified in FSharp.Core and other libraries that can be merged
+2. The primary aim is for _statically composable_ resumable code. That is, chunks of resumable code that can be merged
    to form an overall resumable state machine in user code.
 
 3. The F# metadata format is unchanged. Like `nameof` and other F# features,
@@ -72,13 +72,13 @@ Resumable code is always ultimately hosted in a resumable state machine.  State 
 ```fsharp
     { new SomeStateMachineType() with 
         [<ResumableCode>]
-        member __.Step ()  = 
+        member _.Step ()  = 
            <resumable-expr>
     }
 ```
 Notes
 
-* `__useResumableCode` and an object expression with a single `ResumableCode` method are well-known to the F# compiler.  
+* An object expression with a single `ResumableCode` method is well-known to the F# compiler, like a language intrinsic
 
 * Here `SomeStateMachineType` can be any user-defined reference type, however the object expression must contain a single method with the `ResumableCode` attribute.
 
@@ -92,8 +92,8 @@ Notes
 Resumable code is a new low-level primitive form of compositional re-entrant code suitable only for writing
 high-performance compiled implementations of computation expressions.
 
-Resumable code is specified by using compositions of calls to functions or methods whose parameters and/or return
-are annotated with the `ResumableCode` attribute. These methods are usually part of a computation expression
+Resumable code is specified by using compositions of calls to functions or methods whose parameters
+accept a delegate type annotated with the `ResumableCode` attribute. These methods are usually part of a computation expression
 builder or its implementation.
 
 To describe the allowed compositions of resumable code, consider the following indicative set of functions or methods,
@@ -101,53 +101,26 @@ which is sufficient to covers the range of compositions allowed.  Note the names
 are indicative, and each method can take other non-`ResumableCode` parameters.
  
 ```fsharp
-    [<return: ResumableCode>]
-    let inline Leaf(x: int) = ...
+[<ResumableCode>]
+type SomeCode<'TOverall> = delegate of SomeStateMachine<'TOverall> -> bool
+
+    let inline Leaf(x: int) : SomeCode<int> = ...
  
-    [<return: ResumableCode>]
-    let inline Composition([<ResumableCode>] __expand_code1, [<ResumableCode>] __expand_code2) = ...
+    let inline Composition(code1: SomeCode<unit>, code2: SomeCode<'T>) = ...
      
-    // note no 'ResumableCode' on return, this consumes resumable code.
-    let inline Consume([<ResumableCode>] __expand_code1)  = ...
+    let inline Consume(code: SomeCode<'T>)  = ...
 ```
      
-Anything taking a `ResumableCode` parameter must be 'inline'.  This is because resumable code is always statically composed
-at compilation-time.  All `ResumableCode` parameters should have name `__expand_*` and be of function or delegate type (this can include a function returning a delegate).
 
-A method with `return: ResumableCode` must be non-abstract and must return a _resumable expression_. A resumable expression is:
-
-1. A delegate expression with resumable body
-
-   ```fsharp
-   Delegate(fun sm -> <resumable-expr>)
-   ```
-
-2. A function-expression with resumable body
-
-   ```fsharp
-   (fun sm -> <resumable-expr>)
-   ```
-
-3. A call to a function or method returning `ResumableCode`.  
-
-   ```fsharp
-   Leaf(x)
-   Composition(<resumable-expr>, <resumable-expr>)
-   ```
-
-   Any `ResumableCode` parameters must be passed a resumable statements for the composition to qualify as a resumable statement.
-   A warning is emitted if the expression passed to a `ResumableCode` parameter is not determined to be a valid resumable statement.
-   In this case, the expression is compiled as a normal expression where its inlined-expansion assumes `__useResumableCode` is false.
-
-4. A optional resumable expression:
+A delegate expression creating a `ResumableCode` delegate type may have a body which is an _optional resumable expression_:
 
    ```fsharp
    if __useResumableCode then <resumable-expr> else <expr>
    ```
 
-   The alternative implementation is used if resumable code is not being generated, e.g. if the overall construct doesn't form resumable code.
+The `<resumable-expr>` can be
 
-5. A resumption point:
+1. A resumption point:
 
    ```fsharp
    match __resumableEntry() with
@@ -177,10 +150,16 @@ A method with `return: ResumableCode` must be non-abstract and must return a _re
    Note that, a resumption expression can return a result - in the above the resumption expression indicates whether the
    task ran to completion or not.
 
+2. A `__resumeAt` expression
+
+   ```fsharp
+   __resumeAt <expr>
+   ```
+
    At runtime, `__resumeAt contId` will jump directly to 'None' branch of the corresponding `match __resumableEntry ... `.
    All `__stack_*` locals in scope will be zero-initialized on resumption.
 
-6. A `let` binding of a stack-bound variable initialized to zero on resumption.
+3. A `let` binding of a stack-bound variable initialized to zero on resumption.
 
    ```fsharp
    let __stack_var = ... in <resumable-expr> 
@@ -203,7 +182,7 @@ A method with `return: ResumableCode` must be non-abstract and must return a _re
               false)
    ```
 
-7. A resumable try/with expression:
+4. A resumable try/with expression:
 
    ```fsharp
    try <resumable-expr> with <expr>
@@ -217,7 +196,7 @@ A method with `return: ResumableCode` must be non-abstract and must return a _re
    
    The `with` block is not resumable code and can't contain a resumption point.
 
-8. A resumable try/finally expression:
+5. A resumable try/finally expression:
 
    ```fsharp
    try <resumable-expr> finally <expr>
@@ -229,7 +208,7 @@ A method with `return: ResumableCode` must be non-abstract and must return a _re
    > Note that the rules of .NET IL prohibit jumping directly into the code block of a try/with.  Instead the F# compiler
    > arranges that a jump is performed to the `try` and a subsequent jump is performed after the `try` is entered.
    
-9. A resumable while-loop
+6. A resumable while-loop
 
    ```fsharp
    while <expr> do <resumable-expr>
@@ -242,7 +221,7 @@ A method with `return: ResumableCode` must be non-abstract and must return a _re
    contain asynchronous while conditions must be handled by placing the resumable code for the guard expression
    separately, see examples.
 
-10. A sequential execution of resumable code
+7. A sequential execution of resumable code
 
     ```fsharp
     <resumable-stmt>; <resumable-stmt>
@@ -252,18 +231,18 @@ A method with `return: ResumableCode` must be non-abstract and must return a _re
     This means it is **not** guaranteed that the first `<resumable-stmt>` will be executed before the
     second - a `__resumeAt` call can jump straight into the second code.
 
-11. A call/invoke of a `ResumableCode` delegate/function parameter, e.g.
+8. A call/invoke of a `ResumableCode` delegate/function parameter, e.g.
 
     ```fsharp
-    __expand_code arg
-    __expand_code.Invoke(&sm)
-    (__expand_code arg).Invoke(&sm)
+    code arg
+    code.Invoke(&sm)
+    (code arg).Invoke(&sm)
     ```
 
     NOTE: Using delegates to form compositional code fragments is particularly useful because a delegate may take a byref parameter, normally
     the address of the enclosing value type state machine.
 
-12. If no previous case applies, a resumable `match` expression:
+9. If no previous case applies, a resumable `match` expression:
 
     ```fsharp
     match <expr> with
@@ -274,7 +253,7 @@ A method with `return: ResumableCode` must be non-abstract and must return a _re
     Note that, because the code is resumable, each `<resumable-stmt>` may contain zero or more resumption points.  The execution
     of the code may thus "begin" (via `__resumeAt`) in the middle of the code on each branch.
 
-13. Any other F# expression excluding `for` loops and `let rec` bindings. 
+10. Any other F# expression excluding `for` loops and `let rec` bindings. 
 
     ```fsharp
     <expr>
@@ -323,7 +302,7 @@ A struct may be used to host a resumable state machine using the following formu
 
 ```fsharp
 if __useResumableCode then
-    __resumableStateMachineStruct<StructStateMachine<'T>, _>
+    __structStateMachine<StructStateMachine<'T>, _>
         (MoveNextMethod(fun sm -> <resumable-code>))
         (SetMachineStateMethod(fun sm state -> ...))
         (AfterMethod(fun sm -> ...))
@@ -332,7 +311,7 @@ else
 ```
 Notes:
 
-1. A "template" struct type must be given at a type parameter to `__resumableStateMachineStruct`, in this example it is `StructStateMachine`, a user-defined type normally in the same file.  This must have exactly one interface, and be marked `NoComparison` and `NoEquality`, and if it has methods they must all be non-virtual and marked `inline`.
+1. A "template" struct type must be given at a type parameter to `__structStateMachine`, in this example it is `StructStateMachine`, a user-defined type normally in the same file.  This must have exactly one interface, and be marked `NoComparison` and `NoEquality`, and if it has methods they must all be non-virtual and marked `inline`.
 
 2. The template struct type must implement one interface, the [`IAsyncMachine`](https://docs.microsoft.com/en-us/dotnet/api/system.runtime.compilerservices.iasyncstatemachine) interface. 
 
@@ -368,7 +347,7 @@ module StateMachineHelpers =
 
     val __useResumableCode<'T> : bool 
 
-    val __resumableStateMachineStruct<'Template, 'Result> : moveNext: MoveNextMethod<'Template> -> _setMachineState: SetMachineStateMethod<'Template> -> after: AfterMethod<'Template, 'Result> -> 'Result
+    val __structStateMachine<'Template, 'Result> : moveNext: MoveNextMethod<'Template> -> _setMachineState: SetMachineStateMethod<'Template> -> after: AfterMethod<'Template, 'Result> -> 'Result
 
     val __resumableEntry: unit -> int option
 
@@ -407,47 +386,6 @@ This function can also be used for higher-performance list function implementati
 
 # Examples
 
-## Example: option { ... }
-
-See [option.fs](https://github.com/dotnet/fsharp/blob/feature/tasks/tests/fsharp/perf/tasks/FS/option.fs)
-
-The use is as for a typical `option { ... }` computation expression builder:
-
-```fsharp
-let testOption i = 
-    option {
-        let! x1 = (if i % 5 <> 2 then Some i else None)
-        let! x2 = (if i % 3 <> 1 then Some i else None)
-        return x1 + x2
-    } 
-```
-
-## Example: sync { ... }
-
-As a micro example of defining a `sync { ... }` builder for entirely synchronous computation with no special semantics.
-
-See [sync.fs](https://github.com/dotnet/fsharp/blob/feature/tasks/tests/fsharp/perf/tasks/FS/sync.fs)
-
-Examples of use:
-```fsharp
-let t1 y = 
-    sync {
-       printfn "in t1"
-       let x = 4 + 5 + y
-       return x
-    }
-
-let t2 y = 
-    sync {
-       printfn "in t2"
-       let! x = t1 y
-       return x + y
-    }
-
-printfn "t2 6 = %d" (t2 6)
-```
-Code performance is approximately the same as normal F# code except for one allocation for each execution of each `sync { .. }` as we allocate the "SyncMachine".  In later work we may be able to remove this.
-
 ## Example: task { ... }
 
 See [tasks.fs](https://github.com/dotnet/fsharp/blob/feature/tasks/src/fsharp/FSharp.Core/tasks.fs).  
@@ -467,17 +405,6 @@ value of the iteration.
 
 This is akin to `seq { ... }` expressions, for which we have a baked-in state machine compilation in the F# compiler today. 
 
-## Example: low-allocation list and array builders
-
-See [list.fs](https://github.com/dotnet/fsharp/blob/feature/tasks/tests/fsharp/perf/tasks/FS/list.fs)
-
-These are synchronous machines emitting to a mutable context held in a struct state machine.
-
-The sample defines  `list { .. }`, `array { .. }` and `rsarray { .. }` for collections, where the computations generate directly into a `ResizeArray` (`System.Collections.Generic.List<'T>`).
-The overall result is a `list { ... }` builder that runs up to 4x faster than the built-in `[ .. ]` for generated lists of
-computationally varying shape (i.e. `[ .. ]` that use conditionals, `yield` and so on).
-
-F#'s existing `[ .. ]` and `[| ... |]` and `seq { .. } |> Seq.toResizeArray` all use an intermediate `IEnumerable` which is then iterated to populate a `ResizeArray` and then converted to the final immutable collection. In contrast, generating directly into a `ResizeArray` is potentially more efficient (and for `list { ... }` further perf improvements are possible if we put this in `FSharp.Core` and use the mutate-tail-cons-cell trick to generate the list directly). This technique has been known for a while and can give faster collection generation but it has not been possible to get good code generation for the expressions in many cases. Note that, these aren't really "state machines" because there are no resumption points - there is just an implicit collection we are yielding into in otherwise synchronous code.
 
 # Drawbacks
 
@@ -497,8 +424,11 @@ There's always an option not to.
 The C# compiler builds in specific support for tasks and asynchronous sequences.  This means the only user-code that can be efficiently resumable is code
 that returns these two types.
 
+### Restrict use to FSharp.Core
 
+In the preview of this feature, it will be possible to use this feature outside FSHarp.Core with the `/langversion:preview` flag.
 
+It is possible that a future release will only make this feature non-preview within FSharp.Core, and withdraw the feature for external use.
 
 # Compatibility
 
@@ -678,101 +608,6 @@ means zero allocations occur in the final resulting code.
 
 There is a risk that this mechanism will prove so effective at statically eliminating allocations of closures that there will
 it will start to be used to eliminate for synchronous code taking function parameters, resulting in subtle and obfuscated code.
-
-For example, a user may try to write a more optimized version of `Array.map`. The starting code is this:
-```fsharp
-module Array =
-    let inline map (f: 'T -> 'U) (arr: 'T[]) =
-        let res = Array.zeroCreate arr.Length
-        for i = 0 to arr.Length-1 do
-            res.[i] <- f arr.[i]
-        res
-```
-Let's assume the user has identified some cases where, despite the `inline`, the F# compiler has not inlined `f` even
-when 'f' is an explicit lambda (for example the compiler decides it is too large to inline). This
-will potentially avoid a closure allocation and a virtual function invocation in the middle of the loop.  There is no current
-way to _force_ 'f' to be inlined.
-
-So the user starts to play with resumable code.  For example:
-
-```fsharp
-module Array =
-    let inline fastMap ([<ResumableCode>] __expand_f: 'T -> 'U) (arr: 'T[]) =
-        let res = Array.zeroCreate arr.Length
-        for i = 0 to arr.Length-1 do
-            let v = __expand_f arr.[i]
-            res.[i] <- v
-```
-Here the user is trying to use code weaving to ensure that `__expand_f` is always inlined to its callsite if given an explicit lambda. This
-will potentially avoid a closure allocation and a virtual function invocation in the middle of the loop.
-However:
-
-(1) The body of `fastMap` is not actually generated as resumable code, since it is not in a state machine. No particular warning is given for this. 
-(2) Integer 'for' loops are not currently allowed in resumable code (they could be added, which may lead to a feature request)
-(3) A warning will be given if `Array.fastMap` is not given statically-identifiable resumable code, which starts to intrude on the
-    user's cognitive model.
-
-Restrictions (1) and (2) may lead the user to write this:
-
-```fsharp
-[<Struct; NoEquality; NoComparison>]
-type ArrayBuilderStateMachine<'T> =
-    [<DefaultValue(false)>]
-    val mutable Result : 'T[]
-
-    interface IAsyncStateMachine with 
-        member sm.MoveNext() = failwith "no dynamic impl"
-        member sm.SetStateMachine(state: IAsyncStateMachine) = failwith "no dynamic impl"
-
-    static member inline Run(sm: byref<'K> when 'K :> IAsyncStateMachine) = sm.MoveNext()
-
-module Array =
-    let inline fastMap ([<ResumableCode>] __expand_f: 'T -> 'U) (arr: 'T[]) =
-        if __useResumableCode then
-            __structStateMachine<ArrayBuilderStateMachine<'T>, _>
-                (MoveNextMethod<ArrayBuilderStateMachine<'T>>(fun sm -> 
-                       // ---- Start resumable code
-                       sm.Result <- Array.zeroCreate(arr.Length)
-                       let mutable i = 0
-                       let n = arr.Length
-                       while i < arr.Length do 
-                           let v = __expand_f arr.[i]
-                           sm.Result.[i] <- v
-                           i <- i + 1
-                       // ---- End resumable code
-                       ))
-
-                // SetStateMachine
-                (SetMachineStateMethod<_>(fun sm state -> 
-                    ()))
-
-                // Start
-                (AfterMethod<_,_>(fun sm -> 
-                    ArrayBuilderStateMachine<_>.Run(&sm)
-                    sm.Result))
-        else
-            let res = Array.zeroCreate arr.Length
-            for i = 0 to arr.Length-1 do
-                let v = __expand_f arr.[i]
-                res.[i] <- v
-```
-This is a huge amount of code - with potential bugs - just to eliminate a single potential closure allocation and corresponding virtual call.
-Additionally, the resumable code implementation may have subtle differences.
-
-However _many users will do anything to eliminate such costs in the middle of critical loops_. This means they will write this code if given a chance,
-and request to be able to write it if not. Once there's a hint of this there will also be requests to make the "guaranteed inlining" of `[<ResumableCode>] __expand_f`
-available more generally, whether as a specific feature or as a full macro system.  For example the user may request to simply be able to add `inline`
-to parameters, which might indicate an "optional" request for inlining should it be possible:
-
-```fsharp
-module Array =
-    let inline fastMap ([<InlineIfLambda>] f: 'T -> 'U) (arr: 'T[]) =
-        let res = Array.zeroCreate arr.Length
-        for i = 0 to arr.Length-1 do
-            let v = f arr.[i]
-            res.[i] <- v
-```
-This is not an unreasonable feature and is the default behaviour for function parameters for inlined functions in Kotlin for example. 
 
 See https://github.com/fsharp/fslang-design/blob/master/RFCs/FS-1098-inline-if-lambda.md for the RFC for this
 
