@@ -22,19 +22,20 @@ This is also related to [Tooling RFC FST-1034 - additional lambda optimizations]
 
 # Motivation
 
-`task { ... }` and other computation expressions need low-allocation implementations. Some other examples are asynchronous
-sequences, faster list/array comprehensions and faster `option` and `result` computation expressions.
+`task { ... }` and other computation expressions need low-allocation implementations. Some other examples are sequences and asynchronous
+sequences.
 
-There are enough variations on such computation expressions that it is better to provide a general mechanism in F#
-that allows the efficient compilation of a large range of such constructs rather than baking each into the F# compiler.
+There are enough variations on such computation expressions (for example, whether tailcalls are supported, or other tradeoffs)
+that it is better to provide a general mechanism in F# that allows the efficient compilation of a large range of
+such constructs rather than baking each into the F# compiler.
 
 # Design Philosophy and Principles
 
-The general mechanism has a very similar effect to adding [co-routines](https://en.wikipedia.org/wiki/Coroutine) to the F# language and runtime
-except we do not commit to any particular implementation of co-routines (which are not supported directly by the .NET runtime).
+The general mechanism has a very similar effect to adding [co-routines](https://en.wikipedia.org/wiki/Coroutine) to the F# language and runtime.
+Hwoever we do not commit to any particular implementation of co-routines (which are not supported directly by the .NET runtime).
 Instead a general static code-weaving mechanism (built around the 'inline' mechanism) is used to build an
-overall state-machine and combine it with user-code, and this mechanism is part of the F# compiler. The mechanism can also be
-used to accurately statically combine non-resumable code fragments.
+overall resumable code method for control structure, which is then combinde with user-code.
+This mechanism is part of the F# compiler.
 
 The design philosophy is as follows:
 
@@ -70,15 +71,71 @@ Points 1-3 guide many of the decisions below.
 
 ### Hosting resumable code in a resumable state machine
 
-Resumable code is always ultimately hosted in a resumable state machine.  State machines of reference type are specified using the ``ResumableCode`` attribute on a single method of a host object:
+A resumable state machine is specified using `__stateMachine`.
+Resumable code is always ultimately hosted in a compiler-generated struct type based on `ResumableStateMachine`.
 ```fsharp
-    { new SomeStateMachineType() with 
-        [<ResumableCode>]
-        member _.Step ()  = 
-           <resumable-expr>
-    }
+    __stateMachine<_, _>
+        (MoveNextMethod(fun sm -> <resumable-code>))
+        (SetMachineStateMethod(fun sm state -> ...))
+        (AfterMethod(fun sm -> ...))
 ```
-Notes
+If the state machine is eventually hosted in a boxed object, then it must be held as a field within an object,
+see the longer examples.
+
+At compile-time, when `__stateMachine` is encountered, the `ResumableStateMachine` type guides the generation of a new struct type by the F# compiler
+with added closure-capture fields in a way similar to an object expression. 
+Any mention of the `ResumableStateMachine` type in the `MoveNextMethod`, `SetMachineStateMethod` and `AfterMethod` are rewritten to this
+fresh struct type.  The 'methods' are used to implement the `IAsyncStateMachine` interface of `ResumableStateMachine` on the generated struct type.
+The `AfterMethod` method is then executed and must eliminate the state machine by running it and potentially saving it to the heap.
+Its return type must not include ResumableStateMachine.
+
+```fsharp
+[<Struct; NoComparison; NoEquality>]
+type ResumableStateMachine<'Data> =
+    val mutable Data: 'Data
+    val mutable ResumptionPoint: int
+    val mutable ResumptionDynamicInfo: ResumptionDynamicInfo<'Data>
+    interface IResumableStateMachine<'Data>
+    interface IAsyncStateMachine
+```
+
+As a very simple example, consider the following:
+```fsharp
+let inline MoveNext(x: byref<'T> when 'T :> IAsyncStateMachine) = x.MoveNext()
+
+let inline MoveOnce(x: byref<'T> when 'T :> IAsyncStateMachine and 'T :> IResumableStateMachine<'Data>) = 
+    MoveNext(&x)
+    x.Data
+
+let makeStateMachine()  = 
+    __stateMachine<int, int>
+         (MoveNextMethodImpl<_>(fun sm -> 
+             if __useResumableCode then
+                 sm.Data <- 1 // we expect this result for successful resumable code compilation
+             else
+                 sm.Data <- 0xdeadbeef // if we get this result it means we've failed to compile as resumable code
+             )) 
+         (SetStateMachineMethodImpl<_>(fun sm state -> ()))
+         (AfterCode<_,_>(fun sm -> MoveOnce(&sm)))
+```
+Notes:
+
+1. The three delegate parameters specify the implementations of the `MoveNext`, `SetMachineState` methods, plus an `After` code
+   block that is run on the state machine immediately after creation.  Delegates are used as they can receive the address of the
+   state machine.
+
+2. For each use of this construct, the `ResumableStateMachine` struct type is copied to to a new (internal) struct type, the state variables
+   from the resumable code are added, and the `IAsyncStateMachine` interface is filled in using the supplied methods.
+
+3. The `MoveNext` method may be resumable code, see below.
+
+NOTE: By way of explanation, reference-typed resumable state machines are expressed using object expressions, which can
+have additional state variables.  However F# object-expressions may not be of struct type, so it is always necessary
+to fabricate an entirely new struct type for each state machine use. There is no existing construct in F#
+for the anonymous specification of struct types whose methods can capture a closure of variables. The above
+intrinsic effectively adds a limited version of a capability to use an existing struct type as a template for the
+anonymous specification of an implicit, closure-capturing struct type.  The anonymous struct type must be immediately
+eliminated (i.e. used) in the `AfterMethod`.  
 
 * An object expression with a single `ResumableCode` method is well-known to the F# compiler, like a language intrinsic
 
@@ -86,33 +143,24 @@ Notes
 
 * Uses of `ResumableCode` are not allowed except in the exact patterns described in this RFC.
 
-* A struct state machine may also be used to host the resumable code, see below. 
-
-
 ### Specifying resumable code
 
 Resumable code is a new low-level primitive form of compositional re-entrant code suitable only for writing
 high-performance compiled implementations of computation expressions.
 
 Resumable code is specified by using compositions of calls to functions or methods whose parameters
-accept a delegate type annotated with the `ResumableCode` attribute. These methods are usually part of a computation expression
+accept the `ResumableCode<'Data, 'T>` delegate type. These methods are usually part of a computation expression
 builder or its implementation.
 
-To describe the allowed compositions of resumable code, consider the following indicative set of functions or methods,
-which is sufficient to covers the range of compositions allowed.  Note the names `Leaf`, `Composition` and `Consume` 
-are indicative, and each method can take other non-`ResumableCode` parameters.
- 
 ```fsharp
-[<ResumableCode>]
-type SomeCode<'TOverall> = delegate of SomeStateMachine<'TOverall> -> bool
-
-    let inline Leaf(x: int) : SomeCode<int> = ...
- 
-    let inline Composition(code1: SomeCode<unit>, code2: SomeCode<'T>) = ...
-     
-    let inline Consume(code: SomeCode<'T>)  = ...
+type ResumableCode<'Data, 'T> = delegate of byref<ResumableStateMachine<'Data>> -> bool
 ```
-     
+
+Resumable code is composed by either
+
+1. Calls to `ResumableCode.Return`, `ResumableCode.Delay`, `ResumableCode.Combine` and other functions from FSharp.Core, or
+
+2. Writing new explicit `ResumableCode<_,_>(fun sm -> ...)` delegate implementations.
 
 A delegate expression creating a `ResumableCode` delegate type may have a body which is an _optional resumable expression_:
 
@@ -122,9 +170,10 @@ A delegate expression creating a `ResumableCode` delegate type may have a body w
 
 The `<resumable-expr>` can be
 
-1. A resumption point:
 
-   ```fsharp
+1. A resumption point created by an explicit `__resumableEntry`
+
+   ```
    match __resumableEntry() with
    | Some contId -> <resumable-expr>
    | None -> <resumable-expr>
@@ -151,6 +200,29 @@ The `<resumable-expr>` can be
   
    Note that, a resumption expression can return a result - in the above the resumption expression indicates whether the
    task ran to completion or not.
+
+   A resumption point can also be created by invoking `ResumableCode.Yield`
+
+   ```fsharp
+   let __stack_yield_complete = ResumableCode.Yield().Invoke(&sm)
+   ```
+   
+   Here `__stack_yield_complete` will return `false` if the code suspends and `true` if the code resumes at the
+   implied resumption point.  `ResumableCode.Yield` has the following definition
+   
+   ```fsharp
+   let inline Yield () : ResumableCode<'Data, unit> = 
+        ResumableCode<'Data, unit>(fun sm -> 
+            if __useResumableCode then 
+                match __resumableEntry() with 
+                | Some contID ->
+                    sm.ResumptionPoint <- contID
+                    false
+                | None ->
+                    true
+            else
+                YieldDynamic(&sm))
+   ```
 
 2. A `__resumeAt` expression
 
@@ -291,69 +363,196 @@ method or function hosting the resumable code is detemined by the following:
    
 ### Static checking of resumable code
 
-Many static checks are performed for the construction of resumable code as outlined above. However, there may still be cases where the
+Some static checks are performed for the construction of resumable code as outlined above. However, there may still be cases where the
 application of the semantics of resumable code fails.  The static checking of resumable code is primarily designed to ensure compositions
 of resumable code are checked to form resumable code, and a warning is emitted if this is not statically determined.
 
 Resumable code may **not** contain `let rec` bindings.  These must be lifted out or a warning will be emitted.
 
 
-### Specifying resumable state machine structs
-
-A struct may be used to host a resumable state machine using the following formulation:
-
-```fsharp
-if __useResumableCode then
-    __structStateMachine<StructStateMachine<'T>, _>
-        (MoveNextMethod(fun sm -> <resumable-code>))
-        (SetMachineStateMethod(fun sm state -> ...))
-        (AfterMethod(fun sm -> ...))
-else
-    ...
-```
-Notes:
-
-1. A "template" struct type must be given at a type parameter to `__structStateMachine`, in this example it is `StructStateMachine`, a user-defined type normally in the same file.  This must have exactly one interface, and be marked `NoComparison` and `NoEquality`, and if it has methods they must all be non-virtual and marked `inline`.
-
-2. The template struct type must implement one interface, the [`IAsyncMachine`](https://docs.microsoft.com/en-us/dotnet/api/system.runtime.compilerservices.iasyncstatemachine) interface. 
-
-3. The three delegate parameters specify the implementations of the `MoveNext`, `SetMachineState` methods, plus an `After` code
-   block that is run on the state machine immediately after creation.  Delegates are used as they can receive the address of the
-   state machine.
-
-4. For each use of this construct, the template struct type is copied to to a new (internal) struct type, the state variables
-   from the resumable code are added, and the `IAsyncMachine` interface is filled in using the supplied methods.
-
-NOTE: By way of explanation, reference-typed resumable state machines are expressed using object expressions, which can
-have additional state variables.  However F# object-expressions may not be of struct type, so it is always necessary
-to fabricate an entirely new struct type for each state machine use. There is no existing construct in F#
-for the anonymous specification of struct types whose methods can capture a closure of variables. The above
-intrinsic effectively adds a limited version of a capability to use an existing struct type as a template for the
-anonymous specification of an implicit, closure-capturing struct type.  The anonymous struct type must be immediately
-eliminated (i.e. used) in the `AfterMethod`.  
-
-
-## Library additions
+## Library additions (basics)
 
 ```fsharp
 namespace FSharp.Core.CompilerServices
 
-type MoveNextMethod<'Template> = delegate of byref<'Template> -> unit
+/// Acts as a template for struct state machines introduced by __stateMachine, and also as a reflective implementation
+[<Struct>]
+type ResumableStateMachine<'Data> =
 
-type SetMachineStateMethod<'Template> = delegate of byref<'Template> * IAsyncStateMachine -> unit
+    interface IResumableStateMachine<'Data>
+    interface IAsyncStateMachine
 
-type AfterMethod<'Template, 'Result> = delegate of byref<'Template> -> 'Result
+    /// When statically compiled, holds the data for the state machine
+    val mutable Data: 'Data
 
-/// Contains compiler intrinsics related to the definition of state machines.
+    /// When statically compiled, holds the continuation goto-label further execution of the state machine
+    val mutable ResumptionPoint: int
+
+type IResumableStateMachine<'Data> =
+    /// Get the resumption point of the state machine
+    abstract ResumptionPoint: int
+
+    /// Copy-out or copy-in the data of the state machine
+    abstract Data: 'Data with get, set
+
+/// A special compiler-recognised delegate type for specifying blocks of resumable code
+/// with access to the state machine.
+type ResumableCode<'Data, 'T> = delegate of byref<ResumableStateMachine<'Data>> -> bool
+
+/// Contains functions for composing resumable code blocks
+module ResumableCode =
+
+    /// Sequences one section of resumable code after another
+    val inline Combine: code1: ResumableCode<'Data, unit> * code2: ResumableCode<'Data, 'T> -> ResumableCode<'Data, 'T>
+
+    /// Creates resumable code whose definition is a delayed function
+    val inline Delay: f: (unit -> ResumableCode<'Data, 'T>) -> ResumableCode<'Data, 'T>
+
+    /// Specifies resumable code which iterates an input sequence
+    val inline For: sequence: seq<'T> * body: ('T -> ResumableCode<'Data, unit>) -> ResumableCode<'Data, unit>
+
+    /// Specifies resumable code which iterates yields
+    val inline Yield: unit -> ResumableCode<'Data, unit>
+
+    /// Specifies resumable code which executes with try/finally semantics
+    val inline TryFinally: body: ResumableCode<'Data, 'T> * compensation: ResumableCode<'Data,unit> -> ResumableCode<'Data, 'T>
+
+    /// Specifies resumable code which executes with try/finally semantics
+    val inline TryFinallyAsync: body: ResumableCode<'Data, 'T> * compensation: ResumableCode<'Data,unit> -> ResumableCode<'Data, 'T>
+
+    /// Specifies resumable code which executes with try/with semantics
+    val inline TryWith: body: ResumableCode<'Data, 'T> * catch: (exn -> ResumableCode<'Data, 'T>) -> ResumableCode<'Data, 'T>
+
+    /// Specifies resumable code which executes with 'use' semantics
+    val inline Using: resource: 'Resource * body: ('Resource -> ResumableCode<'Data, 'T>) -> ResumableCode<'Data, 'T> when 'Resource :> IDisposable
+
+    /// Specifies resumable code which executes a loop
+    val inline While: [<InlineIfLambda>] condition: (unit -> bool) * body: ResumableCode<'Data, unit> -> ResumableCode<'Data, unit>
+
+    /// Specifies resumable code which does nothing
+    val inline Zero: unit -> ResumableCode<'Data, unit>
+
+/// Defines the implementation of the MoveNext method for a struct state machine.
+type MoveNextMethodImpl<'Data> = delegate of byref<ResumableStateMachine<'Data>> -> unit
+
+/// Defines the implementation of the SetStateMachine method for a struct state machine.
+type SetStateMachineMethodImpl<'Data> = delegate of byref<ResumableStateMachine<'Data>> * IAsyncStateMachine -> unit
+
+/// Defines the implementation of the code reun after the creation of a struct state machine.
+type AfterCode<'Data, 'Result> = delegate of byref<ResumableStateMachine<'Data>> -> 'Result
+
 module StateMachineHelpers = 
 
-    val __useResumableCode<'T> : bool 
-
-    val __structStateMachine<'Template, 'Result> : moveNext: MoveNextMethod<'Template> -> _setMachineState: SetMachineStateMethod<'Template> -> after: AfterMethod<'Template, 'Result> -> 'Result
-
+    /// Indicates a resumption point within resumable code
     val __resumableEntry: unit -> int option
 
-    val __resumeAt : pc: int -> 'T   
+    /// Indicates to jump to a resumption point within resumable code.
+    /// This may be the first statement in a MoveNextMethodImpl.
+    /// The integer must be a valid resumption point within this resumable code.
+    val __resumeAt : programLabel: int -> 'T
+
+    /// Statically generates a closure struct type based on ResumableStateMachine,
+    /// At runtime an instance of the new struct type is populated and 'afterMethod' is called
+    /// to consume it.
+    val __stateMachine<'Data, 'Result> :
+        moveNextMethod: MoveNextMethodImpl<'Data> -> 
+        setStateMachineMethod: SetStateMachineMethodImpl<'Data> -> 
+        afterCode: AfterCode<'Data, 'Result> 
+            -> 'Result
+```
+
+## Library additions (resumable code combinators)
+
+A set of combinators is provided for combining resumable code. This is the normal way to specify resumable code for computation expression buidlers,
+see the examples.
+
+```fsharp
+namespace FSharp.Core.CompilerServices
+
+/// Contains functions for composing resumable code blocks
+module ResumableCode =
+
+    /// Sequences one section of resumable code after another
+    val inline Combine: code1: ResumableCode<'Data, unit> * code2: ResumableCode<'Data, 'T> -> ResumableCode<'Data, 'T>
+
+    /// Creates resumable code whose definition is a delayed function
+    val inline Delay: f: (unit -> ResumableCode<'Data, 'T>) -> ResumableCode<'Data, 'T>
+
+    /// Specifies resumable code which iterates an input sequence
+    val inline For: sequence: seq<'T> * body: ('T -> ResumableCode<'Data, unit>) -> ResumableCode<'Data, unit>
+
+    /// Specifies resumable code which iterates yields
+    val inline Yield: unit -> ResumableCode<'Data, unit>
+
+    /// Specifies resumable code which executes with try/finally semantics
+    val inline TryFinally: body: ResumableCode<'Data, 'T> * compensation: ResumableCode<'Data,unit> -> ResumableCode<'Data, 'T>
+
+    /// Specifies resumable code which executes with try/finally semantics
+    val inline TryFinallyAsync: body: ResumableCode<'Data, 'T> * compensation: ResumableCode<'Data,unit> -> ResumableCode<'Data, 'T>
+
+    /// Specifies resumable code which executes with try/with semantics
+    val inline TryWith: body: ResumableCode<'Data, 'T> * catch: (exn -> ResumableCode<'Data, 'T>) -> ResumableCode<'Data, 'T>
+
+    /// Specifies resumable code which executes with 'use' semantics
+    val inline Using: resource: 'Resource * body: ('Resource -> ResumableCode<'Data, 'T>) -> ResumableCode<'Data, 'T> when 'Resource :> IDisposable
+
+    /// Specifies resumable code which executes a loop
+    val inline While: [<InlineIfLambda>] condition: (unit -> bool) * body: ResumableCode<'Data, unit> -> ResumableCode<'Data, unit>
+
+    /// Specifies resumable code which does nothing
+    val inline Zero: unit -> ResumableCode<'Data, unit>
+
+```
+
+### Library additions (for execution of dynamically-specified resumable code)
+
+The following additions help support dynamic composition and execution of resumable code, less efficiently.
+```fsharp
+
+[<Struct>]
+type ResumableStateMachine<'Data> =
+    /// Represents the delegated runtime continuation for a resumable state machine created dynamically
+    val mutable ResumptionDynamicInfo: ResumptionDynamicInfo<'Data>
+
+/// Represents the delegated runtime continuation of a resumable state machine created dynamically
+type ResumptionDynamicInfo<'Data> =
+    new: initial: ResumptionFunc<'Data> -> ResumptionDynamicInfo<'Data>
+    
+    member ResumptionFunc: ResumptionFunc<'Data> with get, set 
+    
+    /// Delegated MoveNext
+    abstract MoveNext: machine: byref<ResumableStateMachine<'Data>> -> unit
+    
+    /// Delegated SetStateMachine
+    abstract SetStateMachine: machine: byref<ResumableStateMachine<'Data>> * machineState: IAsyncStateMachine -> unit
+
+/// Represents the runtime continuation of a resumable state machine created dynamically
+type ResumptionFunc<'Data> = delegate of byref<ResumableStateMachine<'Data>> -> bool
+
+/// Contains functions for composing resumable code blocks
+module ResumableCode =
+
+    /// The dynamic implementation of the corresponding operation. This operation should not be used directly.
+    val CombineDynamic: sm: byref<ResumableStateMachine<'Data>> * code1: ResumableCode<'Data, unit> * code2: ResumableCode<'Data, 'T> -> bool
+
+    /// The dynamic implementation of the corresponding operation. This operation should not be used directly.
+    val WhileDynamic: sm: byref<ResumableStateMachine<'Data>> * condition: (unit -> bool) * body: ResumableCode<'Data, unit> -> bool
+
+    /// The dynamic implementation of the corresponding operation. This operation should not be used directly.
+    val TryFinallyAsyncDynamic: sm: byref<ResumableStateMachine<'Data>> * body: ResumableCode<'Data, 'T> * compensation: ResumableCode<'Data,unit> -> bool
+
+    /// The dynamic implementation of the corresponding operation. This operation should not be used directly.
+    val TryWithDynamic: sm: byref<ResumableStateMachine<'Data>> * body: ResumableCode<'Data, 'T> * handler: (exn -> ResumableCode<'Data, 'T>) -> bool
+
+    /// The dynamic implementation of the corresponding operation. This operation should not be used directly.
+    val YieldDynamic: sm: byref<ResumableStateMachine<'Data>> -> bool
+
+module StateMachineHelpers = 
+
+    /// When used in a conditional, statically determines whether the 'then' branch
+    /// represents valid resumable code and provides an alternative implementation
+    /// if not.
+    val __useResumableCode<'T> : bool 
 ```
 
 ### Library additions (for future List builders and high-performance list functions)
@@ -388,6 +587,12 @@ This function can also be used for higher-performance list function implementati
 
 # Examples
 
+## Example: coroutine { ... }
+
+See [coroutines.fs](https://github.com/dotnet/fsharp/blob/feature/tasks/tests/fsharp/perf/tasks/FS/coroutines.fs).
+
+This is for state machine compilation of coroutine computation expressions that support yielding and tailcalls.
+
 ## Example: task { ... }
 
 See [tasks.fs](https://github.com/dotnet/fsharp/blob/feature/tasks/src/fsharp/FSharp.Core/tasks.fs).  
@@ -398,21 +603,30 @@ See [taskSeq.fs](https://github.com/dotnet/fsharp/blob/feature/tasks/tests/fshar
 
 This is for state machine compilation of computation expressions that generate `IAsyncEnumerable<'T>` values. This is a headline C# 8.0 feature and a very large feature for C#.  It appears to mostly drop out as library code once general-purpose state machine support is available.
 
-## Example seq2 { ... }
-
-See [seq2.fs](https://github.com/dotnet/fsharp/blob/feature/tasks/tests/fsharp/perf/tasks/FS/seq2.fs)
-
-This is a resumable machine emitting to a mutable context held in a struct state machine. The state holds the current
-value of the iteration.
-
-This is akin to `seq { ... }` expressions, for which we have a baked-in state machine compilation in the F# compiler today. 
-
 
 # Drawbacks
 
 ### Complexity
 
 The mechanism is non-trivial.
+
+
+
+### Potential for over-use
+
+The code-weaving mechanism of resumable code can also be used to accurately statically combine non-resumable code fragments. For example, this is
+done by the `list { .. }`, `option { .. }` and `voption { .. }` examples.
+
+The code achieved is more reliably efficient than that acheived by simply inlining all combinators, because user code is identified as resumable code and
+passed in via `ResumableCode` parameters which are statically inlined and flattened through the code weaving process.  Additionally, the control code and
+user code can be woven via delegates taking the "this" state machine argument as a byref to a struct state machine (e.g. see the `list` sample) which
+means zero allocations occur in the final resulting code.
+
+There is a risk that this mechanism will prove so effective at statically eliminating allocations of closures that there will
+it will start to be used to eliminate for synchronous code taking function parameters, resulting in subtle and obfuscated code.
+
+See https://github.com/fsharp/fslang-design/blob/master/RFCs/FS-1098-inline-if-lambda.md for the RFC for this
+
 
 
 # Alternatives
@@ -596,21 +810,3 @@ This is roughly what compiled `seq { ... }` code looks like in F# today and what
 # Unresolved questions
 
 * [ ] tests for quotations of `if __useResumableCode then ...`
-
-
-### Potential for over-use
-
-The code-weaving mechanism of resumable code can also be used to accurately statically combine non-resumable code fragments. For example, this is
-done by the `list { .. }`, `option { .. }` and `voption { .. }` examples.
-
-The code achieved is more reliably efficient than that acheived by simply inlining all combinators, because user code is identified as resumable code and
-passed in via `ResumableCode` parameters which are statically inlined and flattened through the code weaving process.  Additionally, the control code and
-user code can be woven via delegates taking the "this" state machine argument as a byref to a struct state machine (e.g. see the `list` sample) which
-means zero allocations occur in the final resulting code.
-
-There is a risk that this mechanism will prove so effective at statically eliminating allocations of closures that there will
-it will start to be used to eliminate for synchronous code taking function parameters, resulting in subtle and obfuscated code.
-
-See https://github.com/fsharp/fslang-design/blob/master/RFCs/FS-1098-inline-if-lambda.md for the RFC for this
-
-
