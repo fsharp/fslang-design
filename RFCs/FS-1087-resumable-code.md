@@ -70,7 +70,7 @@ Points 1-3 guide many of the decisions below.
 # Detailed design
 
 
-### Specifying low-level resumable code
+### Specifying resumable code
 
 Resumable code is a new low-level primitive form of compositional re-entrant code suitable only for writing
 high-performance compiled implementations of computation expressions.
@@ -85,7 +85,11 @@ Resumable code is formed by either
 
 1. Resumable code combinators, that is, calls to `ResumableCode.Return`, `ResumableCode.Delay`, `ResumableCode.Combine` and other functions from FSharp.Core, or
 
-2. Writing new explicit `ResumableCode<_,_>(fun sm -> <optional-resumable-expr>)` delegate implementations.
+2. Writing new explicit low-level `ResumableCode<_,_>(fun sm -> <optional-resumable-expr>)` delegate implementations.
+
+
+
+### Specifying low-level resumable code
 
 
 An `<optional-resumable-expr>` is:
@@ -166,12 +170,6 @@ A `<resumable-expr>` is:
    try <resumable-expr> with <expr>
    ```
 
-   or, using a resumable code combinator:
-   
-   ```fsharp
-   ResumableCode.TryWith(<resumable-code>, <resumable-code>)
-   ```
-
    Because the body of the try/with is resumable, the `<resumable-expr>` may contain zero or more resumption points.  The execution
    of the code may thus branch (via `__resumeAt`) into the middle of the `try` expression.
    
@@ -186,19 +184,6 @@ A `<resumable-expr>` is:
    try <resumable-expr> finally <expr>
    ```
    
-   or, using a resumable code combinator:
-   
-   ```fsharp
-   ResumableCode.TryFinally(<resumable-code>, fun () -> expr)
-   ```
-   
-   or
-   
-   ```fsharp
-   ResumableCode.TryFinallyAsync(<resumable-code>, <resumable-code>)
-   ```
-   
-
    Similar rules apply as for `try-with`. Because the body of the try/finally  is resumable, the `<resumable-expr>` may contain zero or more resumption points.  The execution
    of the code may thus branch (via `__resumeAt`) into the middle of the `try` expression.
    
@@ -213,13 +198,6 @@ A `<resumable-expr>` is:
    while <expr> do <resumable-expr>
    ```
 
-   or, using a resumable code combinator:
-   
-
-   ```fsharp
-   ResumableCode.While((fun () -> expr), <resumable-code>)
-   ```
-
    Note that, because the code is resumable, the `<resumable-expr>` may contain zero or more resumption points.   The execution
    of the code may thus branch (via `__resumeAt`) into the middle of the `while` expression.
 
@@ -231,12 +209,6 @@ A `<resumable-expr>` is:
 
    ```fsharp
    <resumable-stmt>; <resumable-stmt>
-   ```
-
-   or, using a resumable code combinator:
-   
-   ```fsharp
-   ResumableCode.While(<resumable-code>, <resumable-code>)
    ```
 
    Note that, because the code is resumable, each `<resumable-stmt>` may contain zero or more resumption points.
