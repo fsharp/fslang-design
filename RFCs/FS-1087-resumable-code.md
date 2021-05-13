@@ -252,7 +252,7 @@ In practice, resumable code can usually be specified using "ResumableCode.*", e.
 
 A resumption point can be created by invoking `ResumableCode.Yield` as a `ResumableCode` value:
 
-``fsharp
+```fsharp
 ResumableCode.Yield()
 ```
 
@@ -281,6 +281,7 @@ let inline Yield () : ResumableCode<'Data, unit> =
 
 #### ResumableCode.Combine
 
+Specifies the sequential composition of two blocks of resumable code.
    
 ```fsharp
 ResumableCode.Combine(<resumable-code>, <resumable-code>)
@@ -290,10 +291,9 @@ Because the code is resumable, each `<resumable-code>` may contain zero or more 
 This means it is **not** guaranteed that the first `<resumable-code>` will be executed before the
 second.
 
-
 #### ResumableCode.TryWith
 
-Using a resumable code combinator:
+Specifies try/with semantics for resumable code.
 
 ```fsharp
 ResumableCode.TryWith(<resumable-code>, <resumable-code>)
@@ -301,8 +301,9 @@ ResumableCode.TryWith(<resumable-code>, <resumable-code>)
 
 #### ResumableCode.TryFinally, ResumableCode.TryFinallyAsync
 
+Specifies try/finally semantics for resumable code.
 ```fsharp
-ResumableCode.TryFinally(<resumable-code>, fun () -> expr)
+ResumableCode.TryFinally(<resumable-code>, <compensation>)
 ```
 
 or
@@ -313,6 +314,7 @@ ResumableCode.TryFinallyAsync(<resumable-code>, <resumable-code>)
 
 #### ResumableCode.While
 
+Specifies iterative semantics for resumable code.
 ```fsharp
 ResumableCode.While((fun () -> expr), <resumable-code>)
 ```
@@ -326,27 +328,33 @@ separately, see examples.
 
 ### Compilability
 
-Not all F# code successfully compiles as resumable code.
+Some static checks are performed for the construction of resumable code as outlined above. However, there may still be cases where the
+application of the semantics of resumable code fails.  The static checking of resumable code is primarily designed to ensure compositions
+of resumable code are checked to form resumable code, and a warning is emitted if this is not statically determined.
 
-A primitive resumable expression whose inlined, reduced form is as follows is not compilable:
+A low-level resumable expression is not compilable if any of the following hold:
 
-1. Any primitive resumable expression that is an integer `for` loop 
+1. It is an integer `for` loop 
 
-2. Any primitive resumable expression that is a `let rec`
+2. It is a `let rec`
 
-3. Any primitive resumable expression any unreduced use of a `ResumableCode` parameter
+3. It contains an unreduced use of a `ResumableCode` parameter
 
-4. Any primitive resumable expression where a `finally` or `with` block of an exception handler has `__resumableEntry` points.
+4. It is a try/finally or try/with where the `finally` or `with` block  has `__resumableEntry` points.
 
    > NOTE: The resumable code combinators `ResumableCode.TryWith` and `ResumableCode.TryFinally` return resumable code that implements
-   > resumable exception handlers properly.
+   > resumable exception handlers properly
 
-If resumable code is not compilable then either a compilation failure occurs, or `if __useResumableCode` alternatives
-are systematically used, see "optional resumable code" above. This allows for "dynamic" implementations of resumable code.
+If resumable code is not compilable then either 
+
+1. `if __useResumableCode` alternatives are systematically used, see "optional resumable code" above. This allows for "dynamic" implementations of resumable code.
+   In this case a warning is emitted.
+
+2. A compilation failure occurs
 
 ### The semantics of resumable code
 
-The execution of resumable code is best understood in terms of the direct translation of the constructs into a .NET method.
+The execution of resumable code can be understood in terms of the direct translation of low-level resumable code to the constructs into a .NET method.
 For example, `__resumeAt` corresponds either to a `goto` (for a known label) or a switch table (for a computed label at the
 start of a method).
 
@@ -369,15 +377,7 @@ method or function hosting the resumable code is detemined by the following:
    - If `<expr>` is not a statically-determined code label then the `__resumeAt` must be the first statement within the method.
      If at runtime the `<expr>` doesn't correspond to a valid resumption point within the method then execution continues subsequent to the `__resumeAt`.
    
-### Static checking of resumable code
-
-Some static checks are performed for the construction of resumable code as outlined above. However, there may still be cases where the
-application of the semantics of resumable code fails.  The static checking of resumable code is primarily designed to ensure compositions
-of resumable code are checked to form resumable code, and a warning is emitted if this is not statically determined.
-
-Resumable code may **not** contain `let rec` bindings.  These must be lifted out or a warning will be emitted.
-
-### Hosting resumable code in a resumable state machine
+### Hosting resumable code in a resumable state machine struct
 
 A resumable state machine is specified using `__stateMachine`.
 Resumable code is always ultimately hosted in a compiler-generated struct type based on `ResumableStateMachine`.
@@ -407,25 +407,6 @@ type ResumableStateMachine<'Data> =
     interface IAsyncStateMachine
 ```
 
-As a very simple example, consider the following:
-```fsharp
-let inline MoveNext(x: byref<'T> when 'T :> IAsyncStateMachine) = x.MoveNext()
-
-let inline MoveOnce(x: byref<'T> when 'T :> IAsyncStateMachine and 'T :> IResumableStateMachine<'Data>) = 
-    MoveNext(&x)
-    x.Data
-
-let makeStateMachine()  = 
-    __stateMachine<int, int>
-         (MoveNextMethodImpl<_>(fun sm -> 
-             if __useResumableCode then
-                 sm.Data <- 1 // we expect this result for successful resumable code compilation
-             else
-                 sm.Data <- 0xdeadbeef // if we get this result it means we've failed to compile as resumable code
-             )) 
-         (SetStateMachineMethodImpl<_>(fun sm state -> ()))
-         (AfterCode<_,_>(fun sm -> MoveOnce(&sm)))
-```
 Notes:
 
 1. The three delegate parameters specify the implementations of the `MoveNext`, `SetMachineState` methods, plus an `After` code
@@ -642,12 +623,31 @@ namespace Microsoft.FSharp.Core.CompilerServices
 
 This function can also be used for higher-performance list function implementations external to FSharp.Core, though must be used with care.
 
-# Performance
+## Examples
 
-[Recent perf status of implementation](https://github.com/dotnet/fsharp/blob/feature/tasks/BenchmarkDotNet.Artifacts/results/TaskPerf.Benchmarks-report-github.md)
+### A one-step state machine
 
-# Examples
+As a very simple example, consider the following:
+```fsharp
+/// zero-allocation call to an interface method
+let inline MoveNext(x: byref<'T> when 'T :> IAsyncStateMachine) = x.MoveNext()
 
+/// Make one call to the state machine and return its data
+let inline MoveOnce(x: byref<'T> when 'T :> IAsyncStateMachine and 'T :> IResumableStateMachine<'Data>) = 
+    MoveNext(&x)
+    x.Data
+
+let makeStateMachine()  = 
+    __stateMachine<int, int>
+         (MoveNextMethodImpl<_>(fun sm -> 
+             if __useResumableCode then
+                 sm.Data <- 1 // we expect this result for successful resumable code compilation
+             else
+                 sm.Data <- 0xdeadbeef // if we get this result it means we've failed to compile as resumable code
+             )) 
+         (SetStateMachineMethodImpl<_>(fun sm state -> ()))
+         (AfterCode<_,_>(fun sm -> MoveOnce(&sm)))
+```
 ## Example: coroutine { ... }
 
 See [coroutine.fs](https://github.com/dotnet/fsharp/blob/feature/tasks/tests/fsharp/perf/tasks/FS/coroutine.fs).
@@ -663,6 +663,11 @@ See [tasks.fs](https://github.com/dotnet/fsharp/blob/feature/tasks/src/fsharp/FS
 See [taskSeq.fs](https://github.com/dotnet/fsharp/blob/feature/tasks/tests/fsharp/perf/tasks/FS/taskSeq.fs).
 
 This is for state machine compilation of computation expressions that generate `IAsyncEnumerable<'T>` values. This is a headline C# 8.0 feature and a very large feature for C#.  It appears to mostly drop out as library code once general-purpose state machine support is available.
+
+
+# Performance
+
+[Recent perf status of implementation](https://github.com/dotnet/fsharp/blob/feature/tasks/BenchmarkDotNet.Artifacts/results/TaskPerf.Benchmarks-report-github.md)
 
 # Drawbacks
 
