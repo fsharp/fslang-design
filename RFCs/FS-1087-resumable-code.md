@@ -1267,6 +1267,15 @@ None
 
 # FAQ
 
+## Are these co-routines?
+
+@dsyme replies
+
+> Coroutines are almost a no-op to build on the mechanism - they're in the examples for educational purposes,
+> I'm not planning on adding them to F# as such, though users could define them.  So in that sense it's
+> essentially adding co-routines, though there is no specific type for co-routines in the library.
+
+
 ## Why a general mechanism?
 
 Mads Torgersen asked:
@@ -1277,10 +1286,6 @@ Mads Torgersen asked:
 > scenarios beyond sequences, async and the combo of async sequences. I'm curious if you have some in mind!
 
 @dsyme replies:
-
-> Coroutines are almost a no-op to build on the mechanism - they're in the examples for educational purposes,
-> I'm not planning on adding them to F# as such, though users could define them.  So in that sense it's
-> essentially adding co-routines, though there is no specific type for co-routines in the library.
 
 > Regarding generality, the mechanism is worth it for F# just for `task { .. }` and `taskSeq { .. }` alone. 
 > However for F#, important variations on these come up, particularly around implicit passing of
