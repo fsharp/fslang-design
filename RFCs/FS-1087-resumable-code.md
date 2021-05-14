@@ -730,6 +730,27 @@ properties are:
 3. These coroutines are "use once" - you can't run them multiple times  (for multi-execution, see "taskSeq")
 4. They have an integer id
 
+Our goal is to be able to write code like this:
+
+```fsharp
+    let t1 () = 
+        coroutine {
+           printfn "in t1"
+           yield ()
+           printfn "hey ho"
+           yield ()
+        }
+```
+and run it:
+```fsharp
+    let dumpCoroutine (t: Coroutine) = 
+        printfn "-----"
+        while ( t.MoveNext()
+                not t.IsCompleted) do 
+            printfn "yield"
+```
+and be able to inspect the generated `MoveNext` method and see that it is efficient and without allocation due to the control structures
+
 First we define basic type:
 
 ```fsharp
@@ -905,6 +926,76 @@ and run it:
 ```
 The IL code for the MoveNext method of the coroutine can be inspected to check no closures are created,
 resumption points are properly created, and its assembly code checked for performance.
+
+The generated IL for MoveNext is approximately as follows. Note the use of a jump table based on `ResumptionPoint`.
+While there are improvements that can be made here, the JIT will perform obvious improvements, and there are no allocations
+```
+.method public strict virtual instance void 
+        MoveNext() cil managed
+{
+  .override [System.Runtime]System.Runtime.CompilerServices.IAsyncStateMachine::MoveNext
+...
+  IL_0000:  ldarg.0
+  IL_0001:  ldfld      int32 Tests.CoroutinesBasic/Examples/'t1@158-2'::ResumptionPoint
+  IL_0006:  stloc.0
+  IL_0007:  ldloc.0
+  IL_0008:  ldc.i4.1
+  IL_0009:  sub
+  IL_000a:  switch     (IL_001a, IL_001d)
+  IL_0017:  nop
+  IL_0018:  br.s       IL_0020
+  IL_001a:  nop
+  IL_001b:  br.s       IL_003f
+  IL_001d:  nop
+  IL_001e:  br.s       IL_0074
+  IL_0020:  ldarg.0
+  IL_0021:  stloc.2
+  IL_0022:  ldstr      "in t1"
+  <printing>
+  IL_0039:  ldarg.0
+  IL_003a:  stloc.s    V_5
+  IL_003c:  ldc.i4.0
+  IL_003d:  brfalse.s  IL_0043
+  IL_003f:  ldc.i4.1
+  IL_0040:  nop
+  IL_0041:  br.s       IL_004d
+  IL_0043:  ldloc.s    V_5
+  IL_0045:  ldc.i4.1
+  IL_0046:  stfld      int32 Tests.CoroutinesBasic/Examples/'t1@158-2'::ResumptionPoint
+  IL_004b:  ldc.i4.0
+  IL_004c:  nop
+  IL_004d:  stloc.s    V_4
+  IL_004f:  ldloc.s    V_4
+  IL_0051:  brfalse.s  IL_0084
+  IL_0053:  ldarg.0
+  IL_0054:  stloc.s    V_5
+  IL_0056:  ldstr      "hey ho"
+  <printing>
+  IL_006d:  ldloc.s    V_5
+  IL_006f:  stloc.s    V_6
+  IL_0071:  ldc.i4.0
+  IL_0072:  brfalse.s  IL_0078
+  IL_0074:  ldc.i4.1
+  IL_0075:  nop
+  IL_0076:  br.s       IL_0086
+  IL_0078:  ldloc.s    V_6
+  IL_007a:  ldc.i4.2
+  IL_007b:  stfld      int32 Tests.CoroutinesBasic/Examples/'t1@158-2'::ResumptionPoint
+  IL_0080:  ldc.i4.0
+  IL_0081:  nop
+  IL_0082:  br.s       IL_0086
+  IL_0084:  ldc.i4.0
+  IL_0085:  nop
+  IL_0086:  stloc.1
+  IL_0087:  ldloc.1
+  IL_0088:  brfalse.s  IL_0092
+  IL_008a:  ldarg.0
+  IL_008b:  ldc.i4.m1
+  IL_008c:  stfld      int32 Tests.CoroutinesBasic/Examples/'t1@158-2'::ResumptionPoint
+  IL_0091:  ret
+  IL_0092:  ret
+} // end of method 't1@158-2'::MoveNext  
+```
 
 ## Example: coroutine { ... } with tailcalls
 
