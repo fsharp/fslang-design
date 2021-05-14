@@ -202,7 +202,7 @@ The return value of a `ResumableCode` delegate indicates if the code completed (
 
 ```fsharp
     ResumableCode<_,_>(fun sm -> <optional-resumable-expr>) 
-    MoveNextMethodImpl(fun sm -> <optional-resumable-expr>)
+    MoveNextMethodImpl(fun sm -> <resumable-expr>)
 ```
 
 For example:
