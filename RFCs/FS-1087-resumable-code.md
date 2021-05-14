@@ -1264,3 +1264,46 @@ This is roughly what compiled `seq { ... }` code looks like in F# today and what
 # Unresolved questions
 
 None
+
+# FAQ
+
+## Why a general mechanism?
+
+Mads Torgersen asked:
+
+> I like the generalization to "resumable code" (not quite coroutines?). As you may remember we tried
+> in C# to generalize existing iterators (sequences) to a coroutine-like concept in the language to use
+> for async, but had to give it up. Part of that was because of syntax, but some of it was a lack of
+> scenarios beyond sequences, async and the combo of async sequences. I'm curious if you have some in mind!
+
+@dsyme replies:
+
+> Coroutines are almost a no-op to build on the mechanism - they're in the examples for educational purposes,
+> I'm not planning on adding them to F# as such, though users could define them.  So in that sense it's
+> essentially adding co-routines, though there is no specific type for co-routines in the library.
+
+> Regarding generality, the mechanism is worth it for F# just for `task { .. }` and `taskSeq { .. }` alone. 
+> However for F#, important variations on these come up, particularly around implicit passing of
+> cancellation tokens (e.g. a `task2 {..}` that does this), and also tailcalls (does an infinite chain of `return! otherTask`
+> run in finite size? likewise with `taskSeq`). These are important considerations for functional
+> where recursion and implicit information propagation is more common.
+> 
+> There are also the cold/hot start variations, and the context sensitive/insensitive variations (ConfigureAwait(false) for tasks).  
+> So having the general mechanism without baking all these into the compiler seems right.
+> 
+> I'm still undecided if we'll see other uses.  There is a whole zoo of synchronous computation expressions
+> which needed better compilation - that's what RFC FS-1098 and FST-1034 are about.
+> e.g. `option {...}`, `cancellable { .. }` (implicitly propagating a cancellation token through synchronous code), 
+> parser combinators and so on.  
+> 
+> Then there is the original - F# `async { .. }` - which  effectively adds explicit-multi-start, tailcalls
+> and cancellation token propagation to tasks.  It might benefit from this - though compat will make it
+> hard for us to reimplement async to use this. 
+> 
+> People also define `asyncOption {...}`, combining async and option. In principle this indicates an
+> efficiently compiled `taskOption { ... }` might be desirable.   See
+> [here](https://github.com/dotnet/fsharp/blob/dbf9a625d3188184ecb787a536ddb85a4ea7a587/vsintegration/src/FSharp.Editor/CodeFix/RenameUnusedValue.fs#L33)
+> for an example where this is used in the F# implementation.
+> 
+> So in essence, variations and combinations.
+> 
