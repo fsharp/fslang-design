@@ -28,7 +28,7 @@ F# has a very general mechanism for describing computations called [computation 
 
 `task { ... }` and other computation expressions admit very low-allocation implementations. Some other examples are sequences and asynchronous
 sequences. Implementations of `task { ... }` exist for F# today, e.g. [TaskBuilder.fs](https://github.com/rspeele/TaskBuilder.fs/) and [Ply](https://github.com/crowded/ply)
-but they tend to have allocation overhead,
+but they tend to have allocation overhead.
 
 There are enough variations on such computation expressions (for example, whether tailcalls are supported, or other tradeoffs - see the FAQ at the end)
 that it is better to provide a general mechanism in F# that allows the efficient compilation of a large range of
