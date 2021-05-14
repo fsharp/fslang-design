@@ -34,10 +34,10 @@ such constructs rather than baking each into the F# compiler.
 # Design Philosophy and Principles
 
 The general mechanism has a very similar effect to adding [co-routines](https://en.wikipedia.org/wiki/Coroutine) to the F# language and runtime.
-Hwoever we do not commit to any particular implementation of co-routines (which are not supported directly by the .NET runtime).
-Instead a general static code-weaving mechanism (built around the 'inline' mechanism) is used to build an
-overall resumable code method for control structure, which is then combined with user-code.
-This mechanism is part of the F# compiler.
+However co-routines themselves are of little use to F#, since "task" support largely subsumes co-routines, and needs similar mechanisms.
+So we use a general static code-weaving mechanism (built around the 'inline' mechanism) to build an
+overall resumable code method for control structure, which is then combined with user-code, which can also be used for multiple
+control structures whose most efficient implementation is built on resumable code. This mechanism is part of the F# compiler.
 
 The design philosophy is as follows:
 
@@ -712,15 +712,34 @@ let makeStateMachine()  =
 ```
 # Longer example - basic coroutines 
 
+At high approximation a Coroutine is Task<unit> without async I/O allowed. They make an interesting entry-level example of what you can build with resumable code.
+   
+> NOTE: Co-routines are not particularly useful in F# programming, with higher-level control structures like `task` and `taskSeq` and `async`
+> and so on preferred. There is no plan to add co-routines to FSHarp.Core.  Tasks are "better" then coroutines in that 
+>  
+> * you get async I/O
+> * exceptions get stored away when they happen
+> * you get to return a result `Task<T>` (which makes them more "functional" and type-safe)
+
 See [coroutineBasic.fs](https://github.com/dotnet/fsharp/blob/feature/tasks/tests/fsharp/perf/tasks/FS/coroutineBasic.fs).
 
-We show how to define a computation expression for a form of coroutines. First we define basic type:
+In this example we show how to use resumable code to define a computation expression for a basic form of coroutines. The logical
+properties are:
+1. These coroutines are always boxed (for initially-unboxed, see "tasks")
+2. These coroutines are cold-start (for hot start, see "tasks")
+3. These coroutines are "use once" - you can't run them multiple times  (for multi-execution, see "taskSeq")
+4. They have an integer id
+
+First we define basic type:
 
 ```fsharp
 /// This is the type of coroutines
 [<AbstractClass>] 
 type Coroutine() =
     
+    /// Gets the ID of the coroutine
+    abstract Id: int
+
     /// Checks if the coroutine is completed
     abstract IsCompleted: bool
 
@@ -778,8 +797,42 @@ type CoroutineBuilder() =
     member inline _.Yield (_dummy: unit) : CoroutineCode = 
         ResumableCode.Yield()
 ```
-Next we define the `Run` method for the builder.  This creates a state machine and hosts it in a `Coroutine` object, setting the Id.
-The state machine has a `MoveNext` method which advances the 
+Next we define an implementation of `Coroutine` in terms of an arbitrary struct type `'Machine` that implements `IAsyncStateMachine` and `IResumableStateMachine`
+```fsharp
+/// This is the implementation of Coroutine with respect to a particular struct state machine type.
+[<NoEquality; NoComparison>] 
+type Coroutine<'Machine when 'Machine : struct
+                        and 'Machine :> IAsyncStateMachine 
+                        and 'Machine :> ICoroutineStateMachine>() =
+    inherit Coroutine()
+
+    // The state machine struct
+    [<DefaultValue(false)>]
+    val mutable Machine: 'Machine
+
+    override cr.IsCompleted =
+        GetResumptionPoint(&cr.Machine) = -1
+
+    override cr.MoveNext() = 
+        MoveNext(&cr.Machine)
+
+    override cr.Id() = 
+        GetData(&cr.Machine).Id
+```
+This is an important definition
+* This is a boxed type, implementing `Coroutine`
+* `'Machine` will be instantiated to a compiler-generated struct type based on `ResumableStateMachine`
+* Some helpers are used, using the standard trick for zero-allocation calls to interface methods on .NET structs:
+```fsharp
+[<AutoOpen>]
+module internal Helpers =
+    let inline MoveNext(x: byref<'T> when 'T :> IAsyncStateMachine) = x.MoveNext()
+    let inline GetResumptionPoint(x: byref<'T> when 'T :> IResumableStateMachine<'Data>) = x.ResumptionPoint
+    let inline SetData(x: byref<'T> when 'T :> IResumableStateMachine<'Data>, data) = x.Data <- data
+    let inline GetData(x: byref<'T> when 'T :> IResumableStateMachine<'Data>) = x.Data
+```
+
+Next we define the `Run` method for the builder.
 ```fsharp
     /// Create the state machine and outer execution logic
     member inline _.Run(code : CoroutineCode) : Coroutine = 
@@ -822,17 +875,12 @@ Finally, we add a dynamic implementation for the coroutine, in cases where state
             cr.Machine.Data <- CoroutineStateMachineData(nextId())
             cr :> Coroutine
 ```
-Note these coroutines are always boxed, and are not started immediately. In `AfterCode` we do not take a step of the state machine
-before returning the coroutine.
+Here
+* The state machine has a `MoveNext` method which advances the machine.
+* The `AfterMethod` is run after the stack-allocation of the state machine and hosts it in a boxed `Coroutine<'Machine>` object, setting the Id.
+* Note these coroutines are always boxed, and are not started immediately. In `AfterCode` we do not take a step of the state machine
+  before returning the coroutine.
 
-Three helpers are used, using the standard trick for zero-allocation calls to interface methods on .NET structs:
-```fsharp
-[<AutoOpen>]
-module internal Helpers =
-    let inline MoveNext(x: byref<'T> when 'T :> IAsyncStateMachine) = x.MoveNext()
-    let inline GetResumptionPoint(x: byref<'T> when 'T :> IResumableStateMachine<'Data>) = x.ResumptionPoint
-    let inline SetData(x: byref<'T> when 'T :> IResumableStateMachine<'Data>, data) = x.Data <- data
-```
 Finally we instantiate the builder:
 ```fsharp
 let coroutine = CoroutineBuilder()
