@@ -85,21 +85,29 @@ Resumable code is formed by either
 
 1. Resumable code combinators, that is, calls to `ResumableCode.Return`, `ResumableCode.Delay`, `ResumableCode.Combine` and other functions from FSharp.Core, or
 
-2. Writing new explicit low-level `ResumableCode<_,_>(fun sm -> <optional-resumable-expr>)` delegate implementations.
+2. Writing new explicit low-level `ResumableCode` delegate implementations.
 
 
 
 ### Specifying low-level resumable code
 
+Low-level resumable code occurs in the bodies of `ResumableCode<_,_>(fun sm -> <optional-resumable-expr>)` 
+and `__stateMachine` `MoveNextMethodImpl` delegate implementations.
 
+    `ResumableCode<_,_>(fun sm -> <optional-resumable-expr>)` 
+    `MoveNextMethodImpl(fun sm -> <optional-resumable-expr>)` 
+    
 An `<optional-resumable-expr>` is:
 
 ```fsharp
    if __useResumableCode then <resumable-expr> else <expr>
-   ```
+```
+or
+```fsharp
+   <resumable-expr>
+```
 
 If `<resumable-expr>` is _compilable_ then it is used otherwise `<expr>` is used. The rules for compilable resumable code are specified below.
-
 A `<resumable-expr>` is:
 
 1. A resumption point created by an explicit `__resumableEntry`
@@ -243,6 +251,9 @@ A `<resumable-expr>` is:
     <expr>
     ```
 
+Static checks are performed for the specificaiton of low-level resumable code as outlined above.
+
+
 
 ### Resumable code combinators
 
@@ -302,15 +313,21 @@ ResumableCode.TryWith(<resumable-code>, <resumable-code>)
 #### ResumableCode.TryFinally, ResumableCode.TryFinallyAsync
 
 Specifies try/finally semantics for resumable code.
+
 ```fsharp
 ResumableCode.TryFinally(<resumable-code>, <compensation>)
 ```
-
 or
 
 ```fsharp
 ResumableCode.TryFinallyAsync(<resumable-code>, <resumable-code>)
 ```
+
+The combinator does not use a low-level .NET IL `try`/`finally` block, but rather a `try`/`with`, see the implementation.
+
+`ResumableCode.TryFinallyAsync` can be used to allow resumable code in the logical `finally` block, e.g. for `IAsyncDisposable`.
+Note that while the F# computation expression syntax doesn't allow binding in the 'finally' block, `TryFinallyAsync` can still be used
+by `Using` and `use!` when binding the resource implements `IAsyncDisposable`.
 
 #### ResumableCode.While
 
@@ -326,57 +343,6 @@ The guard expression is not resumable code and can't contain a resumption point.
 contain asynchronous while conditions must be handled by placing the resumable code for the guard expression
 separately, see examples.
 
-### Compilability
-
-Some static checks are performed for the construction of resumable code as outlined above. However, there may still be cases where the
-application of the semantics of resumable code fails.  The static checking of resumable code is primarily designed to ensure compositions
-of resumable code are checked to form resumable code, and a warning is emitted if this is not statically determined.
-
-A low-level resumable expression is not compilable if any of the following hold:
-
-1. It is an integer `for` loop 
-
-2. It is a `let rec`
-
-3. It contains an unreduced use of a `ResumableCode` parameter
-
-4. It is a try/finally or try/with where the `finally` or `with` block  has `__resumableEntry` points.
-
-   > NOTE: The resumable code combinators `ResumableCode.TryWith` and `ResumableCode.TryFinally` return resumable code that implements
-   > resumable exception handlers properly
-
-If resumable code is not compilable then either 
-
-1. `if __useResumableCode` alternatives are systematically used, see "optional resumable code" above. This allows for "dynamic" implementations of resumable code.
-   In this case a warning is emitted.
-
-2. A compilation failure occurs
-
-### The semantics of resumable code
-
-The execution of resumable code can be understood in terms of the direct translation of low-level resumable code to the constructs into a .NET method.
-For example, `__resumeAt` corresponds either to a `goto` (for a known label) or a switch table (for a computed label at the
-start of a method).
-
-If a `ResumableCode` expression is determined to be valid resumable code, then the semantics of the
-method or function hosting the resumable code is detemined by the following:
-
-1. All implementations are inlined under the static assumption `__useResumableCode` is true.
-
-2. All resumption points `match __resumableEntry() with Some contId -> <stmt1> | None -> <stmt2>` are removed by the static allocation of a unique integer within the resumable code for `contID` and using `<stmt1>` as the primary implementation.  `stmt2` is placed as the target for `contID` in a single implied jump table for the overall resumable code.
-
-3. Any `__stack_*` variables are represented as locals of the method. These are zero-initialized each time the method is invoked.
-
-4. Any non `__stack_*` variables are represented as locals of the host object. (Note, if the variables are not used in or after continuation branches then they may be represented as locals of the method).
-
-5. Any uses of `__resumeAt <expr>` are represented as an invocation of the implied jump table.
-
-   - If `<expr>` is a statically-determined code label (e.g. a `contID`) then this is effectively a `goto` statement
-     to the `None` branch of the resumption point corresponding to the `contID`. 
-
-   - If `<expr>` is not a statically-determined code label then the `__resumeAt` must be the first statement within the method.
-     If at runtime the `<expr>` doesn't correspond to a valid resumption point within the method then execution continues subsequent to the `__resumeAt`.
-   
 ### Hosting resumable code in a resumable state machine struct
 
 A resumable state machine is specified using `__stateMachine`.
@@ -418,19 +384,87 @@ Notes:
 
 3. The `MoveNext` method may be resumable code, see below.
 
-NOTE: By way of explanation, reference-typed resumable state machines are expressed using object expressions, which can
-have additional state variables.  However F# object-expressions may not be of struct type, so it is always necessary
-to fabricate an entirely new struct type for each state machine use. There is no existing construct in F#
-for the anonymous specification of struct types whose methods can capture a closure of variables. The above
-intrinsic effectively adds a limited version of a capability to use an existing struct type as a template for the
+NOTE: By way of explanation, state machines are a form of closure.  However existing F# closures may not be of struct type, and it is necessary
+to fabricate a new struct type for each state machine use. There is no existing construct in F#
+for the anonymous specification of struct types whose methods can capture a closure of variables. The `__stateMachine`
+intrinsic adds a limited version of a capability to use a specific existing struct type as a template for the
 anonymous specification of an implicit, closure-capturing struct type.  The anonymous struct type must be immediately
 eliminated (i.e. used) in the `AfterMethod`.  
 
-* An object expression with a single `ResumableCode` method is well-known to the F# compiler, like a language intrinsic
+### Compilability of state machines
 
-* Here `SomeStateMachineType` can be any user-defined reference type, however the object expression must contain a single method with the `ResumableCode` attribute.
+A state machine is not _compilable_ if its resumable code is not compilable, that is, if any of the following are truw for its inlined, expanded form:
 
-* Uses of `ResumableCode` are not allowed except in the exact patterns described in this RFC.
+1. The resumable code is an integer `for` loop with `__resumableEntry` points in the body.
+
+2. The resumable code is a `let rec`.
+
+3. The resumable code contains an unreduced use of a `ResumableCode` parameter.
+
+4. The resumable code is a try/finally with `__resumableEntry` points.
+
+   > NOTE: The resumable code combinator `ResumableCode.TryFinally` does not use a low-level try/finally block, see the implementation.
+
+5. The resumable code is a try/with where the `with` block  has `__resumableEntry` points.
+
+   > NOTE: The resumable code combinators `ResumableCode.TryWith` and `ResumableCode.TryFinally` return resumable code that implements
+   > resumable exception handlers without hitting these restrictions, see the implementations of these two functions.
+
+If a state machine is not compilable, see "Execution of non-compilable state machines" below.
+
+> NOTE: Non-compilable state machines often occur when defining functions producing state machines.
+> This occurs becuase any `ResumableCode` parameters are not yet fully defined through inlining.
+> 
+> State machines are made compilable using 'inline' on the function.  However all F# inlined code also has corresponding non-inline code emitted for 
+> reflection and quotations.  For this reason, when defining functions producing state machines, an   `if __useResumableCode then` alternative should 
+> still typically be given, even if your function is inlined.
+
+#### Execution of compilable state machines
+
+The execution of of a compilable state machine can be understood in terms of the direct translation its low-level resumable code to the constructs into a .NET method.
+For example, `__resumeAt` corresponds either to a `goto` (for a known label) or a switch table (for a computed label at the
+start of a method).
+
+If a `ResumableCode` expression is determined to be valid resumable code, then the semantics of the
+method or function hosting the resumable code is detemined by the following:
+
+1. All implementations are inlined under the static assumption `__useResumableCode` is true.
+
+2. All resumption points `match __resumableEntry() with Some contId -> <stmt1> | None -> <stmt2>` are removed by the static allocation of a unique integer within the resumable code for `contID` and using `<stmt1>` as the primary implementation.  `stmt2` is placed as the target for `contID` in a single implied jump table for the overall resumable code.
+
+3. Any `__stack_*` variables are represented as locals of the method. These are zero-initialized each time the method is invoked.
+
+4. Any non `__stack_*` variables are represented as locals of the host object. (Note, if the variables are not used in or after continuation branches then they may be represented as locals of the method).
+
+5. Any uses of `__resumeAt <expr>` are represented as an invocation of the implied jump table.
+
+   - If `<expr>` is a statically-determined code label (e.g. a `contID`) then this is effectively a `goto` statement
+     to the `None` branch of the resumption point corresponding to the `contID`. 
+
+   - If `<expr>` is not a statically-determined code label then the `__resumeAt` must be the first statement within the method.
+     If at runtime the `<expr>` doesn't correspond to a valid resumption point within the method then execution continues subsequent to the `__resumeAt`.
+   
+#### Execution of non-compilable state machines
+
+If a state machine is not compilable and the state machine is guarded by `if __useResumableCode` as follows:
+
+```fsharp
+    if __useResumableCode then
+        <state-machine-expr>
+    else
+        <alternative-expr>
+```         
+
+then a warning is emitted and the alternative is used as a regular F# expression.  If no alternative is given a compilation failure occurs.
+
+The alternative may include the invoke of `ResumableCode` delegate values. In this case, a warning is emitted and should be suppressed if intended.
+
+The low-level code for `ResumableCode` can include also guards `if __useResumableCode then .. else ..`.  These alternatives are used
+for resumable code that occurs outside the successful compilation of a state machine. Such alternatives should always be given
+for any explicit `ResumableCode` delegate that explicitly returns `false` values, indicating suspension of computation.
+In this case, the alternative must set the `ResumptionFunc` field in `ResumptionDynamicInfo` of
+the enclosing state machine to an appropriate dynamic continuation.  For example, see the implementation of `ResumableCode.Yield`
+and `ResumableCode.YieldDynamic`.
 
 ## Library additions (primitive resumable code)
 
