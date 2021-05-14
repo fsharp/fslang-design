@@ -10,9 +10,11 @@ This RFC covers the detailed proposal for the resumable state machine support ne
 
 # Summary
 
-We add a general capability to specify and emit statically compositional resumable
-code hosted in state machine objects recognized by the F# compiler. This allows some F#
-computation expressions to be implemented highly efficiently.
+We add a general low-level capability recognized by the F# compiler to specify and emit statically compositional resumable
+code hosted in state machines. This allows some F#
+computation expressions including `task` and `taskSeq` to be implemented highly efficiently. It is also similar to the
+implementation of sequence expressions baked into the F# compiler and the implementation has been derived from that
+initially.
 
 This is used to implement [RFC FS-1097 - tasks](https://github.com/fsharp/fslang-design/blob/master/RFCs/FS-1097-task-builder.md).
 
@@ -885,10 +887,27 @@ The mechanism is non-trivial.
 
 ### Non-compilability
 
-Not all F# constructs can yet be included in compilable resumable code, notable "fast integer for loops" and "let rec".  On the whole this is not a problem
-since these don't generally appear in F# computation expressions for tasks etc. These may result in warnings about non-static compilation of task, coroutine etc. code.
+Not all F# constructs can yet be included in compilable resumable code, notable "fast integer for loops" and "let rec".  The
+first doesn't matter since, inside computation expressions, integer for-loops work over IEnumerables in any case (though this
+may cause more allocations than expected). However `let rec` is not yet usable, and, for example, this generates a compilation warning
+during code generation, indicating that the dynamic implementation of tasks will be used:
 
-It is possible these restrictions can be lifted in future iterations.
+```fsharp
+        task { 
+            let rec f x = f x + 1
+            return f 1
+        }
+```
+The problem here is that we have previously encountered subtle recursive-fixup bugs when making mutually-recursive
+functions into state variable fields of state machines.  Also, for non-escaping functions, ideally 
+a non-closure representation should be used for these functions in any case.
+
+On the whole this is not a problem since these don't generally appear in F# computation expressions for tasks etc. 
+The user can, of course, lift out the `let rec` binding outside the task, and this may also result in clearer and faster
+code in any case.
+
+It is possible these restrictions can be lifted in future iterations, however if we do we should also lift them
+for failed state machine compilation of `let rec` in sequence expressions (for which no warning is currently given)
 
 ### Imperfect optimization
 
@@ -928,6 +947,19 @@ that returns these two types.
 In the preview of this feature, it will be possible to use this feature outside FSHarp.Core with the `/langversion:preview` flag.
 
 It is possible that a future release will only make this feature non-preview within FSharp.Core, and withdraw the feature for external use.
+
+### Micro decisions
+
+There are many alternatives possible with regard to relatively small decisions, for example
+
+* Naming
+* Whether the `__resumeAt` construct is explcit at all at the start of `MoveNext` methods
+* Whether the `__stateMachine` construct is a new language construct or, as in this design, is a compiler-special construct built out of existing syntax.
+* many others
+
+We encourage the reader to remember this is a low-level mechanism and essentially none of the details are user-facing.
+
+
 
 # Compatibility
 
