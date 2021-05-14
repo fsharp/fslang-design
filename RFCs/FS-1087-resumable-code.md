@@ -1287,10 +1287,15 @@ Mads Torgersen asked:
 
 @dsyme replies:
 
-> Regarding generality, the mechanism is worth it for F# just for `task { .. }` and `taskSeq { .. }` alone. 
-> However for F#, important variations on these come up, particularly around implicit passing of
-> cancellation tokens (e.g. a `task2 {..}` that does this), and also tailcalls (does an infinite chain of `return! otherTask`
-> run in finite size? likewise with `taskSeq`). These are important considerations for functional
+> Regarding generality, the mechanism is worth it for F# just for `task { .. }` and `taskSeq { .. }` alone
+> since it means much of the implementation lies in the F# library not the F# compiler, where it's much easier to work with.
+> 
+> However for F#, important variations on these come up, particularly around 
+> 1. implicit passing of cancellation tokens (e.g. a `task2 {..}` that does this)
+> 2. tailcalls (does an infinite chain of `return! otherTask` run in finite size? likewise with `taskSeq`)
+> 3. what can you bind to?
+> 
+> These are important considerations for functional
 > where recursion and implicit information propagation is more common.
 > 
 > There are also the cold/hot start variations, and the context sensitive/insensitive variations (ConfigureAwait(false) for tasks).  
