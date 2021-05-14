@@ -1264,9 +1264,25 @@ The heart of a typical state machine is a `MoveNext` or `Step` function that tak
 
 This is roughly what compiled `seq { ... }` code looks like in F# today and what compiled async/await code looks like in C#, at a very high level. Note that, you can't write this kind of code directly in F# - there is no `goto` and especially not a `goto` that can jump directly into other code, resuming from the last step of the state machine.  
 
-# Unresolved questions
+# Unresolved questions and notes from review
 
-* Review Ply, e.g. `vtask { ... }` for ValueTask
+* [ ] Review Ply, e.g. `vtask { ... }` for ValueTask. Is it possible to define this from the outside?
+
+* [ ] remove ResumptionDynamicInfo from the generated state machines 
+
+* [ ] we should also verify the stacktraces are minimal and complete. Specifically we should test post-yield exceptions
+
+* [ ] Looks like there are a bunch of task { ... } tests we should lift over from Ply
+
+* [ ] check generated ASM code 
+
+  > Nino says: I've been following many of the runtime advancements in the past few years and it's doing a much better job at F# code these days but the benchmarks do suggest the runtime isn't able to reduce all of it to C# level output
+
+* [ ] Bind task `use!` to IAsyncDisposable? `use` desugars to builder.Using and we could overload that on both IDisposable and IAsyncDisposable.
+      If types  support both we sort out a priority
+
+
+
 
 # FAQ
 
