@@ -34,7 +34,7 @@ such constructs rather than baking each into the F# compiler.
 The general mechanism has a very similar effect to adding [co-routines](https://en.wikipedia.org/wiki/Coroutine) to the F# language and runtime.
 Hwoever we do not commit to any particular implementation of co-routines (which are not supported directly by the .NET runtime).
 Instead a general static code-weaving mechanism (built around the 'inline' mechanism) is used to build an
-overall resumable code method for control structure, which is then combinde with user-code.
+overall resumable code method for control structure, which is then combined with user-code.
 This mechanism is part of the F# compiler.
 
 The design philosophy is as follows:
