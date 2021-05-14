@@ -81,21 +81,135 @@ Resumable code is represented by the `ResumableCode<'Data, 'T>` delegate type.
 type ResumableCode<'Data, 'T> = delegate of byref<ResumableStateMachine<'Data>> -> bool
 ```
 
-Resumable code is formed by either
+The `'Data` type parameter indicates the extra data stored in the state machine for this variation of resumable code. It may be
+a struct or reference type. The `'T` type parameter is not used in the delegate but is useful for constraining the combinations
+of resumable code allow in computation expressions.
 
-1. Resumable code combinators, that is, calls to `ResumableCode.Return`, `ResumableCode.Delay`, `ResumableCode.Combine` and other functions from FSharp.Core, or
+Resumable code is formed by either:
+
+1. Resumable code combinators, that is, calls to `ResumableCode.Zero`, `ResumableCode.Delay`, `ResumableCode.Combine` and other functions from FSharp.Core, or
 
 2. Writing new explicit low-level `ResumableCode` delegate implementations.
 
+The only reason to specify resumable code is to implement the `MoveNext` method of state machines, see further below.
+In practice this is only needed when defining new variations on computation expressions using state machines.
+
+### Resumable code combinators
+
+Most resumable code can be specified using the functions in `ResumableCode.*`.
+Functions forming resumable code should be inline.  For example:
+
+```fsharp
+let inline printThenYield () =
+    ResumableCode.Combine(
+        ResumableCode.Delay(fun () -> printfn "hello"; ResumableCode.Zero()),
+        ResumableCode.Yield()
+    )
+```     
+
+#### ResumableCode.Yield
+
+A resumption point can be created by invoking `ResumableCode.Yield` as a `ResumableCode` value:
+
+```fsharp
+ResumableCode.Yield()
+```
+
+or within low-level resumable code:
+
+```fsharp
+let __stack_yield_complete = ResumableCode.Yield().Invoke(&sm)
+```
+
+Here `__stack_yield_complete` will return `false` if the code suspends and `true` if the code resumes at the
+implied resumption point.  `ResumableCode.Yield` has the following definition in terms of low-level
+resumable code (see further below).
+
+```fsharp
+let inline Yield () : ResumableCode<'Data, unit> = 
+     ResumableCode<'Data, unit>(fun sm -> 
+         if __useResumableCode then 
+             match __resumableEntry() with 
+             | Some contID ->
+                 sm.ResumptionPoint <- contID
+                 false
+             | None ->
+                 true
+         else
+             YieldDynamic(&sm))
+```
+
+#### ResumableCode.Combine
+
+Specifies the sequential composition of two blocks of resumable code.
+   
+```fsharp
+ResumableCode.Combine(<resumable-code>, <resumable-code>)
+```
+
+Because the code is resumable, each `<resumable-code>` may contain zero or more resumption points.
+This means it is **not** guaranteed that the first `<resumable-code>` will be executed before the
+second.
+
+#### ResumableCode.TryWith
+
+Specifies try/with semantics for resumable code.
+
+```fsharp
+ResumableCode.TryWith(<resumable-code>, <resumable-code>)
+```
+
+#### ResumableCode.TryFinally, ResumableCode.TryFinallyAsync
+
+Specifies try/finally semantics for resumable code.
+
+```fsharp
+ResumableCode.TryFinally(<resumable-code>, <compensation>)
+```
+or
+
+```fsharp
+ResumableCode.TryFinallyAsync(<resumable-code>, <resumable-code>)
+```
+
+The combinator does not use a low-level .NET IL `try`/`finally` block, but rather a `try`/`with`, see the implementation.
+
+`ResumableCode.TryFinallyAsync` can be used to allow resumable code in the logical `finally` block, e.g. for `IAsyncDisposable`.
+Note that while the F# computation expression syntax doesn't allow binding in the 'finally' block, `TryFinallyAsync` can still be used
+by `Using` and `use!` when binding the resource implements `IAsyncDisposable`.
+
+#### ResumableCode.While
+
+Specifies iterative semantics for resumable code.
+```fsharp
+ResumableCode.While((fun () -> expr), <resumable-code>)
+```
+
+Note that, because the code is resumable, the `<resumable-code>` may contain zero or more resumption points.   The execution
+of the code may thus branch into the middle of the `while` expression.
+
+The guard expression is not resumable code and can't contain a resumption point.  Asynchronous while loops that
+contain asynchronous while conditions must be handled by placing the resumable code for the guard expression
+separately, see examples.
 
 
 ### Specifying low-level resumable code
 
 Low-level resumable code occurs in the bodies of `ResumableCode<_,_>(fun sm -> <optional-resumable-expr>)` 
 and `__stateMachine` `MoveNextMethodImpl` delegate implementations.
+Specifying low-level resumable code generates a warning which should be suppressed if intended.
+The return value of a `ResumableCode` delegate indicates if the code completed (`true`) or yielded (`false`).
 
-    `ResumableCode<_,_>(fun sm -> <optional-resumable-expr>)` 
-    `MoveNextMethodImpl(fun sm -> <optional-resumable-expr>)` 
+```fsharp
+    ResumableCode<_,_>(fun sm -> <optional-resumable-expr>) 
+    MoveNextMethodImpl(fun sm -> <optional-resumable-expr>)
+```
+
+For example:
+
+```fsharp
+    ResumableCode<_,_>(fun sm -> printfn "hello"; true) 
+```
     
 An `<optional-resumable-expr>` is:
 
@@ -107,7 +221,8 @@ or
    <resumable-expr>
 ```
 
-If `<resumable-expr>` is _compilable_ then it is used otherwise `<expr>` is used. The rules for compilable resumable code are specified below.
+If the overall state machine in which the resumable code is _compilable_ (see further below) then `<resumable-expr>` is used, otherwise `<expr>` is used.
+
 A `<resumable-expr>` is:
 
 1. A resumption point created by an explicit `__resumableEntry`
@@ -253,95 +368,6 @@ A `<resumable-expr>` is:
 
 Static checks are performed for the specificaiton of low-level resumable code as outlined above.
 
-
-
-### Resumable code combinators
-
-In practice, resumable code can usually be specified using "ResumableCode.*", e.g.
-
-#### ResumableCode.Yield
-
-A resumption point can be created by invoking `ResumableCode.Yield` as a `ResumableCode` value:
-
-```fsharp
-ResumableCode.Yield()
-```
-
-or within low-level resumable code:
-
-```fsharp
-let __stack_yield_complete = ResumableCode.Yield().Invoke(&sm)
-```
-
-Here `__stack_yield_complete` will return `false` if the code suspends and `true` if the code resumes at the
-implied resumption point.  `ResumableCode.Yield` has the following definition
-
-```fsharp
-let inline Yield () : ResumableCode<'Data, unit> = 
-     ResumableCode<'Data, unit>(fun sm -> 
-         if __useResumableCode then 
-             match __resumableEntry() with 
-             | Some contID ->
-                 sm.ResumptionPoint <- contID
-                 false
-             | None ->
-                 true
-         else
-             YieldDynamic(&sm))
-```
-
-#### ResumableCode.Combine
-
-Specifies the sequential composition of two blocks of resumable code.
-   
-```fsharp
-ResumableCode.Combine(<resumable-code>, <resumable-code>)
-```
-
-Because the code is resumable, each `<resumable-code>` may contain zero or more resumption points.
-This means it is **not** guaranteed that the first `<resumable-code>` will be executed before the
-second.
-
-#### ResumableCode.TryWith
-
-Specifies try/with semantics for resumable code.
-
-```fsharp
-ResumableCode.TryWith(<resumable-code>, <resumable-code>)
-```
-
-#### ResumableCode.TryFinally, ResumableCode.TryFinallyAsync
-
-Specifies try/finally semantics for resumable code.
-
-```fsharp
-ResumableCode.TryFinally(<resumable-code>, <compensation>)
-```
-or
-
-```fsharp
-ResumableCode.TryFinallyAsync(<resumable-code>, <resumable-code>)
-```
-
-The combinator does not use a low-level .NET IL `try`/`finally` block, but rather a `try`/`with`, see the implementation.
-
-`ResumableCode.TryFinallyAsync` can be used to allow resumable code in the logical `finally` block, e.g. for `IAsyncDisposable`.
-Note that while the F# computation expression syntax doesn't allow binding in the 'finally' block, `TryFinallyAsync` can still be used
-by `Using` and `use!` when binding the resource implements `IAsyncDisposable`.
-
-#### ResumableCode.While
-
-Specifies iterative semantics for resumable code.
-```fsharp
-ResumableCode.While((fun () -> expr), <resumable-code>)
-```
-
-Note that, because the code is resumable, the `<resumable-code>` may contain zero or more resumption points.   The execution
-of the code may thus branch into the middle of the `while` expression.
-
-The guard expression is not resumable code and can't contain a resumption point.  Asynchronous while loops that
-contain asynchronous while conditions must be handled by placing the resumable code for the guard expression
-separately, see examples.
 
 ### Hosting resumable code in a resumable state machine struct
 
@@ -682,7 +708,155 @@ let makeStateMachine()  =
          (SetStateMachineMethodImpl<_>(fun sm state -> ()))
          (AfterCode<_,_>(fun sm -> MoveOnce(&sm)))
 ```
-## Example: coroutine { ... }
+# Longer example - basic coroutines 
+
+See [coroutineBasic.fs](https://github.com/dotnet/fsharp/blob/feature/tasks/tests/fsharp/perf/tasks/FS/coroutineBasic.fs).
+
+We show how to define a computation expression for a form of coroutines. First we define basic type:
+
+```fsharp
+/// This is the type of coroutines
+[<AbstractClass>] 
+type Coroutine() =
+    
+    /// Checks if the coroutine is completed
+    abstract IsCompleted: bool
+
+    /// Executes the coroutine until the next 'yield'
+    abstract MoveNext: unit -> unit
+```
+In this example our state machines will store just one element of extra data - an ID. 
+```fsharp
+/// This extra data stored in ResumableStateMachine (and it's templated copies using __stateMachine) 
+/// In this example there is just an ID
+[<Struct>]
+type CoroutineStateMachineData(id: int) = 
+    member _.Id = id
+
+let nextId = 
+    let mutable n = 0
+    fun () -> n <- n + 1; n
+```
+ These are standard definitions filling in the 'Data' parameter of each
+```fsharp
+type ICoroutineStateMachine = IResumableStateMachine<CoroutineStateMachineData>
+type CoroutineStateMachine = ResumableStateMachine<CoroutineStateMachineData>
+type CoroutineResumptionFunc = ResumptionFunc<CoroutineStateMachineData>
+type CoroutineResumptionDynamicInfo = ResumptionDynamicInfo<CoroutineStateMachineData>
+type CoroutineCode = ResumableCode<CoroutineStateMachineData, unit>
+```
+Next we define a builder for coroutines, where the internal compositional type of the builder is `CoroutineCode`. an instantiation of `ResumableCode<_,_>`
+
+```fsharp
+type CoroutineBuilder() =
+    
+    member inline _.Delay(f : unit -> CoroutineCode) : CoroutineCode = ResumableCode.Delay(f)
+
+    [<DefaultValue>]
+    member inline _.Zero() : CoroutineCode = ResumableCode.Zero()
+
+    member inline _.Combine(code1: CoroutineCode, code2: CoroutineCode) : CoroutineCode =
+        ResumableCode.Combine(code1, code2)
+
+    member inline _.While ([<InlineIfLambda>] condition : unit -> bool, body : CoroutineCode) : CoroutineCode =
+        ResumableCode.While(condition, body)
+
+    member inline _.TryWith (body: CoroutineCode, catch: exn -> CoroutineCode) : CoroutineCode =
+        ResumableCode.TryWith(body, catch)
+
+    member inline _.TryFinally (body: CoroutineCode, [<InlineIfLambda>] compensation : unit -> unit) : CoroutineCode =
+        ResumableCode.TryFinally(body, ResumableCode<_,_>(fun _ -> compensation(); true))
+
+    member inline _.Using (resource : 'Resource, body : 'Resource -> CoroutineCode) : CoroutineCode when 'Resource :> IDisposable = 
+        ResumableCode.Using(resource, body)
+
+    member inline _.For (sequence : seq<'T>, body : 'T -> CoroutineCode) : CoroutineCode =
+        ResumableCode.For(sequence, body)
+
+    member inline _.Yield (_dummy: unit) : CoroutineCode = 
+        ResumableCode.Yield()
+```
+Next we define the `Run` method for the builder.  This creates a state machine and hosts it in a `Coroutine` object, setting the Id.
+The state machine has a `MoveNext` method which advances the 
+```fsharp
+    /// Create the state machine and outer execution logic
+    member inline _.Run(code : CoroutineCode) : Coroutine = 
+        if __useResumableCode then 
+            __stateMachine<CoroutineStateMachineData, Coroutine>
+
+                // IAsyncStateMachine.MoveNext
+                (MoveNextMethodImpl<_>(fun sm -> 
+                    __resumeAt sm.ResumptionPoint 
+                    let __stack_code_fin = code.Invoke(&sm)
+                    if __stack_code_fin then
+                        sm.ResumptionPoint  <- -1 // indicates complete))
+
+                // IAsyncStateMachine.SetStateMachine
+                (SetStateMachineMethodImpl<_>(fun sm state -> ()))
+
+                // Box the coroutine.  In this example we don't start execution of the coroutine.
+                (AfterCode<_,_>(fun sm -> 
+                    let mutable cr = Coroutine<CoroutineStateMachine>()
+                    SetData(&cr.Machine, CoroutineStateMachineData(nextId()))
+                    cr.Machine <- sm
+                    cr :> Coroutine))
+        else 
+            failwith "dynamic implementation nyi"
+```
+Finally, we add a dynamic implementation for the coroutine, in cases where state machine compilation can't be used:
+```fsharp
+        else 
+            // The dynamic implementation
+            let initialResumptionFunc = CoroutineResumptionFunc(fun sm -> code.Invoke(&sm))
+            let resumptionInfo =
+                { new CoroutineResumptionDynamicInfo(initialResumptionFunc) with 
+                    member info.MoveNext(sm) = 
+                        if info.ResumptionFunc.Invoke(&sm) then
+                            sm.ResumptionPoint <- -1
+                    member info.SetStateMachine(sm, state) = ()
+                 }
+            let mutable cr = Coroutine<CoroutineStateMachine>()
+            cr.Machine.ResumptionDynamicInfo <- resumptionInfo
+            cr.Machine.Data <- CoroutineStateMachineData(nextId())
+            cr :> Coroutine
+```
+Note these coroutines are always boxed, and are not started immediately. In `AfterCode` we do not take a step of the state machine
+before returning the coroutine.
+
+Three helpers are used, using the standard trick for zero-allocation calls to interface methods on .NET structs:
+```fsharp
+[<AutoOpen>]
+module internal Helpers =
+    let inline MoveNext(x: byref<'T> when 'T :> IAsyncStateMachine) = x.MoveNext()
+    let inline GetResumptionPoint(x: byref<'T> when 'T :> IResumableStateMachine<'Data>) = x.ResumptionPoint
+    let inline SetData(x: byref<'T> when 'T :> IResumableStateMachine<'Data>, data) = x.Data <- data
+```
+Finally we instantiate the builder:
+```fsharp
+let coroutine = CoroutineBuilder()
+```
+and use it:
+```fsharp
+    let t1 () = 
+        coroutine {
+           printfn "in t1"
+           yield ()
+           printfn "hey ho"
+           yield ()
+        }
+```
+and run it:
+```fsharp
+    let dumpCoroutine (t: Coroutine) = 
+        printfn "-----"
+        while ( t.MoveNext()
+                not t.IsCompleted) do 
+            printfn "yield"
+```
+The IL code for the MoveNext method of the coroutine can be inspected to check no closures are created,
+resumption points are properly created, and its assembly code checked for performance.
+
+## Example: coroutine { ... } with tailcalls
 
 See [coroutine.fs](https://github.com/dotnet/fsharp/blob/feature/tasks/tests/fsharp/perf/tasks/FS/coroutine.fs).
 
