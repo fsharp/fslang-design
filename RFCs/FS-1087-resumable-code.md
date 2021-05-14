@@ -24,10 +24,13 @@ This is also related to [Tooling RFC FST-1034 - additional lambda optimizations]
 
 # Motivation
 
-`task { ... }` and other computation expressions need low-allocation implementations. Some other examples are sequences and asynchronous
-sequences.
+F# has a very general mechanism for describing computations called [computation expressions](https://docs.microsoft.com/en-us/dotnet/fsharp/language-reference/computation-expressions).  Some examples are `seq { ... }`, `task { ...}`, `async { ... }`, `asyncSeq { ... }`, `option { ... }` and many more. 
 
-There are enough variations on such computation expressions (for example, whether tailcalls are supported, or other tradeoffs)
+`task { ... }` and other computation expressions admit very low-allocation implementations. Some other examples are sequences and asynchronous
+sequences. Implementations of `task { ... }` exist for F# today, e.g. [TaskBuilder.fs](https://github.com/rspeele/TaskBuilder.fs/) and [Ply](https://github.com/crowded/ply)
+but they tend to have allocation overhead,
+
+There are enough variations on such computation expressions (for example, whether tailcalls are supported, or other tradeoffs - see the FAQ at the end)
 that it is better to provide a general mechanism in F# that allows the efficient compilation of a large range of
 such constructs rather than baking each into the F# compiler.
 
