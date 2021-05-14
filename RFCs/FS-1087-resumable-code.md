@@ -1266,7 +1266,7 @@ This is roughly what compiled `seq { ... }` code looks like in F# today and what
 
 # Unresolved questions
 
-None
+* Review Ply, e.g. `vtask { ... }` for ValueTask
 
 # FAQ
 
