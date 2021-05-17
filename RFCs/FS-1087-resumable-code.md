@@ -1266,7 +1266,9 @@ This is roughly what compiled `seq { ... }` code looks like in F# today and what
 
 # Unresolved questions and notes from review
 
-* [ ] Review Ply, e.g. `vtask { ... }` for ValueTask. Is it possible to define this from the outside?
+* [ ] Review Ply, e.g. `vtask { ... }` for ValueTask. Is it possible to define this from the outside? 
+      Answer: it's almost simple to define from the outside, but a different AsyncValueTaskMethodBuilder thing is
+      needed, so you probably have to replicate all of tasks.fs.
 
 * [ ] remove ResumptionDynamicInfo from the generated state machines 
 
@@ -1278,9 +1280,18 @@ This is roughly what compiled `seq { ... }` code looks like in F# today and what
 
   > Nino says: I've been following many of the runtime advancements in the past few years and it's doing a much better job at F# code these days but the benchmarks do suggest the runtime isn't able to reduce all of it to C# level output
 
+* [ ] We need to generate `CompilerGenerated` on the state machine types, for better debugging, see https://github.com/dotnet/coreclr/pull/15781 and
+      the changes to do this in Ply. https://github.com/crowded/ply/blob/master/Ply.fs#L93. This is related to the state machine detection code
+      in CoreCLR that runs while generating stack traces, see https://github.com/dotnet/runtime/blob/main/src/libraries/System.Private.CoreLib/src/System/Diagnostics/StackTrace.cs#L396.
+      
 * [ ] Bind task `use!` to IAsyncDisposable? `use` desugars to builder.Using and we could overload that on both IDisposable and IAsyncDisposable.
       If types  support both we sort out a priority
 
+      ```fsharp
+      task { use res = some-IAsyncDisposable
+             .. }
+      ```
+       
 
 
 
