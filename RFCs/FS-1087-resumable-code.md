@@ -1016,6 +1016,32 @@ See [taskSeq.fs](https://github.com/dotnet/fsharp/blob/feature/tasks/tests/fshar
 
 This is for state machine compilation of computation expressions that generate `IAsyncEnumerable<'T>` values. This is a headline C# 8.0 feature and a very large feature for C#.  It appears to mostly drop out as library code once general-purpose state machine support is available.
 
+## Example: reimplementation of F# async
+
+I did a trial re-implementation of F# async (imperfectly and only a subset of the API) using resumable code. You can take a look at the subset that's implemented by looking in the signature file
+
+* Implementation: https://github.com/dotnet/fsharp/blob/feature/tasks/tests/fsharp/perf/tasks/FS/async2.fs
+
+* Signature fle: https://github.com/dotnet/fsharp/blob/feature/tasks/tests/fsharp/perf/tasks/FS/async2.fsi
+
+Recall how async differs from tasks:
+
+|    | async-waits |  results | hot/cold/multi   |  tailcalls  | cancellation token propagation | cancellation checks |
+|:----:|:-----:|:-------:|:------:|:------:|:---------:|:--------:|
+| F# async | async-waits | one result | multiple cold starts |  tailcalls |   implicit | implicit |
+| F# task/C# task |   async-waits | one result | once-hot-start |  no-tailcalls |   explicit | explicit |
+| F# seq | no-async-waits | multiple results | multi cold starts | tailcalls | none | none |
+| F# taskSeq/C# async seq  | async waits | mutli result | multi-cold-start | no-tailcalls |  implicit | explicit | 
+
+Anyway the approximate reimplementation appears to run as fast as TaskBuilder for sync cases, and as fast as tasks for async cases. That makes it like 10-20x faster than the current F# async implementation.  Stack traces etc. would be greatly improved to.
+ 
+However it's not a perfect reimplementation - there are no tailcalls nor cancellation checks yet  -  and perfect compat is probably impossible sadly, there are lots of subtleties. For example `async.Return()` and other direct use of CE methods change type from `Async<T>` to `AsyncCode<T>`, so the API is not perfect compat (an `Async.Return` etc. would be needed instead).   We could possible fix that in the F# compiler though there are lots of other little niggles too.
+
+That said it should be good enough to allow an FSharp.Control.Async2 package that is a drop-in replacement for F# async for 99.9% compat.  (The `Async2<T>` would be a different type in that case, though that may matter less now `Task<T>` is so established more as an interop standard)
+
+
+
+
 
 # Performance
 
