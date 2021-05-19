@@ -36,17 +36,17 @@ such constructs rather than baking each into the F# compiler.
 
 To examine the variation in asynchronous and resumable control constructs, consider the following categorization:
 
-|    | produces | async-waits |  results | hot/cold/multi   |  tailcalls  | cancellation token propagation | cancellation checks | explicitly schedulable/pausable | boxing |
-|:----:|:-----:|:-----:|:-------:|:------:|:------:|:---------:|:--------:|:---------|
-| F# normal code | `T` | no async waits | one result | once, hot start |  tailcalls |   explicit | explicit |  no | |
-| [F# cancellable](https://github.com/dotnet/fsharp/blob/main/src/fsharp/absil/illib.fs#L716) | `Cancellable<_>` |  no async waits | one result |  multiple cold starts |  tailcalls |   implicit | implicit | no | |
-| [F# resumable](https://github.com/dotnet/fsharp/blob/main/src/fsharp/absil/illib.fs#L837) |   `Resumable<_>` | no async wait | one result |  multiple cold starts |  tailcalls |   implicit | implicit | yes | |
-| F# seq | `IEnumerable<_>` | no async waits | multiple results | multiple cold starts | tailcalls | explicit | explicit | no | |
-| F# task |  `Task<_>` |  async waits | one result | once, hotstart |  no-tailcalls |   explicit | explicit | no | |
-| F# vtask |  `ValueTask<_>` |  async waits | one result | once, hotstart |  no-tailcalls |   explicit | explicit | no | box-after-creation | 
-| F# async | `Async<_>` | async waits | one result | multiple cold starts |  tailcalls |   implicit | implicit | no | |
-| F# taskSeq  | `IAsyncEnumerable<_>` | async waits | multi result | multiple cold starts | no tailcalls |  implicit | explicit |  no | |
-| F# asyncSeq | `AsyncSeq<_>` | async waits | multi result | multiple cold starts |  tailcalls | implicit | implicit | no | |
+|    | produces | async-waits |  results | hot/cold/multi   |  tailcalls  | cancellation token propagation | cancellation checks | explicitly schedulable | boxing |
+|:----:|:-----:|:-----:|:-------:|:------:|:------:|:---------:|:--------:|:---------:|:---------:|
+| normal code | `T` | no async waits | one result | once, hot start |  tailcalls |   explicit | explicit |  no | |
+| [cancellable](https://github.com/dotnet/fsharp/blob/main/src/fsharp/absil/illib.fs#L716) | `Cancellable<_>` |  no async waits | one result |  multiple cold starts |  tailcalls |   implicit | implicit | no | |
+| [resumable](https://github.com/dotnet/fsharp/blob/main/src/fsharp/absil/illib.fs#L837) |   `Resumable<_>` | no async wait | one result |  multiple cold starts |  tailcalls |   implicit | implicit | yes | |
+| seq | `IEnumerable<_>` | no async waits | multiple results | multiple cold starts | tailcalls | explicit | explicit | no | |
+| task |  `Task<_>` |  async waits | one result | once, hotstart |  no-tailcalls |   explicit | explicit | no | |
+| vtask |  `ValueTask<_>` |  async waits | one result | once, hotstart |  no-tailcalls |   explicit | explicit | no | box-after-creation | 
+| async | `Async<_>` | async waits | one result | multiple cold starts |  tailcalls |   implicit | implicit | no | |
+| taskSeq  | `IAsyncEnumerable<_>` | async waits | multi result | multiple cold starts | no tailcalls |  implicit | explicit |  no | |
+| asyncSeq | `AsyncSeq<_>` | async waits | multi result | multiple cold starts |  tailcalls | implicit | implicit | no | |
 
 
 # Design Philosophy and Principles
