@@ -34,6 +34,21 @@ There are enough variations on such computation expressions (for example, whethe
 that it is better to provide a general mechanism in F# that allows the efficient compilation of a large range of
 such constructs rather than baking each into the F# compiler.
 
+To examine the variation in asynchronous and resumable control constructs, consider the following categorization:
+
+|    | produces | async-waits |  results | hot/cold/multi   |  tailcalls  | cancellation token propagation | cancellation checks | explicitly schedulable/pausable | boxing |
+|:----:|:-----:|:-----:|:-------:|:------:|:------:|:---------:|:--------:|:---------|
+| F# normal code | `T` | no async waits | one result | once, hot start |  tailcalls |   explicit | explicit |  no | |
+| [F# cancellable](https://github.com/dotnet/fsharp/blob/main/src/fsharp/absil/illib.fs#L716) | `Cancellable<_>` |  no async waits | one result |  multiple cold starts |  tailcalls |   implicit | implicit | no | |
+| [F# resumable](https://github.com/dotnet/fsharp/blob/main/src/fsharp/absil/illib.fs#L837) |   `Resumable<_>` | no async wait | one result |  multiple cold starts |  tailcalls |   implicit | implicit | yes | |
+| F# seq | `IEnumerable<_>` | no async waits | multiple results | multiple cold starts | tailcalls | explicit | explicit | no | |
+| F# task |  `Task<_>` |  async waits | one result | once, hotstart |  no-tailcalls |   explicit | explicit | no | |
+| F# vtask |  `ValueTask<_>` |  async waits | one result | once, hotstart |  no-tailcalls |   explicit | explicit | no | box-after-creation | 
+| F# async | `Async<_>` | async waits | one result | multiple cold starts |  tailcalls |   implicit | implicit | no | |
+| F# taskSeq  | `IAsyncEnumerable<_>` | async waits | multi result | multiple cold starts | no tailcalls |  implicit | explicit |  no | |
+| F# asyncSeq | `AsyncSeq<_>` | async waits | multi result | multiple cold starts |  tailcalls | implicit | implicit | no | |
+
+
 # Design Philosophy and Principles
 
 The general mechanism has a very similar effect to adding [co-routines](https://en.wikipedia.org/wiki/Coroutine) to the F# language and runtime.
