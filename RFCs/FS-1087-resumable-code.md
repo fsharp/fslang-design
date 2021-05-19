@@ -724,7 +724,7 @@ At high approximation a Coroutine is Task<unit> without async I/O allowed. They 
 > * exceptions get stored away when they happen
 > * you get to return a result `Task<T>` (which makes them more "functional" and type-safe)
 
-See [coroutineBasic.fs](https://github.com/dotnet/fsharp/blob/feature/tasks/tests/fsharp/perf/tasks/FS/coroutineBasic.fs).
+See [coroutineBasic.fs](https://github.com/dotnet/fsharp/blob/feature/tasks/tests/fsharp/perf/tasks/TaskPerf/coroutineBasic.fs).
 
 In this example we show how to use resumable code to define a computation expression for a basic form of coroutines. The logical
 properties are:
@@ -1002,7 +1002,7 @@ While there are improvements that can be made here, the JIT will perform obvious
 
 ## Example: coroutine { ... } with tailcalls
 
-See [coroutine.fs](https://github.com/dotnet/fsharp/blob/feature/tasks/tests/fsharp/perf/tasks/FS/coroutine.fs).
+See [coroutine.fs](https://github.com/dotnet/fsharp/blob/feature/tasks/tests/fsharp/perf/tasks/TaskPerf/coroutine.fs).
 
 This is for state machine compilation of coroutine computation expressions that support yielding and tailcalls.
 
@@ -1012,7 +1012,7 @@ See [tasks.fs](https://github.com/dotnet/fsharp/blob/feature/tasks/src/fsharp/FS
 
 ## Example: taskSeq { ... }
 
-See [taskSeq.fs](https://github.com/dotnet/fsharp/blob/feature/tasks/tests/fsharp/perf/tasks/FS/taskSeq.fs).
+See [taskSeq.fs](https://github.com/dotnet/fsharp/blob/feature/tasks/tests/fsharp/perf/tasks/TaskPerf/taskSeq.fs).
 
 This is for state machine compilation of computation expressions that generate `IAsyncEnumerable<'T>` values. This is a headline C# 8.0 feature and a very large feature for C#.  It appears to mostly drop out as library code once general-purpose state machine support is available.
 
@@ -1020,9 +1020,9 @@ This is for state machine compilation of computation expressions that generate `
 
 I did a trial re-implementation of F# async (imperfectly and only a subset of the API) using resumable code. You can take a look at the subset that's implemented by looking in the signature file
 
-* Implementation: https://github.com/dotnet/fsharp/blob/feature/tasks/tests/fsharp/perf/tasks/FS/async2.fs
+* Implementation: https://github.com/dotnet/fsharp/blob/feature/tasks/tests/fsharp/perf/tasks/TaskPerf/async2.fs
 
-* Signature fle: https://github.com/dotnet/fsharp/blob/feature/tasks/tests/fsharp/perf/tasks/FS/async2.fsi
+* Signature fle: https://github.com/dotnet/fsharp/blob/feature/tasks/tests/fsharp/perf/tasks/TaskPerf/async2.fsi
 
 Recall how async differs from tasks:
 
