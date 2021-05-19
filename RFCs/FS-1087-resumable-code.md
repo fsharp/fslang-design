@@ -1290,27 +1290,18 @@ The heart of a typical state machine is a `MoveNext` or `Step` function that tak
 
 This is roughly what compiled `seq { ... }` code looks like in F# today and what compiled async/await code looks like in C#, at a very high level. Note that, you can't write this kind of code directly in F# - there is no `goto` and especially not a `goto` that can jump directly into other code, resuming from the last step of the state machine.  
 
-# Unresolved questions and notes from review
 
-* [ ] Review Ply, e.g. `vtask { ... }` for ValueTask. Is it possible to define this from the outside? 
-      Answer: it's almost simple to define from the outside, but a different AsyncValueTaskMethodBuilder thing is
-      needed, so you probably have to replicate all of tasks.fs.
+# Resolved issues from review
 
-* [ ] remove ResumptionDynamicInfo from the generated state machines 
+* [x] we should also verify the stacktraces are minimal and complete. Specifically we should test post-yield exceptions.
 
-* [ ] we should also verify the stacktraces are minimal and complete. Specifically we should test post-yield exceptions
-
-* [ ] Looks like there are a bunch of task { ... } tests we should lift over from Ply
-
-* [ ] check generated ASM code 
-
-  > Nino says: I've been following many of the runtime advancements in the past few years and it's doing a much better job at F# code these days but the benchmarks do suggest the runtime isn't able to reduce all of it to C# level output
-
-* [ ] We need to generate `CompilerGenerated` on the state machine types, for better debugging, see https://github.com/dotnet/coreclr/pull/15781 and
+* [x] We need to generate `CompilerGenerated` on the state machine types, for better debugging, see https://github.com/dotnet/coreclr/pull/15781 and
       the changes to do this in Ply. https://github.com/crowded/ply/blob/master/Ply.fs#L93. This is related to the state machine detection code
       in CoreCLR that runs while generating stack traces, see https://github.com/dotnet/runtime/blob/main/src/libraries/System.Private.CoreLib/src/System/Diagnostics/StackTrace.cs#L396.
       
-* [ ] Bind task `use!` to IAsyncDisposable? `use` desugars to builder.Using and we could overload that on both IDisposable and IAsyncDisposable.
+* [x] remove ResumptionDynamicInfo from the generated state machines 
+
+* [x] Bind task `use!` to IAsyncDisposable? `use` desugars to builder.Using and we could overload that on both IDisposable and IAsyncDisposable.
       If types  support both we sort out a priority
 
       ```fsharp
@@ -1318,7 +1309,18 @@ This is roughly what compiled `seq { ... }` code looks like in F# today and what
              .. }
       ```
        
+* Should we support `vtask { ... }` or `valueTask { ... }` for ValueTask?
 
+  Answer: Not as yet. It's almost simple to define from the outside, but a different AsyncValueTaskMethodBuilder thing is
+  needed, so you probably have to replicate all of tasks.fs with a different state machine type.
+  We could engineer tasks.fs based on AsyncValueTaskMethodBuilder but it is only in netstandard2.1,
+  so that would mean no tasks on .NET Framework.  
+
+# Unresolved questions and notes from review
+
+* [ ] check generated ASM code 
+
+  > Nino says: I've been following many of the runtime advancements in the past few years and it's doing a much better job at F# code these days but the benchmarks do suggest the runtime isn't able to reduce all of it to C# level output
 
 
 # FAQ
@@ -1327,7 +1329,7 @@ This is roughly what compiled `seq { ... }` code looks like in F# today and what
 
 @dsyme replies
 
-> Coroutines are almost a no-op to build on the mechanism - they're in the examples for educational purposes,
+> Coroutines are almost a no-op to build on the mechanism - they're in the examples for educational purposes.
 > I'm not planning on adding them to F# as such, though users could define them.  So in that sense it's
 > essentially adding co-routines, though there is no specific type for co-routines in the library.
 
