@@ -89,6 +89,104 @@ to the appropriate design pattern. See the SRTP constraints for `Bind` and `Retu
 
 There is no direct way to produce a `ValueTask` using the `task { ... }` builder.  
 
+### Producing non-generic Task values
+
+In this RFC there is no specific support for a `unitTask { ... }`, instead you should use `task { ... } :> Task` or define `Task.Ignore`:
+
+```fsharp
+module Task =
+    let Ignore(t: Task<unit>) = (t :> Task)
+```
+
+### Producing ValueTask values
+
+In this RFC there is no specific support for producing `ValueTask<_>` or `ValueTask` struct values.  Instead
+use
+
+    task { ... } |> ValueTask
+    
+which produces a `ValueTask<_>` of the right type.  This incurs an allocation. 
+
+
+A `vtask { ... }` is definable as a user-library using resumable code,  replicating all of tasks.fs with a different state machine type  
+
+> NOTE: It would in theory have been possible to engineer `tasks.fs` using ValueTask production at the core.  
+> from the outside, but this uses AsyncValueTaskMethodBuilder, which is only in netstandard2.1,
+> and this would mean no task support on .NET Framework.  
+
+### IAsyncDisposable
+
+If `netstandard2.1` FSHarp.Core.dll or higher is referenced, then the following method is available directly on the TaskBuilder type:
+
+```fsharp
+type TaskBuilderBase =
+     ...
+     member inline Using<'Resource, 'TOverall, 'T when 'Resource :> IAsyncDisposable> : resource: 'Resource * body: ('Resource -> TaskCode<'TOverall, 'T>) -> TaskCode<'TOverall, 'T>
+     ...
+```
+
+A second method is provided for IDisposable as an extension method, which acts as a low-priority method overload. This means the IAsyncDisposable
+overload is preferred over the IDisposable overload for types that support both interfaces.
+```fsharp
+module TaskHelpers = 
+    type TaskBuilderBase with
+        /// Low-priority method overload for 'Disposable', the 'IAsyncDisposable' is preferred if it is a feasible candidate
+        member inline Using: resource: 'Resource * body: ('Resource -> TaskCode<'TOverall, 'T>) -> TaskCode<'TOverall, 'T> when 'Resource :> IDisposable
+```
+
+This allows `use` and `use!` to bind to `IAsyncDisposable` if present, otherwise `IDisposable`, e.g. 
+
+```fsharp
+let f () =
+    let mutable disposed = 0
+    let t = 
+        task {
+            use d = 
+                { new IAsyncDisposable with 
+                    member __.DisposeAsync() = 
+                        task { 
+                            disposed <- disposed + 1 
+                            printfn $"in disposal, disposed = {disposed}"
+                            do! Task.Delay(10)
+                            disposed <- disposed + 1 
+                            printfn $"after disposal, disposed = {disposed}"
+                        }
+                        |> ValueTask 
+                }
+            printfn $"in using, disposed = {disposed}"
+            do! Task.Delay(10)
+         }
+
+    printfn $"outside using, disposed = {disposed}"
+    t.Wait()
+    printfn $"after full disposal, disposed = {disposed}"
+
+f()
+```
+outputs:
+```
+in using, disposed = 0
+outside using, disposed = 0
+in disposal, disposed = 1
+after disposal, disposed = 2
+after full disposal, disposed = 2
+```
+
+### Background tasks and synchronization context
+
+By default, tasks, like F# async, are "context aware" and schedule continuations to the SynchronizationContext.  This allows
+tasks to serve as cooperatively scheduled interleaved agents executing on a user interface thread.
+
+In practice, it is often intended that tasks be "free threaded" in the .NET thread pool, including their initial execution.
+This can be done using `backgroundTask { ... }`:
+
+```fsharp
+backgroundTask {
+       ...
+}    
+```
+
+See https://github.com/rspeele/TaskBuilder.fs/issues/35 for context and discussion of alternative techniques
 
 ## Feature: Respecting Zero methods in computation expressions 
 
@@ -155,7 +253,7 @@ The following are added to FSharp.Core:
 ```fsharp
 namespace Microsoft.FSharp.Control
 
-type TaskBuilder =
+type TaskBuilderBase =
     member Combine: TaskCode<'TOverall, unit> * TaskCode<'TOverall, 'T> -> TaskCode<'TOverall, 'T>
     member Delay: (unit -> TaskCode<'TOverall, 'T>) -> TaskCode<'TOverall, 'T>
     member For: seq<'T> * ('T -> TaskCode<'TOverall, unit>) -> TaskCode<'TOverall, unit>
@@ -163,34 +261,84 @@ type TaskBuilder =
     member Run: TaskCode<'T, 'T> -> Task<'T>
     member TryFinally: TaskCode<'TOverall, 'T> * (unit -> unit) -> TaskCode<'TOverall, 'T>
     member TryWith: TaskCode<'TOverall, 'T> * (exn -> TaskCode<'TOverall, 'T>) -> TaskCode<'TOverall, 'T>
-    member Using: 'Resource * ('Resource -> TaskCode<'TOverall, 'T>) -> TaskCode<'TOverall, 'T> when 'Resource :> IDisposable
-    member While: (unit -> bool) * TaskCode<'TOverall, unit> -> TaskCode<'TOverall, unit>
+    member inline Using<'Resource, 'TOverall, 'T when 'Resource :> IAsyncDisposable> : resource: 'Resource * body: ('Resource -> TaskCode<'TOverall, 'T>) -> TaskCode<'TOverall,     member While: (unit -> bool) * TaskCode<'TOverall, unit> -> TaskCode<'TOverall, unit>
     member Zero: unit -> TaskCode<'TOverall, unit>
     member ReturnFrom: Task<'T> -> TaskCode<'T, 'T>
+
+[<AutoOpen>]
+module TaskHelpers = 
+    type TaskBuilderBase with
+        /// Low-priority method overload for 'Disposable', the 'IAsyncDisposable' is preferred if it is a feasible candidate
+        member inline Using: resource: 'Resource * body: ('Resource -> TaskCode<'TOverall, 'T>) -> TaskCode<'TOverall, 'T> when 'Resource :> IDisposable
+
+type TaskBuilder =
+    inherit TaskBuilderBase
+    member inline Run: code: TaskCode<'T, 'T> -> Task<'T>
+
+type BackgroundTaskBuilder =
+    inherit TaskBuilderBase
+    member inline Run: code: TaskCode<'T, 'T> -> Task<'T>
 
 /// Used to specify fragments of task code
 type TaskCode<'TOverall, 'T> 
 
 [<AutoOpen>]
 module TaskBuilder = 
-    val task : TaskBuilder
+    val task: TaskBuilder
+    val backgroundTask: BackgroundTaskBuilder
 ```
 
 The following are added to support `Bind` and `ReturnFrom` on Tasks and task-like patterns
 ```fsharp
 namespace Microsoft.FSharp.Control
 
+/// Provides evidence that various types can be used in bind and return constructs in task computation expressions
+type TaskWitnesses =
+    interface IPriority1
+    interface IPriority2
+    interface IPriority3
+
+    /// Provides evidence that task-like types can be used in 'bind' in a task computation expression
+    static member inline CanBind< ^TaskLike, ^TResult1, 'TResult2, ^Awaiter, 'TOverall > : priority: IPriority2 * task: ^TaskLike * continuation: ( ^TResult1 -> TaskCode<'TOverall, 'TResult2>)
+            -> TaskCode<'TOverall, 'TResult2>
+                                        when  ^TaskLike: (member GetAwaiter:  unit ->  ^Awaiter)
+                                        and ^Awaiter :> ICriticalNotifyCompletion
+                                        and ^Awaiter: (member get_IsCompleted:  unit -> bool)
+                                        and ^Awaiter: (member GetResult:  unit ->  ^TResult1) 
+
+    /// Provides evidence that tasks can be used in 'bind' in a task computation expression
+    static member inline CanBind: priority: IPriority1 * task: Task<'TResult1> * continuation: ('TResult1 -> TaskCode<'TOverall, 'TResult2>) -> TaskCode<'TOverall, 'TResult2>
+
+    /// Provides evidence that F# Async computations can be used in 'bind' in a task computation expression
+    static member inline CanBind: priority: IPriority1 * computation: Async<'TResult1> * continuation: ('TResult1 -> TaskCode<'TOverall, 'TResult2>) -> TaskCode<'TOverall, 'TResult2>
+
+    /// Provides evidence that task-like types can be used in 'return' in a task workflow
+    static member inline CanReturnFrom< ^TaskLike, ^Awaiter, ^T> : priority: IPriority2 * task: ^TaskLike -> TaskCode< ^T, ^T > 
+            when  ^TaskLike: (member GetAwaiter:  unit ->  ^Awaiter)
+            and ^Awaiter :> ICriticalNotifyCompletion
+            and ^Awaiter: (member get_IsCompleted: unit -> bool)
+            and ^Awaiter: (member GetResult: unit ->  ^T)
+
+    /// Provides evidence that tasks can be used in 'return' in a task workflow
+    static member inline CanReturnFrom: priority: IPriority1 * task: Task<'T> -> TaskCode<'T, 'T>
+
+    /// Provides evidence that F# Async computations can be used in 'return' in a task computation expression
+    static member inline CanReturnFrom: priority: IPriority1 * computation: Async<'T> -> TaskCode<'T, 'T>
+
 [<AutoOpen>]
-module ContextSensitiveTasks =
-    type TaskWitnesses = <TBD>
+module TaskHelpers = 
 
-    [<AutoOpen>]
-    module TaskHelpers = 
+    type TaskBuilderBase with 
+        /// Provides the ability to bind to a variety of tasks, using context-sensitive semantics
+        member inline Bind< ^TaskLike, ^TResult1, 'TResult2, 'TOverall
+                                when (TaskWitnesses or  ^TaskLike): (static member CanBind: TaskWitnesses * ^TaskLike * (^TResult1 -> TaskCode<'TOverall, 'TResult2>) -> TaskCode<'TOverall, 'TResult2>)> :
+                            task: ^TaskLike * 
+                            continuation: (^TResult1 -> TaskCode<'TOverall, 'TResult2>)
+                                -> TaskCode<'TOverall, 'TResult2>        
 
-        type TaskBuilder with 
-            member Bind: ^TaskLike * (^TResult1 -> TaskCode<'TOverall, 'TResult2>) -> TaskCode<'TOverall, 'TResult2> (+ SRTP constaint for Bind)
-
-            member ReturnFrom: ^TaskLike -> TaskCode< 'T, 'T > (+ SRTP constaint for CanReturnFrom)
+        /// Provides the ability to bind to a variety of tasks, using context-sensitive semantics
+        member inline ReturnFrom: task: ^TaskLike -> TaskCode< 'T, 'T >
+            when (TaskWitnesses or  ^TaskLike): (static member CanReturnFrom: TaskWitnesses * ^TaskLike -> TaskCode<'T, 'T>)
 ```
 
 See the implementation source code for the exact specification of the SRTP constraints added.
@@ -222,7 +370,7 @@ type TaskStateMachine<'T> =
 
 The following are necessarily revealed in the public surface area of FSharp.Core to support reflective execution of quotations that create tasks, as part of the inline residue of the corresponding inlined builder methods:
 ```fsharp
-type TaskBuilder =
+type TaskBuilderBase =
     static member RunDynamic: code: TaskCode<'T, 'T> -> Task<'T>
     static member CombineDynamic: task1: TaskCode<'TOverall, unit> * task2: TaskCode<'TOverall, 'T> -> TaskCode<'TOverall, 'T>
     static member WhileDynamic: condition: (unit -> bool) * body: TaskCode<'TOverall, unit> -> TaskCode<'TOverall, unit>
@@ -309,7 +457,7 @@ Complexity
 
 # Alternatives
 
-1. Don't do it.
+1. Don't do it, keep using TaskBuilder.fs
 
 # Compatibility
 
