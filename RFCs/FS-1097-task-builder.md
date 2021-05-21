@@ -54,6 +54,13 @@ Binding to (task-like) `YieldAwaitable` values:
         return 1 + x
     }
 ```
+Binding to (non-generic) F# `Async` values:
+```fsharp
+    task {
+        do! Async.Sleep(1)
+        return 1
+    }
+```
 Nested tasks:
 ```fsharp
     task {
@@ -80,6 +87,10 @@ Tasks are executed immediately to their first await point. For example:
             x <- x + 1
         }
     printfn "x = %d" x // prints "x = 1"
+```
+Background tasks (ignoring any SynchronizationContext, starting in thread pool)
+```fsharp
+backgroundTask { return doSomethingLong() }
 ```
 
 ### Binding to Task-like values
