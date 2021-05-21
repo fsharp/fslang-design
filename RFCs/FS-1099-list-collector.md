@@ -1,4 +1,4 @@
-# F# RFC FS-1099 - Compiler helpers for list mutators
+# F# RFC FS-1099 - list collector
 
 During work on FS-1087 and FS-1097, it became obvious that it's possible to build a substantially fast `list { ... }` builder
 of `[ .. ]` implementation if we allow FSharp.Core to include compiler/builder-use-only helpers for
