@@ -287,47 +287,72 @@ match the type returned by the overall task.
 
 ## Library additions 
 
-The following are added to FSharp.Core:
-```fsharp
-namespace Microsoft.FSharp.Control
+We show the library additions in segments.  
 
+### TaskCode, TaskBuilderBase, TaskBuilder
+
+The basic contents of these are shown below:
+
+```fsharp
 type TaskBuilderBase =
     member inline Combine: TaskCode<'TOverall, unit> * TaskCode<'TOverall, 'T> -> TaskCode<'TOverall, 'T>
     member inline Delay: (unit -> TaskCode<'TOverall, 'T>) -> TaskCode<'TOverall, 'T>
     member inline For: seq<'T> * ('T -> TaskCode<'TOverall, unit>) -> TaskCode<'TOverall, unit>
     member inline Return: 'T -> TaskCode<'T, 'T>
-    member inline Run: TaskCode<'T, 'T> -> Task<'T>
     member inline TryFinally: TaskCode<'TOverall, 'T> * (unit -> unit) -> TaskCode<'TOverall, 'T>
     member inline TryWith: TaskCode<'TOverall, 'T> * (exn -> TaskCode<'TOverall, 'T>) -> TaskCode<'TOverall, 'T>
     member inline Using<'Resource, 'TOverall, 'T when 'Resource :> IAsyncDisposable> : resource: 'Resource * body: ('Resource -> TaskCode<'TOverall, 'T>) -> TaskCode<'TOverall,     member inline While: (unit -> bool) * TaskCode<'TOverall, unit> -> TaskCode<'TOverall, unit>
     member inline Zero: unit -> TaskCode<'TOverall, unit>
 
-[<AutoOpen>]
-namespace Microsoft.FSharp.Control.TaskBuilderExtensions
-
-    module LowPriority = 
-    
-        /// Low-priority method overload for 'Disposable', the 'IAsyncDisposable' is preferred if it is a feasible candidate
-        member inline Using: resource: 'Resource * body: ('Resource -> TaskCode<'TOverall, 'T>) -> TaskCode<'TOverall, 'T> when 'Resource :> IDisposable
-
 type TaskBuilder =
     inherit TaskBuilderBase
     member inline Run: code: TaskCode<'T, 'T> -> Task<'T>
 
-type BackgroundTaskBuilder =
-    inherit TaskBuilderBase
-    member inline Run: code: TaskCode<'T, 'T> -> Task<'T>
-
-/// Used to specify fragments of task code
-type TaskCode<'TOverall, 'T> 
+type TaskCode<'TOverall, 'T> = ... // see further below
 
 [<AutoOpen>]
 module TaskBuilder = 
     val task: TaskBuilder
+```
+
+### `Using` support
+
+The following are added to support `Using` on Tasks and task-like patterns:
+
+```fsharp
+namespace Microsoft.FSharp.Control
+
+type TaskBuilderBase =
+    ...
+    /// High-priority method overload for 'IAsyncDisposable', preferred if it is a feasible candidate
+    member inline Using: resource: 'Resource * body: ('Resource -> TaskCode<'TOverall, 'T>) -> TaskCode<'TOverall, , 'T> when 'Resource :> IAsyncDisposable
+
+[<AutoOpen>]
+namespace Microsoft.FSharp.Control.TaskBuilderExtensions
+
+    [<AutoOpen>]
+    module LowPriority = 
+    
+        /// Low-priority method overload for 'IDisposable', the 'IAsyncDisposable' is preferred if it is a feasible candidate
+        member inline Using: resource: 'Resource * body: ('Resource -> TaskCode<'TOverall, 'T>) -> TaskCode<'TOverall, 'T> when 'Resource :> IDisposable
+```
+
+### `BackgroundTaskBuilder` support
+
+```fsharp
+type BackgroundTaskBuilder =
+    inherit TaskBuilderBase
+    member inline Run: code: TaskCode<'T, 'T> -> Task<'T>
+
+[<AutoOpen>]
+module TaskBuilder = 
     val backgroundTask: BackgroundTaskBuilder
 ```
 
-The following are added to support `Bind` and `ReturnFrom` on Tasks and task-like patterns
+### Bind, ReturnFrom support
+
+The following are added to support `Bind` and `ReturnFrom` on Tasks and task-like patterns:
+
 ```fsharp
 namespace Microsoft.FSharp.Control.TaskBuilderExtensions
 
@@ -399,7 +424,7 @@ that they count as independent sets of methods for the purposes of extension mem
 ```
 
 
-### Library additions (inlined code residue)
+### Library additions for task state machines
 
 The following are necessarily revealed in the public surface area because they are used within inlined code implementations
 of the `TaskBuilder` methods.  They are not for general use.
@@ -422,7 +447,7 @@ type TaskStateMachine<'TOverall> = ResumableStateMachine<TaskStateMachineData<'T
 
 ```
 
-### Library additions (inline residue for reflective execution of task creation)
+### Library additions (inline residue for dynamic/non-compilable task specification)
 
 The following are necessarily revealed in the public surface area of FSharp.Core to support reflective execution of quotations that create tasks, as part of the inline residue of the corresponding inlined builder methods:
 ```fsharp
@@ -490,9 +515,11 @@ This is a backward compatible addition.
 
 # Resolved questions
 
-* [x] ContextInsensitiveTasks. Resolved in favour of `backgroundTask { ... }`
+* [x] IAsyncDisposable. Resolution: support it
 
-* [x]  warnings for the lack of asynchronous tailcalls in `task { ... }` - we won't do this in this RFC
+* [x] ContextInsensitiveTasks. Resolution: Resolved in favour of `backgroundTask { ... }`
+
+* [x]  warnings for the lack of asynchronous tailcalls in `task { ... }`? Resolution: we won't do this in this RFC
 
 
 
