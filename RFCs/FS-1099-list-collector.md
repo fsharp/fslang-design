@@ -27,7 +27,7 @@ namespace FSharp.Core.CompilerServices
 [<Struct>]
 type ListCollector<'T> =
 
-     member Yield: value: 'T -> unit
+     member Add: value: 'T -> unit
 
      member ToList: unit -> 'T list
 ```
