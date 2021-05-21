@@ -300,8 +300,10 @@ type TaskBuilderBase =
     member inline Zero: unit -> TaskCode<'TOverall, unit>
 
 [<AutoOpen>]
-module TaskHelpers = 
-    type TaskBuilderBase with
+namespace Microsoft.FSharp.Control.TaskBuilderExtensions
+
+    module LowPriority = 
+    
         /// Low-priority method overload for 'Disposable', the 'IAsyncDisposable' is preferred if it is a feasible candidate
         member inline Using: resource: 'Resource * body: ('Resource -> TaskCode<'TOverall, 'T>) -> TaskCode<'TOverall, 'T> when 'Resource :> IDisposable
 
@@ -324,12 +326,10 @@ module TaskBuilder =
 
 The following are added to support `Bind` and `ReturnFrom` on Tasks and task-like patterns
 ```fsharp
-namespace Microsoft.FSharp.Control
-
-/// Contains the `task` computation expression builder.
-module TaskBuilderExtensions = 
+namespace Microsoft.FSharp.Control.TaskBuilderExtensions
 
     /// Contains low-priority overloads for the `task` computation expression builder.
+    [<AutoOpen>]
     module LowPriority = 
 
         type TaskBuilderBase with 
@@ -354,6 +354,7 @@ module TaskBuilderExtensions =
             member inline Using: resource: 'Resource * body: ('Resource -> TaskCode<'TOverall, 'T>) -> TaskCode<'TOverall, 'T> when 'Resource :> IDisposable
 
     /// Provides evidence that various types can be used in bind and return constructs in task computation expressions
+    [<AutoOpen>]
     module MediumPriority =
 
         type TaskBuilderBase with 
@@ -364,6 +365,7 @@ module TaskBuilderExtensions =
             member inline ReturnFrom: computation: Async<'T> -> TaskCode<'T, 'T>
 
     /// Provides evidence that various types can be used in bind and return constructs in task computation expressions
+    [<AutoOpen>]
     module HighPriority =
 
         type TaskBuilderBase with 
@@ -374,7 +376,7 @@ module TaskBuilderExtensions =
             member inline ReturnFrom: task: Task<'T> -> TaskCode<'T, 'T>
 
 ```
-The use of explicit low/medium/high priority extension members for Bind and ReturnFrom ensure that Task binding is preferred, for these reasons
+The use of explicit low/medium/high priority extension member modules for `Bind` and `ReturnFrom` ensure that `Task` binding is preferred, for these reasons
 
 1. Task satisfies the Task-like pattern, thus avoiding ambiguities
 
@@ -382,7 +384,10 @@ The use of explicit low/medium/high priority extension members for Bind and Retu
 
 3. Code such as `let f x = task { ... return! failwith "nope" }` compiles, assuming Task
 
-Attributes are added to FSharp.Core to ensure these modules are auto-opened in the right order.
+The use of explicit low/medium/high priority extension member modules for `Using` ensures the `IAsyncDisposable` binding is preferred.
+
+Although marked `AutoOpen` above, assembly attributes are actually used to ensure these modules are auto-opened in the right order and
+that they count as independent sets of methods for the purposes of extension member priority.
 
 ```fsharp
     [<assembly: AutoOpen("Microsoft.FSharp.Control.TaskBuilderExtensions.LowPriority")>]
