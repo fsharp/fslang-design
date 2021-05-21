@@ -1,12 +1,13 @@
 # F# RFC FS-1099 - faster computed list and array expressions
 
 During work on FS-1087 and FS-1097, it became obvious that it's possible to build a substantially faster
-`[ .. ]` and `[| .. |]` implementations.
+`[ .. ]` and `[| .. |]` implementations. See also [List Builder](https://github.com/fsharp/fslang-suggestions/issues/926)
+design suggestion.
 
 This suggestion has been "approved in principle".
 This RFC covers the detailed proposal for the resumable state machine support needed for this and other features.
 
-- [x] Approved in principle
+- [x] [Approved in principle](https://github.com/fsharp/fslang-suggestions/issues/926)
 - [x] [RFC Discussion](https://github.com/fsharp/fslang-design/discussions/565)
 - [x] [Implementation](https://github.com/dotnet/fsharp/pull/6811)
 
