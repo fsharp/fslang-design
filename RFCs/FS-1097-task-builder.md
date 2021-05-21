@@ -22,13 +22,17 @@ formed part of prototypes for this RFC (thank you!!!!)
 
 We add support for tasks along the lines of `TaskBuilder.fs`.  This supports
 
-* The standard computation expresion features for imperative code (`Delay`, `Run`, `While`, `For`, `TryWith`, `TryFinally`, `Return`, `Using`)
+* The standard computation expresion features for imperative code (`Delay`, `Run`, `While`, `For`, `TryWith`, `TryFinally`, `Return`)
 
 * `let!` and `return!` on task values
 
 * `let!` and `return!` on async values
 
-* `let!` and `return!` "task-like" values (supporting `task.GetAwaiter`, `awaiter.IsCompleted` and `awaiter.GetResult` members).
+* `let!` and `return!` "task-like" values (supporting `task.GetAwaiter`, `awaiter.IsCompleted` and `awaiter.GetResult` members)
+
+* `use` on both `IDisposable` and `IAsyncDisposable` resources
+
+* `backgroundTask { ... }` to escapte the UI thread synchronization context
 
 For example, a simple task:
 ```fsharp
