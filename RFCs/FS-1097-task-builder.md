@@ -82,6 +82,30 @@ Tasks are executed immediately to their first await point. For example:
     printfn "x = %d" x // prints "x = 1"
 ```
 
+### Binding to Task-like values
+
+Binding to task-like values like `YieldAwaitable` is via SRTP constraints characterising the pattern:
+
+```fsharp
+  member Bind...
+     when  ^TaskLike: (member GetAwaiter:  unit ->  ^Awaiter)
+     and ^Awaiter :> ICriticalNotifyCompletion
+     and ^Awaiter: (member get_IsCompleted:  unit -> bool)
+     and ^Awaiter: (member GetResult:  unit ->  ^TResult1) 
+```
+
+e.g.
+
+Binding to (task-like) `YieldAwaitable` values:
+```fsharp
+    task {
+        let! x = Task.Yield()
+        return 1 + x
+    }
+```
+
+See the library entries below.
+
 ### ValueTask and other bindable values
 
 For `task { ... }`, the constructs  `let!` and `return!` can bind to any `Task` or `ValueTask` or `Async` corresponding
@@ -254,16 +278,15 @@ The following are added to FSharp.Core:
 namespace Microsoft.FSharp.Control
 
 type TaskBuilderBase =
-    member Combine: TaskCode<'TOverall, unit> * TaskCode<'TOverall, 'T> -> TaskCode<'TOverall, 'T>
-    member Delay: (unit -> TaskCode<'TOverall, 'T>) -> TaskCode<'TOverall, 'T>
-    member For: seq<'T> * ('T -> TaskCode<'TOverall, unit>) -> TaskCode<'TOverall, unit>
-    member Return: 'T -> TaskCode<'T, 'T>
-    member Run: TaskCode<'T, 'T> -> Task<'T>
-    member TryFinally: TaskCode<'TOverall, 'T> * (unit -> unit) -> TaskCode<'TOverall, 'T>
-    member TryWith: TaskCode<'TOverall, 'T> * (exn -> TaskCode<'TOverall, 'T>) -> TaskCode<'TOverall, 'T>
-    member inline Using<'Resource, 'TOverall, 'T when 'Resource :> IAsyncDisposable> : resource: 'Resource * body: ('Resource -> TaskCode<'TOverall, 'T>) -> TaskCode<'TOverall,     member While: (unit -> bool) * TaskCode<'TOverall, unit> -> TaskCode<'TOverall, unit>
-    member Zero: unit -> TaskCode<'TOverall, unit>
-    member ReturnFrom: Task<'T> -> TaskCode<'T, 'T>
+    member inline Combine: TaskCode<'TOverall, unit> * TaskCode<'TOverall, 'T> -> TaskCode<'TOverall, 'T>
+    member inline Delay: (unit -> TaskCode<'TOverall, 'T>) -> TaskCode<'TOverall, 'T>
+    member inline For: seq<'T> * ('T -> TaskCode<'TOverall, unit>) -> TaskCode<'TOverall, unit>
+    member inline Return: 'T -> TaskCode<'T, 'T>
+    member inline Run: TaskCode<'T, 'T> -> Task<'T>
+    member inline TryFinally: TaskCode<'TOverall, 'T> * (unit -> unit) -> TaskCode<'TOverall, 'T>
+    member inline TryWith: TaskCode<'TOverall, 'T> * (exn -> TaskCode<'TOverall, 'T>) -> TaskCode<'TOverall, 'T>
+    member inline Using<'Resource, 'TOverall, 'T when 'Resource :> IAsyncDisposable> : resource: 'Resource * body: ('Resource -> TaskCode<'TOverall, 'T>) -> TaskCode<'TOverall,     member inline While: (unit -> bool) * TaskCode<'TOverall, unit> -> TaskCode<'TOverall, unit>
+    member inline Zero: unit -> TaskCode<'TOverall, unit>
 
 [<AutoOpen>]
 module TaskHelpers = 
@@ -292,56 +315,70 @@ The following are added to support `Bind` and `ReturnFrom` on Tasks and task-lik
 ```fsharp
 namespace Microsoft.FSharp.Control
 
-/// Provides evidence that various types can be used in bind and return constructs in task computation expressions
-type TaskWitnesses =
-    interface IPriority1
-    interface IPriority2
-    interface IPriority3
+/// Contains the `task` computation expression builder.
+module TaskBuilderExtensions = 
 
-    /// Provides evidence that task-like types can be used in 'bind' in a task computation expression
-    static member inline CanBind< ^TaskLike, ^TResult1, 'TResult2, ^Awaiter, 'TOverall > : priority: IPriority2 * task: ^TaskLike * continuation: ( ^TResult1 -> TaskCode<'TOverall, 'TResult2>)
-            -> TaskCode<'TOverall, 'TResult2>
-                                        when  ^TaskLike: (member GetAwaiter:  unit ->  ^Awaiter)
-                                        and ^Awaiter :> ICriticalNotifyCompletion
-                                        and ^Awaiter: (member get_IsCompleted:  unit -> bool)
-                                        and ^Awaiter: (member GetResult:  unit ->  ^TResult1) 
+    /// Contains low-priority overloads for the `task` computation expression builder.
+    module LowPriority = 
 
-    /// Provides evidence that tasks can be used in 'bind' in a task computation expression
-    static member inline CanBind: priority: IPriority1 * task: Task<'TResult1> * continuation: ('TResult1 -> TaskCode<'TOverall, 'TResult2>) -> TaskCode<'TOverall, 'TResult2>
+        type TaskBuilderBase with 
+            /// Specifies a unit of task code which draws a result from a task-like value
+            /// satisfying the GetAwaiter pattern and calls a continuation.
+            member inline Bind< ^TaskLike, ^TResult1, 'TResult2, ^Awaiter, 'TOverall > :
+                task: ^TaskLike * continuation: ( ^TResult1 -> TaskCode<'TOverall, 'TResult2>) -> TaskCode<'TOverall, 'TResult2>
+                    when  ^TaskLike: (member GetAwaiter:  unit ->  ^Awaiter)
+                    and ^Awaiter :> ICriticalNotifyCompletion
+                    and ^Awaiter: (member get_IsCompleted:  unit -> bool)
+                    and ^Awaiter: (member GetResult:  unit ->  ^TResult1) 
 
-    /// Provides evidence that F# Async computations can be used in 'bind' in a task computation expression
-    static member inline CanBind: priority: IPriority1 * computation: Async<'TResult1> * continuation: ('TResult1 -> TaskCode<'TOverall, 'TResult2>) -> TaskCode<'TOverall, 'TResult2>
+            /// Specifies a unit of task code which draws its result from a task-like value
+            /// satisfying the GetAwaiter pattern.
+            member inline ReturnFrom< ^TaskLike, ^Awaiter, ^T> : task: ^TaskLike -> TaskCode< ^T, ^T > 
+                    when  ^TaskLike: (member GetAwaiter:  unit ->  ^Awaiter)
+                    and ^Awaiter :> ICriticalNotifyCompletion
+                    and ^Awaiter: (member get_IsCompleted: unit -> bool)
+                    and ^Awaiter: (member GetResult: unit ->  ^T)
 
-    /// Provides evidence that task-like types can be used in 'return' in a task workflow
-    static member inline CanReturnFrom< ^TaskLike, ^Awaiter, ^T> : priority: IPriority2 * task: ^TaskLike -> TaskCode< ^T, ^T > 
-            when  ^TaskLike: (member GetAwaiter:  unit ->  ^Awaiter)
-            and ^Awaiter :> ICriticalNotifyCompletion
-            and ^Awaiter: (member get_IsCompleted: unit -> bool)
-            and ^Awaiter: (member GetResult: unit ->  ^T)
+            /// Specifies a unit of task code which binds to the resource implementing IDisposable and disposes it synchronously
+            member inline Using: resource: 'Resource * body: ('Resource -> TaskCode<'TOverall, 'T>) -> TaskCode<'TOverall, 'T> when 'Resource :> IDisposable
 
-    /// Provides evidence that tasks can be used in 'return' in a task workflow
-    static member inline CanReturnFrom: priority: IPriority1 * task: Task<'T> -> TaskCode<'T, 'T>
+    /// Provides evidence that various types can be used in bind and return constructs in task computation expressions
+    module MediumPriority =
 
-    /// Provides evidence that F# Async computations can be used in 'return' in a task computation expression
-    static member inline CanReturnFrom: priority: IPriority1 * computation: Async<'T> -> TaskCode<'T, 'T>
+        type TaskBuilderBase with 
+            /// Specifies a unit of task code which draws a result from an F# async value then calls a continuation.
+            member inline Bind: computation: Async<'TResult1> * continuation: ('TResult1 -> TaskCode<'TOverall, 'TResult2>) -> TaskCode<'TOverall, 'TResult2>
 
-[<AutoOpen>]
-module TaskHelpers = 
+            /// Specifies a unit of task code which draws a result from an F# async value.
+            member inline ReturnFrom: computation: Async<'T> -> TaskCode<'T, 'T>
 
-    type TaskBuilderBase with 
-        /// Provides the ability to bind to a variety of tasks, using context-sensitive semantics
-        member inline Bind< ^TaskLike, ^TResult1, 'TResult2, 'TOverall
-                                when (TaskWitnesses or  ^TaskLike): (static member CanBind: TaskWitnesses * ^TaskLike * (^TResult1 -> TaskCode<'TOverall, 'TResult2>) -> TaskCode<'TOverall, 'TResult2>)> :
-                            task: ^TaskLike * 
-                            continuation: (^TResult1 -> TaskCode<'TOverall, 'TResult2>)
-                                -> TaskCode<'TOverall, 'TResult2>        
+    /// Provides evidence that various types can be used in bind and return constructs in task computation expressions
+    module HighPriority =
 
-        /// Provides the ability to bind to a variety of tasks, using context-sensitive semantics
-        member inline ReturnFrom: task: ^TaskLike -> TaskCode< 'T, 'T >
-            when (TaskWitnesses or  ^TaskLike): (static member CanReturnFrom: TaskWitnesses * ^TaskLike -> TaskCode<'T, 'T>)
+        type TaskBuilderBase with 
+            /// Specifies a unit of task code which draws a result from a task then calls a continuation.
+            member inline Bind: task: Task<'TResult1> * continuation: ('TResult1 -> TaskCode<'TOverall, 'TResult2>) -> TaskCode<'TOverall, 'TResult2>
+
+            /// Specifies a unit of task code which draws a result from a task.
+            member inline ReturnFrom: task: Task<'T> -> TaskCode<'T, 'T>
+
+```
+The use of explicit low/medium/high priority extension members for Bind and ReturnFrom ensure that Task binding is preferred, for these reasons
+
+1. Task satisfies the Task-like pattern, thus avoiding ambiguities
+
+2. Code such as `let f x = task { let! v = x in return v + v }` compiles, assuming Task
+
+3. Code such as `let f x = task { ... return! failwith "nope" }` compiles, assuming Task
+
+Attributes are added to FSharp.Core to ensure these modules are auto-opened in the right order.
+
+```fsharp
+    [<assembly: AutoOpen("Microsoft.FSharp.Control.TaskBuilderExtensions.LowPriority")>]
+    [<assembly: AutoOpen("Microsoft.FSharp.Control.TaskBuilderExtensions.MediumPriority")>]
+    [<assembly: AutoOpen("Microsoft.FSharp.Control.TaskBuilderExtensions.HighPriority")>]
 ```
 
-See the implementation source code for the exact specification of the SRTP constraints added.
 
 ### Library additions (inlined code residue)
 
