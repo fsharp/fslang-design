@@ -21,12 +21,6 @@ Any variation on this will require FSharp.Core library intrinsic helpers.
 
 We add `SetFreshConsTail` and `FreshConsNoTail` helpers to RuntimeHelpers for this scenario
 
-In theory this makes FSharp.Core lists mutable.  However
-* the warnings given in the CompilerMessage warn against it's use
-* other CompilerMessage-like library intrinsics exist (e.g. `(# " ... " #)` assembly code) that can be used to hack objects
-* in practice users can actually mutate lists by using reflection, and we can't stop that.
-* the long-term performance gains for list-building operations will be a bigger gain given how performance-critical these can be.
-
 
 # Detailed Design 
 ```fsharp
@@ -44,7 +38,20 @@ module RuntimeHelpers =
 
 # Drawbacks
 
-See above
+This makes FSharp.Core lists mutable, from a purist logical perspective.  However
+* the warnings given in the CompilerMessage warn against it's use
+
+* other CompilerMessage-like library intrinsics exist (e.g. `(# " ... " #)` assembly code) that can be used to hack objects
+
+* in practice users can actually mutate lists by using reflection, and we can't stop that.
+
+* the long-term performance gains for list-building operations will be a bigger gain given how performance-critical these can be.
+
+* Since .NET Core there is no longer any pretence that the .NET type system implements an absolute trust-boundary - it
+  is there to establish software engineering properties. For example code access
+  security has been removed, as has partial trust execution. Further, F# the logical immutability of F# lists isn't part of
+  any trust boundary even on .NET Framework aren't beyond the level of a programming team's expectations.  There are numerous
+  low-level mechanisms that can be abused (e.g. private reflection and mutation), this adds another but for good reasons.
 
 # Unresolved questions
 
