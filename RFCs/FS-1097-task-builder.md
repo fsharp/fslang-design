@@ -385,21 +385,21 @@ Attributes are added to FSharp.Core to ensure these modules are auto-opened in t
 The following are necessarily revealed in the public surface area because they are used within inlined code implementations
 of the `TaskBuilder` methods.  They are not for general use.
 ```fsharp
-type TaskCode<'TOverall, 'T> = delegate of byref<TaskStateMachine<'TOverall>> -> bool 
+/// A special compiler-recognised delegate type for specifying blocks of task code with access to the state machine.
+type TaskCode<'TOverall, 'T> = ResumableCode<TaskStateMachineData<'TOverall>, 'T>
 
-/// This is used by the compiler as a template for creating state machine structs
 [<Struct>]
-type TaskStateMachine<'T> =
-
+[<CompilerMessage("This construct  is for use by compiled F# code and should not be used directly", 1204, IsHidden=true)>]
+/// The extra data stored in ResumableStateMachine for tasks
+type TaskStateMachineData<'T> =
     /// Holds the final result of the state machine
     val mutable Result : 'T
 
-    /// When statically compiled, holds the continuation goto-label further execution of the state machine
-    val mutable ResumptionPoint : int
-
+    /// Holds the MethodBuilder for the state machine
     val mutable MethodBuilder : AsyncTaskMethodBuilder<'T>
 
-    interface IAsyncStateMachine
+/// This is used by the compiler as a template for creating state machine structs
+type TaskStateMachine<'TOverall> = ResumableStateMachine<TaskStateMachineData<'TOverall>>
 
 ```
 
@@ -414,43 +414,7 @@ type TaskBuilderBase =
     static member TryFinallyDynamic: body: TaskCode<'TOverall, 'T> * fin: (unit -> unit) -> TaskCode<'TOverall, 'T>
     static member TryWithDynamic: body: TaskCode<'TOverall, 'T> * catch: (exn -> TaskCode<'TOverall, 'T>) -> TaskCode<'TOverall, 'T>
     static member ReturnFromDynamic: task: Task<'T> -> TaskCode<'T, 'T>
-
-[<Struct>]
-type TaskStateMachine<'T> =
-    ...
-    /// When dynamically invoked, holds the continuation for the further execution of the state machine
-    val mutable ResumptionFunc : TaskMachineFunc<'T>
-
-    /// When dynamically invoked, holds the awaiter used to suspend of the state machine
-    val mutable Awaiter : ICriticalNotifyCompletion
-
-/// When dynamically invoked, represents a resumption for task code
-type TaskMachineFunc<'TOverall> = delegate of byref<TaskStateMachine<'TOverall>> -> bool
 ```
-
-### Library additions (priorities for SRTP witnesses)
-
-This design uses a SRTPs to charactize the "Task-like" pattern.  This in turn uses the "priority specification pattern" in the
-possible witnesses for SRTPs.
-
-To enable this pattern we add three interfaces in hierarchy order to `FSharp.Core.CompilerServices`:
-```fsharp
-namespace FSharp.Core.CompilerServices
-
-/// A marker interface to give priority to different available overloads.
-type IPriority3 = interface end
-
-/// A marker interface to give priority to different available overloads. Overloads using a
-/// parameter of this type will be preferred to overloads with IPriority3,
-/// all else being equal.
-type IPriority2 = interface inherit IPriority3 end
-
-/// A marker interface to give priority to different available overloads. Overloads using a
-/// parameter of this type will be preferred to overloads with IPriority2 or IPriority3,
-/// all else being equal.
-type IPriority1 = interface inherit IPriority2 end
-```
-
 
 # Performance
 
@@ -492,18 +456,25 @@ information on asynchronous tailcalls in the F# async programming model.
 
 Complexity
 
+Lack of tailcalls.
+
+
 # Alternatives
 
 1. Don't do it, keep using TaskBuilder.fs
+
+2. Build it all into the compiler. Ugh
 
 # Compatibility
 
 This is a backward compatible addition.
 
-# Unresolved questions
+# Resolved questions
 
-* [ ] ContextInsensitiveTasks
+* [x] ContextInsensitiveTasks. Resolved in favour of `backgroundTask { ... }`
 
-* [ ] consider warnings for the lack of asynchronous tailcalls in `task { ... }`
+* [x]  warnings for the lack of asynchronous tailcalls in `task { ... }` - we won't do this in this RFC
+
+
 
 
