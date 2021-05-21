@@ -1,8 +1,7 @@
-# F# RFC FS-1099 - list collector
+# F# RFC FS-1099 - faster computed list and array expressions
 
-During work on FS-1087 and FS-1097, it became obvious that it's possible to build a substantially fast `list { ... }` builder
-of `[ .. ]` implementation if we allow FSharp.Core to include compiler/builder-use-only helpers for
-implementing tail-cons mutation on F# lists.
+During work on FS-1087 and FS-1097, it became obvious that it's possible to build a substantially faster
+`[ .. ]` and `[| .. |]` implementations.
 
 This suggestion has been "approved in principle".
 This RFC covers the detailed proposal for the resumable state machine support needed for this and other features.
@@ -13,12 +12,7 @@ This RFC covers the detailed proposal for the resumable state machine support ne
 
 # Summary
 
-During work on FS-1087 and FS-1097, it became obvious that it's possible to build a substantially fast `list { ... }` builder
-if we allow FSharp.Core to include compiler helpers for implementing tail-cons mutation on F# lists.
-
-Any variation on this will require FSharp.Core library intrinsic helpers. @dsyme says it is 100% certain this will
-be needed for the inlined code for faster implementations of `[ ... ]` in the future.
-
+TBD
 
 # Detailed Design 
 ```fsharp
@@ -29,20 +23,28 @@ type ListCollector<'T> =
 
      member Add: value: 'T -> unit
 
-     member ToList: unit -> 'T list
+     member Close: unit -> 'T list
+
+[<Struct>]
+type ArrayCollector<'T> =
+
+     member Add: value: 'T -> unit
+
+     member Close: unit -> 'T []
 ```
 
-After `ToList` is called the ListCollector is reset to the empty state.
+
+After `Close` is called the collectors are reset to the empty state.
 
 Example
 ```fsharp
 let mutable c = ListCollector<int>()
-c.Yield(1)
-c.Yield(2)
-c.ToList()
+c.Add(1)
+c.Add(2)
+c.Close()
 
 let mutable c2 = ListCollector<int>()
-c2.ToList()
+c2.Close()
 ```
 
 # Drawbacks
