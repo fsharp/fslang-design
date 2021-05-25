@@ -100,7 +100,7 @@ let (data: A option) = Some (B())  // ❌ error FS0001: This expression was expe
 f2 (Some (B())                     // ❌ error FS0001: This expression was expected to have type 'A' but here has type 'B'
 ```
 
-Instead, in all cases, prior to this RFC type upcasts of `box` are needed:
+Instead, in all cases, prior to this RFC type upcasts or `box` are needed:
 ```fsharp
 let a : int seq = ([1; 2; 3] :> int seq)
 let b : obj seq = ([box 1; box 2; box 3] :> int seq)
@@ -109,7 +109,7 @@ let (data: A option) = Some (B() :> _)
 f2 (Some (B() :> _)
 ```
 
-The requirement to make upcasts is surprising and counter-intuitive, though came with benefits (see 'Drawbacks').
+The requirement to make upcasts is surprising and counter-intuitive (though comes with benefits see 'Drawbacks').
 
 There are several existing techniques in the F# language to reduce the occurence of upcasts and to ensure resulting code is as general
 as possible.  These include:
