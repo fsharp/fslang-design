@@ -188,10 +188,6 @@ type C() =
 C.M1(x=2)
 ```
 
-TODO: show the more subtle ramifications of these rules
-
-TODO: check the details with the implementation - there are some cases we pre-asset a subsumption constraint
-
 NOTE: not all C# numeric widenings are supported, by design.
 
 NOTE: Branches of an if-then-else or `match` may have different types even when checked against the same known type, e.g. 
@@ -245,11 +241,11 @@ instead maximise the flow of type information from destination (here `Plot`) int
 
 ### Expressions may change type when extracted
 
-Despite appearances, the approach to type checking without an "implicit conversion" rule has significant advantages:
+Despite appearances, the existing F# approach to type checking prior to this change has advantages:
 
 1. When a sub-expression is extracted to a `let` binding for a value or function, its inferred type rarely changes (it may just become more general)
 
-2. Information loss is made explicit
+2. Information loss is made explicit in many important places
 
 3. Adding type annotations to existing checked code using `: A` is "harmless" and rarely change elaboration
 
@@ -333,9 +329,9 @@ There is an alternative solution to generic literals which is to enhance the exi
 * Introduce an optional method to interpret float-like literals, something like FromDecimal
 * Implement this optimization https://github.com/fsharp/fslang-suggestions/issues/602#issuecomment-510754929
 
-Having this in place would result in a more consisting language, instead of adding another half-way feature, you complete an existing half-way feature and make it full usable. And now the problem of a specific library is solved by another library.
+@gusty says:
 
-TODO: This is an interesting potential alternative and could potentially result in the removal of numeric widenings from this RFC.  
+> "Having this in place would result in a more consisting language, instead of adding another half-way feature, you complete an existing half-way feature and make it full usable. And now the problem of a specific library is solved by another library."
 
 # Compatibility
 
@@ -353,22 +349,22 @@ This RFC allows overloads to succeed where previously they would have failed. Ho
 
 > I suspect that rule will result in breaking changes as there are some cases where type information is not complete.
 
-@dsyme says: In principle I don't think so, as a type-directed conversion (TDC) can only ever apply in cases where type checking of the overload was definitely going to fail. By preferring overloads that succeeded without TDC we first commit to any existing successful resolution that would have followed for existing code, and then allow new resolutions into the game.
+@dsyme says: 
+
+> In principle I don't think so, as a type-directed conversion (TDC) can only ever apply in cases where type
+> checking of the overload was definitely going to fail. By preferring overloads that succeeded without TDC we first
+> commit to any existing successful resolution that would have followed for existing code, and then allow new resolutions into the game.
 
 
 # Unresolved questions
 
 TODO: There are things to tune in this RFC, including
 
-1. The exact set of type-directed conversions included
+1. Whether warnings are given for implicit conversions
 
-2. Whether warnings are given for these 
+2. Whether these warnings are opt-in or not
 
-3. Whether these warnings are opt-in or not
+3. Consider impact on tailcalls https://github.com/fsharp/fslang-design/discussions/525#discussioncomment-484473
 
-4. Perhaps limiting the use of type-directed conversions to some specific syntactic locations, e.g. arguments.
-
-5. Consider impact on tailcalls https://github.com/fsharp/fslang-design/discussions/525#discussioncomment-484473
-
-TODO: See comment on generic literals by opt-in
+4. See comment on generic literals by opt-in
 
