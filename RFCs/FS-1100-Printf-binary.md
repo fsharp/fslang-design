@@ -35,14 +35,11 @@ it also offers convenience when learning F#.
 This should be implemented by referencing the existing implementation of `%o`, along with
 its limitations (no signed numbers) to be consistent and be within expectations.
 
+The following F# code:
+
 ```fs
 printf "%o" 123
 printf "%B" 123
-```
-```
-173
-1111011
-```
 
 # Drawbacks
 
