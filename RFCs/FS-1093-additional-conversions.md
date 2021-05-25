@@ -154,7 +154,7 @@ If `op_Implicit` is accetped as a type-directed conversion then there is also an
 
 # Detailed design
 
-The "known type" of an expression is annotated with a flag as to whether it is "must convert to" or "must equal". The flag is set for:
+The "known type" of an expression is annotated with a flag as to whether it is "must convert to" or "must equal". The "must convert to" flag is set for:
 
 - The right-hand side of a binding 
 
