@@ -40,6 +40,14 @@ The following F# code:
 ```fs
 printf "%o" 123
 printf "%B" 123
+```
+
+will print
+
+```
+173
+1111011
+```
 
 # Drawbacks
 
