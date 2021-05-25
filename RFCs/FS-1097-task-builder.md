@@ -525,6 +525,11 @@ This is a backward compatible addition.
 
 * [x]  warnings for the lack of asynchronous tailcalls in `task { ... }`? Resolution: we won't do this in this RFC
 
+# Unresolved questions
+
+* [ ] There's a proposal to change the spec of `backgroundTask { ... }` to only call `Task.Run` if on a UI thread (i.e. `SynchronizationContext.Current <> null`). See https://github.com/rspeele/TaskBuilder.fs/issues/35#issuecomment-848077410
+
+
 
 
 
