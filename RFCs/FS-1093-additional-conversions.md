@@ -154,7 +154,17 @@ If `op_Implicit` is accetped as a type-directed conversion then there is also an
 
 # Detailed design
 
-The "known type" of an expression is annotated with a flag as to whether it is "must convert to" or "must equal". The "must convert to" flag is set for:
+The F# language specification defines the notion of the "overall type" when checking expressions (called the "known type" in the specification and "overall type"
+in the implementation).  The easiest way to specify an overall type for an expression is through a type annotation:
+
+```fsharp
+let xs : A = ...
+```
+
+Here `A` is the known type of the expression on the right-hand side.
+
+The overall type of an expression (as defined in the F# language specification)
+is augmented to be annotated with a flag as to whether it is "must convert to" or "must equal". The "must convert to" flag is set for:
 
 - The right-hand side of a binding 
 
@@ -166,19 +176,45 @@ The "known type" of an expression is annotated with a flag as to whether it is "
 
 - If a let, let-rec, try-finally or try-catch has the flag, then the flag is set for the body.
 
-If an expresson has a known type `ty` with the flag set, and, after checking, the type of the expression `ty2` is different to `ty`,
-then a type-directed conversion is attempted by
+The overall type is "propagated" either before or after the checking of the expression, depending
+on the expression.  For the following, it is propagated before: 
 
-1. Trying to add a coercion constraint from `ty2 :> ty`. If this succeeds, a coercion operation is added to the elaborated expression.
+* Array and list expressions, both fixed-size and computed
+* `new ABC<_>(...)` expressions
+* Object expressions `{ new ABC<_>(...) with ... }`
+* Tuple, record and anonymous record expressions when the overall known type is also a tuple, record or anonymous record expression.
 
-2. Trying to convert a function type to a delegate type by the standard rules. If this succeeds, a delegate construction operation is added to the elaborated expression.
+For other expressions, the overall type is propagated after checking.
 
-3. Trying the special conversions `int32` to `int64`, `int32` to `single`, `int32` to `double`. If this succeeds, a numeric conversion is added to the elaborated expression.
+When an overall type `overallTy` is propagated to an expresson with type `exprTy` and the "must convert to" flag is set, and
+`overallTy` doesn't unify with `exprTy`, then a type-directed conversion is attempted by:
 
-4. Searching for an `op_Implicit` method on either `ty` or `ty2`. If this succeeds, a call to the `op_Implicit` is added to the elaborated expression.
+1. Trying to add a coercion constraint from `exprTy :> overallTy`. If this succeeds, a coercion operation is added to the elaborated expression.
 
-For existing cases where an inference variable and flexibility constraint is added for a known type (e.g. when checking an element of a list),
-the checking process is unchanged.
+2. Trying to convert a function type `exprTy` to a delegate type `overallTy` by the standard rules. If this succeeds, a delegate construction operation is added to the elaborated expression.
+
+3. Trying the special conversions `int32` to `int64`, `int32` to `single`, `int32` to `double` from `exprTy` to `overallTy`.
+   If this succeeds, a numeric conversion is added to the elaborated expression.
+
+4. Searching for a matching `op_Implicit` method on either `exprTy` or `overallTy`. If this succeeds, a call to the `op_Implicit` is added to the elaborated expression.
+
+If the "must convert to" flag is not set on `overallTy`, then unification between `overallTy` and `exprTy` occurs as previously.
+
+> NOTE: There are some existing cases in the F# language specification where an inference variable and flexibility constraint
+> is already added for a known type (specifically when checking an element of a list or array when the element type has
+> been inferred to be nominal and supports subtyping). In these cases, the checking process is unchanged.
+
+> NOTE: For list, array, `new`, object expressions, tuple, record and anonymous-record expressions, pre-checking integration
+> allows the overall type to be propagated into the partially-known type (e.g. an
+> list expression is known to have at least type `list<_>` for some element type), which in turn allows the
+> inference of element types or type araguments.  This may be relevant to processing the contents of the expression.
+> For example, consider
+> 
+>      let xs : seq<A> = [ B(); C() ]
+>
+> Here the list is initially known to have type `list<?>` for some unknown type, and the overall known type `seq<A>` 
+> is then integrated with this type, inferring `?` to be `A`.  This is then used as the known overall type when checking
+> the element expressions.
 
 These conversions also apply for optional arguments, for example:
 
@@ -188,17 +224,17 @@ type C() =
 C.M1(x=2)
 ```
 
-NOTE: not all C# numeric widenings are supported, by design.
 
-NOTE: Branches of an if-then-else or `match` may have different types even when checked against the same known type, e.g. 
+> NOTE: Branches of an if-then-else or `match` may have different types even when checked against the same known type, e.g. 
+> 
+> ```fsharp
+> let f () : A = if true then B() else C()
+> ```
+> is elaborated to
+> ```fsharp
+> let f () : A = if true then (B() :> A) else (C() :> A)
+> ```
 
-```fsharp
-let f () : A = if true then B() else C()
-```
-is elaborated to
-```fsharp
-let f () : A = if true then (B() :> A) else (C() :> A)
-```
 
 ### Overload resolution 
 
