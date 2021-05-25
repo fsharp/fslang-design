@@ -273,6 +273,17 @@ Plot [B(); C()]
 APIs sensitive to this should consider avoiding the use of piping `|>` as a result, and
 instead maximise the flow of type information from destination (here `Plot`) into checking of contents (here `[B(); C()]`).
 
+### Tailcalls
+
+Some newly allowed calls may not be tailcalls, e.g.:
+
+```fsharp
+ let f1 () : int = 4
+ let f2 () : obj = f1() // this is not a tailcall, since an implicit boxing conversion happens on return
+```
+
+Turning on the optional warning and removing all use of type-directed conversions from your code can avoid this if necessary.
+
 # Drawbacks
 
 ### Expressions may change type when extracted
@@ -328,6 +339,7 @@ This changes programming around the "obj" type, for example consider:
 
 Currently introducing `obj` requires an explicit `box` in the basic programming model except in the existing places where
 auto-coercion/widening is available, such as method calls.
+
 
 # Alternatives
 
@@ -392,15 +404,8 @@ This RFC allows overloads to succeed where previously they would have failed. Ho
 > commit to any existing successful resolution that would have followed for existing code, and then allow new resolutions into the game.
 
 
+
 # Unresolved questions
 
-TODO: There are things to tune in this RFC, including
-
-1. Whether warnings are given for implicit conversions
-
-2. Whether these warnings are opt-in or not
-
-3. Consider impact on tailcalls https://github.com/fsharp/fslang-design/discussions/525#discussioncomment-484473
-
-4. See comment on generic literals by opt-in
+None
 
