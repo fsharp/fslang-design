@@ -6,7 +6,7 @@ This RFC covers the detailed proposal for this suggestion.
 
 - [x] Approved in principle [Suggestion](https://github.com/fsharp/fslang-suggestions/issues/1008)
 - [x] [Implementation](https://github.com/dotnet/fsharp/pull/11603)
-- [x] ~~Design Review Meeting(s) with @dsyme and others invitees~~ (Overridden by @cartermp)
+- [x] ~~Design Review Meeting(s) with @dsyme and others invitees~~ ([Overridden by @cartermp](https://github.com/fsharp/fslang-design/pull/570#issuecomment-848940573))
 - [Discussion](https://github.com/fsharp/fslang-design/discussions/568)
 
 # Summary
