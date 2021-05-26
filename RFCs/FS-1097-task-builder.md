@@ -95,10 +95,14 @@ Tasks are executed immediately to their first await point. For example:
         }
     printfn "x = %d" x // prints "x = 1"
 ```
-Background tasks (ignoring any SynchronizationContext, starting in thread pool)
+Background tasks are specified using `backgroundTask { ... }`.  
 ```fsharp
 backgroundTask { return doSomethingLong() }
 ```
+
+These ignore any SynchronizationContext - if
+they are started on a thread with non-null `SynchronizationContext.Current`, they switch to a background thread
+in the thread pool using `Task.Run`.  
 
 ### Binding to Task-like values
 
@@ -216,8 +220,8 @@ after full disposal, disposed = 2
 
 ### Background tasks and synchronization context
 
-By default, tasks, like F# async, are "context aware" and schedule continuations to the SynchronizationContext.  This allows
-tasks to serve as cooperatively scheduled interleaved agents executing on a user interface thread.
+By default, tasks written using `task { .. }` are, like F# async, "context aware" and schedule continuations to the `SynchronizationContext.Current`
+if present.  This allows tasks to serve as cooperatively scheduled interleaved agents executing on a user interface thread.
 
 In practice, it is often intended that tasks be "free threaded" in the .NET thread pool, including their initial execution.
 This can be done using `backgroundTask { ... }`:
@@ -228,7 +232,18 @@ backgroundTask {
 }    
 ```
 
-See https://github.com/rspeele/TaskBuilder.fs/issues/35 for context and discussion of alternative techniques
+A `backgroundTask { ... }` ignores any SynchronizationContext.Current in the following sense: if
+on a thread with non-null `SynchronizationContext.Current`, it switches to a background thread
+in the thread pool using `Task.Run`.  If started on a thread with null `SynchronizationContext.Current`, it executes
+on that same thread.
+
+> NOTE: This means in practice that calls to [`ConfigureAwait(false)`](https://devblogs.microsoft.com/dotnet/configureawait-faq/)
+> are not typically needed in F# task code. Instead,
+> tasks that are intended to run in the background should use the `backgroundTask { ... }` computation expression. An outer
+> `task { .. }` binding to a `backgroundTask { .. }` will resynchronize to the `SynchronizationContext.Current` on
+> completion of the background task.
+>
+> See [this discussion](https://github.com/rspeele/TaskBuilder.fs/issues/35#issuecomment-848077410) for more detail.
 
 ## Feature: Respecting Zero methods in computation expressions 
 
