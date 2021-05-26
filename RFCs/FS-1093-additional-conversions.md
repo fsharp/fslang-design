@@ -216,13 +216,6 @@ If the "must convert to" flag is not set on `overallTy`, then unification betwee
 > is then integrated with this type, inferring `?` to be `A`.  This is then used as the known overall type when checking
 > the element expressions.
 
-These conversions also apply for optional arguments, for example:
-
-```fsharp
-type C() = 
-    static member M1(?x:int64) = 1
-C.M1(x=2)
-```
 
 
 > NOTE: Branches of an if-then-else or `match` may have different types even when checked against the same known type, e.g. 
@@ -236,7 +229,42 @@ C.M1(x=2)
 > ```
 
 
-### Overload resolution 
+### Selection of implicit conversions
+
+Implicit conversions are only selected for type `X` to `Y` if a precise implicit conversion exists as
+an intrinsic method on either type `X` or `Y` and:
+
+1. no feasible subtype relationship between X and Y (an approximation), OR
+2. T --> some-type-containing-T
+
+Note that even for (2) implicit conversions are still only activated if the
+types *precisely* and *completely* match based on *known* type information at the point of resolution.
+
+Conversions are also allowed for type `X` to `?` where the ? is a type inference variable constrained
+by a coercion constraint to Y for which there is an op_Implicit from X to Y, and the other conditions above apply.
+The type inference variable will later eliminated to by Y.
+
+It is important to emphasise that implicit conversions are only activated if the types **precisely** match based on known type information
+at the point of resolution.  For example
+
+```fsharp
+let f1 (x: 'T) : Nullable<'T> = x
+```
+is enough, whereas
+
+```fsharp
+let f2 (x: 'T) : Nullable<_> = x 
+let f3 x : Nullable<'T> = x
+```
+are not enough to activate the `op_Implicit: 'T -> Nullable<'T>` conversion on `Nullable<_>`.
+Indeed `f2` and `f3` already type check today in F#:
+
+* `f2` has type `val f2: Nullable<'a> -> Nullable<'a>` with a warning saying `T` is instantiated to `Nullable<'a>`
+
+* `f3` has type `val f3: Nullable<'T> -> Nullable<'T>`
+
+
+### Interaction with method overload resolution 
 
 Overloads not making use of type-directed conversion are always preferred to overloads with type-directed conversion in overload resolution.
 
@@ -283,6 +311,75 @@ Some newly allowed calls may not be tailcalls, e.g.:
 ```
 
 Turning on the optional warning and removing all use of type-directed conversions from your code can avoid this if necessary.
+
+### Interaction with SRTP constraint resolution
+
+Type-directed conversions are ignored during SRTP constraint processing.
+
+### Interaction with optional arguments
+
+Type-directed conversions are applied for optional arguments, for example:
+
+```fsharp
+type C() = 
+    static member M1(?x:int64) = 1
+C.M1(x=2)
+```
+
+### Interaction with post-application property setters
+
+Type-directed conversions are applied for post-application property setters, for example:
+
+```fsharp
+type C() = 
+    member val X : int64 = 1L with get, set
+    
+let c = C(X=2)
+c.X // = 2L : int64
+```
+
+### Interaction with record fields
+
+Because record fields give rise to known type information, type-directed conversions are applied when filling in record fields:
+
+```fsharp
+type R =  { X: int64 }
+    
+let r = { X = 2 }
+> val r : R = { X = 2L }
+```
+
+
+### Interaction with union fields
+
+Because union fields give rise to known type information, type-directed conversions are applied when filling in record fields:
+
+```fsharp
+type U = U of int64
+    
+let r = U(2)
+> val r : U = U 2L
+```
+
+### Interaction with anonymous record fields
+
+Anonymous record fields can in theory have known type information, if an appropriate annotation is present, e.g.
+
+```fsharp
+let r : {| X: int64 |} = {| X = 2 |}
+
+> val r : {| X: int64 |} = { X = 2L }
+```
+
+However, often types are inferred from contents for these, e.g. 
+```fsharp
+let r = {| X = 2 |}
+> val r : {| X: int32 |} = { X = 2 }
+```
+
+See "Expressions may change type when extracted" below.
+
+
 
 # Drawbacks
 
@@ -399,11 +496,12 @@ This RFC allows overloads to succeed where previously they would have failed. Ho
 
 @dsyme says: 
 
-> In principle I don't think so, as a type-directed conversion (TDC) can only ever apply in cases where type
+> 
+> A type-directed conversion (TDC) can only ever apply in cases where type
 > checking of the overload was definitely going to fail. By preferring overloads that succeeded without TDC we first
 > commit to any existing successful resolution that would have followed for existing code, and then allow new resolutions into the game.
-
-
+>
+> Further, TDCs are ignored during SRTP resolution.
 
 # Unresolved questions
 
