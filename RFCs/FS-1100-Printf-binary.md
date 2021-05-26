@@ -5,7 +5,7 @@ The design suggestion [Printf format as binary number](https://github.com/fsharp
 This RFC covers the detailed proposal for this suggestion.
 
 - [x] Approved in principle [Suggestion](https://github.com/fsharp/fslang-suggestions/issues/1008)
-- [ ] [Implementation](https://github.com/dotnet/fsharp/pull/FILL-ME-IN)
+- [x] [Implementation](https://github.com/dotnet/fsharp/pull/11603)
 - [ ] Design Review Meeting(s) with @dsyme and others invitees
 - [Discussion](https://github.com/fsharp/fslang-design/discussions/568)
 
