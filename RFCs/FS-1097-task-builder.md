@@ -1,4 +1,4 @@
-# F# RFC FS-1097 - Tasks 
+# F# RFC FS-1097 - Task builder
 
 The design suggestion [Native support for task { ... } ](https://github.com/fsharp/fslang-suggestions/issues/581) has been marked "approved in principle". This RFC covers the detailed proposal for this suggestion.
 
