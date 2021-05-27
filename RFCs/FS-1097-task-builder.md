@@ -542,7 +542,9 @@ This is a backward compatible addition.
 
 # Unresolved questions
 
-* [ ] There's a proposal to change the spec of `backgroundTask { ... }` to only call `Task.Run` if on a UI thread (i.e. `SynchronizationContext.Current <> null`). See https://github.com/rspeele/TaskBuilder.fs/issues/35#issuecomment-848077410
+* [ ] There's a proposal to rename `backgroundTask { ... }` to `threadPoolTask { .. }` or something similar.   See https://github.com/rspeele/TaskBuilder.fs/issues/35#issuecomment-848077410 and below
+
+* [ ] Should 'For' also accept `IAsyncEnumerable`?  Is it feasible to add this post-hoc?
 
 
 
