@@ -3,9 +3,9 @@
 The design suggestion of asynchronous sequences is "approved in principle". This RFC covers the detailed proposal for this suggestion.
 
 - [x] Approved in principle
-- [x] Suggestion
-- [x] RFC Discussion
-- [x] Implementation
+- [ ] Suggestion
+- [ ] RFC Discussion
+- [ ] Implementation
 
 Links
 
@@ -22,6 +22,8 @@ TBD: The name may be changed to `asyncSeq { ... }`.
 TBD: There may be a corresponding module `AsyncSeq`, see https://fsprojects.github.io/FSharp.Control.AsyncSeq/.
 
 TBD: This might go in a separate DLL, not FSharp.Core.dll
+
+TBD: This might be done purely in a community package, possible by iterating on https://fsprojects.github.io/FSharp.Control.AsyncSeq/.
 
 # Motivation
 
