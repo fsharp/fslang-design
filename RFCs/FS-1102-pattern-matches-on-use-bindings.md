@@ -42,10 +42,6 @@ type C() =
 ```
 does not actually work:
 ```
-error FS0001: This expression was expected to have type
-    ''a * 'b'    
-but here has type
-    'Dispose2'
 error FS0852: 'use' bindings must be of the form 'use <var> = <expr>'
 ```
 
