@@ -43,6 +43,7 @@ type C() =
 does not actually work:
 ```
 error FS0852: 'use' bindings must be of the form 'use <var> = <expr>'
+error FS0073: internal error: Couldn't find Dispose on IDisposable, or it was overloaded
 ```
 
 Two `use`s after a tuple deconstruction must be used:
