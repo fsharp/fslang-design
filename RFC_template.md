@@ -4,8 +4,8 @@ The design suggestion [FILL ME IN](https://github.com/fsharp/fslang-suggestions/
 
 This RFC covers the detailed proposal for this suggestion.
 
+- [x] [Suggestion](https://github.com/fsharp/fslang-suggestions/issues/FILL-ME-IN)
 - [x] Approved in principle
-- [ ] [Suggestion](https://github.com/fsharp/fslang-suggestions/issues/FILL-ME-IN)
 - [ ] [Implementation](https://github.com/dotnet/fsharp/pull/FILL-ME-IN)
 - [ ] Design Review Meeting(s) with @dsyme and others invitees
 - [Discussion](https://github.com/fsharp/fslang-design/discussions/FILL-ME-IN)
