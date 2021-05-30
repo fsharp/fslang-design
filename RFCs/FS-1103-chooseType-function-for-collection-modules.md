@@ -25,8 +25,8 @@ The implementation of this function will copy `choose` but replacing the option 
 
 The type signature will be:
 ```fs
-val chooseType : source:'T list -> seq<'U>
-val chooseType : source:'T[] -> seq<'U>
+val chooseType : source:'T list -> 'U list
+val chooseType : source:'T[] -> 'U[]
 val chooseType : source:IEnumerable -> seq<'T> // Follows Seq.cast's signature
 ```
 
