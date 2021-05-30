@@ -25,13 +25,15 @@ The implementation of this function will copy `choose` but replacing the option 
 
 The type signature will be:
 ```fs
-val chooseType : source:System.Collections.IEnumerable -> seq<'U>
+val chooseType : source:'T list -> seq<'U>
+val chooseType : source:'T[] -> seq<'U>
+val chooseType : source:'T seq -> seq<'U>
 ```
 
 Example code:
 
 ```fsharp
-let seqOfInts = [box 1; box 2] |> Seq.chooseType<int>
+let seqOfInts = [box 1; box 2] |> Seq.chooseType<_, int>
 ```
 
 # Drawbacks
