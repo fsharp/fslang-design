@@ -27,13 +27,13 @@ The type signature will be:
 ```fs
 val chooseType : source:'T list -> seq<'U>
 val chooseType : source:'T[] -> seq<'U>
-val chooseType : source:'T seq -> seq<'U>
+val chooseType : source:IEnumerable -> seq<'T> // Follows Seq.cast's signature
 ```
 
 Example code:
 
 ```fsharp
-let seqOfInts = [box 1; box 2] |> Seq.chooseType<_, int>
+let seqOfInts = [box 1; box 2] |> Seq.chooseType<int>
 ```
 
 # Drawbacks
