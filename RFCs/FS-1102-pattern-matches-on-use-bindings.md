@@ -28,11 +28,12 @@ use device, swapChain = Dispose2(SharpDX.Direct3D11.Device.CreateWithSwapChain(D
 when used in practice
 ```fs
 open System
-type Dispose2(x:System.IDisposable, y:System.IDisposable) =
-    interface System.IDisposable with
-        override _.Dispose() =
-            x.Dispose()
-            y.Dispose()
+let Dispose2(x:System.IDisposable, y:System.IDisposable) =
+    x, y
+type [<AutoOpen; AbstractClass; Sealed>] A() =
+    static member Dispose((a:#System.IDisposable, b:#System.IDisposable)) =
+        a.Dispose()
+        b.Dispose()
 type C() =
     member _.M() =
         use x, y = Dispose2(new System.IO.MemoryStream(), new System.IO.MemoryStream()) // error
@@ -50,11 +51,12 @@ error FS0852: 'use' bindings must be of the form 'use <var> = <expr>'
 Two `use`s after a tuple deconstruction must be used:
 ```fs
 open System
-type Dispose2(x:System.IDisposable, y:System.IDisposable) =
-    interface System.IDisposable with
-        override _.Dispose() =
-            x.Dispose()
-            y.Dispose()
+let Dispose2(x:System.IDisposable, y:System.IDisposable) =
+    x, y
+type [<AutoOpen; AbstractClass; Sealed>] A() =
+    static member Dispose((a:#System.IDisposable, b:#System.IDisposable)) =
+        a.Dispose()
+        b.Dispose()
 type C() =
     member _.M() =
         let x, y = Dispose2(new System.IO.MemoryStream(), new System.IO.MemoryStream())
