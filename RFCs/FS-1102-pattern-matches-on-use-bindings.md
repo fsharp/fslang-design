@@ -35,7 +35,7 @@ type Dispose2(x:System.IDisposable, y:System.IDisposable) =
             y.Dispose()
 type C() =
     member _.M() =
-        use x, y = Dispose2(new System.IO.MemoryStream(), new System.IO.MemoryStream())
+        use x, y = Dispose2(new System.IO.MemoryStream(), new System.IO.MemoryStream()) // error
         ()
 ```
 does not actually work:
@@ -43,7 +43,8 @@ does not actually work:
 error FS0001: This expression was expected to have type
     ''a * 'b'    
 but here has type
-    'Dispose2' 
+    'Dispose2'
+error FS0852: 'use' bindings must be of the form 'use <var> = <expr>'
 ```
 
 Two `use`s after a tuple deconstruction must be used:
