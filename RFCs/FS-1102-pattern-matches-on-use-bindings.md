@@ -35,9 +35,7 @@ type Dispose2(x:System.IDisposable, y:System.IDisposable) =
             y.Dispose()
 type C() =
     member _.M() =
-        let x, y = Dispose2(new System.IO.MemoryStream(), new System.IO.MemoryStream())
-        use x = x
-        use y = y
+        use x, y = Dispose2(new System.IO.MemoryStream(), new System.IO.MemoryStream())
         ()
 ```
 does not actually work:
@@ -46,6 +44,22 @@ error FS0001: This expression was expected to have type
     ''a * 'b'    
 but here has type
     'Dispose2' 
+```
+
+Two `use`s after a tuple deconstruction must be used:
+```fs
+open System
+type Dispose2(x:System.IDisposable, y:System.IDisposable) =
+    interface System.IDisposable with
+        override _.Dispose() =
+            x.Dispose()
+            y.Dispose()
+type C() =
+    member _.M() =
+        let x, y = Dispose2(new System.IO.MemoryStream(), new System.IO.MemoryStream())
+        use x = x
+        use y = y
+        ()
 ```
 
 This indicates that until F# developers actually tried to put tuple patterns on the left hand side of `use` bindings, they expected it to work instead of it erroring.
