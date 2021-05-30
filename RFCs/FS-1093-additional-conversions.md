@@ -15,12 +15,12 @@ This RFC extends F# to include type-directed conversions when known type informa
 1. Puts in place a general backwards-compatible mechanism for type directed conversions (and one that works in conjunction with the existing techniques to allow subsumption at some specific places)
 
 2. Selects a particular set of type directed conversions to use.  These are currently
-   - the existing func --> delegate type directed conversions
-   - the existing delegate --> LINQ Expression type directed conversions
+   - the existing func (`'a -> 'b`) --> `delegate` type directed conversions
+   - the existing `delegate` --> LINQ `Expression` type directed conversions
    - upcasting
-   - int32 --> int64/float32/float64
-   - float32 --> float64 
-   - op_Implicit when both source and destination are nominal.
+   - `int32` --> `int64`/`float32`/`float64`
+   - `float32` --> `float64` 
+   - `op_Implicit` when both source and destination are nominal.
 
 3. Implements an opt-in warning when any of these are used (outside existing uses of upcasting)
 
@@ -37,11 +37,11 @@ The intent of this RFC is to give a user experience where:
 
 3. Fewer upcasts are needed when programming with types that support subtyping
 
-4. Fewer widening conversions are needed when mixing int32, float32 and float64.
+4. Fewer widening conversions are needed when mixing `int32`, `float32` and `float64`.
 
-5. Numeric int64/float32/float64 data in tuple, list and array expressions looks nicer
+5. Numeric `int64`/`float32`/`float64` data in tuple, list and array expressions looks nicer
 
-6. Working with new numeric types such as System.Half whose design includes op_Implicit should be less irritating
+6. Working with new numeric types such as System.Half whose design includes `op_Implicit` should be less irritating
 
 7. Inadvertent use of the mechanism should not introduce confusion or bugs
 
@@ -76,8 +76,10 @@ let a : obj list = [1; 2; 3] // ✅ This works
 but this raised an error:
 
 ```fsharp
-let a : int seq = [1; 2; 3] // ❌ error FS0001: This expression was expected to have type 'seq<int>' but here has type ''a list'    
-let b : obj seq = [1; 2; 3] // ❌ error FS0001: This expression was expected to have type 'seq<int>' but here has type ''a list'    
+let a : int seq = [1; 2; 3] 
+// ❌ error FS0001: This expression was expected to have type 'seq<int>' but here has type ''a list'    
+let b : obj seq = [1; 2; 3] 
+// ❌ error FS0001: This expression was expected to have type 'seq<int>' but here has type ''a list'    
 ```
 
 Or, alternatively, at return position, consider this:
@@ -86,7 +88,8 @@ Or, alternatively, at return position, consider this:
 type A() = class end
 type B() = inherit A()
 type C() = inherit A()
-let f () : A = if true then B() else C() // ❌ error FS0001: This expression was expected to have type 'A' but here has type 'B'
+let f () : A = if true then B() else C()
+// ❌ error FS0001: This expression was expected to have type 'A' but here has type 'B'
 ```
 
 Or, alternatively, at constructions of data such as options, consider this:
@@ -96,8 +99,10 @@ type A() = class end
 type B() = inherit A()
 let f2 (x: A option) = ()
 
-let (data: A option) = Some (B())  // ❌ error FS0001: This expression was expected to have type 'A' but here has type 'B'
-f2 (Some (B())                     // ❌ error FS0001: This expression was expected to have type 'A' but here has type 'B'
+let (data: A option) = Some (B())
+// ❌ error FS0001: This expression was expected to have type 'A' but here has type 'B'
+f2 (Some (B())
+// ❌ error FS0001: This expression was expected to have type 'A' but here has type 'B'
 ```
 
 Instead, in all cases, prior to this RFC type upcasts or `box` are needed:
@@ -121,7 +126,7 @@ as possible.  These include:
 
 - Auto-introduction of conversions for assignments into mutable record fields and some other places with known type information.
 
-### Motivation for int32 --> int64 type-directed conversion
+### Motivation for `int32` --> `int64` type-directed conversion
 
 The primary use case is using integer literals in int64 data.
 APIs using 64-bit integers are very common in some domains.  For example, in a typical tensor library shapes are given using `int64[]`. So it is
@@ -129,28 +134,36 @@ frequent to write `[| 6L; 5L |]`.  There is a reasonable case to writing `[| 6; 
 
 Note a non-array-literal expression of type `int[]` still need to be explicitly converted to `int64[]`.
 
-### Motivation for int32 --> single/double type-directed conversion
+### Motivation for `int32` --> `single`/`double` type-directed conversion
 
 The primary use case is using integer literals in floating point data such as `[| 1.1; 3.4; 6; 7 |]` when the types are known.  
 
-### Motivation for single --> double type-directed conversion
+### Motivation for `single` --> `double` type-directed conversion
 
 The motivations for this is fairly weak.  For example it allows floating point utility code (e.g. printing) to use 64-bit floating point
 values, and yet be routinely usable with 32-bit values.  However a non-array-literal value of `single[]` still need to be converted to `double[]`.
 
-### Motivation for op_Implicit type-directed conversion
+### Motivation for `op_Implicit` type-directed conversion
 
-* Certain newer .NET APIs, such as those in ASP.NET Core, make frequent use of `op_Implicit` conversions. For example,
-  many APIs in `Microsoft.Net.Http.Headers` make use of `StringSegment` arguments, where C# devs can just pass a
-  string, but F# devs must explicitly call op_Implicit all over the place
+  Certain newer .NET APIs (like ASP.NET Core) as well as popular 3rd party libraries, make frequent use of `op_Implicit` conversions.
+  
+  Examples
+  * many APIs in `Microsoft.Net.Http.Headers` make use of `StringSegment` arguments
+  * (MassTransit)[https://github.com/MassTransit/MassTransit] uses `RequestTimeout`, which has conversion from `TimeSpan` as well as `int` (milliseconds), seemingly for a simpler API with fewer overloads
+  * (Eto.Forms)[https://github.com/picoe/Eto/] uses implicit constructor for many entities.
 
-* Some popular 3rd party libraries also use `op_Implicit`. E.g. MassTransit uses `RequestTimeout`, which has an `op_Implicit` conversion from `TimeSpan` as well as `int` (milliseconds), seemingly for a simpler API with fewer overloads.
+Remarks:
 
+* In those cases, C# devs can just pass a string, but F# devs must explicitly call op_Implicit all over the place.
 * One thing to watch out for is `op_Implicit` conversions to another type. E.g. `StringSegment` has conversions to `ReadOnlySpan<char>` and `ReadOnlyMemory<char>`. 
 
 ### Motivation for completing the matrix of integer widenings
 
-If `op_Implicit` is accetped as a type-directed conversion then there is also an additional "consistency" motivation to include `int8` --> `int16` --> `int32` --> `int64` and similar widenings.  Specifically additional .NET numeric types such as `System.Half`, `System.Decimal` and `System.Complex` do allow certain implicit conversions via `op_Implicit`.  So if these types have widening from `int8`, `int16` and `int32` then why doesn't `System.Int64`? 
+If `op_Implicit` is accetped as a type-directed conversion then there is also an additional "consistency" motivation to include `int8` --> `int16` --> `int32` --> `int64` and similar widenings.
+
+Specifically additional .NET numeric types such as `System.Half`, `System.Decimal` and `System.Complex` do allow certain implicit conversions via `op_Implicit`. 
+
+So if these types have widening from `int8`, `int16` and `int32` then why doesn't `System.Int64`? 
 
 # Detailed design
 
@@ -289,7 +302,8 @@ type C() = inherit A()
 
 let Plot (elements: A list) = ()
 
-[B(); C()] |> Plot // ❌ error FS0193: Type constraint mismatch. The type 'C' is not compatible with type 'B'
+[B(); C()] |> Plot
+// ❌ error FS0193: Type constraint mismatch. The type 'C' is not compatible with type 'B'
 ```
 
 This RFC change will not address this example - the element type of the list is inferred to be `B`. This however works:
@@ -307,7 +321,8 @@ Some newly allowed calls may not be tailcalls, e.g.:
 
 ```fsharp
  let f1 () : int = 4
- let f2 () : obj = f1() // this is not a tailcall, since an implicit boxing conversion happens on return
+ let f2 () : obj = f1()
+ // this is not a tailcall, since an implicit boxing conversion happens on return
 ```
 
 Turning on the optional warning and removing all use of type-directed conversions from your code can avoid this if necessary.
@@ -408,7 +423,8 @@ Note consider the following seemingly routine extraction:
 let g() =
     let data1 = (1, "2")
     let data2 = (3, "4")
-    f [ data1; data2 ] // ❌ error FS0001: Type mismatch. Expecting a 'obj * obj' but given a 'int * string'. The type 'obj' does not match the type 'int'.
+    f [ data1; data2 ]
+// ❌ error FS0001: Type mismatch. Expecting a 'obj * obj' but given a 'int * string'. The type 'obj' does not match the type 'int'.
 ```
 
 Here, `data1` now needs a type annotation to maintain the same inferred type.  This matters because `data` is a tuple, and, in the absence of 

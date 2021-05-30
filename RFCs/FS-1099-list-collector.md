@@ -12,7 +12,9 @@ This RFC covers the detailed proposal for the resumable state machine support ne
 
 # Summary
 
-TBD
+Optimize runtime cost of list and array expressions. Those currently rely on the Sequence expression infrastructure.
+
+In conjunction with [FS-1087 resumable code](FS-1087-resumable-code.md), this open alley for performance gains.
 
 # Detailed Design 
 ```fsharp
