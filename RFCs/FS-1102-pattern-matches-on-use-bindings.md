@@ -30,7 +30,7 @@ when used in practice
 open System
 let Dispose2(x:System.IDisposable, y:System.IDisposable) =
     x, y
-type [<AutoOpen; AbstractClass; Sealed>] DisposeExtension =
+type [<AutoOpen; AbstractClass; Sealed; System.Runtime.CompilerServices.Extension>] DisposeExtension =
     [<System.Runtime.CompilerServices.Extension>]
     static member Dispose((a:#System.IDisposable, b:#System.IDisposable)) =
         a.Dispose()
