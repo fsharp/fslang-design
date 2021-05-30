@@ -78,36 +78,52 @@ Code would still compile but the rule won't be enforced.
 
 Code would still compile but the rule won't be enforced. 
 
-# Unresolved questions
+# Unresolved / Resolved questions
 
 Whether the attribute would find a way to the BCL and support by other compilers.
+
+> See [dotnet/runtime/issue#51451](https://github.com/dotnet/runtime/issues/51451)
 
 Does the compiler errors if the attribute is used on a function? or a warning? or ignored?
 
 What happens when the attribute is put on a virtual method but not on an overriden one?
 
+> No surprise: it should still not type check if calls aren't made with named argument syntax.
+
 What happens when the attribute is put on a method defined in an interface but not on the implementation?
 
 What happens with optional parameters?
 
+> No surprise: they are still optional
+
 Should the feature support applying the attribute to only a subset of arguments, on argument by argument basis as well? How does it play out with restriction about named arguments coming last in the call site?
+
+> No.
+
+Is there an impact / support for delegate types (and later, function pointers)?
+
+Is the impact on type checking (checking one attribute per constructs supporting the attribute) significant
 
 # Appendix
 
 ## Language Zoo
 
+### Smalltalk
 ```smalltalk
 'hello world' indexOf: $o startingAt: 6
 ```
 
+### Objective-C
 ```objectivec
 [helloWorldString indexOf: o startingAt: 6];
 ```
 
+### C#
 ```csharp
 "hello world".Substring(startIndex:1);
 ```
 
+### F#
 ```fsharp
 "hello world".Substring(startIndex=1)
 ```
