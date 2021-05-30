@@ -12,7 +12,7 @@ This RFC covers the detailed proposal for this suggestion.
 # Summary
 
 An additional format specifier `%B` will be added to F# which formats a basic integer type
-(currently (byte|int16|int32|int64|sbyte|uint16|uint32|uint64|nativeint|unativeint))
+(currently `byte`|`int16`|`int32`|`int64`|`sbyte`|`uint16`|`uint32`|`uint64`|`nativeint`|`unativeint`)
 as an unsigned binary number.
 
 # Motivation

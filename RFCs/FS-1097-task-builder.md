@@ -9,7 +9,7 @@ The design suggestion [Native support for task { ... } ](https://github.com/fsha
 
 # Summary
 
-We add a `task { .. }` builder to the F# standard library, implemented using [resumable code](https://github.com/fsharp/fslang-design/blob/master/RFCs/FS-1087-resumable-code.md).
+We add a `task { .. }` builder to the F# standard library, implemented using [FS-1087 resumable code](https://github.com/fsharp/fslang-design/blob/master/RFCs/FS-1087-resumable-code.md).
 
 The design is heavily influenced by [TaskBuilder.fs](https://github.com/rspeele/TaskBuilder.fs/) and [Ply](https://github.com/crowded/ply) which effectively
 formed part of prototypes for this RFC (thank you!!!!)
@@ -32,7 +32,7 @@ We add support for tasks along the lines of `TaskBuilder.fs`.  This supports
 
 * `use` on both `IDisposable` and `IAsyncDisposable` resources
 
-* `backgroundTask { ... }` to escapte the UI thread synchronization context
+* `backgroundTask { ... }` to escape the UI thread synchronization context
 
 For example, a simple task:
 ```fsharp
@@ -162,7 +162,7 @@ A `vtask { ... }` is definable as a user-library using resumable code,  replicat
 
 ### IAsyncDisposable
 
-If `netstandard2.1` FSHarp.Core.dll or higher is referenced, then the following method is available directly on the TaskBuilder type:
+If `netstandard2.1` FSharp.Core.dll or higher is referenced, then the following method is available directly on the TaskBuilder type:
 
 ```fsharp
 type TaskBuilderBase =
