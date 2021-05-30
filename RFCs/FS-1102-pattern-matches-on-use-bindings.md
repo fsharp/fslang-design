@@ -30,7 +30,8 @@ when used in practice
 open System
 let Dispose2(x:System.IDisposable, y:System.IDisposable) =
     x, y
-type [<AutoOpen; AbstractClass; Sealed>] A() =
+type [<AutoOpen; AbstractClass; Sealed>] DisposeExtension =
+    [<System.Runtime.CompilerServices.Extension>]
     static member Dispose((a:#System.IDisposable, b:#System.IDisposable)) =
         a.Dispose()
         b.Dispose()
@@ -53,7 +54,8 @@ Two `use`s after a tuple deconstruction must be used:
 open System
 let Dispose2(x:System.IDisposable, y:System.IDisposable) =
     x, y
-type [<AutoOpen; AbstractClass; Sealed>] A() =
+type [<AutoOpen; AbstractClass; Sealed>] DisposeExtension =
+    [<System.Runtime.CompilerServices.Extension>]
     static member Dispose((a:#System.IDisposable, b:#System.IDisposable)) =
         a.Dispose()
         b.Dispose()
