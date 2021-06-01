@@ -157,13 +157,6 @@ Remarks:
 * In those cases, C# devs can just pass a string, but F# devs must explicitly call op_Implicit all over the place.
 * One thing to watch out for is `op_Implicit` conversions to another type. E.g. `StringSegment` has conversions to `ReadOnlySpan<char>` and `ReadOnlyMemory<char>`. 
 
-### Motivation for completing the matrix of integer widenings
-
-If `op_Implicit` is accetped as a type-directed conversion then there is also an additional "consistency" motivation to include `int8` --> `int16` --> `int32` --> `int64` and similar widenings.
-
-Specifically additional .NET numeric types such as `System.Half`, `System.Decimal` and `System.Complex` do allow certain implicit conversions via `op_Implicit`. 
-
-So if these types have widening from `int8`, `int16` and `int32` then why doesn't `System.Int64`? 
 
 # Detailed design
 
@@ -395,6 +388,21 @@ let r = {| X = 2 |}
 See "Expressions may change type when extracted" below.
 
 
+### Incomplete matrix of integer widenings
+
+The matrix of integer widenings is somewhat deliberately incomplete.   Specifically there are no 
+
+    int8 --> int16
+    int8 --> int32
+    int8 --> int64
+    int16 --> int32
+    int16 --> int64
+
+widenings, nor their unsigned equivalents, not any unsigned-to-signed widenings.
+
+This raises one issue: hand-written .NET numeric types such as `System.Half`, `System.Decimal` and `System.Complex` do allow certain implicit conversions via `op_Implicit`. 
+The user may ask, if these types have widening from `int8` and `int16`then why doesn't, say, `int64`?  However in practice the `int8` and `int16` types are very rarely
+used in F#, so we expect this to be vanishingly rare, and code will clearer if these specific widenings are made explicit.
 
 # Drawbacks
 
