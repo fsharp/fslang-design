@@ -4,7 +4,7 @@
 There is an approved-in-principle [proposal](http://fslang.uservoice.com/forums/245727-f-language/suggestions/6002107-steal-nice-println-syntax-from-swift) to extend the existing printf functionality in the F# language design with string interpolation. 
 
 * [Discussion](https://github.com/fsharp/fslang-design/issues/368)
-* [x] Implementation: [merged to master (--langversion:preview)](https://github.com/dotnet/fsharp/pull/8907)
+* [x] Implementation: [first draft by @yatli](https://github.com/dotnet/fsharp/pull/8966), [final merged to master (--langversion:preview)](https://github.com/dotnet/fsharp/pull/8907)
 * [x] Design review meeting (26/06/2020, online, @dsyme, @cartermp, @TIHan, @jonsequitur), [notes](https://github.com/dotnet/fsharp/pull/8907#issuecomment-650304311)
 * [x] Implementation review meeting with @cartermap and @TIHan, [notes](https://gist.github.com/dsyme/dc86bf86de81b83b75557d4944db43c2).
 
@@ -222,6 +222,11 @@ There is also some overlap here with extensible `sprintf` formatting so perhaps 
 > Do we want to perform this codegen?  *"If an interpolated string has the type string, it's typically transformed into a `String.Format` method call. The compiler may replace `String.Format` with `String.Concat` if the analyzed behavior would be equivalent to concatenation." 
 
   Resolution: no, we won't do this, it would be irregular and an explicit call to String.Format can be used instead.
+
+## Acknowledgments
+
+A huge thank you to [Yatao Li](https://github.com/yatli/) for taking the early initiative on this RFC and its implementation,
+it made a huge difference and formed the basis for the final design.
 
 
 ### Links
