@@ -24,7 +24,7 @@ this function [themselves](https://stackoverflow.com/q/2521254/5429648).
 The implementation of this function will copy `choose` but replacing the option with a function that does a type match.
 
 The type signature will be:
-```fs
+```fsharp
 val chooseType : source:'T list -> 'U list
 val chooseType : source:'T[] -> 'U[]
 val chooseType : source:IEnumerable -> seq<'T> // Follows Seq.cast's signature
