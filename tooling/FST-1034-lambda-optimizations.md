@@ -14,7 +14,7 @@ is partly to ensure we have test coverage for these.
    are only used when describing resumable code, primarily for tasks.
 
 2. `InlineIfLambda` attribute is recognized and applied.  The rationale is covered in
-   [RFC FS-1098](https://github.com/fsharp/fslang-design/blob/master/RFCs/FS-1098-inline-if-lambda.md.
+   [RFC FS-1098](https://github.com/fsharp/fslang-design/blob/master/RFCs/FS-1098-inline-if-lambda.md).
    
 3. If a computed function is immediately executed in a sequential block the code is reduced, e.g.
 
