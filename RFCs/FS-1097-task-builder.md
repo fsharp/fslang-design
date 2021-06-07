@@ -303,6 +303,20 @@ Here implicit `Zero` values (implied by `do!` and `if .. then ..`) can now occur
 of the overall type of the task being returned by  the CE.  In contrast, `Return` values (in an explicit `return`) must
 match the type returned by the overall task.
 
+To put this another way, the difference is that a `Zero()` is produced instead of a `Return(())` on the empty branch
+The `Return` stores the result in the state machine and pins down the overall type produced by the state machine `'TOverall = 'T`. `Zero` just continues successfully.
+
+```fsharp
+        /// Used to represent no-ops like the implicit empty "else" branch of an "if" expression.
+        [<DefaultValue>]
+        member inline _.Zero() : TaskCode<'TOverall, unit> =
+            ResumableCode.Zero()
+
+        member inline _.Return (value: 'T) : TaskCode<'T, 'T> = 
+            TaskCode<'T, _>(fun sm -> 
+                sm.Data.Result <- value
+                true)
+```
 
 ## Library additions 
 
