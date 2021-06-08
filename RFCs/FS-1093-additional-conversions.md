@@ -545,6 +545,47 @@ This RFC allows overloads to succeed where previously they would have failed. Ho
 >
 > Further, TDCs are ignored during SRTP resolution.
 
+# Notes from community design/implementation/test review on 08/06/2021 hosted by @dsyme
+
+Questions:
+
+> "[21:31] Chet Husk - oh, related question: how does this interop with Fable? I'd expect just by altering the shape of returned exprs?
+
+Answer: no impact, just more programs will be expected, no new expression shapes
+  
+> "[21:27] Heron Barreto - are we going to expand usage of the flexibe type operator(?) with this RFC?"
+
+Answer: no, indeed it might be used less
+
+> "[20:43] Chet Husk - for 'Interaction with post-applicaiton property setters', the property was given an explicit type before use. if the type was not directly specified and instead inferred through usage (2L), would that be enough to 'fix' the overall type for purposes of these rules?
+
+Answer: yes, exactly, inference is enough to fix the 'overall type'
+
+> "[20:24] Chet Husk - was part of the decision for allowing op_Implicit only, and not op_Explicit, is because implicit conversions in .Net are assumed to be total/safe?"
+
+Answer: we should consider whether we want to address `op_Explicit`.  These calls are rare in .NET libraries, most are numeric narrowings, already catered for in most cases
+
+For the second part of the question - yes, `op_Implicit` are assumed to be total/safe
+
+> "[20:27] Chet Husk - the concern with extracting expressions can be mitigated with editor tooling (ie 'extract binding'/'extract expression') being aware of the context and applying the desired type annotation to the extracted expression, yeha?
+
+Yes, that's right, indeed note this feature may make it harder to implement minimal-type-annotation extraction transforms.
+
+
 # Unresolved questions
 
-None
+Things to follow-up on from community design review:
+
+* [ ] Proof using XML APIs that make existing use of op_Implicit
+* [ ] Proof using Newtonsoft Json APIs that make existing use of op_Implicit
+* [ ] Proof defining op_Implicit for FSharp.Data `JsonValue`
+* [ ] Ask community for further examples of using op_Implicit
+* [ ] Check removal of `Nullable` calls on more examples
+* [ ] Proof using .NET DataFrame APIs
+* [ ] "another popular library to validate with is StackExchange.Redis, which relies heavily on implicit operators for keys and values in redis"
+
+
+
+
+
+
