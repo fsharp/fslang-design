@@ -18,8 +18,7 @@ This RFC extends F# to include type-directed conversions when known type informa
    - the existing func (`'a -> 'b`) --> `delegate` type directed conversions
    - the existing `delegate` --> LINQ `Expression` type directed conversions
    - upcasting
-   - `int32` --> `int64`/`float32`/`float64`
-   - `float32` --> `float64` 
+   - `int32` --> `int64`/`float64`
    - `op_Implicit` when both source and destination are nominal.
 
 3. Implements an opt-in warning when any of these are used (outside existing uses of upcasting)
@@ -37,9 +36,9 @@ The intent of this RFC is to give a user experience where:
 
 3. Fewer upcasts are needed when programming with types that support subtyping
 
-4. Fewer widening conversions are needed when mixing `int32`, `float32` and `float64`.
+4. Fewer widening conversions are needed when mixing `int32`, `int64` and `float64`.
 
-5. Numeric `int64`/`float32`/`float64` data in tuple, list and array expressions looks nicer
+5. Numeric `int64`/`float64` data in tuple, list and array expressions looks nicer
 
 6. Working with new numeric types such as System.Half whose design includes `op_Implicit` should be less irritating
 
