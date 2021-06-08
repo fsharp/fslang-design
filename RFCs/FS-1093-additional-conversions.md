@@ -134,14 +134,9 @@ frequent to write `[| 6L; 5L |]`.  There is a reasonable case to writing `[| 6; 
 
 Note a non-array-literal expression of type `int[]` still need to be explicitly converted to `int64[]`.
 
-### Motivation for `int32` --> `single`/`double` type-directed conversion
+### Motivation for `int32` --> `double` type-directed conversion
 
 The primary use case is using integer literals in floating point data such as `[| 1.1; 3.4; 6; 7 |]` when the types are known.  
-
-### Motivation for `single` --> `double` type-directed conversion
-
-The motivations for this is fairly weak.  For example it allows floating point utility code (e.g. printing) to use 64-bit floating point
-values, and yet be routinely usable with 32-bit values.  However a non-array-literal value of `single[]` still need to be converted to `double[]`.
 
 ### Motivation for `op_Implicit` type-directed conversion
 
@@ -156,6 +151,7 @@ Remarks:
 
 * In those cases, C# devs can just pass a string, but F# devs must explicitly call op_Implicit all over the place.
 * One thing to watch out for is `op_Implicit` conversions to another type. E.g. `StringSegment` has conversions to `ReadOnlySpan<char>` and `ReadOnlyMemory<char>`. 
+
 
 
 # Detailed design
@@ -199,7 +195,7 @@ When an overall type `overallTy` is propagated to an expresson with type `exprTy
 
 2. Trying to convert a function type `exprTy` to a delegate type `overallTy` by the standard rules. If this succeeds, a delegate construction operation is added to the elaborated expression.
 
-3. Trying the special conversions `int32` to `int64`, `int32` to `single`, `int32` to `double` from `exprTy` to `overallTy`.
+3. Trying the special conversions `int32` to `int64`, `int32` to `single`, `single` to `double`, `int32` to `double` from `exprTy` to `overallTy`.
    If this succeeds, a numeric conversion is added to the elaborated expression.
 
 4. Searching for a matching `op_Implicit` method on either `exprTy` or `overallTy`. If this succeeds, a call to the `op_Implicit` is added to the elaborated expression.
@@ -221,7 +217,6 @@ If the "must convert to" flag is not set on `overallTy`, then unification betwee
 > Here the list is initially known to have type `list<?>` for some unknown type, and the overall known type `seq<A>` 
 > is then integrated with this type, inferring `?` to be `A`.  This is then used as the known overall type when checking
 > the element expressions.
-
 
 
 > NOTE: Branches of an if-then-else or `match` may have different types even when checked against the same known type, e.g. 
@@ -333,6 +328,11 @@ type C() =
     static member M1(?x:int64) = 1
 C.M1(x=2)
 ```
+
+### Interaction with the option types
+
+The two `op_Implicit` on the F# `option` (`Option`) and `voption` (`ValueOption`) types are ignored. These are present for C# interop.
+
 
 ### Interaction with post-application property setters
 
@@ -527,7 +527,22 @@ This RFC allows overloads to succeed where previously they would have failed. Ho
 >
 > Further, TDCs are ignored during SRTP resolution.
 
+### Lack of motivation for `int32` --> `float32` and `single` --> `double` type-directed conversions
+
+Earlier drafts of this PR included `int32` --> `float32` and `float32` --> `float64` widenings. However, the use cases for these as
+adhoc type-directed conversions in F# programming are not particularly compelling - remember, adhoc conversions can cause confusion, and
+shuold only be added if really necessary.
+
+* One proposed use case for an implicit TDC for `int32` --> `float32`  is machine learning
+  APIs which accept `float32` data, for example ideally little usability penalty should apply when switching from `float64` to `float32`.
+  However adhoc type directed conversions do not solve this.
+
+* One proposed use case for an implicit TDC for `float32` --> `float64` is floating point utility code (e.g. printing) to use 64-bit floating point
+  values, and yet be routinely usable with 32-bit values.  However a non-array-literal value of `single[]` still need to be converted to `double[]`, for example,
+  so the lack of uniformity in practical settings will still require explicit conversions.
+
+As a result these have been removed from the proposal. They can always be added at a later date.
+
 # Unresolved questions
 
 None
-
