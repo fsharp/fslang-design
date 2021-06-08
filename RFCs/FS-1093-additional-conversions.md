@@ -403,6 +403,25 @@ This raises one issue: hand-written .NET numeric types such as `System.Half`, `S
 The user may ask, if these types have widening from `int8` and `int16`then why doesn't, say, `int64`?  However in practice the `int8` and `int16` types are very rarely
 used in F#, so we expect this to be vanishingly rare, and code will clearer if these specific widenings are made explicit.
 
+In addition, these widenings are not included:
+
+    int32 --> float32
+    float32 --> float64
+
+Earlier drafts of this PR included `int32` --> `float32` and `float32` --> `float64` widenings. However, the use cases for these as
+adhoc type-directed conversions in F# programming are not particularly compelling - remember, adhoc conversions can cause confusion, and
+shuold only be added if really necessary.
+
+* One proposed use case for an implicit TDC for `int32` --> `float32`  is machine learning
+  APIs which accept `float32` data, for example ideally little usability penalty should apply when switching from `float64` to `float32`.
+  However adhoc type directed conversions do not solve this.
+
+* One proposed use case for an implicit TDC for `float32` --> `float64` is floating point utility code (e.g. printing) to use 64-bit floating point
+  values, and yet be routinely usable with 32-bit values.  However a non-array-literal value of `single[]` still need to be converted to `double[]`, for example,
+  so the lack of uniformity in practical settings will still require explicit conversions.
+
+As a result these have been removed from the proposal. They can always be added at a later date.
+
 # Drawbacks
 
 ### Expressions may change type when extracted
@@ -525,22 +544,6 @@ This RFC allows overloads to succeed where previously they would have failed. Ho
 > commit to any existing successful resolution that would have followed for existing code, and then allow new resolutions into the game.
 >
 > Further, TDCs are ignored during SRTP resolution.
-
-### Lack of motivation for `int32` --> `float32` and `single` --> `double` type-directed conversions
-
-Earlier drafts of this PR included `int32` --> `float32` and `float32` --> `float64` widenings. However, the use cases for these as
-adhoc type-directed conversions in F# programming are not particularly compelling - remember, adhoc conversions can cause confusion, and
-shuold only be added if really necessary.
-
-* One proposed use case for an implicit TDC for `int32` --> `float32`  is machine learning
-  APIs which accept `float32` data, for example ideally little usability penalty should apply when switching from `float64` to `float32`.
-  However adhoc type directed conversions do not solve this.
-
-* One proposed use case for an implicit TDC for `float32` --> `float64` is floating point utility code (e.g. printing) to use 64-bit floating point
-  values, and yet be routinely usable with 32-bit values.  However a non-array-literal value of `single[]` still need to be converted to `double[]`, for example,
-  so the lack of uniformity in practical settings will still require explicit conversions.
-
-As a result these have been removed from the proposal. They can always be added at a later date.
 
 # Unresolved questions
 
