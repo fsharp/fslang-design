@@ -4,6 +4,8 @@ The design suggestion [Struct representation for active patterns](https://github
 
 This RFC covers the detailed proposal starting from this suggestion
 
+* [x] [Implementation](https://github.com/dotnet/fsharp/pull/10338)
+
 # Summary
 [summary]: #summary
 
