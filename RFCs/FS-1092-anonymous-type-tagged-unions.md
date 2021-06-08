@@ -88,6 +88,8 @@ An anonymous type-tagged union type should only be considered for when a union i
 
 5. There is some identified, concrete, simply explained benefit over using labelled discriminated unions, e.g. "we have a simpler API with fewer overloads".
 
+6. There is no possibility that the type will end up being consumed by .Net languages other than F#.
+
 For example, an anonymous type-tagged union should **not** be considered for the following union type:
 
 ```fsharp
@@ -279,6 +281,8 @@ See "Guidance" above.
 5. Users can falsely rely on anonymous type-tagged union types to ascribe additional semantics to union types, e.g. using `(int|unit)` to represent a database value (including `unit` for `NULL`), with the expectation that these values can be combined algebraically.
 
 6. The mechanism relies on allowing additional implicit conversions in F# code, which itself can have drawbacks.
+
+7. Type erasure means that lowest common denominator types are exposed to non-F# .Net consumers, removing type safety.
 
 # Alternatives
 [alternatives]: #alternatives
