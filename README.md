@@ -1,6 +1,6 @@
 # F# Language Design RFCs 
 
-RFCs (requests for comments) and docs related to the F# language design process. 
+RFCs ([Request for Comments](https://en.wikipedia.org/wiki/Request_for_Comments)) and docs related to the F# language design process. 
 
 All open RFCs that have not been released live under `/RFCs`.
 
