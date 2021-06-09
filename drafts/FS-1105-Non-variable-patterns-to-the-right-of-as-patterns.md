@@ -1,4 +1,4 @@
-# F# RFC FS-1105 - Non-variable patterns to the right of `as ` patterns
+# F# RFC FS-1105 - Non-variable patterns to the right of `as` patterns
 
 The design suggestion [Enable pattern matching on more specific types from type test patterns](https://github.com/fsharp/fslang-suggestions/issues/1025) hasn't been marked "approved in principle" yet, [but received agreement from @dsyme](https://github.com/fsharp/fslang-suggestions/issues/1025#issuecomment-857010104).
 
