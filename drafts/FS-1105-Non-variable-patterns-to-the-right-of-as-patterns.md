@@ -35,7 +35,7 @@ are now valid.
 
 It will act similarly as the `&` operator requiring both sides of the operator to have a successful match before succeeding.
 
-Although [the `as` operator has the lowest precedence of all oeprators](https://docs.microsoft.com/en-us/dotnet/fsharp/language-reference/symbol-and-operator-reference/#operator-precedence), the right hand side of `as` operators currently only parse one identifier, which means that `,`, `|`, `&`, `::`, `:`, and `as` operators can still appear to the right of identifiers after `as` operators and be regarded as valid code. Therefore, the right side of `as` operators should parse a pattern with an equivalent precedence to DU case matching and active patterns, which means that patterns with lower precedence will require parentheses.
+Although [the `as` operator has the lowest precedence of all operators](https://docs.microsoft.com/en-us/dotnet/fsharp/language-reference/symbol-and-operator-reference/#operator-precedence), the right hand side of `as` operators currently only parse one identifier, which means that `,`, `|`, `&`, `::`, `:`, and `as` operators can still appear to the right of identifiers after `as` operators and be regarded as valid code. Therefore, the right side of `as` operators should parse a pattern with an equivalent precedence to DU case matching and active patterns, which means that patterns with lower precedence will require parentheses.
 
 
 # Drawbacks
