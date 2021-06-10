@@ -37,6 +37,60 @@ It will act similarly as the `&` operator requiring both sides of the operator t
 
 Although [the `as` operator has the lowest precedence of all operators](https://docs.microsoft.com/en-us/dotnet/fsharp/language-reference/symbol-and-operator-reference/#operator-precedence), the right hand side of `as` operators currently only parse one identifier, which means that `,`, `|`, `&`, `::`, `:`, and `as` operators can still appear to the right of identifiers after `as` operators and be regarded as valid code. Therefore, the right side of `as` operators should parse a pattern with an equivalent precedence to DU case matching and active patterns, which means that patterns with lower precedence will require parentheses.
 
+The existing double purpose of
+```fs
+// SyntaxTree.fs
+type SynPat =
+...
+    | Named of
+        pat: SynPat *
+        ident: Ident *
+        isSelfIdentifier: bool *
+        accessibility: SynAccess option *
+        range: range
+```
+that represents both variable patterns and `as` patterns will be split into
+```fs
+type SynPat =
+...
+    | Name of
+        ident: Ident *
+        isSelfIdentifier: bool *
+        accessibility: SynAccess option *
+        range: range
+    | As of
+        lhsPat: SynPat *
+        rhsPat: SynPat *
+        range: range
+```
+, 
+```fs
+// pars.fsy
+headBindingPattern:
+  | headBindingPattern AS ident 
+      { SynPat.Named ($1, $3, false, None, rhs2 parseState 1 3) }
+...
+```
+will be changed to
+```fs
+headBindingPattern:
+  | headBindingPattern AS constrPattern 
+      { SynPat.As($1, $3, rhs2 parseState 1 3) }
+...
+```
+and
+```fs
+// pars.fsy
+  | parenPattern AS ident 
+      { SynPat.Named ($1, $3, false, None, rhs2 parseState 1 3) }
+```
+will be changed to
+```fs
+  | parenPattern AS constrPattern 
+      { SynPat.As($1, $3, rhs2 parseState 1 3) }
+```
+
+The syntax for `as` patterns for `type Type(...) as this =` and `new(...) as this = ...` will be unchanged because of [this comment from @dsyme](https://github.com/fsharp/fslang-suggestions/issues/1015#issuecomment-852089676).
 
 # Drawbacks
 
