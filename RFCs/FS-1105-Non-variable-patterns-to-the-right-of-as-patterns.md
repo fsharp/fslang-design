@@ -5,7 +5,7 @@ The design suggestion [Enable pattern matching on more specific types from type 
 This RFC covers the detailed proposal for this suggestion.
 
 - [x] [Suggestion](https://github.com/fsharp/fslang-suggestions/issues/1025)
-- [ ] Approved in principle
+- [x] Approved in principle
 - [x] [Implementation](https://github.com/dotnet/fsharp/pull/11674)
 - [ ] Design Review Meeting(s) with @dsyme and others invitees
 - [Discussion](https://github.com/fsharp/fslang-design/discussions/FILL-ME-IN)
