@@ -104,6 +104,8 @@ However, [@dsyme pointed out that](https://github.com/fsharp/fslang-suggestions/
 
 - Not doing anything. Users continue to seek workarounds.
 - Introducing a new operator with a better precedence which allows more parentheses to be omitted. This requires more learning and fragments the language.
+- Also adding reverse type tests at the same time, e.g. `match box 1 with 1 | 2 as :? int -> 2`, which saves one level of parentheses over `match box 1 with :? int as (1 | 2) -> 2`. However, as [@dsyme mentioned](https://github.com/fsharp/fslang-design/pull/595#issuecomment-860591709),
+> I don't think this should be included. The pattern on the left matches type "int", the pattern on the right matches type "obj". We should tighten typing on a left-to right basis, so yes to `:? int as 3` and not `3 as :? int`.
 
 # Compatibility
 
