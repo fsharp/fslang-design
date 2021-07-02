@@ -9,6 +9,7 @@ have been marked "approved in principle", while
 - [Relax indentation rules on anonymous records](https://github.com/fsharp/fslang-suggestions/issues/786)
 - [Allow undentation in method and constructor calls](https://github.com/fsharp/fslang-suggestions/issues/931)
 - [Alignment requirements for mutually recursive functions are non-intuitive](https://github.com/fsharp/fslang-suggestions/issues/601)
+- [Improve Indentation Rules for Generic Signatures](https://github.com/fsharp/fslang-suggestions/issues/504)
 - [Mutual Recursion with Async Workflow Possible Compiler Issue](https://github.com/dotnet/fsharp/issues/3326)
 - [Composed function leads to unexpected indentation warning](https://github.com/dotnet/fsharp/issues/10852)
 - [Warning only when function application is inside SynExpr.IfThenElse](https://github.com/dotnet/fsharp/issues/10929)
