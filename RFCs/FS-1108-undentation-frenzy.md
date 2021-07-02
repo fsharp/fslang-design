@@ -20,9 +20,9 @@ This RFC covers the detailed proposal for all above suggestions.
 
 - [x] Suggestion
 - [ ] Approved in principle
-- [ ] [Implementation](https://github.com/dotnet/fsharp/pull/FILL-ME-IN)
+- [x] [Implementation](https://github.com/dotnet/fsharp/pull/11772)
 - [ ] Design Review Meeting(s) with @dsyme and others invitees
-- [Discussion](https://github.com/fsharp/fslang-design/discussions/FILL-ME-IN)
+- [Discussion](https://github.com/fsharp/fslang-design/discussions/602)
 
 # Summary
 
