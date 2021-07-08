@@ -194,7 +194,7 @@ When an overall type `overallTy` is propagated to an expresson with type `exprTy
 
 2. Trying to convert a function type `exprTy` to a delegate type `overallTy` by the standard rules. If this succeeds, a delegate construction operation is added to the elaborated expression.
 
-3. Trying the special conversions `int32` to `int64`, `int32` to `single`, `single` to `double`, `int32` to `double` from `exprTy` to `overallTy`.
+3. Trying the special conversions `int32` to `int64`, `int32` to `double` from `exprTy` to `overallTy`.
    If this succeeds, a numeric conversion is added to the elaborated expression.
 
 4. Searching for a matching `op_Implicit` method on either `exprTy` or `overallTy`. If this succeeds, a call to the `op_Implicit` is added to the elaborated expression.
