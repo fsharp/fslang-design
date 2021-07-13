@@ -584,6 +584,9 @@ Things to follow-up on from community design review:
 * [ ] Proof using .NET DataFrame APIs
 * [ ] "another popular library to validate with is StackExchange.Redis, which relies heavily on implicit operators for keys and values in redis"
 
+* [ ] Should there be a TDC from int32<measure> to int64<measure> given that int32 auto-widens to int64?
+
+* [ ] Should there be a TDC from function types _ -> _ to System.Delegate. This comes up in "minimal APIs" which take System.Delegate as an argument. See https://github.com/halter73/HoudiniPlaygroundFSharp/pull/3/files for an example of the kind of change this would allow. The RFC includes the existing TDC from function types to specific delegate types. However this doesn't get us to the base type System.Delegate
 
 
 
