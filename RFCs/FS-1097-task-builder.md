@@ -22,7 +22,7 @@ formed part of prototypes for this RFC (thank you!!!!)
 
 We add support for tasks along the lines of `TaskBuilder.fs`.  This supports
 
-* The standard computation expresion features for imperative code (`Delay`, `Run`, `While`, `For`, `TryWith`, `TryFinally`, `Return`)
+* The standard computation expression features for imperative code (`Delay`, `Run`, `While`, `For`, `TryWith`, `TryFinally`, `Return`)
 
 * `let!` and `return!` on task values
 
