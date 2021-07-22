@@ -9,7 +9,7 @@ The design suggestion [Native support for task { ... } ](https://github.com/fsha
 
 # Summary
 
-We add a `task { .. }` builder to the F# standard library, implemented using [FS-1087 resumable code](https://github.com/fsharp/fslang-design/blob/master/RFCs/FS-1087-resumable-code.md).
+We add a `task { .. }` builder to the F# standard library, implemented using [FS-1087 resumable code](https://github.com/fsharp/fslang-design/blob/master/preview/FS-1087-resumable-code.md).
 
 The design is heavily influenced by [TaskBuilder.fs](https://github.com/rspeele/TaskBuilder.fs/) and [Ply](https://github.com/crowded/ply) which effectively
 formed part of prototypes for this RFC (thank you!!!!)
