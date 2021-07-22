@@ -3,7 +3,7 @@
 The design suggestion "Inline if lambda attributes on parameters" is approved in principle. This RFC covers the detailed proposal for this suggestion.
 
 - [x] Approved in principle
-- [x] [Suggestion](https://github.com/fsharp/fslang-design/blob/master/RFCs/FS-1087-resumable-code.md#potential-for-over-use)
+- [x] [Suggestion](https://github.com/fsharp/fslang-design/blob/master/preview/FS-1087-resumable-code.md#potential-for-over-use)
 - [x] [RFC Discussion](https://github.com/fsharp/fslang-design/discussions/549)
 - [x] [Implementation](https://github.com/dotnet/fsharp/pull/6811)  (is part of this overall PR)
 
@@ -19,7 +19,7 @@ they are often not inlined because the compiler deems them too large.  This caus
 
 This problem is particularly chronic for F# computation expression  builders which compute functions and pass them as functions.
 
-This problem is particularly motivated by the fact that [RFC FS-1087](https://github.com/fsharp/fslang-design/blob/master/RFCs/FS-1087-resumable-code.md#potential-for-over-use) proposes to perform more aggressive inlining for resumable code by default.  This raises the likelihood (a.k.a. certainty) that people would start to use resumable code to achieve higher performance for synchronous code, which would be a tragedy of epic proportions, resulting in an endless sea of unreadable and unmaintainable high performance code.
+This problem is particularly motivated by the fact that [RFC FS-1087](https://github.com/fsharp/fslang-design/blob/master/preview/FS-1087-resumable-code.md#potential-for-over-use) proposes to perform more aggressive inlining for resumable code by default.  This raises the likelihood (a.k.a. certainty) that people would start to use resumable code to achieve higher performance for synchronous code, which would be a tragedy of epic proportions, resulting in an endless sea of unreadable and unmaintainable high performance code.
 
 # Examples
 
