@@ -136,7 +136,7 @@ We should get rid of these inconsistencies and allow all above cases to compile 
 
 # Detailed design
 
-1.
+1. The code
 ```fs
     match
         ...
@@ -183,7 +183,7 @@ As with [RFC FS-1054] less strict indentation on common DSL pattern, undentation
 # Alternatives
 
 - Don't do this. Keep dealing with annoying indentation errors.
-- 
+
 - As with [RFC FS-1054] Less strict indentation on common DSL pattern, [FS-1070] Offside relaxations for construct and member definitions, and [FS-1078] Offside relaxations for functions, we can add special cases as they come up. However, the end result is a lot of inconsistency and unecessary special indentation rules, as evidenced in the Motivation section above as a result of FS-1054 and FS-1070 done separately without considering the general case. Moreover, even when we implement each of the suggestions separately, new inconsistent indentation warnings can still come up, such as
 ```fs
 for x in seq {
