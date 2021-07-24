@@ -3,21 +3,24 @@
 The design suggestions
 - [Allow undentation for constructors](https://github.com/fsharp/fslang-suggestions/issues/724)
 - [Relax indentation rules on mutually recursive functions when using with CE](https://github.com/fsharp/fslang-suggestions/issues/868)
-
-have been marked "approved in principle", while
 - [Add new undentation rule for match with](https://github.com/fsharp/fslang-suggestions/issues/833)
 - [Relax indentation rules on anonymous records](https://github.com/fsharp/fslang-suggestions/issues/786)
 - [Allow undentation in method and constructor calls](https://github.com/fsharp/fslang-suggestions/issues/931)
 - [Alignment requirements for mutually recursive functions are non-intuitive](https://github.com/fsharp/fslang-suggestions/issues/601)
 - [Improve Indentation Rules for Generic Signatures](https://github.com/fsharp/fslang-suggestions/issues/504)
-- [Mutual Recursion with Async Workflow Possible Compiler Issue](https://github.com/dotnet/fsharp/issues/3326)
-- [Composed function leads to unexpected indentation warning](https://github.com/dotnet/fsharp/issues/10852)
-- [Warning only when function application is inside SynExpr.IfThenElse](https://github.com/dotnet/fsharp/issues/10929)
 - [Relax some of the indentation rules](https://github.com/fsharp/fslang-suggestions/issues/470) (itself a superset of the following 2 suggestions)
 - [Indentation of new lines should be dependent on the start of the previous line, not the end of it](https://github.com/fsharp/fslang-suggestions/issues/433)
 - [Relax indentation rules on Records](https://github.com/fsharp/fslang-suggestions/issues/130)
 
+have been marked "approved in principle" (or closed as duplicates), while
+
+and these are seen as known issues which are "approved in principle" fixes
+- [Mutual Recursion with Async Workflow Possible Compiler Issue](https://github.com/dotnet/fsharp/issues/3326)
+- [Composed function leads to unexpected indentation warning](https://github.com/dotnet/fsharp/issues/10852)
+- [Warning only when function application is inside SynExpr.IfThenElse](https://github.com/dotnet/fsharp/issues/10929)
+
 are yet to be approved-in-principle. However, [as @catermp said](https://github.com/fsharp/fslang-suggestions/issues/786#issuecomment-533809188),
+
 > I agree with this since we've made it a precedent to relax indentation like this in the past few releases.
 
 This RFC covers the detailed proposal for all above suggestions.
