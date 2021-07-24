@@ -26,7 +26,7 @@ are yet to be approved-in-principle. However, [as @catermp said](https://github.
 This RFC covers the detailed proposal for all above suggestions.
 
 - [x] Suggestion
-- [ ] Approved in principle
+- [x] Approved in principle
 - [x] [Implementation](https://github.com/dotnet/fsharp/pull/11772)
 - [ ] Design Review Meeting(s) with @dsyme and others invitees
 - [Discussion](https://github.com/fsharp/fslang-design/discussions/602)
@@ -37,7 +37,7 @@ Allow undentation (i.e. relaxations to the indentation rules) such that all abov
 
 # Motivation
 
-Currently, the F# indentation rules are very inconsistent.
+Prior to this RFC, the F# indentation rules are very inconsistent.
 ```fs
 let a = id [
     1 // No longer produces warning FS0058 after [RFC FS-1054] less strict indentation on common DSL pattern
@@ -185,6 +185,7 @@ As with [RFC FS-1054] less strict indentation on common DSL pattern, undentation
 # Alternatives
 
 - Don't do this. Keep dealing with annoying indentation errors.
+- 
 - As with [RFC FS-1054] Less strict indentation on common DSL pattern, [FS-1070] Offside relaxations for construct and member definitions, and [FS-1078] Offside relaxations for functions, we can add special cases as they come up. However, the end result is a lot of inconsistency and unecessary special indentation rules, as evidenced in the Motivation section above as a result of FS-1054 and FS-1070 done separately without considering the general case. Moreover, even when we implement each of the suggestions separately, new inconsistent indentation warnings can still come up, such as
 ```fs
 for x in seq {
