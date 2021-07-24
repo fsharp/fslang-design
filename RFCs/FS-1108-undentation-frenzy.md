@@ -1,4 +1,4 @@
-# F# RFC FS-1108 - Undentation frenzy
+# F# RFC FS-1108 - Allow more undentations and remove inconsistencies
 
 The design suggestions
 - [Allow undentation for constructors](https://github.com/fsharp/fslang-suggestions/issues/724)
