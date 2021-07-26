@@ -271,7 +271,7 @@ Indeed `f2` and `f3` already type check today in F#:
 
 Overloads not making use of type-directed conversion are always preferred to overloads with type-directed conversion in overload resolution.
 
-### Warnings for type directed conversions (`--warnon:3386`)
+### Warnings for type directed conversions
 
 Type-directed conversions can cause problems in understanding and debugging code.  Further, we don't
 want to encourage the use of `op_Implicit` as a routine part of F# library design (though occasionally it has its uses).
@@ -286,11 +286,12 @@ As a result, four warnings are added, three of which are off by default:
 
 4. FS3391: Type-directed conversion by an F#-defined `op_Implicit` conversion. This gives a warning that is ON by default.  
 
-The warnings will contain a link to further documentation.
-The logic here is that `op_Implicit` is part of .NET library design, but is not really part of F# methodology.
-Thus it is reasonable to assume .NET libraries have well-designed `op_Implicit`, and F# programmers aren't being
-led into the trap above. However, if F# programmers start scattering around `op_Implicit` they will hit warnings linking
-to documentation explaining that this isn't a great idea.
+The user can enable all these warnings through `--warnon:3386 --warnon:3387 --warnon:3388`. The warnings will contain a link to further documentation.
+
+This policy is chosen because `op_Implicit` is part of .NET library design, but is not really part of F# methodology.
+It is reasonable to assume .NET libraries have well-designed, limited use of `op_Implicit`. It is very rare we want
+to encourge the definition of `op_Implicit` in F# code.  If F# programmers
+start scattering around `op_Implicit` they will hit the warnings above, linking to documentation explaining that this isn't a great idea.
 
 See also [this part of the RFC discussion](https://github.com/fsharp/fslang-design/discussions/525#discussioncomment-1051349) for
 examples where the F# programmer may be tempted to adopt `op_Implicit` to little advantage.
