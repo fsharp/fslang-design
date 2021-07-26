@@ -18,7 +18,7 @@ This RFC extends F# to include type-directed conversions when known type informa
    - Delegates: the existing func (`'a -> 'b`) --> `delegate` type directed conversions
    - Expressions: the existing `delegate` --> LINQ `Expression` type directed conversions
    - Subsumption: upcasting
-   - Numeric: `int32` --> `int64`/`nativeint`/`float64`
+   - Numeric: `int32` --> `int64`/`nativeint`/`float`
    - Code-defined: `op_Implicit` when both source and destination are nominal.
 
    Numeric and code-defined type-directed conversions only apply when both types are fully known, and are generally only useful for non-generic types.
@@ -35,9 +35,9 @@ The intent of this RFC is to give a user experience where:
 
 3. Fewer upcasts are needed when programming with types that support subtyping
 
-4. Fewer widening conversions are needed when mixing `int32`, `int64` and `float64`.
+4. Fewer widening conversions are needed when mixing `int32`, `int64`, `nativeint` and `float`.
 
-5. Numeric `int64`/`float64` data in tuple, list and array expressions looks nicer
+5. Numeric `int64`/`float` data in tuple, list and array expressions looks nicer
 
 6. Working with new numeric types such as System.Half whose design includes `op_Implicit` should be less irritating
 
@@ -198,7 +198,7 @@ When an overall type `overallTy` is propagated to an expresson with type `exprTy
 
 2. Trying to convert a function type `exprTy` to a delegate type `overallTy` by the standard rules. If this succeeds, a delegate construction operation is added to the elaborated expression.
 
-3. Trying the special conversions `int32` to `int64`, `int32` to `double` from `exprTy` to `overallTy`.
+3. Trying the special conversions `int32` to `int64`, `int32` to `nativeint`, `int32` to `double` from `exprTy` to `overallTy`.
    If this succeeds, a numeric conversion is added to the elaborated expression.
 
 4. Searching for a matching `op_Implicit` method on either `exprTy` or `overallTy`. If this succeeds, a call to the `op_Implicit` is added to the elaborated expression.
@@ -357,7 +357,6 @@ C.M1(x=2)
 
 The two `op_Implicit` on the F# `option` (`Option`) and `voption` (`ValueOption`) types are ignored. These are present for C# interop.
 
-
 ### Interaction with post-application property setters
 
 Type-directed conversions are applied for post-application property setters, for example:
@@ -431,17 +430,17 @@ used in F#, so we expect this to be vanishingly rare, and code will clearer if t
 In addition, these widenings are not included:
 
     int32 --> float32
-    float32 --> float64
+    float32 --> float
 
-Earlier drafts of this PR included `int32` --> `float32` and `float32` --> `float64` widenings. However, the use cases for these as
+Earlier drafts of this PR included `int32` --> `float32` and `float32` --> `float` widenings. However, the use cases for these as
 adhoc type-directed conversions in F# programming are not particularly compelling - remember, adhoc conversions can cause confusion, and
 shuold only be added if really necessary.
 
 * One proposed use case for an implicit TDC for `int32` --> `float32`  is machine learning
-  APIs which accept `float32` data, for example ideally little usability penalty should apply when switching from `float64` to `float32`.
+  APIs which accept `float32` data, for example ideally little usability penalty should apply when switching from `float` to `float32`.
   However adhoc type directed conversions do not solve this.
 
-* One proposed use case for an implicit TDC for `float32` --> `float64` is floating point utility code (e.g. printing) to use 64-bit floating point
+* One proposed use case for an implicit TDC for `float32` --> `float` is floating point utility code (e.g. printing) to use 64-bit floating point
   values, and yet be routinely usable with 32-bit values.  However a non-array-literal value of `single[]` still need to be converted to `double[]`, for example,
   so the lack of uniformity in practical settings will still require explicit conversions.
 
