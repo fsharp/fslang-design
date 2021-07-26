@@ -12,21 +12,18 @@ This RFC covers the detailed proposal for this suggestion.
 
 This RFC extends F# to include type-directed conversions when known type information is available. It does three things:
 
-1. Puts in place a general backwards-compatible mechanism for type directed conversions (and one that works in conjunction with the existing techniques to allow subsumption at some specific places)
+1. Puts in place a general backwards-compatible last-resort mechanism for type directed conversions.
 
-2. Selects a particular set of type directed conversions to use.  These are:
-   - the existing func (`'a -> 'b`) --> `delegate` type directed conversions
-   - the existing `delegate` --> LINQ `Expression` type directed conversions
-   - upcasting
-   - `int32` --> `int64`/`nativeint`/`float64`
-   - `op_Implicit` when both source and destination are nominal.
+2. Adds a particular set of type directed conversions.  These are:
+   - Delegates: the existing func (`'a -> 'b`) --> `delegate` type directed conversions
+   - Expressions: the existing `delegate` --> LINQ `Expression` type directed conversions
+   - Subsumption: upcasting
+   - Numeric: `int32` --> `int64`/`nativeint`/`float64`
+   - Code-defined: `op_Implicit` when both source and destination are nominal.
 
-3. Implements a warning when any of these are used (excluding the two existing conversions). The warning is off by default for all but uses of F#-defined `op_Implicit`.
+   Numeric and code-defined type-directed conversions only apply when both types are fully known, and are generally only useful for non-generic types.
 
-Type-directed conversions are used as an option of last resort, at leaf expressions, so different types
-may be returned on each bracnh of compound structures like `if .. then ... else`.
-
-Numeric an `op_Implicit` type-directed conversions only apply when both types are fully known, and are generally only useful for non-generic types.
+3. Implements warnings when any of these are used (excluding the two existing conversions for delegates and expressions). These warnings are off by default, except for F#-defined `op_Implicit`, which is on by default.
 
 # Design Principles
 
@@ -46,7 +43,7 @@ The intent of this RFC is to give a user experience where:
 
 7. Inadvertent use of the mechanism should not introduce confusion or bugs
 
-8. The F# programmer is discouraged from starting adding `op_Implicit` conversions to their type designs
+8. The F# programmer is discouraged from adding `op_Implicit` conversions to their type designs
 
 NOTE: The aim is to make a feature which is trustworthy and barely noticed. It's not the sort of feature where you tell people "hey, go use this" - instead the aim is that you don't need to be cognisant of the feature when coding in F#, though you may end up using the mechanism when calling a library, or when coding with numeric data, or when using data supporting subtyping.  Technical knowledge of the feature is not intended to be part of the F# programmer's working knowledge, it's just something that makes using particular libraries nice and coding less irritating, without making it less safe.
 
