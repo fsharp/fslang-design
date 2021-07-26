@@ -23,7 +23,7 @@ This RFC extends F# to include type-directed conversions when known type informa
 
    Numeric and code-defined type-directed conversions only apply when both types are fully known, and are generally only useful for non-generic types.
 
-3. Implements warnings when any of these are used (excluding the two existing conversions for delegates and expressions). These warnings are off by default, except for F#-defined `op_Implicit`, which is on by default.
+3. Implements warnings when any of these are used (excluding the two existing conversions for delegates and expressions). These warnings are generally off by default, see below.
 
 # Design Principles
 
@@ -278,13 +278,14 @@ want to encourage the use of `op_Implicit` as a routine part of F# library desig
 
 As a result, four warnings are added, three of which are off by default:
 
-1. FS3388: Type-directed conversion by subtyping (e.g. `string --> obj`). This gives a warning that is OFF by default.  
+1. FS3388: Type-directed conversion by subtyping (e.g. `string --> obj`). This warning is OFF by default.  
 
-2. FS3389: Type-directed conversion by a built-in numeric conversion (`int --> int64` etc.). This gives a warning that is OFF by default.  
+2. FS3389: Type-directed conversion by a built-in numeric conversion (`int --> int64` etc.). This warning is OFF by default.  
 
-3. FS3390: Type-directed conversion by a .NET/C#/IL-defined `op_Implicit` conversion. This gives a warning that is OFF by default.  
+3. FS3390: Type-directed conversion by an `op_Implicit` conversion at method-argument position.
+   This warning is OFF by default.  
 
-4. FS3391: Type-directed conversion by an F#-defined `op_Implicit` conversion. This gives a warning that is ON by default.  
+4. FS3391: Type-directed conversion by an `op_Implicit` conversion at non-method-argument. This warning is ON by default.
 
 The user can enable all these warnings through `--warnon:3386 --warnon:3387 --warnon:3388`. The warnings will contain a link to further documentation.
 
