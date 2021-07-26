@@ -279,57 +279,7 @@ Overloads not making use of type-directed conversion are always preferred to ove
 Type-directed conversions can cause problems in understanding and debugging code.  Further, we don't
 want to encourage the use of `op_Implicit` as a routine part of F# library design (though occasionally it has its uses).
 
-As a result, four warnings are added, three of which are off by default,
- 
-I've been playing with this RFC and have mixed feelings, especially with regard to `op_Implicit`, and would like to discuss how to "tune" it.
-
-The problem is really that `op_Implicit` becomes tempting for the F# coder, who often have the "make things as succinct as possible" ethos - which is fine in many ways but dangerous if it leads people into a kind of hellscape of implicit conversions.  
-
-For example, consider JsonValue from FSharp.Data.  It becomes tempting to try to implicit-conversion the heck out of it in the name of getting F# code close and closer to JSON:
-```fsharp
-
-/// Represents a JSON value. Large numbers that do not fit in the
-/// Decimal type are represented using the Float case, while
-/// smaller numbers are represented as decimals to avoid precision loss.
-[<RequireQualifiedAccess>]
-[<StructuredFormatDisplay("{_Print}")>]
-type JsonValue =
-  | String of string
-  | Number of decimal
-  | Float of float
-  | Record of properties:(string * JsonValue)[]
-  | Array of elements:JsonValue[]
-  | Boolean of bool
-  | Null  
-  static member op_Implicit(x: string) = String x
-  static member op_Implicit(x: int) = Number (decimal x)
-  static member op_Implicit(x: decimal) = Number x
-  static member op_Implicit(x: float) = Float x
-  static member op_Implicit(x: (string * JsonValue)[]) = Record x
-  static member op_Implicit(x: (string * JsonValue) list) = Record (Array.ofList x)
-  static member op_Implicit(x: JsonValue[]) = Array x
-  static member op_Implicit(x: JsonValue list) = Array (Array.ofList x)
-  static member op_Implicit(x: bool) = Boolean x
-
-let x1 : JsonValue = "aaa"
-let x2 : JsonValue = 3.0M
-let x3 : JsonValue = 3.0
-let x3b : JsonValue = true
-```
-
-However this is just yuck, because it really doesn't get you where you want to go, for example this fails:
-```fsharp
-let x4 : JsonValue = [| "a", 1 |] // no implicit conversion because type is not fully known at point of type failure and so this RFC doesn't apply
-```
-But this works!
-```fsharp
-let x5 : JsonValue = ([| "a", 1 |] : (string * JsonValue) array)
-```
-Ugh. I mean what have we gained here?  Traded one kind of annotation for a worse kind.
-
-The problem is that F# programmers will "fiddle" with this too much.  They may also scatter `op_Implicit` around like confetti just in case it "helps" their users be more succinct (when in fact it will just confuse the heck out of their users).  And it will always be unsatisfactory.
-
-It's not so much about mechanism as policy. My belief is that we should do this change to make more warnings on by default:
+As a result, four warnings are added, three of which are off by default:
 
 1. FS3388: Type-directed conversion by subtyping (e.g. `string --> obj`). This gives a warning that is OFF by default.  
 
