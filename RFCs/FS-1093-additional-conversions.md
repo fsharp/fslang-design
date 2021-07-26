@@ -135,6 +135,10 @@ frequent to write `[| 6L; 5L |]`.  There is a reasonable case to writing `[| 6; 
 
 Note a non-array-literal expression of type `int[]` still need to be explicitly converted to `int64[]`.
 
+### Motivation for `int32` --> `nativeint` type-directed conversion
+
+The primary use case is APIs using nativeint. APIs using nativeint are beginning to be more common in some domains.
+
 ### Motivation for `int32` --> `double` type-directed conversion
 
 The primary use case is using integer literals in floating point data such as `[| 1.1; 3.4; 6; 7 |]` when the types are known.  
