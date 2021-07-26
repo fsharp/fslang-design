@@ -61,7 +61,6 @@ There is no goal to make defining `op_Implicit` methods a normal part of F# meth
 
 There are a number of motivations both for the general mechanism and the specific type-directed conversions admitted.
 
-
 ### Motivation for general mechanism
 
 The mechanism is required for type-directed features adding more implicit (i.e. auto-upcast) structural subtyping to F# such as [Anonymous Type-tagged Unions](https://github.com/fsharp/fslang-design/blob/master/RFCs/FS-1092-anonymous-type-tagged-unions.md).
@@ -142,9 +141,9 @@ The primary use case is using integer literals in floating point data such as `[
 
 ### Motivation for `op_Implicit` type-directed conversion
 
-  Certain newer .NET APIs (like ASP.NET Core) as well as popular 3rd party libraries, make frequent use of `op_Implicit` conversions.
+Certain newer .NET APIs (like ASP.NET Core) as well as popular 3rd party libraries, make frequent use of `op_Implicit` conversions.
   
-  Examples
+Examples
   * many APIs in `Microsoft.Net.Http.Headers` make use of `StringSegment` arguments
   * (MassTransit)[https://github.com/MassTransit/MassTransit] uses `RequestTimeout`, which has conversion from `TimeSpan` as well as `int` (milliseconds), seemingly for a simpler API with fewer overloads
   * (Eto.Forms)[https://github.com/picoe/Eto/] uses implicit constructor for many entities.
@@ -153,8 +152,6 @@ Remarks:
 
 * In those cases, C# devs can just pass a string, but F# devs must explicitly call op_Implicit all over the place.
 * One thing to watch out for is `op_Implicit` conversions to another type. E.g. `StringSegment` has conversions to `ReadOnlySpan<char>` and `ReadOnlyMemory<char>`. 
-
-
 
 # Detailed design
 
@@ -214,8 +211,10 @@ If the "must convert to" flag is not set on `overallTy`, then unification betwee
 > inference of element types or type araguments.  This may be relevant to processing the contents of the expression.
 > For example, consider
 > 
->      let xs : seq<A> = [ B(); C() ]
->
+```fsharp
+let xs : seq<A> = [ B(); C() ]
+```
+> 
 > Here the list is initially known to have type `list<?>` for some unknown type, and the overall known type `seq<A>` 
 > is then integrated with this type, inferring `?` to be `A`.  This is then used as the known overall type when checking
 > the element expressions.
@@ -226,7 +225,9 @@ If the "must convert to" flag is not set on `overallTy`, then unification betwee
 > ```fsharp
 > let f () : A = if true then B() else C()
 > ```
+>
 > is elaborated to
+>
 > ```fsharp
 > let f () : A = if true then (B() :> A) else (C() :> A)
 > ```
