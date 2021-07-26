@@ -14,17 +14,19 @@ This RFC extends F# to include type-directed conversions when known type informa
 
 1. Puts in place a general backwards-compatible mechanism for type directed conversions (and one that works in conjunction with the existing techniques to allow subsumption at some specific places)
 
-2. Selects a particular set of type directed conversions to use.  These are currently
+2. Selects a particular set of type directed conversions to use.  These are:
    - the existing func (`'a -> 'b`) --> `delegate` type directed conversions
    - the existing `delegate` --> LINQ `Expression` type directed conversions
    - upcasting
-   - `int32` --> `int64`/`float64`
+   - `int32` --> `int64`/`nativeint`/`float64`
    - `op_Implicit` when both source and destination are nominal.
 
-3. Implements an opt-in warning when any of these are used (outside existing uses of upcasting)
+3. Implements a warning when any of these are used (excluding the two existing conversions). The warning is off by default for all but uses of F#-defined `op_Implicit`.
 
 Type-directed conversions are used as an option of last resort, at leaf expressions, so different types
 may be returned on each bracnh of compound structures like `if .. then ... else`.
+
+Numeric an `op_Implicit` type-directed conversions only apply when both types are fully known, and are generally only useful for non-generic types.
 
 # Design Principles
 
@@ -44,6 +46,8 @@ The intent of this RFC is to give a user experience where:
 
 7. Inadvertent use of the mechanism should not introduce confusion or bugs
 
+8. The F# programmer is discouraged from starting adding `op_Implicit` conversions to their type designs
+
 NOTE: The aim is to make a feature which is trustworthy and barely noticed. It's not the sort of feature where you tell people "hey, go use this" - instead the aim is that you don't need to be cognisant of the feature when coding in F#, though you may end up using the mechanism when calling a library, or when coding with numeric data, or when using data supporting subtyping.  Technical knowledge of the feature is not intended to be part of the F# programmer's working knowledge, it's just something that makes using particular libraries nice and coding less irritating, without making it less safe.
 
 There is no design goal to mimic all the numeric widenings of C#.
@@ -53,6 +57,8 @@ There is no design goal to eliminate all explicit upcasts.
 There is no design goal to eliminate all explicit numeric widening.
 
 There is no design goal to eliminate all explicit calls to `op_Implicit`, though in practice we'd expect `op_Implicit` calls to largely disappear.
+
+There is no goal to make defining `op_Implicit` methods a normal part of F# methodology.
 
 # Motivation
 
@@ -268,15 +274,30 @@ Indeed `f2` and `f3` already type check today in F#:
 
 Overloads not making use of type-directed conversion are always preferred to overloads with type-directed conversion in overload resolution.
 
-### Opt-in warning for type directed conversions (`--warnon:3386`)
+### Warnings for type directed conversions (`--warnon:3386`)
 
-Type-directed conversions can cause problems in understanding and debugging code.
+Type-directed conversions can cause problems in understanding and debugging code.  Further, we don't
+want to encourage the use of `op_Implicit` as a routine part of F# library design (though occasionally it has its uses).
 
-As a result, an opt-in warning `--warnon:3386` (off by default) is available to report a warning whenever a type-directed conversion is used in code. A typical warning is as follows:
+As a result, four warnings are added, three of which are off by default:
 
-```
-tests\fsharp\core\auto-widen\preview\test.fsx(169,18): warning FS3386: This expression uses an implicit conversion to convert type 'Y' to type 'X'. Warnings are enabled for implicit conversions. Consider using an explicit conversion or disabling this warning.
-```
+1. FS3388: Type-directed conversion by subtyping (e.g. `string --> obj`). This gives a warning that is OFF by default.  
+
+2. FS3389: Type-directed conversion by a built-in numeric conversion (`int --> int64` etc.). This gives a warning that is OFF by default.  
+
+3. FS3390: Type-directed conversion by a .NET/C#/IL-defined `op_Implicit` conversion. This gives a warning that is OFF by default.  
+
+4. FS3391: Type-directed conversion by an F#-defined `op_Implicit` conversion. This gives a warning that is ON by default.  
+
+The warnings will contain a link to further documentation.
+The logic here is that `op_Implicit` is part of .NET library design, but is not really part of F# methodology.
+Thus it is reasonable to assume .NET libraries have well-designed `op_Implicit`, and F# programmers aren't being
+led into the trap above. However, if F# programmers start scattering around `op_Implicit` they will hit warnings linking
+to documentation explaining that this isn't a great idea.
+
+See also [this part of the RFC discussion](https://github.com/fsharp/fslang-design/discussions/525#discussioncomment-1051349) for
+examples where the F# programmer may be tempted to adopt `op_Implicit` to little advantage.
+
 
 ### No upcast without known type information
 
