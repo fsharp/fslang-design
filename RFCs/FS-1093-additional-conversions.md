@@ -21,7 +21,7 @@ This RFC extends F# to include type-directed conversions when known type informa
    - `int32` --> `int64`/`float64`
    - `op_Implicit` when both source and destination are nominal.
 
-3. Implements an opt-in warning when any of these are used (outside existing uses of upcasting)
+3. Implements a warning when any of these are used (outside existing uses of upcasting). The warning is off by default for all but uses of F#-defined `op_Implicit`.
 
 Type-directed conversions are used as an option of last resort, at leaf expressions, so different types
 may be returned on each bracnh of compound structures like `if .. then ... else`.
@@ -44,6 +44,8 @@ The intent of this RFC is to give a user experience where:
 
 7. Inadvertent use of the mechanism should not introduce confusion or bugs
 
+8. The F# programmer is not encouraged to start adding `op_Implicit` conversions to their type designs
+
 NOTE: The aim is to make a feature which is trustworthy and barely noticed. It's not the sort of feature where you tell people "hey, go use this" - instead the aim is that you don't need to be cognisant of the feature when coding in F#, though you may end up using the mechanism when calling a library, or when coding with numeric data, or when using data supporting subtyping.  Technical knowledge of the feature is not intended to be part of the F# programmer's working knowledge, it's just something that makes using particular libraries nice and coding less irritating, without making it less safe.
 
 There is no design goal to mimic all the numeric widenings of C#.
@@ -53,6 +55,8 @@ There is no design goal to eliminate all explicit upcasts.
 There is no design goal to eliminate all explicit numeric widening.
 
 There is no design goal to eliminate all explicit calls to `op_Implicit`, though in practice we'd expect `op_Implicit` calls to largely disappear.
+
+There is no goal to make defining `op_Implicit` methods a normal part of F# methodology.
 
 # Motivation
 
@@ -268,15 +272,80 @@ Indeed `f2` and `f3` already type check today in F#:
 
 Overloads not making use of type-directed conversion are always preferred to overloads with type-directed conversion in overload resolution.
 
-### Opt-in warning for type directed conversions (`--warnon:3386`)
+### Warnings for type directed conversions (`--warnon:3386`)
 
-Type-directed conversions can cause problems in understanding and debugging code.
+Type-directed conversions can cause problems in understanding and debugging code.  Further, we don't
+want to encourage the use of `op_Implicit` as a routine part of F# library design (though occasionally it has its uses).
 
-As a result, an opt-in warning `--warnon:3386` (off by default) is available to report a warning whenever a type-directed conversion is used in code. A typical warning is as follows:
+As a result, four warnings are added, three of which are off by default,
+ 
+I've been playing with this RFC and have mixed feelings, especially with regard to `op_Implicit`, and would like to discuss how to "tune" it.
 
+The problem is really that `op_Implicit` becomes tempting for the F# coder, who often have the "make things as succinct as possible" ethos - which is fine in many ways but dangerous if it leads people into a kind of hellscape of implicit conversions.  
+
+For example, consider JsonValue from FSharp.Data.  It becomes tempting to try to implicit-conversion the heck out of it in the name of getting F# code close and closer to JSON:
+```fsharp
+
+/// Represents a JSON value. Large numbers that do not fit in the
+/// Decimal type are represented using the Float case, while
+/// smaller numbers are represented as decimals to avoid precision loss.
+[<RequireQualifiedAccess>]
+[<StructuredFormatDisplay("{_Print}")>]
+type JsonValue =
+  | String of string
+  | Number of decimal
+  | Float of float
+  | Record of properties:(string * JsonValue)[]
+  | Array of elements:JsonValue[]
+  | Boolean of bool
+  | Null  
+  static member op_Implicit(x: string) = String x
+  static member op_Implicit(x: int) = Number (decimal x)
+  static member op_Implicit(x: decimal) = Number x
+  static member op_Implicit(x: float) = Float x
+  static member op_Implicit(x: (string * JsonValue)[]) = Record x
+  static member op_Implicit(x: (string * JsonValue) list) = Record (Array.ofList x)
+  static member op_Implicit(x: JsonValue[]) = Array x
+  static member op_Implicit(x: JsonValue list) = Array (Array.ofList x)
+  static member op_Implicit(x: bool) = Boolean x
+
+let x1 : JsonValue = "aaa"
+let x2 : JsonValue = 3.0M
+let x3 : JsonValue = 3.0
+let x3b : JsonValue = true
 ```
-tests\fsharp\core\auto-widen\preview\test.fsx(169,18): warning FS3386: This expression uses an implicit conversion to convert type 'Y' to type 'X'. Warnings are enabled for implicit conversions. Consider using an explicit conversion or disabling this warning.
+
+However this is just yuck, because it really doesn't get you where you want to go, for example this fails:
+```fsharp
+let x4 : JsonValue = [| "a", 1 |] // no implicit conversion because type is not fully known at point of type failure and so this RFC doesn't apply
 ```
+But this works!
+```fsharp
+let x5 : JsonValue = ([| "a", 1 |] : (string * JsonValue) array)
+```
+Ugh. I mean what have we gained here?  Traded one kind of annotation for a worse kind.
+
+The problem is that F# programmers will "fiddle" with this too much.  They may also scatter `op_Implicit` around like confetti just in case it "helps" their users be more succinct (when in fact it will just confuse the heck out of their users).  And it will always be unsatisfactory.
+
+It's not so much about mechanism as policy. My belief is that we should do this change to make more warnings on by default:
+
+1. FS3388: Type-directed conversion by subtyping (e.g. `string --> obj`). This gives a warning that is OFF by default.  
+
+2. FS3389: Type-directed conversion by a built-in numeric conversion (`int --> int64` etc.). This gives a warning that is OFF by default.  
+
+3. FS3390: Type-directed conversion by a .NET/C#/IL-defined `op_Implicit` conversion. This gives a warning that is OFF by default.  
+
+4. FS3391: Type-directed conversion by an F#-defined `op_Implicit` conversion. This gives a warning that is ON by default.  
+
+The warnings will contain a link to further documentation.
+The logic here is that `op_Implicit` is part of .NET library design, but is not really part of F# methodology.
+Thus it is reasonable to assume .NET libraries have well-designed `op_Implicit`, and F# programmers aren't being
+led into the trap above. However, if F# programmers start scattering around `op_Implicit` they will hit warnings linking
+to documentation explaining that this isn't a great idea.
+
+See also [this part of the RFC discussion](https://github.com/fsharp/fslang-design/discussions/525#discussioncomment-1051349) for
+examples where the F# programmer may be tempted to adopt `op_Implicit` to little advantage.
+
 
 ### No upcast without known type information
 
