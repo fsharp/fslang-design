@@ -46,7 +46,7 @@ When checked:
 1. If `expr1` is of function type, a warning is emitted recommending the addition of a space.
 2. If `expr1` is not of function type, `expr2` is interpreted as indexing or slicing notation and the indexing/slicing is resolved in the usual way
 
-### Special consideration for existing curried function applications
+### Special consideration for argument expressions
 
 Special consideration is needed for cases of the following form:
 
