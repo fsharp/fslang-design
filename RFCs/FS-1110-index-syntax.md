@@ -57,7 +57,7 @@ expr1 expr2[expr3]
 
 where `expr2` is not an identifier and `[expr3]` immediately adjacent to `expr2`.  This case is problematic because of this ambiguity:
 
-1. Existing code: The aboev form is allowed in F# 5.0 and before as a curried function application of `expr1` to `expr2` then `[expr3]`
+1. Existing code: The above form is allowed in F# 5.0 and before as a curried function application of `expr1` to `expr2` then `[expr3]`
 2. Future code: The above form may arise when taking existing code and changing `.[` to `[`. 
 
 Note that the case where `expr2` is an identifier has already been disallowed in prior versions of F#. So we need only
