@@ -17,9 +17,10 @@ This RFC allows `expr[idx]` as indexer/slicing syntax and normalize this as the 
 
 # Principles
 
-Any existing F# code will continue to check, possibly with warnings. A small number of exceptions may apply which will advise the use of `--langversion:5.0`.
+Any existing F# code will continue to check, possibly with warnings. The warnings can be suppressed by using `--langversion:5.0`.
 
-In general, F# well-typed code can have `.[` replaced by `[` throughout expressions and will check. A small number of exceptions may apply for compatibility reasons.
+F# well-typed code can have `.[` replaced by `[` throughout expressions and will check. There are some exceptions where the use
+of `.[` will still be required, a warning message will indicate this.
 
 # Motivation
 
@@ -66,16 +67,16 @@ For existing code, ideally such code should have been written with a space in ap
 expr1 expr2 [expr3]
 ```
 
-Some examples are:
+Some micro examples are:
 
 ```fsharp
 let f x y = ()
 let someFunction x = x
-f (someFunction arr)[2]  // CASE 1: expr2 is '(someFunction arr)' and ends in ')'
-f [2][2]                 // CASE 2: expr2 is '[2]' and ends in ']'
+f (someFunction arr)[2] 
+f [2][2]                
 ```
 
-Although not common, such code may well exist today.  Ideally, we want existing code to be adjusted to curried function application with appropriate spaces:
+Although not common, such code exist today. Ideally, we want such existing code to be adjusted to curried function application with appropriate spaces:
 ```fsharp
 let f x y = ()
 let someFunction x = x
@@ -83,21 +84,22 @@ f (someFunction arr) [2]  // add a space
 f [2] [2]                 // add a space
 ```
 
-As a result, special consideration is needed for this code for compatibility reasons.  The construct is checked as first a
-curried function application `expr1 expr2 [expr3]` (space added for clarity), and then, if that fails, as
-an indexing/slicing `expr1 (expr2[expr3])` (parentheses added for clarity).
+Further, here are some real-world of 'future code' (where changing `.[` to `[` would create code like this):
 
-* If checking as a curried function application succeeds, a warning is emitted that a space should be inserted or parentheses used.
-
-* If checking as a curried function application fails, and as indexing/slicing succeeds, then the construct is accepted
-
-* If checking as a curried function application fails, and as indexing/slicing fails, then the errors for the indexing case are reported
-
-This rule is applied across an entire curried function application, so for
 ```fsharp
-f (someFunction arr)[2] (someFunction arr)[2]
+Some (Lazy.force ILCmpInstrRevMap).[cmp]
+
+opt.Split([|':'|]).[0]
+
+FSharpType.GetTupleElements(ty).[i]
+
+escape (lexeme lexbuf).[1]
 ```
-we first check for the legacy case of curried function application to 4 arguments (and emit a warning if it succeeds), then for two index/slice arguments.
+
+As a result, special consideration is needed for this code for compatibility reasons. 
+
+* For adjacent expressions `someFunction (expr)[idx]` in non-high-precedence-application argument position, then if the type of `expr` supports indexing, the warning given will state that either a space must be inserted for application, or `.[` is required, or the argument should be parenthesized
+
 
 # Examples 
 
