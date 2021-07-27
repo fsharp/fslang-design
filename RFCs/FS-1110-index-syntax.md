@@ -126,7 +126,7 @@ arr[0,2,3,4] <- 2
 arr[0,2,3,4]
 ```
 
-### Examples of warnings for Existing Code
+### Examples of warnings for Existing Code 
 
 The following code is valid in F# 5.0 and each line will now generate a warning:
 ```fsharp
@@ -136,12 +136,65 @@ let f2 a b = ()
 let v1 = f1[1]            // applies f1 to a list, now emitting a warning to insert a space
 let v2 = f2[1][2]         // applies f2 to two lists, now emitting a warning to insert a space
 let v3 = f2 [1][2]        // applies f2 to two lists, now emitting a warning to insert a space
-let v4 = f2 (id [1])[2]   // applies f2 to two lists, now emitting a warning to insert a space
+let v4 = f2 (id 1)[2]     // applies f2 to two arguments (id 1) and [2], now emits a warning to insert a space
 ```
+
+#### `--langversion:default` (while feature is in preview)
+
+```fsharp
+let f1 a = ()
+let v1 = f1[1]            // applies f1 to a list, now emitting a warning to insert a space
+```
+gives
+```
+a.fs(2,10,2,15): typecheck warning FS3367: The syntax 'expr1[expr2]' is now reserved for indexing and slicing (in preview). Use 'expr1.[expr2]'. If you intend multiple arguments to a function, add a space between arguments 'someFunction expr1 [expr2]'.
+```
+and
+```fsharp
+let f2 a b = ()
+let v2 = f2 [1][2]         // applies f2 to two lists, now emitting a warning to insert a space
+```
+gives
+```
+a.fs(2,13,2,19): typecheck warning FS3368: The syntax '[expr1][expr2]' is now reserved for indexing/slicing (in preview) and is ambiguous when used as an argument. If you intend multiple arguments to a function, add a space between arguments 'someFunction [expr1] [expr2]'.
+```
+and
+```fsharp
+let f2 a b = ()
+let v4 = f2 (id 1)[2]     // applies f2 to two arguments (id 1) and [2], now emits a warning to insert a space
+```
+gives
+```
+a.fs(2,13,2,22): typecheck warning FS3368: The syntax '(expr1)[expr2]' is now reserved for indexing/slicing (in preview) and is ambiguous when used as an argument. If you intend multiple arguments to a function, add a space between arguments 'someFunction (expr1) [expr2]'.
+```
+
+
+#### `--langversion:preview` (when feature is in preview)
+
+```fsharp
+let f1 a = ()
+let v1 = f1[1]            // applies f1 to a list, now emitting a warning to insert a space
+```
+gives
+```
+a.fs(2,10,2,15): typecheck warning FS3365: The syntax 'expr1[expr2]' is used for indexing and slicing. Consider adding a type annotation or, if two function arguments are intended, then add a space, e.g. 'someFunction expr1 [expr2]'.
+```
+and
+```fsharp
+let f2 a b = ()
+let v4 = f2 (id 1)[2]     // applies f2 to two arguments (id 1) and [2], now emits a warning to insert a space
+```
+gives
+```
+a.fs(2,13,2,22): typecheck warning FS3369: The syntax '(expr1)[expr2]' is ambiguous when used as in an argument list. If you intend indexing or slicing then you must use '(expr1).[expr2]' in argument position. If you intend multiple arguments to a function, add a space between arguments 'someFunction (expr1) [expr2]'.
+```
+
 
 # Compatibility
 
 If a precise language version less than or equal to `5.0` is specified, such as `--langversion:5.0`, then warnings to insert spaces are not emitted.
+
+If the default language version is selected, the feature is compatible but extra warnings may be emitted.
 
 # Unresolved questions
 
