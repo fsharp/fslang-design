@@ -33,18 +33,19 @@ it for string indexing lookup.  In F# the notation has always been type-directed
 
 # Detailed Design
 
-The expression form 
+When processing the expression form 
 
 ```fsharp
 expr1[expr2]
 ```
 
-is now parsed as a high-precedence application if `expr1` and `[` are adjacent. This is already the case for `ident[expr]`, and
-is additionally the case for any expression immediately applied to an adjacent list argument.
+where `expr1` and `[` are adjacent, first `expr1` is checked as usual. Then:
 
-When checked:
 1. If `expr1` is of function type, a warning is emitted recommending the addition of a space.
+
 2. If `expr1` is not of function type, `expr2` is interpreted as indexing or slicing notation and the indexing/slicing is resolved in the usual way
+
+In parsing and the untyped syntax tree, the grammar of slicing is merged with the grammar of expressions.
 
 ### Special consideration for argument expressions
 
