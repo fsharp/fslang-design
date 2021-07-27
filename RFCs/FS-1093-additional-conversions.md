@@ -4,9 +4,10 @@ The design suggestion [Additional type directed conversions](https://github.com/
 
 This RFC covers the detailed proposal for this suggestion.
 
-- [ ] [Implementation](https://github.com/dotnet/fsharp/pull/10884)
-- [ ] [Community Review Meeting](https://github.com/fsharp/fslang-design/issues/589)
-- [ ] [Discussion](https://github.com/fsharp/fslang-design/discussions/525)
+- [x] [Suggestion](https://github.com/fsharp/fslang-suggestions/issues/849)
+- [x] [Implementation](https://github.com/dotnet/fsharp/pull/10884)
+- [x] [Community Review Meeting](https://github.com/fsharp/fslang-design/issues/589)
+- [x] [Discussion](https://github.com/fsharp/fslang-design/discussions/525)
 
 # Summary
 
