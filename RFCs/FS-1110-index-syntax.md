@@ -41,9 +41,9 @@ expr1[expr2]
 
 where `expr1` and `[` are adjacent, first `expr1` is checked as usual. Then:
 
-1. If `expr1` is of function type, a warning is emitted recommending the addition of a space.
+1. If `expr1` unifies with a function type, a warning is emitted recommending the addition of a space, and the construct is processed as an application
 
-2. If `expr1` is not of function type, `expr2` is interpreted as indexing or slicing notation and the indexing/slicing is resolved in the usual way
+2. If `expr1` fails to unify with a function type, the cosntruct is interpreted as indexing or slicing notation `expr1.[expr2]` and resolved in the usual way
 
 In parsing and the untyped syntax tree, the grammar of slicing is merged with the grammar of expressions.
 
