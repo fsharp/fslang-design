@@ -91,20 +91,22 @@ Here are some examples of "future code" (that is, where changing `.[` to `[` wou
 ```fsharp
 Some (Lazy.force ILCmpInstrRevMap).[cmp]
 
-opt.Split([|':'|]).[0]
-
-FSharpType.GetTupleElements(ty).[i]
-
 escape (lexeme lexbuf).[1]
 ```
 
 In these cases, if the user blindly replaces `.[` to `[` then we get code of the form above.
-
 As a result, special consideration is needed for code of this form, compatibility reasons. 
 
 * For adjacent expressions `someFunction (expr)[idx]` in non-high-precedence-application argument position, a warning is given that either a space must be inserted for application, or `.[` is required.
 
 * No informational warning is given when `someFunction (expr).[idx]` is used in argument position
+
+> NOTE: The following are not examples, because the first application is high-precedence application.
+> ```fsharp
+> opt.Split([|':'|]).[0]
+> 
+> FSharpType.GetTupleElements(ty).[i]
+> ```
 
 # Examples 
 
