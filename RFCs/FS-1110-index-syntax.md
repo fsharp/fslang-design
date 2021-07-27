@@ -54,20 +54,21 @@ Special consideration is needed for cases of the following form:
 expr1 expr2[expr3]
 ```
 
-where `expr2` is not an identifier (the case `expr2` is an identifier is disallowed as a high-precedence-application in prior versions of F#).  This
-case is problematic because 
+where `expr2` is not an identifier and `[expr3]` immediately adjacent to `expr2`.  This case is problematic because of this ambiguity:
 
-1. Existing code: The code is allowed in F# 5.0 and before as a curried function application of `expr1` to `expr2` then `[expr3]`
-2. Future code: The code may arise when taking existing code and changing `.[` to `[`. 
+1. Existing code: The aboev form is allowed in F# 5.0 and before as a curried function application of `expr1` to `expr2` then `[expr3]`
+2. Future code: The above form may arise when taking existing code and changing `.[` to `[`. 
 
-To emphasise, this is only problematic if `expr2` is not an identifier, and the next expression is `[expr3]` immediately adjacent to `expr2`.
-For existing code, ideally such code should have been written with a space in application:
+Note that the case where `expr2` is an identifier has already been disallowed in prior versions of F#. So we need only
+consider the cases where `expr2` is not an identifier.
+
+For "existing code", ideally such code should have been written with a space in application:
 
 ```fsharp
 expr1 expr2 [expr3]
 ```
 
-Some micro examples are:
+Here are some examples of "existing code":
 
 ```fsharp
 let f x y = ()
@@ -76,7 +77,7 @@ f (someFunction arr)[2]
 f [2][2]                
 ```
 
-Although not common, such code exist today. Ideally, we want such existing code to be adjusted to curried function application with appropriate spaces:
+We want to advise the used to adjust such code to curried function application with appropriate spaces, as was always intended, and is better code and clearer:
 ```fsharp
 let f x y = ()
 let someFunction x = x
@@ -84,7 +85,7 @@ f (someFunction arr) [2]  // add a space
 f [2] [2]                 // add a space
 ```
 
-Further, here are some real-world of 'future code' (where changing `.[` to `[` would create code like this):
+Here are some examples of "future code" (that is, where changing `.[` to `[` would create code of the form above):
 
 ```fsharp
 Some (Lazy.force ILCmpInstrRevMap).[cmp]
@@ -96,10 +97,13 @@ FSharpType.GetTupleElements(ty).[i]
 escape (lexeme lexbuf).[1]
 ```
 
-As a result, special consideration is needed for this code for compatibility reasons. 
+In these cases, if the user blindly replaces `.[` to `[` then we get code of the form above.
 
-* For adjacent expressions `someFunction (expr)[idx]` in non-high-precedence-application argument position, then if the type of `expr` supports indexing, the warning given will state that either a space must be inserted for application, or `.[` is required, or the argument should be parenthesized
+As a result, special consideration is needed for code of this form, compatibility reasons. 
 
+* For adjacent expressions `someFunction (expr)[idx]` in non-high-precedence-application argument position, a warning is given that either a space must be inserted for application, or `.[` is required.
+
+* No informational warning is given when `someFunction (expr).[idx]` is used in argument position
 
 # Examples 
 
