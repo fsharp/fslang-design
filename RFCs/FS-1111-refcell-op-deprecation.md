@@ -54,7 +54,12 @@ The informational message is sufficient to gradually advise all users that these
 
 Users encountering these informational warnings can
 
-1. Convert their code to use suggested forms
+1. Convert their code to use a `let mutable`, appropriately scoped. For example
+
+   ```fsharp
+   
+
+2. Convert their code to use suggested forms
 
    ```fsharp
       !cell          --->     cell.Value
@@ -62,7 +67,7 @@ Users encountering these informational warnings can
       incr cell      --->     cell.Value <- cell.Value + 1
       decr cell      --->     cell.Value <- cell.Value - 1
 
-2. OR add the following code to their project
+3. OR add the following code to their project
 
    ```fsharp
    let (!) (r: 'T ref)  = r.Value
@@ -71,7 +76,7 @@ Users encountering these informational warnings can
    let decr (r: int ref)  = r.Value <- r.Value - 1
    ```
 
-3. OR suppress the informational warning through `--nowarn:3370`
+4. OR suppress the informational warning through `--nowarn:3370`
 
 
 # Unresolved questions
