@@ -5,7 +5,7 @@ This RFC covers the detailed proposal for all above suggestions and issues
 
 - [x] [Suggestion](https://github.com/fsharp/fslang-suggestions/issues/1053)
 - [x] Approved in principle
-- [x] [Implementation](https://github.com/dotnet/fsharp/pull/11749)
+- [x] [Implementation](https://github.com/dotnet/fsharp/pull/11900)
 - [ ] Design Review Meeting(s) with @dsyme and others invitees
 - [ ] [Discussion](https://github.com/fsharp/fslang-design/discussions/611)
 
