@@ -26,7 +26,7 @@ Because of this, we can now gently deprecate the default FSharp.Core definition 
     let (!) (r: 'T ref)  = r.Value
     let (:=) (r: 'T ref) (v: 'T)  = r.Value <- v
     let incr (r: int ref)  = r.Value <- r.Value + 1
-    let decr (r: int ref)  = r.Value <- r.Value + 1
+    let decr (r: int ref)  = r.Value <- r.Value - 1
 
 and instead ask people to use ``r.Value`` instead
 
@@ -49,6 +49,30 @@ This is a backwards compatible change. Informational warnings are not errors eve
 is selected.
 
 The informational message is sufficient to gradually advise all users that these constructs are considered deprecated.
+
+# Actions
+
+Users encountering these informational warnings can
+
+1. Convert their code to use suggested forms
+
+   ```fsharp
+      !cell          --->     cell.Value
+      cell := expr   --->     cell.Value <- expr
+      incr cell      --->     cell.Value <- cell.Value + 1
+      decr cell      --->     cell.Value <- cell.Value - 1
+
+2. OR add the following code to their project
+
+   ```fsharp
+   let (!) (r: 'T ref)  = r.Value
+   let (:=) (r: 'T ref) (v: 'T)  = r.Value <- v
+   let incr (r: int ref)  = r.Value <- r.Value + 1
+   let decr (r: int ref)  = r.Value <- r.Value - 1
+   ```
+
+3. OR suppress the informational warning through `--nowarn:3370`
+
 
 # Unresolved questions
 
