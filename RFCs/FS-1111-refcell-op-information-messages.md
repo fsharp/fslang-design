@@ -1,6 +1,6 @@
-# F# RFC FS-1111 - Reference cell operation deprecation
+# F# RFC FS-1111 - Reference cell operation information messages
 
-The design suggestion [Deprecate the default definition of (!) and ask users to use .Value instead](https://github.com/fsharp/fslang-suggestions/issues/569) has been approved in principle.
+The design suggestion [Give advisor messages when using (!) and := and ask users to use .Value instead](https://github.com/fsharp/fslang-suggestions/issues/569) has been approved in principle.
 This RFC covers the detailed proposal.
 
 - [x] [Suggestion](https://github.com/fsharp/fslang-suggestions/issues/569)
@@ -11,7 +11,7 @@ This RFC covers the detailed proposal.
 
 # Summary
 
-Deprecate the use of `!`, `:=`, `incr` and `decr` from the F# standard library, linking people to a guidance page
+Give advisory messages on the use of `!`, `:=`, `incr` and `decr` from the F# standard library, linking people to a guidance page
 and suggesting to change to use `cell.Value` operations.
 
 # Background
@@ -21,7 +21,7 @@ Since F# 0.1, F# has had `:=`, `!`, `incr`, `decr` operations for mutable heap-a
 As of F# 4.0, ``let mutable x = ...`` supports automatic promotion to a reference cell if the ``x`` is captured in a closure. As a result,
 the explicit use of ``ref``  cells is now far less common for F# programming.
 
-Because of this, we can now gently deprecate the default FSharp.Core definition of 
+Because of this, we can now gently give advisory messages when using these.
 
     let (!) (r: 'T ref)  = r.Value
     let (:=) (r: 'T ref) (v: 'T)  = r.Value <- v
