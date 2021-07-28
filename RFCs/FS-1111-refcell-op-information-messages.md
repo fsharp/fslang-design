@@ -19,7 +19,8 @@ and suggesting to change to use `cell.Value` operations.
 Since F# 0.1, F# has had `:=`, `!`, `incr`, `decr` operations for mutable heap-allocated reference cells.
 
 As of F# 4.0, ``let mutable x = ...`` supports automatic promotion to a reference cell if the ``x`` is captured in a closure. As a result,
-the explicit use of ``ref``  cells is now far less common for F# programming.
+the explicit use of ``ref``  cells is now far less common for F# programming, so much so that, in retrospect, we would never have given them such high
+presence in the FSharp.Core library design. Additionally, reference cells are objects (actually records), and using them should use object notation.
 
 Because of this, we can now gently give advisory messages when using these.
 
