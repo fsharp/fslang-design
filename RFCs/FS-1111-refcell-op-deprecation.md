@@ -7,7 +7,7 @@ This RFC covers the detailed proposal.
 - [x] Approved in principle
 - [x] [Implementation](https://github.com/dotnet/fsharp/pull/11900)
 - [ ] Design Review Meeting(s) with @dsyme and others invitees
-- [ ] Discussion
+- [ ] [Discussion](https://github.com/fsharp/fslang-design/discussions/614)
 
 # Summary
 
