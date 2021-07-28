@@ -1,6 +1,6 @@
 # F# RFC FS-1111 - Reference cell operation information messages
 
-The design suggestion [Give advisor messages when using (!) and := and ask users to use .Value instead](https://github.com/fsharp/fslang-suggestions/issues/569) has been approved in principle.
+The design suggestion [Give advisory messages when using (!) and := and ask users to use .Value instead](https://github.com/fsharp/fslang-suggestions/issues/569) has been approved in principle.
 This RFC covers the detailed proposal.
 
 - [x] [Suggestion](https://github.com/fsharp/fslang-suggestions/issues/569)
