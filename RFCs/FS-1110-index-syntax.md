@@ -136,10 +136,17 @@ The following code is valid in F# 5.0 and each line will now generate a warning:
 let f1 a = ()
 let f2 a b = ()
 
+let v0 = f1[]             // applies f1 to a list, now emitting a warning to insert a space
 let v1 = f1[1]            // applies f1 to a list, now emitting a warning to insert a space
 let v2 = f2[1][2]         // applies f2 to two lists, now emitting a warning to insert a space
 let v3 = f2 [1][2]        // applies f2 to two lists, now emitting a warning to insert a space
 let v4 = f2 (id 1)[2]     // applies f2 to two arguments (id 1) and [2], now emits a warning to insert a space
+```
+
+Some specific examples in the wild:
+```fsharp
+makeReadOnlyCollection[]
+seq[1;2;3;4;5]
 ```
 
 #### `--langversion:default` (while feature is in preview)
