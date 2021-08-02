@@ -134,9 +134,9 @@ let xs = [ (); () ]
 ```
 Explicit yield syntax can likewise be used:
 ```fsharp
-let xs = [ yield (); yield () ]
+let xs = [ yield (); yield () ] // result is [ (); () ]
 ```
-However, when `match` is used in a computed list expression, the syntax `-> ()` is used to indicate "don't yield anything on this branch".  For example
+When `match` is used in a computed list expression, with or without explicit yields, the syntax `-> ()` is used to indicate "don't yield anything on this branch".  For example
 ```fsharp
 let f x =
     [ yield 1
@@ -176,7 +176,8 @@ with unit-generating lists, the rules to remember are
 1. `-> ()` still generates no values
 2. Given a sequential `expr1; expr2`, if the type of `expr1` unifies with `unit` then no values are produced
 
-Thus:
+Thus this makes it essentially impossible to actually generate unit-values from lists that contain control constructs and which
+attempt to use implicit yields:
 ```fsharp
 let f x : unit list =
     [ ()
@@ -196,13 +197,11 @@ f 2 // generates []
 f 3 // generates []
 ```
 From the results, you can see that when implicit yields and control constructs are used, the interpretation of unit-typed
-elements of the control structure is "execute and ignore".  Hence explicit yields should always be used when generating unit results.
+elements of the control structure is "execute and ignore" - that is, unit-typed expressions are treated as statements
+rather than expressions-with-yield-of-value-effect.  Hence explicit yields should always be used when generating unit results.
+Thus there is a mixed-interpretation of "control" constructs in the F# syntax.
 
-
-
-
-
-remains the cas
+In practice, generating unit-values computationally seems not to arise, and if it does the option of using explicit yields for clarity is available.
 
 ## Code samples
 
