@@ -126,6 +126,84 @@ The intitial working assumption is that such cases will be extraordinarily rare 
 For this reason, in the balance it seems ok to change the interpretation of these cases, subject to
 a `/langversion:5.0` flag.
 
+## Interaction with generating unit-values
+
+F# fixed-list syntax can be used to generate unit values:
+```fsharp
+let xs = [ (); () ]
+```
+Explicit yield syntax can likewise be used:
+```fsharp
+let xs = [ yield (); yield () ]
+```
+However, when `match` is used in a computed list expression, the syntax `-> ()` is used to indicate "don't yield anything on this branch".  For example
+```fsharp
+let f x =
+    [ yield 1
+      match x with
+      | 1 -> ()
+      | 2 -> yield 2 ]
+```
+This also applies to unit-generating lists:
+```fsharp
+let f x =
+    [ yield ()
+      match x with
+      | 1 -> ()
+      | 2 -> yield () ]
+
+f 1 // generates [()]
+f 2 // generates [(); ()]
+```
+Additionally, unit-valued sequential statements can occur, with explicit yields these do not generate values:
+```fsharp
+let f x =
+    [ yield ()
+      match x with
+      | 1 -> 
+          printfn "nothing"
+          ()
+      | 2 -> yield () ]
+
+f 1 // generates [()]
+f 2 // generates [(); ()]
+```
+
+When yields are implicit, these cases are less obvious. In general, **implicit yields are not recommended for use with unit-generating lists**. No
+warning is given to this effect (though one may be added in later releases). To understand what happens if implicit yields are used
+with unit-generating lists, the rules to remember are
+
+1. `-> ()` still generates no values
+2. Given a sequential `expr1; expr2`, if the type of `expr1` unifies with `unit` then no values are produced
+
+Thus:
+```fsharp
+let f x : unit list =
+    [ ()
+      match x with
+      | 1 -> 
+          printfn "nothing"
+          ()
+      | 2 ->
+          () 
+      | _ -> 
+          ()
+          ()
+          ]
+
+f 1 // generates []
+f 2 // generates []
+f 3 // generates []
+```
+From the results, you can see that when implicit yields and control constructs are used, the interpretation of unit-typed
+elements of the control structure is "execute and ignore".  Hence explicit yields should always be used when generating unit results.
+
+
+
+
+
+remains the cas
+
 ## Code samples
 
 See above
