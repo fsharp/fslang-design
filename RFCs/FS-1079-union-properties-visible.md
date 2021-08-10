@@ -87,6 +87,21 @@ type Example =
     static member NewSecond : int * string -> Example
 ```
 
+### Interaction with Accessibility and Signatures
+
+
+1. If a union has "private" representation, e.g.
+
+   ```fsharp
+   type Union = private | Foo of int | Bar of string
+   ```
+
+   then the `IsFoo`, `IsBar` etc properties are only available inside the member definitions associated with the type (just as the Foo, Bar 
+   constructors are only available there).  There is no way to give individual private to each one, just as there is no way to give individual 
+   private to Foo and Bar.
+
+2. If a union type is in a file with a signature, that signature can entirely hide the representation of the union type, and yet still individually reveal the individual IsFoo, IsBar members.  (Other generated members not covered by this RFC can't be individually revealed like this.)
+
 # Drawbacks
 
 These attributes might incite beginners to check a value's case using a series of `if x.IsFoo then ... elif x.IsBar then ...` in situations where pattern matching would be more appropriate.
