@@ -20,7 +20,7 @@ having the FS0044 warning emitted.
 
 Assume we completely redesigned API of some library. Then, to keep the backward compatibility we keep the old members and mark
 them with `Obsolete`. But if there was no equivalent to old functions in the new library, we have to use obsolete functions
-and members in that old obsolete API. Since the member already marked as `Obsolete`, and hence, unsupported, there is no reason
+and members in that old obsolete API. Since the member is already marked as `Obsolete`, and hence, unsupported, there is no reason
 to warn the developer of the function/type about using obsolete members in it.
 
 # Detailed design
