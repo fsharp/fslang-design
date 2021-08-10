@@ -6,10 +6,10 @@
 This RFC covers the detailed proposal for this suggestion.
 
 - [x] [Suggestion](https://github.com/fsharp/fslang-suggestions/issues/1055)
-- [ ] Approved in principle
+- [x] Approved in principle
 - [ ] [Implementation](https://github.com/dotnet/fsharp/pull/FILL-ME-IN)
 - [ ] Design Review Meeting(s) with @dsyme and others invitees
-- [Discussion](https://github.com/fsharp/fslang-design/discussions/FILL-ME-IN)
+- [Discussion](https://github.com/fsharp/fslang-design/discussions/618)
 
 # Summary
 
@@ -123,4 +123,50 @@ with `async` in C#. For example, `The construct is deprecated and should not be 
 
 # Unresolved questions
 
-Maybe some corner cases?
+The behaviour for different cases of `Obsolete(_, error=false)`/`Obsolete(_, error=true)` is questioned. For example, in C#
+obsolete methods can address other obsolete methods with no warning regardless the `IsError` property ([**Sharplab**](https://sharplab.io/#v2:EYLgxg9gTgpgtADwGwBYA+ABATARgLABQhhGAzAATbkAuUArjAPq0PkDeh5X5A2gPLAAzhAA2MajAAUAImkAacjChRoIGvRgBKALqdu2LOQC8APnIBBSZoDcernd4DhYiTPmLlq9Qx0OylHCRKFAsrdgBfQkiiAn8qFiYAMwBDEUEYdgd+IVFxKVkFJRUoNQTfAm5KLENTUJsHLKdc1wKPYrUUtK1dCv0KDEDguoio4lj+w0705g1M3q5s5zy3Qs8S8inuv2rjM0t6+fJGnJd89yKvMp7KuMGMEP2RgmiSCY3U6c25ysXms9X2u8uuUbjtavtbIdjksWuc1h0PltDrcgvdhmxouEgA==)).
+
+<details><summary>C# code from sharplab</summary>
+<br>
+This is warning-less code in C#:
+    
+```cs
+using System;
+
+
+public class true_true {
+    [Obsolete("", error: true)]
+    public static void Main() => A();
+    
+    [Obsolete("", error: true)]
+    public static void A() {}
+}
+
+public class true_false {
+    [Obsolete("", error: true)]
+    public static void Main() => A();
+    
+    [Obsolete("", error: false)]
+    public static void A() {}
+}
+
+public class false_true {
+    [Obsolete("", error: false)]
+    public static void Main() => A();
+    
+    [Obsolete("", error: true)]
+    public static void A() {}
+}
+
+public class false_false {
+    [Obsolete("", error: false)]
+    public static void Main() => A();
+    
+    [Obsolete("", error: false)]
+    public static void A() {}
+}    
+```
+    
+As it can be seen, whatever combination we take, it does not give any warning
+
+</details>
