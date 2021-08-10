@@ -89,14 +89,18 @@ let outerFunc a b =
     add a b
 ```
 
-#### 5. Behaviour under different values of the `IsError` property of `System.ObsoleteAttribute`
+#### 5. Modules
+
+Modules behave identically to types at this point.
+
+#### 6. Behaviour under different values of the `IsError` property of `System.ObsoleteAttribute`
 
 * `Obsolete(_, error=true)` can use `Obsolete(_, error=true)`
 * `Obsolete(_, error=true)` can use `Obsolete(_, error=false)`
 * `Obsolete(_, error=false)` can use `Obsolete(_, error=false)`
 * `Obsolete(_, error=false)` can **not** use `Obsolete(_, error=true)` (works by old rules)
 
-#### 6. New warning message
+#### 7. New warning message
 
 New text for the warning will indicate that the outer member should be marked `Obsolete`, like we do it
 with `async` in C#. For example, `The construct is deprecated and should not be used. Consider marking the outer function or type as Obsolete.`
