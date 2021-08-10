@@ -89,6 +89,14 @@ let outerFunc a b =
     add a b
 ```
 
+#### 5. IsError property effect
+
+* `Obsolete(_, (*IsError:*) true)` can use `Obsolete(_, (*IsError:*) true)`
+* `Obsolete(_, (*IsError:*) true)` can use `Obsolete(_, (*IsError:*) false)`
+* `Obsolete(_, (*IsError:*) false)` can use `Obsolete(_, (*IsError:*) false)`
+* `Obsolete(_, (*IsError:*) false)` can **not** use `Obsolete(_, (*IsError:*) true)` (works by old rules)
+
+#### 6. New warning message
 
 New text for the warning will indicate that the outer member should be marked `Obsolete`, like we do it
 with `async` in C#. For example, `The construct is deprecated and should not be used. Consider marking the outer function or type as Obsolete.`
