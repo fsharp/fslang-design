@@ -14,7 +14,11 @@ This RFC covers the detailed proposal for this suggestion.
 # Summary
 
 The general idea is to allow types and functions marked with `System.ObsoleteAttribute` to use other `Obsolete`-marked members without
-having the FS0044 warning emitted. 
+having the FS0044 warning emitted.
+
+No warning is emitted when `B` is obsolete and `A` addresses `B` *if* `A` is an obsolete function or type or module, or when `A` is a local function and its enclosing function or type or module is obsolete, or when `A` is a member of a type and the type or its enclosing module is obsolete, or when `A` is a type and its enclosing module is obsolete.
+
+In other words, an obsolete member can be addressed if the addressing happens somewhere down in the hierarchy from an obsolete member. If no obsolete member exists up in the hierarchy, the old warning is emitted.
 
 # Motivation
 
