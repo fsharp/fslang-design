@@ -91,10 +91,10 @@ let outerFunc a b =
 
 #### 5. IsError property effect
 
-* `Obsolete(_, (*IsError:*) true)` can use `Obsolete(_, (*IsError:*) true)`
-* `Obsolete(_, (*IsError:*) true)` can use `Obsolete(_, (*IsError:*) false)`
-* `Obsolete(_, (*IsError:*) false)` can use `Obsolete(_, (*IsError:*) false)`
-* `Obsolete(_, (*IsError:*) false)` can **not** use `Obsolete(_, (*IsError:*) true)` (works by old rules)
+* `Obsolete(_, error=true)` can use `Obsolete(_, error=true)`
+* `Obsolete(_, error=true)` can use `Obsolete(_, error=false)`
+* `Obsolete(_, error=false)` can use `Obsolete(_, error=false)`
+* `Obsolete(_, error=false)` can **not** use `Obsolete(_, error=true)` (works by old rules)
 
 #### 6. New warning message
 
