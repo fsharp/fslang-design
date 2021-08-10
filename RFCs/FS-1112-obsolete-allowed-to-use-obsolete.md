@@ -89,7 +89,7 @@ let outerFunc a b =
     add a b
 ```
 
-#### 5. IsError property effect
+#### 5. Behaviour under different values of the `IsError` property of `System.ObsoleteAttribute`
 
 * `Obsolete(_, error=true)` can use `Obsolete(_, error=true)`
 * `Obsolete(_, error=true)` can use `Obsolete(_, error=false)`
