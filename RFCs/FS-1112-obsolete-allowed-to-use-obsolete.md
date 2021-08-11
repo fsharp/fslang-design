@@ -99,10 +99,7 @@ Modules behave identically to types at this point.
 
 #### 6. Behaviour under different values of the `IsError` property of `System.ObsoleteAttribute`
 
-* `Obsolete(_, error=true)` can use `Obsolete(_, error=true)`
-* `Obsolete(_, error=true)` can use `Obsolete(_, error=false)`
-* `Obsolete(_, error=false)` can use `Obsolete(_, error=false)`
-* `Obsolete(_, error=false)` can **not** use `Obsolete(_, error=true)` (works by old rules)
+The value of `IsError` does not affect whether the warning is emitted or not.
 
 #### 7. New warning message
 
@@ -126,51 +123,3 @@ with `async` in C#. For example, `The construct is deprecated and should not be 
 **It emits the warning**
 
 # Unresolved questions
-
-The behaviour for different cases of `Obsolete(_, error=false)`/`Obsolete(_, error=true)` is questioned. For example, in C#
-obsolete methods can address other obsolete methods with no warning regardless the `IsError` property ([**Sharplab**](https://sharplab.io/#v2:EYLgxg9gTgpgtADwGwBYA+ABATARgLABQhhGAzAATbkAuUArjAPq0PkDeh5X5A2gPLAAzhAA2MajAAUAImkAacjChRoIGvRgBKALqdu2LOQC8APnIBBSZoDcernd4DhYiTPmLlq9Qx0OylHCRKFAsrdgBfQkiiAn8qFiYAMwBDEUEYdgd+IVFxKVkFJRUoNQTfAm5KLENTUJsHLKdc1wKPYrUUtK1dCv0KDEDguoio4lj+w0705g1M3q5s5zy3Qs8S8inuv2rjM0t6+fJGnJd89yKvMp7KuMGMEP2RgmiSCY3U6c25ysXms9X2u8uuUbjtavtbIdjksWuc1h0PltDrcgvdhmxouEgA==)).
-
-<details><summary>C# code from sharplab</summary>
-<br>
-This is warning-less code in C#:
-    
-```cs
-using System;
-
-
-public class true_true {
-    [Obsolete("", error: true)]
-    public static void Main() => A();
-    
-    [Obsolete("", error: true)]
-    public static void A() {}
-}
-
-public class true_false {
-    [Obsolete("", error: true)]
-    public static void Main() => A();
-    
-    [Obsolete("", error: false)]
-    public static void A() {}
-}
-
-public class false_true {
-    [Obsolete("", error: false)]
-    public static void Main() => A();
-    
-    [Obsolete("", error: true)]
-    public static void A() {}
-}
-
-public class false_false {
-    [Obsolete("", error: false)]
-    public static void Main() => A();
-    
-    [Obsolete("", error: false)]
-    public static void A() {}
-}    
-```
-    
-As it can be seen, whatever combination we take, it does not give any warning
-
-</details>
