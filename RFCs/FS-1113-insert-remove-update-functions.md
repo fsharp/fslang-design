@@ -42,7 +42,7 @@ module Map =
     val keys: table: Map<'Key, 'T> -> ICollection<'Key> 
 
     /// <summary>The values in the map.</summary>
-    [<CompiledName("Keys")>]
+    [<CompiledName("Values")>]
     val values: table: Map<'Key, 'T> -> ICollection<'T> 
 
 module List =
