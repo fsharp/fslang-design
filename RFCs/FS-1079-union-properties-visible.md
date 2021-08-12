@@ -137,11 +137,11 @@ It fails to compile any invocations of the generated members.
 
 * What happens when previous versions of the F# compiler encounter this design addition in compiled binaries?
 
-They see a normal discriminated union, and do not allow invoking its generated members.
+They will see the union case testers for the accessible union types  from this DLL, and they will be visible in auto-complete. 
 
 * If this is a change or extension to FSharp.Core, what happens when previous versions of the F# compiler encounter this construct?
 
-It is not directly an extension to FSharp.Core, but it does apply to union types declared in FSharp.Core: `option`, `Result`, `Choice`. Previous versions of the F# compiler do not allow invoking the generated members on these types.
+It is not directly an extension to FSharp.Core, but it does apply to some union types declared in FSharp.Core, e.g. `Result`, `Choice`. Previous versions of the F# compiler do not allow invoking the generated members on these types.  Type `list` has `DefaultAugmentation(false)` so does not have these members, it already has `IsEmpty`.  Type `option` is special and already has `IsNone` and `IsSome` with special compilation.
 
 # Unresolved questions
 
