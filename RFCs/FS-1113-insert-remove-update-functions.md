@@ -23,6 +23,28 @@ All the above are commonly useful.
 We add the following:
 
 ```fsharp
+
+namespace FSharp.Collections
+
+type Map<'Key, 'Value> =
+    ....
+    /// <summary>The keys in the map.</summary>
+    member Keys : ICollection<'Key>
+
+    /// <summary>All the values in the map, including duplicates.</summary>
+    member Values : ICollection<'Value>
+
+module Map =
+    ....
+    
+    /// <summary>The keys in the map.</summary>
+    [<CompiledName("Keys")>]
+    val keys: table: Map<'Key, 'T> -> ICollection<'Key> 
+
+    /// <summary>The values in the map.</summary>
+    [<CompiledName("Keys")>]
+    val values: table: Map<'Key, 'T> -> ICollection<'T> 
+
 module List =
     /// Return a new list with the item at a given index removed
     /// If the index is outside the range of the list then it is ignored.
