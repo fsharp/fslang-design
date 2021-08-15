@@ -150,8 +150,8 @@ Certain newer .NET APIs (like ASP.NET Core) as well as popular 3rd party librari
   
 Examples
   * many APIs in `Microsoft.Net.Http.Headers` make use of `StringSegment` arguments
-  * (MassTransit)[https://github.com/MassTransit/MassTransit] uses `RequestTimeout`, which has conversion from `TimeSpan` as well as `int` (milliseconds), seemingly for a simpler API with fewer overloads
-  * (Eto.Forms)[https://github.com/picoe/Eto/] uses implicit constructor for many entities.
+  * [MassTransit](https://github.com/MassTransit/MassTransit) uses `RequestTimeout`, which has conversion from `TimeSpan` as well as `int` (milliseconds), seemingly for a simpler API with fewer overloads
+  * [Eto.Forms](https://github.com/picoe/Eto/) uses implicit constructor for many entities.
 
 Remarks:
 
