@@ -11,14 +11,22 @@ This RFC covers the detailed proposal for this suggestion.
 # Summary
 [summary]: #summary
 
-FSharp.Core already contains useful functions for interacting with BCL types such as String and IEnumerable, but the String module is particularly lacking. It's certainly not uncommon to either need to write your own library of tiny string wrappers or pull in a third-party library such as FSharpX. This RFC is to add several of the most popular String methods to the FSharp.Core String module. 
+FSharp.Core already contains useful functions for interacting with BCL types such as String and IEnumerable, but the String module is particularly lacking. This is by-design, as the surface area of string processing is deemed too large.
+
+This RFC proposes to change this design point and include the most common forms of string processing in the ready-for-pipelining-programming section of the F# core library.
 
 # Motivation
 [motivation]: #motivation
 
-String functions are very commonly used, as detailed in the [.NET API Catalog](https://apisof.net/catalog/System.String). The String module already exists in the F# standard library, although it is particularly bare. Adding more functions to the String library allows strings to be used fluently with pipes and as transformers to functions like List.map.
+String functions are very commonly used, as detailed in the [.NET API Catalog](https://apisof.net/catalog/System.String). The String module already exists in the F# standard library, although it is particularly bare.
 
-# Detailed design
+Adding more functions to the String library allows strings to be used fluently with pipes and as transformers to functions like List.map.
+
+# Design Principles
+
+TBD
+
+# Detailed design (not yet approved)
 [design]: #detailed-design
 
 Philip Carter detailed the usages of String class methods in the wider .NET ecosystem in [a comment on the suggestion issue](https://github.com/fsharp/fslang-suggestions/issues/112#issuecomment-260506490). Using the same source for API usage telemetry, the following functions are proposed to be added to the String module:
@@ -62,13 +70,19 @@ The functions themselves will not be difficult to implement, as they are merely 
 # Drawbacks
 [drawbacks]: #drawbacks
 
-As Don mentioned, adding more functions to modules in FSharp.Core can start a slippery slope - where should the line be drawn? However, by referring to hard evidence (such as the API catalog usage statistics), we can make sure that only the most commonly used functions are added and so their usefulness is guaranteed.
-
+1. Adding more functions to modules in FSharp.Core can start a slippery slope - where should the line be drawn? The proposal is to refer to hard evidence (such as the API catalog usage statistics), to ensure that only the most commonly used functions are added and so their usefulness is guaranteed.
+  
+2. Adding the functions means users don't learn how to use the .NET libraries, which are generally better documented, have code samples and so on.
+  
+3. The lack of overloading in module-defined functions makes it hard for string processing to deal with culture-comparison and optional arguments
+  
 # Alternatives
 [alternatives]: #alternatives
 
-The alternative is to not implement the functions and third-party libraries or hand-rolled wrapper modules to be used instead, as now.
+1. Not implement the functions and use the .NET APIs directly.
 
+2. Write your own library of tiny string wrappers or pull in a third library.
+  
 # Unresolved questions
 [unresolved]: #unresolved-questions
 
