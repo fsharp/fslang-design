@@ -5,20 +5,33 @@ This RFC covers the detailed proposal for this suggestion.
 
 * [x] Approved in principle
 * [x] [Suggestion](https://github.com/fsharp/fslang-suggestions/issues/112)
+* [ ] Approved
 * [ ] Details: [under discussion](https://github.com/fsharp/fslang-design/issues/187)
 * [ ] Implementation: not started
 
 # Summary
 [summary]: #summary
 
-FSharp.Core already contains useful functions for interacting with BCL types such as String and IEnumerable, but the String module is particularly lacking. It's certainly not uncommon to either need to write your own library of tiny string wrappers or pull in a third-party library such as FSharpX. This RFC is to add several of the most popular String methods to the FSharp.Core String module. 
+FSharp.Core already contains useful functions for interacting with BCL types such as String and IEnumerable, but the String module is particularly lacking. This is by-design, as the surface area of string processing is deemed too large.
+
+This RFC proposes to change this design point and include the most common forms of string processing in the ready-for-pipelining-programming section of the F# core library.
 
 # Motivation
 [motivation]: #motivation
 
-String functions are very commonly used, as detailed in the [.NET API Catalog](https://apisof.net/catalog/System.String). The String module already exists in the F# standard library, although it is particularly bare. Adding more functions to the String library allows strings to be used fluently with pipes and as transformers to functions like List.map.
+String functions are very commonly used, as detailed in the [.NET API Catalog](https://apisof.net/catalog/System.String). The String module already exists in the F# standard library, although it is particularly bare.
 
-# Detailed design
+Adding more functions to the String library allows strings to be used fluently with pipes and as transformers to functions like List.map.
+
+# Design Principles (under discussion)
+
+* The selected functions must be used in >15% of applications according to telemetry stats at time of design
+
+* For symmetry (e.g trimStartChars as well as trimEndChars), some functions that are lesser used were also added to the proposal.
+
+* Some String properties/methods such as String.Empty, String.IsNullOrEmpty and String.IsNullOrWhiteSpace, is that they already exist in the BCL and would otherwise just be direct aliases on the FSharp.Core String module.
+
+# Detailed design (under discussion)
 [design]: #detailed-design
 
 Philip Carter detailed the usages of String class methods in the wider .NET ecosystem in [a comment on the suggestion issue](https://github.com/fsharp/fslang-suggestions/issues/112#issuecomment-260506490). Using the same source for API usage telemetry, the following functions are proposed to be added to the String module:
@@ -50,25 +63,23 @@ Proposed Signature | String method | API Port Telemetry (% all apps)
 `trimEndChars : seq<char> -> string -> string` | String.TrimEnd(char[]) | 16%
 `trimStartChars : seq<char> -> string -> string` | String.TrimStart(char[]) | 13%
 
-The rationale for leaving some String properties/methods such as String.Empty, String.IsNullOrEmpty and String.IsNullOrWhiteSpace, is that they already exist in the BCL and would otherwise just be direct aliases on the FSharp.Core String module.
-
-The vast majority of proposed functions are used in >15% of applications. However, for symmetry (e.g trimStartChars as well as trimEndChars), some functions that are lesser used were also added to the proposal.
-
-The functions themselves will not be difficult to implement, as they are merely 'one-liners' around members on the String class. Some discussion and consensus is required on the signature of some functions. In particular:
-
-- split: Should this function take a seq<char> or seq<string>, or both? How should the StringSplitOptions be handled?
-- toUpper/toLowerInvariant: Should culture variant functions (such as toUpper/toLower) also be supplied?
 
 # Drawbacks
 [drawbacks]: #drawbacks
 
-As Don mentioned, adding more functions to modules in FSharp.Core can start a slippery slope - where should the line be drawn? However, by referring to hard evidence (such as the API catalog usage statistics), we can make sure that only the most commonly used functions are added and so their usefulness is guaranteed.
-
+1. Adding more functions to modules in FSharp.Core can start a slippery slope - where should the line be drawn? The proposal is to refer to hard evidence (such as the API catalog usage statistics), to ensure that only the most commonly used functions are added and so their usefulness is guaranteed.
+  
+2. Adding the functions means users don't learn how to use the .NET libraries, which are generally better documented, have code samples and so on.
+  
+3. The lack of overloading in module-defined functions makes it hard for string processing to deal with culture-comparison and optional arguments
+  
 # Alternatives
 [alternatives]: #alternatives
 
-The alternative is to not implement the functions and third-party libraries or hand-rolled wrapper modules to be used instead, as now.
+1. Not implement the functions and use the .NET APIs directly.
 
+2. Write your own library of tiny string wrappers or pull in a third library.
+  
 # Unresolved questions
 [unresolved]: #unresolved-questions
 
@@ -76,3 +87,8 @@ The alternative is to not implement the functions and third-party libraries or h
 - Which functions exactly should be included in the String module.
 - Should culture variant functions be supplied to those that require it? Such as String.ToUpper/Lower
 - How overloads should be handled.
+
+ Some discussion and consensus is required on the signature of some functions. In particular:
+
+- split: Should this function take a seq<char> or seq<string>, or both? How should the StringSplitOptions be handled?
+- toUpper/toLowerInvariant: Should culture variant functions (such as toUpper/toLower) also be supplied?
