@@ -66,6 +66,8 @@ endsWith : string -> string -> bool
 trim : string -> string 
 ```
 
+Where the split function's first argument would be a string of text to split on, not a set of characters for which any one will cause a split.
+
 # Drawbacks
 [drawbacks]: #drawbacks
 
