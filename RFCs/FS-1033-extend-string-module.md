@@ -5,9 +5,9 @@ This RFC covers the detailed proposal for this suggestion.
 
 * [x] Approved in principle
 * [x] [Suggestion](https://github.com/fsharp/fslang-suggestions/issues/112)
-* [x] Approved
-* [x] Details: [under discussion](https://github.com/fsharp/fslang-design/issues/187)
-* [x] Implementation: [in progress](https://github.com/dotnet/fsharp/pull/12026)
+* [ ] Approved
+* [ ] Details: [under discussion](https://github.com/fsharp/fslang-design/issues/187)
+* [x] Implementation: [POC in progress](https://github.com/dotnet/fsharp/pull/12026)
 
 # Summary
 [summary]: #summary
@@ -66,7 +66,6 @@ endsWith : string -> string -> bool
 trim : string -> string 
 ```
 
-
 # Drawbacks
 [drawbacks]: #drawbacks
 
@@ -87,5 +86,18 @@ trim : string -> string
 [unresolved]: #unresolved-questions
 
  Some discussion and consensus is required on the signature of some functions. In particular:
+ - split: Should this function take a seq<char> or seq<string>?
 
-- split: Should this function take a seq<char> or seq<string>?
+# Relevant Comments
+
+@dsyme (https://github.com/fsharp/fslang-design/discussions/187#discussioncomment-1225149):
+>> A possible methodology is
+>>
+>>  * frequently used
+>>  * takes zero learning
+>>  * is useful in beginner scenarios
+>>  * doesn't use .NET abstractions
+
+@dsyme (https://github.com/fsharp/fslang-design/discussions/187#discussioncomment-1224942):
+>> the destination of [a slippery slope] is "hey, let's wrap every .NET API in an F# pipelining style!" and even worse "dot notation bad, objects bad!". That's not F#'s destination.
+
