@@ -5,9 +5,9 @@ This RFC covers the detailed proposal for this suggestion.
 
 * [x] Approved in principle
 * [x] [Suggestion](https://github.com/fsharp/fslang-suggestions/issues/112)
-* [ ] Approved
-* [ ] Details: [under discussion](https://github.com/fsharp/fslang-design/issues/187)
-* [ ] Implementation: not started
+* [x] Approved
+* [x] Details: [under discussion](https://github.com/fsharp/fslang-design/issues/187)
+* [x] Implementation: [in progress](https://github.com/dotnet/fsharp/pull/12026)
 
 # Summary
 [summary]: #summary
@@ -86,12 +86,6 @@ trim : string -> string
 # Unresolved questions
 [unresolved]: #unresolved-questions
 
-- Precise names of the methods. In particular, do we match the BCL's naming exactly for consistency, or choose others?
-- Which functions exactly should be included in the String module.
-- Should culture variant functions be supplied to those that require it? Such as String.ToUpper/Lower
-- How overloads should be handled.
-
  Some discussion and consensus is required on the signature of some functions. In particular:
 
-- split: Should this function take a seq<char> or seq<string>, or both? How should the StringSplitOptions be handled?
-- toUpper/toLowerInvariant: Should culture variant functions (such as toUpper/toLower) also be supplied?
+- split: Should this function take a seq<char> or seq<string>?
