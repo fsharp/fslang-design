@@ -104,7 +104,7 @@ Continue to allow these warts
 
 # Compatibility
 
-* Is this a breaking change? Yes, although using `/langversion:5.0` allows compatibility to be maintained.
+* Is this a breaking change? Yes, although the constructs have long given deprecation warnings, and using `/langversion:5.0` allows compatibility to be maintained.
 
 # Unresolved questions
 
