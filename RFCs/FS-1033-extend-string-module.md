@@ -7,7 +7,7 @@ This RFC covers the detailed proposal for this suggestion.
 * [x] [Suggestion](https://github.com/fsharp/fslang-suggestions/issues/112)
 * [ ] Approved
 * [ ] Details: [under discussion](https://github.com/fsharp/fslang-design/issues/187)
-* [ ] Implementation: not started
+* [ ] Implementation: [POC in progress](https://github.com/dotnet/fsharp/pull/12026)
 
 # Summary
 [summary]: #summary
@@ -25,44 +25,48 @@ Adding more functions to the String library allows strings to be used fluently w
 
 # Design Principles (under discussion)
 
-* The selected functions must be used in >15% of applications according to telemetry stats at time of design
+The selected functions should:
 
-* For symmetry (e.g trimStartChars as well as trimEndChars), some functions that are lesser used were also added to the proposal.
+* Be frequently used (>= 15% usage across applications)
+* Be 100% intuitive
+* Be useful in beginner scenarios
+* Be idiomatic F# and not need .NET abstractions
+* Not be a simple wrapper around an equally convenient .NET API (like String.Empty, String.IsNullOrEmpty, and String.IsNullOrWhitespace)
 
-* Some String properties/methods such as String.Empty, String.IsNullOrEmpty and String.IsNullOrWhiteSpace, is that they already exist in the BCL and would otherwise just be direct aliases on the FSharp.Core String module.
+Philip Carter detailed the usages of String class methods in the wider .NET ecosystem in [a comment on the suggestion issue](https://github.com/fsharp/fslang-suggestions/issues/112#issuecomment-260506490). The following is a table of the most frequently used String APIs according to this data (everything that sees >= 15% usage in all applications):
+
+String method | API Port Telemetry (% all apps)
+--- | ---
+String.Trim() | 29%
+String.Substring(int, int) | 32% and 35%
+String.Replace(String, String) | 32%
+String.Split(char[]) | 31%
+String.StartsWith(string) | 25%
+String.Contains(String) | 24%
+String.ToUpper() | 23 %
+String.EndsWith(String) | 19%
+String.StartsWith(string, StringComparison) | 18%
+String.Equals(String, StringComparison) <br> (ordinary String.Equals purposefully missed as it already exists with `((=) other)`) | 18%
+String.IndexOf(String) | 16%
+String.TrimEnd(char[]) | 16%
+String.Compare(String, String, StringComparison) | 15%
+String.ToLowerInvariant() | 15%
 
 # Detailed design (under discussion)
 [design]: #detailed-design
 
-Philip Carter detailed the usages of String class methods in the wider .NET ecosystem in [a comment on the suggestion issue](https://github.com/fsharp/fslang-suggestions/issues/112#issuecomment-260506490). Using the same source for API usage telemetry, the following functions are proposed to be added to the String module:
+Given the above considerations, the following functions are proposed to be added:
 
-Proposed Signature | String method | API Port Telemetry (% all apps)
---- | --- | ---
-`contains : string -> string -> bool` | String.Contains(String) | 24%
-`compare : StringComparison -> string -> string -> int` | String.Compare(String, String, StringComparison) | 15%
-`endsWith : string -> string -> bool` | String.EndsWith(String) | 19%
-`endsWithComparison : StringComparison -> string -> string -> bool` | String.EndsWith(String, StringComparison) | 14%
-`equals : StringComparison -> string -> string -> bool` <br> (ordinary String.Equals purposefully missed as it already exists with `((=) other)`) | String.Equals(String, StringComparison) | 18%
-`indexOf : string -> string -> int` | String.IndexOf(String) | 16%
-`indexOfComparison : StringComparison -> string -> string -> int` | String.IndexOf(String, StringComparison) | 14%
-`lastIndexOf : string -> string -> int` <br> (for symmetry with indexOf) | String.LastIndexOf(String) | 7%
-`lastIndexOfComparison : StringComparison -> string -> string -> int` <br> (for symmetry with indexOfComparison) | String.LastIndexOf(String, StringComparison) | 6%
-`replaceChar : char -> char -> string -> string` | String.Replace(char, char) | 14%
-`replace : string -> string -> string -> string` | String.Replace(String, String) | 32%
-`splitChar : StringSplitOptions -> seq<char> -> string -> string []` | String.Split(char[]) | 31%
-`split : StringSplitOptions -> seq<string> -> string -> string []` | String.Split(string[]) | 10%
-`startsWith : string -> string -> bool` | String.StartsWith(string) | 25%
-`startsWithComparison : StringComparison -> string -> string -> bool` | String.StartsWith(string, StringComparison) | 18%
-`substring : (length: int?) -> (startIndex: int) -> string -> string` | String.Substring(int, int) | 32% and 35%
-`toLower : CultureInfo -> string -> string` | String.ToLower(CultureInfo) | 8%, 23% (no arguments)
-`toLowerInvariant : string -> string` | String.ToLowerInvariant() | 15%
-`toUpper : CultureInfo -> string -> string` | String.ToUpper(CultureInfo) | 8%, 13% (no arguments)
-`toUpperInvariant : string -> string` | String.ToUpperInvariant() | 11%
-`trim : string -> string` | String.Trim() | 29%
-`trimChars : seq<char> -> string -> string` | String.Trim(char[]) | 11%
-`trimEndChars : seq<char> -> string -> string` | String.TrimEnd(char[]) | 16%
-`trimStartChars : seq<char> -> string -> string` | String.TrimStart(char[]) | 13%
+```fsharp
+contains : string -> string -> bool 
+replace : string -> string -> string -> string 
+split : string -> string -> string seq
+startsWith : string -> string -> bool
+endsWith : string -> string -> bool 
+trim : string -> string 
+```
 
+Where the split function's first argument would be a string of text to split on, not a set of characters for which any one will cause a split.
 
 # Drawbacks
 [drawbacks]: #drawbacks
@@ -83,12 +87,19 @@ Proposed Signature | String method | API Port Telemetry (% all apps)
 # Unresolved questions
 [unresolved]: #unresolved-questions
 
-- Precise names of the methods. In particular, do we match the BCL's naming exactly for consistency, or choose others?
-- Which functions exactly should be included in the String module.
-- Should culture variant functions be supplied to those that require it? Such as String.ToUpper/Lower
-- How overloads should be handled.
-
  Some discussion and consensus is required on the signature of some functions. In particular:
+ - split: Should this function take a seq<char> or seq<string>?
 
-- split: Should this function take a seq<char> or seq<string>, or both? How should the StringSplitOptions be handled?
-- toUpper/toLowerInvariant: Should culture variant functions (such as toUpper/toLower) also be supplied?
+# Relevant Comments
+
+@dsyme (https://github.com/fsharp/fslang-design/discussions/187#discussioncomment-1225149):
+>> A possible methodology is
+>>
+>>  * frequently used
+>>  * takes zero learning
+>>  * is useful in beginner scenarios
+>>  * doesn't use .NET abstractions
+
+@dsyme (https://github.com/fsharp/fslang-design/discussions/187#discussioncomment-1224942):
+>> the destination of [a slippery slope] is "hey, let's wrap every .NET API in an F# pipelining style!" and even worse "dot notation bad, objects bad!". That's not F#'s destination.
+
