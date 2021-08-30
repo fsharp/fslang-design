@@ -6,7 +6,7 @@ The design suggestion [Make long-established deprecation warning messages into e
 - [x] Approved in principle
 - [ ] Implementation
 - [ ] Design Review Meeting(s) with @dsyme and others invitees
-- Discussion
+- [Discussion](https://github.com/fsharp/fslang-design/discussions/626)
 
 # Summary
 
