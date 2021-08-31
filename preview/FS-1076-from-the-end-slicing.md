@@ -137,4 +137,7 @@ We currently require third party collections to implement `<'T>.GetSlice` to sup
 # Unresolved questions
 [unresolved]: #unresolved-questions
 
-Do we have actual data to back up the assumption that people use the `list.[..^1]` more than `list.[^1..]`?
+* Performance of F# list slicing does two traversals
+* Lack of interop with System.Index/System.Range is a "noted concern"
+* This bug: https://github.com/dotnet/fsharp/issues/12071
+
