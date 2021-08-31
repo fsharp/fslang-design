@@ -58,7 +58,7 @@ Using `^` outside of the square brackets will not mean anything, as the parsing 
 
 In addition, because of the way `..` is handled currently in the lexer, to correctly parse `..^`, we would have to add it to the list of reserved symbolic operators. This would break any users currently using `..^` as a custom operator.
 
-## Typechecker
+## Checking
 
 Currently in the typechecker, the slicing is handled in two ways (see `typechecker.fs: 6295`):
 
@@ -140,4 +140,5 @@ We currently require third party collections to implement `<'T>.GetSlice` to sup
 * Performance of F# list slicing does two traversals
 * Lack of interop with System.Index/System.Range is a "noted concern"
 * This bug: https://github.com/dotnet/fsharp/issues/12071
-
+* User SRTP-based extension to implement GetReverseIndex automatically for anything with Length property?
+* This whole set of things related to Index/Range interop https://github.com/fsharp/fslang-design/discussions/472#discussioncomment-235941
