@@ -206,8 +206,28 @@ If a precise language version less than or equal to `5.0` is specified, such as 
 
 If the default language version is selected, the feature is compatible but extra warnings may be emitted.
 
+# Resolved questions
+
+* Should a warning be emitted for neighbouring-arguments in pattern syntax, e.g.
+
+```fsharp
+let (|A1|) (ys: int list) (xs: int list) = List.append xs ys
+let (|A2|) (x: int) (ys: int list) = x :: ys
+
+let a1 (ys: int list) = ys.Length + 1
+let a2 x (ys: int list) = ys.[x]
+
+let f1 (A1[4]ys) = ys.Length   // no warning before or after
+let f2 (A1[4] ys) = ys.Length  // no warning before or after
+let f3 (A2 0[y]) = y + 2       // no warning before or after
+let f4 (A2 (0)[y]) = y + 2     // no warning before or after
+
+let g1 y = a1[4] + 2  // now gives warning
+let g2 y = a2 0[4] + 2 // now gives warning
+```
+  
+Resolution: not as part of this RFC.  We could consider warning on the above in the future
+  
 # Unresolved questions
-
-The full implementability of "Special consideration for existing curried function applications" is still being assessed.
-
+  
 
