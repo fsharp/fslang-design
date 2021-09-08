@@ -1,4 +1,4 @@
-# F# RFC FS-1115 - XML-documentation collecting mechanism
+# F# Tooling RFC FST-1035 - XML-documentation collecting mechanism
 
 The design suggestion [Redesign XML-documentation collecting mechanism](https://github.com/fsharp/fslang-suggestions/issues/1071)
 
