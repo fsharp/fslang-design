@@ -4,10 +4,11 @@ The design suggestion [Redesign XML-documentation collecting mechanism](https://
 
 This RFC covers the detailed proposal for this suggestion.
 
-* [ ] Approved in principle
-* [ ] [Suggestion](https://github.com/fsharp/fslang-suggestions/issues/1071)
-* [ ] [Implementation](https://github.com/dotnet/fsharp/pull/11973)
+* [x] Approved in principle
+* [x] [Suggestion](https://github.com/fsharp/fslang-suggestions/issues/1071)
+* [x] [Implementation](https://github.com/dotnet/fsharp/pull/11973)
 
+See also [F# Tooling RFC FST-1031 - Recommended XML doc extensions for F# documentation tooling](https://github.com/fsharp/fslang-design/blob/main/tooling/FST-1031-xmldoc-extensions.md)
 
 # Summary
 [summary]: #summary
