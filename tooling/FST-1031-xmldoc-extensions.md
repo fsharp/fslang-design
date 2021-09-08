@@ -164,6 +164,13 @@ XML doc sections such as `<summary>` can't officially contain HTML tags such as 
 In practice, XML documentation processing tools accept the use of these tags.  This is just noting that these three
 tags in particular are considered standard extensions.
 
+## `<code lang="fsharp">`
+
+The `code` XML documentation element is not specified to accept a `lang` attribute for purposes of tagging a code snippet
+with a language identifier, but this practice is widespread in popular community projects like [FSharp.Formatting][fsharp-formatting] and [FsAutoComplete][fsautocomplete].
+This attribute often allows for language-specific highlighting or other user experience benefits and so we recommend adding it
+whenever possible.
+
 ## A note on Cross-references 
 
 Note that F# cross-references using the `<see cref="...">` tag for types, modules, extension members and so on all
@@ -199,4 +206,5 @@ and the FSharp.Formatting tools [accept a version of markdown comments](https://
 though these comments aren't known to other .NET or F# tooling (e.g. F# IDE tooling).
 
 
-
+[fsharp-formatting]: https://github.com/fsprojects/FSharp.Formatting
+[fsautocomplete]: https://github.com/fsharp/FsAutoComplete
