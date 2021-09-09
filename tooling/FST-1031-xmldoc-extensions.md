@@ -171,6 +171,50 @@ with a language identifier, but this practice is widespread in popular community
 This attribute often allows for language-specific highlighting or other user experience benefits and so we recommend adding it
 whenever possible.
 
+For example:
+
+```fsharp
+namespace MyLibrary.Core
+
+    open System
+
+    type MyType() = 
+       ///<summary>This member represents the value of P, a nearly-unknowable thing!</summary>
+       ///<example>
+       /// This example shows how to use P to accomplish great things
+       /// <code lang="fsharp">
+       /// let Q = P + 1 // the value of Q is now 1 greater than P, which is amazing
+       /// </code>
+       ///</example>
+       member x.P = 1
+```
+    
+
+## `<example id="<custom id>">`
+
+The `example` XML documentation element is not specified to accept an `id` attribute for purposes of uniquely identifying an
+example, but doing so allows tooling to deep-link to a specific example and so should be encouraged. `id` attributes _should_
+be url-safe by default, and _should_ be unique across a library.
+
+For example:
+
+
+```fsharp
+namespace MyLibrary.Core
+
+    open System
+
+    type MyType() = 
+       ///<summary>This member represents the value of P, a nearly-unknowable thing!</summary>
+       ///<example id="using-p">
+       /// This example shows how to use P to accomplish great things
+       /// <code lang="fsharp">
+       /// let Q = P + 1 // the value of Q is now 1 greater than P, which is amazing
+       /// </code>
+       ///</example>
+       member x.P = 1
+```
+
 ## A note on Cross-references 
 
 Note that F# cross-references using the `<see cref="...">` tag for types, modules, extension members and so on all
