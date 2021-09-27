@@ -203,6 +203,38 @@ Thus there is a mixed-interpretation of "control" constructs in the F# syntax.
 
 In practice, generating unit-values computationally seems not to arise, and if it does the option of using explicit yields for clarity is available.
 
+
+## Interaction with recursive functions
+
+When yields are implicit, in some cases expressions in computed list expressions which migh appear to be yields can be given "statement" interpretation instead of "yield" interpretation, giving rise to computed list expressions that yield nothing.   Any useful code that does this will almost always give a later type checking error. However that error can be hard to understand.
+
+For example, consider this code, transforming a tree labelled with integers to a tree labelled with strings:
+
+```fsharp
+type Tree1 = Node1 of int * Tree1 list
+type Tree2 = Node2 of string * Tree2 list
+
+let rec generateThing (Node1 (n, children)) =
+    let things =
+        [ for child in children do 
+             generateThing child ]
+    Node2 (string n, things)
+```
+
+Here the call to `generateThing` in the definition of `things` is given statement interpretation because its return type (otherwise unknown at that point) unifies with `unit`, and an error is reported at the end of the function.  
+
+The solution here is to annotate the return type or add an explicit `yield`, e.g. 
+
+```fsharp
+let rec generateThing (Node1 (n, children)) =
+    let things =
+        [ for child in children do 
+             yield generateThing child ]
+    Node2 (string n, things)
+```
+
+While sound, this can be confusing, which is why it's being called out here. See https://github.com/dotnet/fsharp/issues/12194
+
 ## Code samples
 
 See above
