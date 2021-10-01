@@ -318,6 +318,34 @@ The `Return` stores the result in the state machine and pins down the overall ty
                 true)
 ```
 
+## Feature: NoEagerConstraintApplicationAttribute
+
+```
+Adding this attribute to the method adjusts the processing of some generic methods
+during overload resolution.
+
+During overload resolution, caller arguments are matched with called arguments
+to extract type information. By default, when the caller argument type is unconstrained (for example
+a simple value `x` without known type information), and a method qualifies for
+lambda constraint propagation, then member trait constraints from a method overload
+are eagerly applied to the caller argument type. This causes that overload to be preferred,
+regardless of other method overload resolution rules. Using this attribute suppresses this behaviour. 
+
+For example, consider the following overloads:
+```
+type OverloadsWithSrtp() =
+    [<NoEagerConstraintApplicationAttribute>]
+    static member inline SomeMethod< ^T when ^T : (member Number: int)> (x: ^T, f: ^T -> int) = 1
+    static member SomeMethod(x: 'T list, f: 'T list -> int) = 2
+
+let inline f x = 
+    OverloadsWithSrtp.SomeMethod (x, (fun a -> 1)) 
+```
+
+With the attribute, the overload resolution fails, because both members are applicable.
+Without the attribute, the overload resolution succeeds, because the member constraint is
+eagerly applied, making the second member non-applicable.  
+
 ## Library additions 
 
 We show the library additions in segments.  
@@ -396,6 +424,7 @@ namespace Microsoft.FSharp.Control.TaskBuilderExtensions
         type TaskBuilderBase with 
             /// Specifies a unit of task code which draws a result from a task-like value
             /// satisfying the GetAwaiter pattern and calls a continuation.
+            [<NoEagerConstraintApplicationAttribute>]
             member inline Bind< ^TaskLike, ^TResult1, 'TResult2, ^Awaiter, 'TOverall > :
                 task: ^TaskLike * continuation: ( ^TResult1 -> TaskCode<'TOverall, 'TResult2>) -> TaskCode<'TOverall, 'TResult2>
                     when  ^TaskLike: (member GetAwaiter:  unit ->  ^Awaiter)
@@ -405,6 +434,7 @@ namespace Microsoft.FSharp.Control.TaskBuilderExtensions
 
             /// Specifies a unit of task code which draws its result from a task-like value
             /// satisfying the GetAwaiter pattern.
+            [<NoEagerConstraintApplicationAttribute>]
             member inline ReturnFrom< ^TaskLike, ^Awaiter, ^T> : task: ^TaskLike -> TaskCode< ^T, ^T > 
                     when  ^TaskLike: (member GetAwaiter:  unit ->  ^Awaiter)
                     and ^Awaiter :> ICriticalNotifyCompletion
@@ -412,7 +442,8 @@ namespace Microsoft.FSharp.Control.TaskBuilderExtensions
                     and ^Awaiter: (member GetResult: unit ->  ^T)
 
             /// Specifies a unit of task code which binds to the resource implementing IDisposable and disposes it synchronously
-            member inline Using: resource: 'Resource * body: ('Resource -> TaskCode<'TOverall, 'T>) -> TaskCode<'TOverall, 'T> when 'Resource :> IDisposable
+            member inline Using: resource:
+                'Resource * body: ('Resource -> TaskCode<'TOverall, 'T>) -> TaskCode<'TOverall, 'T> when 'Resource :> IDisposable
 
     /// Provides evidence that various types can be used in bind and return constructs in task computation expressions
     [<AutoOpen>]
