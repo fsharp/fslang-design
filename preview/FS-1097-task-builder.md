@@ -587,6 +587,14 @@ The allocation performance of the current approach should be:
 
 # Limitations
 
+## Limitation - Hot start, once
+
+Unlike F# async, tasks start immediately ("hot start") and each task may only complete once.
+
+## Limitation - No implicit cancellation token passing
+
+Unlike F# async, tasks do *not* support implicit passing of cancellation tokens.  You must pass and/or capture the cancellation token explicitlu.
+
 ## Limitation - No asynchronous tailcalls
 
 Unlike F# async, tasks do *not* support asynchronous tail recursion, thus unbounded chains of tasks can be created
