@@ -320,7 +320,6 @@ The `Return` stores the result in the state machine and pins down the overall ty
 
 ## Feature: NoEagerConstraintApplicationAttribute
 
-```
 Adding this attribute to the method adjusts the processing of some generic methods
 during overload resolution.
 
@@ -345,6 +344,55 @@ let inline f x =
 With the attribute, the overload resolution fails, because both members are applicable.
 Without the attribute, the overload resolution succeeds, because the member constraint is
 eagerly applied, making the second member non-applicable.  
+
+This attribute is not expected to be used by anyone except the most advanced F# programmers and is really designed to correct what was effectively inadvertent behaviour that has since proved useful to some users, and thus allow for the design of overload sets with more normal properties.
+
+As background to why this is necessary, the intention of the RFC is that the `Bind` and `returnFrom` overloads are used in the above priority order - that is, if no type information is available then `Task<'T>` is assumed. The actual RFC uses extension methods as the basis to ensure this priority order. With this design, overloads are resolved eagerly, and the highest priority one will be chosen based on available type annotations, so if you don't specify a type, `Task<_>` will be assumed.  For example
+
+```fsharp
+let TaskMethod t =
+    task {
+        let! result = t
+        return result
+    }
+```
+will compile and infer type
+```fsharp
+val TaskMethod: t: Task<'a> -> Task<'a>
+```
+Here `let!` uses overload resolution on `task.Bind`.  This has multiple overloads:
+```
+member Bind: Task<'T> * ('T -> TaskCode<...>)
+member Bind: Async<'T> * ('T -> TaskCode<...>)
+member Bind: ^TaskLike * ('T -> TaskCode<...>) when ... 
+```
+
+This differs from TaskBuilder.fs but is the intended design (among other things it prevents SRTP constraints floating everywhere throughout resolution, with their accompanying difficult error messages, and prevents default solutions for SRTP constraints causing strange errors).
+
+However, the priority order was not applying.  The reason is subtle: a rule in overload resolution called "eager constraint application" meant the SRTP overload is being given absolute priority in the absence of other type information - the details are explained below.  This is established behaviour and even useful in some situations, and thus can't be changed universally (that is, some existing code will depend on it). That is, one of the phases of F# overload resolution is to propagate "known type information" into lambda expression arguments, e.g. for the overloads:
+
+```fsharp
+    type Overloads() =
+        static member SomeMethod(x: 'T array, f: 'T -> int, n: int) = ()
+        static member SomeMethod(x: 'T array, f: 'T -> int, s: string) = ()
+
+    Overloads.SomeMethod([| "a" |], (fun a -> a.Length), 1)
+    Overloads.SomeMethod([| "a" |], (fun a -> a.Length), "a")
+```
+
+Here the type `string` is applied to `'T` based on processing the first argument, then, prior to processing the second argument, the type of "a" is known to be string because both overloads have a lambda of the same shape in the same position.  This process is called "LambdaPropagationInfo" and uses the constraint solver in "MatchingOnly" mode which works out values for type variables in the overload matrix, without affecting the types on the callsite (we can't affect these as the overload has not been committed yet).
+
+Now, when some overloads use SRTP the "MatchingOnly" mode was incorrectly pushing an SRTP constraint into the types on the callsite.  For example
+```fsharp
+    type OverloadsWithSrtp() =
+        static member inline SomeMethod< ^T when ^T : (member Foo: int) > (x: ^T, f: ^T -> int) = 1
+        static member inline SomeMethod(x: 'T list, f: 'T list -> int) = 2
+
+    let inline f x = 
+        OverloadsWithSrtp.SomeMethod (x, (fun a -> 1)) 
+```
+Here the call contains no specific information, and there is no grounds to prefer the SRTP overload. However, because one of the methods is an SRTP method, and the attribute is not present, the constraint is eagerly applied to the argument type for "x".  This means that the second method becomes non-applicable, and thus the overload does resolve.  This happens regardless of other overload resolution rules.
+
 
 ## Library additions 
 
