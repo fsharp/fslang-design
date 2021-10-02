@@ -593,7 +593,7 @@ Unlike F# async, tasks start immediately ("hot start") and each task may only co
 
 ## Limitation - No implicit cancellation token passing
 
-Unlike F# async, tasks do *not* support implicit passing of cancellation tokens.  You must pass and/or capture the cancellation token explicitlu.
+Unlike F# async, tasks do *not* support implicit passing of cancellation tokens. You must pass and/or capture the cancellation token explicitly.
 
 ## Limitation - No asynchronous tailcalls
 
