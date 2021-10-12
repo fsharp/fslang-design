@@ -6,7 +6,7 @@ This RFC covers the detailed proposal for this suggestion.
 * [x] Approved in principle
 * [x] [Suggestion](https://github.com/fsharp/fslang-suggestions/issues/181)
 * [x] Details: [under discussion](https://github.com/fsharp/fslang-design/issues/158)
-* [x] Implementation: [Completed](https://github.com/Microsoft/visualfsharp/pull/2093)
+* [x] Implementation: [Completed](https://github.com/dotnet/fsharp/pull/2093)
 
 
 # Summary
@@ -34,7 +34,7 @@ interface IReadOnlyCollection<'T> with
 [drawbacks]: #drawbacks
 
 The Count property would not be `O(1)`, which could be surprising. However, Length is a property of F# lists that is already not O(1).
-This caused Json.NET to fail to be able to deserialize F# lists as documented [here](https://github.com/Microsoft/visualfsharp/issues/2257). It was resolved by Json.NET [here](https://github.com/JamesNK/Newtonsoft.Json/pull/1181).
+This caused Json.NET to fail to be able to deserialize F# lists as documented [here](https://github.com/dotnet/fsharp/issues/2257). It was resolved by Json.NET [here](https://github.com/JamesNK/Newtonsoft.Json/pull/1181).
 
 # Alternatives
 [alternatives]: #alternatives

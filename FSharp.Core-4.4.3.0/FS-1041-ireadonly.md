@@ -1,11 +1,11 @@
 # F# RFC FS-1041 - Implement IReadOnly* interfaces throughout FSharp.Core
 
-The design suggestions [Implement IReadOnly* wherever possible in FSharp.Core](https://github.com/Microsoft/visualfsharp/issues/3999#issuecomment-346435080) and [Support IReadonlyDictionary<'Key,'Vale> on dict and Map types](https://github.com/fsharp/fslang-suggestions/issues/622) have been marked "approved in principle". This RFC covers the detailed proposal for this suggestion.
+The design suggestions [Implement IReadOnly* wherever possible in FSharp.Core](https://github.com/dotnet/fsharp/issues/3999#issuecomment-346435080) and [Support IReadonlyDictionary<'Key,'Vale> on dict and Map types](https://github.com/fsharp/fslang-suggestions/issues/622) have been marked "approved in principle". This RFC covers the detailed proposal for this suggestion.
 
 * [x] Approved in principle
-* [x] [Suggestion](https://github.com/Microsoft/visualfsharp/issues/3999#issuecomment-346435080)
+* [x] [Suggestion](https://github.com/dotnet/fsharp/issues/3999#issuecomment-346435080)
 * [x] Details: [under discussion](https://github.com/fsharp/fslang-design/issues/238)
-* [x] Implementation: [1](https://github.com/Microsoft/visualfsharp/pull/4014) and [2](https://github.com/Microsoft/visualfsharp/pull/3988).
+* [x] Implementation: [1](https://github.com/dotnet/fsharp/pull/4014) and [2](https://github.com/dotnet/fsharp/pull/3988).
 
 
 # Summary

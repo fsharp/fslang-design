@@ -4,7 +4,7 @@ The design suggestion [Add Map.count](https://fslang.uservoice.com/forums/245727
 This RFC covers the detailed proposal for this suggestion.
 
 * [x] Details: [Discussion Completed](https://github.com/fsharp/FSharpLangDesign/issues/78)
-* [x] Implementation: [Completed](https://github.com/Microsoft/visualfsharp/pull/1007)
+* [x] Implementation: [Completed](https://github.com/dotnet/fsharp/pull/1007)
 
 
 # Summary

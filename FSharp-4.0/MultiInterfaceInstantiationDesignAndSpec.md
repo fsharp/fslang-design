@@ -2,8 +2,8 @@
 ## F# 4.0 Speclet: Allow inheritance from types that have multiple interface instantiations
 
 [User Voice](http://fslang.uservoice.com/forums/245727-f-language/suggestions/5663504-allow-to-implement-the-same-interface-at-different), 
-[Pull Request](https://github.com/Microsoft/visualfsharp/pull/18), 
-[Commit](https://github.com/Microsoft/visualfsharp/commit/2302b9edfd6585357333ee2a426f2e78a797e9c0)
+[Pull Request](https://github.com/dotnet/fsharp/pull/18), 
+[Commit](https://github.com/dotnet/fsharp/commit/2302b9edfd6585357333ee2a426f2e78a797e9c0)
 
 ### Background
 

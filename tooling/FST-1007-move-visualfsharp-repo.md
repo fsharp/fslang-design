@@ -1,6 +1,6 @@
 # FST-1007 Move VisualFSharp repo to the dotnet organization
 
-This RFC proposes that we move the [microsoft/visualfsharp repository](https://github.com/microsoft/visualfsharp) to the .NET organization and rename it to `dotnet/fsharp`.
+This RFC proposes that we move the [dotnet/fsharp repository](https://github.com/dotnet/fsharp) to the .NET organization and rename it to `dotnet/fsharp`.
 
 ## Rationale
 
@@ -15,4 +15,4 @@ There are a few reasons why we're interested in moving the VisualFSharp repo:
 
 * Transfer of IP and other legal matters - All covered.
 * Issues/PRs/discussions/etc. migration - GitHub handles this automatically. No history should be lost in either the commits nor comments.
-* Links across the web that link to microsoft/visualfsharp - GitHub handles this automatically.
+* Links across the web that link to dotnet/fsharp - GitHub handles this automatically.

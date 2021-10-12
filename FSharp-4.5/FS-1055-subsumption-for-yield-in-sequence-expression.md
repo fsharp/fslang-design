@@ -1,7 +1,7 @@
 # F# RFC FS-1055 -  subsumption for `yield` in sequence/list/array expressions 
 
 * [x] Approved in principle 
-* [x] Implementation: [Complete](https://github.com/Microsoft/visualfsharp/pull/4930)
+* [x] Implementation: [Complete](https://github.com/dotnet/fsharp/pull/4930)
 * [x] Discussion: https://github.com/fsharp/fslang-design/issues/299
 
 # Summary

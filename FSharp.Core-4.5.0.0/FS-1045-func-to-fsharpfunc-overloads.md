@@ -5,7 +5,7 @@ Add new `FuncConvert.FromFunc` and `FuncConvert.FromAction` APIs.
 * [x] Approved in principle
 * [x] Details
 * [x] Approved 
-* [x] Implementation: [complete](https://github.com/Microsoft/visualfsharp/pull/4815)
+* [x] Implementation: [complete](https://github.com/dotnet/fsharp/pull/4815)
 
 ## Summary
 
@@ -19,7 +19,7 @@ type FuncConvert =
     static member ToFSharpFunc: System.Converter<'T,'U> -> ('T -> 'U)
 ```
 
-As noted in [this issue](https://github.com/Microsoft/visualfsharp/issues/1847) it is not possible to use ``FuncConvert.ToFSharpFunc`` in .NET Standard 1.6 and .NET Core 2.0 programming because the `Converter` type is missing in .NET Standard 1.6. (It is present in .NET Standard 2.0 but FSharp.Core is not yet made available for that except through compat with .NET Standard 1.6) 
+As noted in [this issue](https://github.com/dotnet/fsharp/issues/1847) it is not possible to use ``FuncConvert.ToFSharpFunc`` in .NET Standard 1.6 and .NET Core 2.0 programming because the `Converter` type is missing in .NET Standard 1.6. (It is present in .NET Standard 2.0 but FSharp.Core is not yet made available for that except through compat with .NET Standard 1.6) 
 
 Further, the existing `FuncConvert` API doesn't accept `Func<A,B>` nor `Action<A,B>` values which are now normal in C# programming. We could add overloads to this API taking ``System.Func`` values. However, this doesn't really work because the API becomes too heavily overloaded, breaking existing code. 
 
@@ -91,7 +91,7 @@ static member  inline FromFunc       : func:Func<'T1,'T2,'T3,'T4,'T5,'U>        
 # Motivation
 [motivation]: #motivation
 
-As noted in [this issue](https://github.com/Microsoft/visualfsharp/issues/1847) the ``Converter`` overload is not available
+As noted in [this issue](https://github.com/dotnet/fsharp/issues/1847) the ``Converter`` overload is not available
 in the .NET Standard 1.6 version of FSharp.Core, because the ``System.Converter`` type is not available at all in .NET Standard 1.6.
 
 The use of ``Converter`` and ``Action`` overloads dates from .NET 2.0, when this API first appeared.  The complete set of ``Func``

@@ -3,9 +3,9 @@
 The suggestion to add ``NativePtr.toByRef`` has been approved in principle.
 This RFC covers the detailed proposal for this suggestion.
 
-* [x] Approved in principle](https://github.com/Microsoft/visualfsharp/issues/409#issuecomment-98714790)
+* [x] Approved in principle](https://github.com/dotnet/fsharp/issues/409#issuecomment-98714790)
 * [ ] Details
-* [X] Implementation: [complete](https://github.com/Microsoft/visualfsharp/pull/3691)
+* [X] Implementation: [complete](https://github.com/dotnet/fsharp/pull/3691)
 
 
 # Summary

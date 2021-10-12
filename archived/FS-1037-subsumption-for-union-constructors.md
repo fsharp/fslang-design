@@ -9,7 +9,7 @@ After brief discussion in issue https://github.com/fsharp/fsharp/issues/660 Don 
 
 * [x] Approved in principle
 * [x] Details: [under discussion](https://github.com/fsharp/fslang-design/issues/219)
-* [x] Implementation: [Complete](https://github.com/Microsoft/visualfsharp/pull/5030)
+* [x] Implementation: [Complete](https://github.com/dotnet/fsharp/pull/5030)
 
 # Summary
 [summary]: #summary

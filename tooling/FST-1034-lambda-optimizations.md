@@ -1,8 +1,8 @@
 
 ## Additional Lambda Optimizations
 
-The [RFC FS-1097](https://github.com/fsharp/fslang-design/blob/master/RFCs/FS-1097-task-builder.md)
-and [FS-1087](https://github.com/fsharp/fslang-design/blob/master/RFCs/FS-1087-resumable-code.md)
+The [RFC FS-1097](https://github.com/fsharp/fslang-design/blob/master/FSharp-6.0/FS-1097-task-builder.md)
+and [FS-1087](https://github.com/fsharp/fslang-design/blob/master/FSharp-6.0/FS-1087-resumable-code.md)
 highlighted the need for some additional optimizations.
 
 The F# optimizer is considered part of tooling and, while its optimizations are not all documented via RFCs
@@ -14,7 +14,7 @@ is partly to ensure we have test coverage for these.
    are only used when describing resumable code, primarily for tasks.
 
 2. `InlineIfLambda` attribute is recognized and applied.  The rationale is covered in
-   [RFC FS-1098](https://github.com/fsharp/fslang-design/blob/master/RFCs/FS-1098-inline-if-lambda.md).
+   [RFC FS-1098](https://github.com/fsharp/fslang-design/blob/master/FSharp-6.0/FS-1098-inline-if-lambda.md).
    
 3. If a computed function is immediately executed in a sequential block the code is reduced, e.g.
 

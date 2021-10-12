@@ -3,7 +3,7 @@
 * [x] Approved in principle
 * [ ] [FSLang Suggestion](https://github.com/fsharp/fslang-suggestions/issues/542)
 * [ ] Details: [under discussion](https://github.com/fsharp/fslang-design/issues/167)
-* [x] Implementation: [Done for F# 5.0](https://github.com/Microsoft/visualfsharp/pull/2483)
+* [x] Implementation: [Done for F# 5.0](https://github.com/dotnet/fsharp/pull/2483)
 
 # Summary
 [summary]: #summary
@@ -19,7 +19,7 @@ This extends the "language" of `#r` to support NuGet packages, Paket dependencie
 # Motivation
 [motivation]: #motivation
 
-There is a [strong desire](https://github.com/fsharp/fslang-suggestions/issues/542) to reference packages via `#r` instead of assemblies.  There has also been [experimental work](https://github.com/Microsoft/visualfsharp/pull/2483) to support Paket in this way.
+There is a [strong desire](https://github.com/fsharp/fslang-suggestions/issues/542) to reference packages via `#r` instead of assemblies.  There has also been [experimental work](https://github.com/dotnet/fsharp/pull/2483) to support Paket in this way.
 
 # Detailed design
 [design]: #detailed-design
@@ -214,7 +214,7 @@ A drawback here is that this is not something that C# would likely do in C# scri
 
 * One technical concern about this mechanism is that the F# scripting model implementation currently has a set of default references to a bunch of DLLs. For facade assemblies these can resolve to, say, System.IO 4.1.1.0.  But later packages may need later versions of facade DLLs such as System.IO.  It seems that the package manage should be given the opportunity to decide what to do with these default references  so that a more up-to-date set of references can be determined at scripting engine startup
 
-* The discussion here is relevant: https://github.com/Microsoft/visualfsharp/pull/3307#issuecomment-313856347
+* The discussion here is relevant: https://github.com/dotnet/fsharp/pull/3307#issuecomment-313856347
 
 * Should we be adding a ``#r-typeprovider`` facility for package managers to decide to reference type providers independent of any specific runtime DLL
 

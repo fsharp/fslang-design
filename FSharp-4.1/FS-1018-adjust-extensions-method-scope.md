@@ -18,7 +18,7 @@ This is a bug fix, but being documented as an RFC entry for reference.
 # Detailed design
 [design]: #detailed-design
 
-[This issue](https://github.com/Microsoft/visualfsharp/issues/1296) was the original report of code that no longer compiles.
+[This issue](https://github.com/dotnet/fsharp/issues/1296) was the original report of code that no longer compiles.
 
 Consider this example using C#-style extension members:
 

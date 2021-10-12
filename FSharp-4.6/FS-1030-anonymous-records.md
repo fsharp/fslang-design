@@ -6,7 +6,7 @@ The design suggestion [Anonymous Records](https://github.com/fsharp/fslang-sugge
 
 * [x] Details: [under discussion](https://github.com/fsharp/fslang-design/issues/170)
 
-* [x] Implementation: [ready](https://github.com/Microsoft/visualfsharp/pull/4499)
+* [x] Implementation: [ready](https://github.com/dotnet/fsharp/pull/4499)
 
 # Summary
 [summary]: #summary

@@ -20,7 +20,7 @@ Subsequently, ``FSharp.Core.dll`` has been recompiled for "trimmed down" platfor
 .NET Core, .NET Standard and .NET Framework.  There is even a version of FSharp.Core for the "Xamarin iOS TV" profile....
 When provided by Microsoft, these were signed, strong-named and installed under "Reference Assemblies" on Windows.
 For other F# compilation environments like Xamarin, Mono, Cloud Sharper, FSharp.Formatting, Azure Notebooks, Azure Functions
-there was a bit of a mess (made considerably worse by the separation of sigdata/optdata files, [now addressed](https://github.com/Microsoft/visualfsharp/pull/2884))
+there was a bit of a mess (made considerably worse by the separation of sigdata/optdata files, [now addressed](https://github.com/dotnet/fsharp/pull/2884))
 
 The F# Core Engineering Group created a NuGet package called [FSharp.Core](https://www.nuget.org/packages/FSharp.Core), partly to avoid
 a proliferation of "homebrew" packages appearing at that time. This package has now grown to be a "one-stop-shop"
@@ -41,8 +41,8 @@ F# users posting new, random packagings of FSharp.Core, and become a trusted par
 the package reference is managed by [Paket](https://fsprojects.github.io/Paket/), though the package also works well with
 NuGet tooling in IDE environments.
 
-As of 2017, Microsoft have a set of [time-critical objectives](https://github.com/Microsoft/visualfsharp/issues/3069) to deliver quality core tooling for F# as
-a default part of the dotnet SDK, see [this RFC](https://github.com/fsharp/fslang-design/blob/master/RFCs/FS-1032-fsharp-in-dotnet-sdk.md)
+As of 2017, Microsoft have a set of [time-critical objectives](https://github.com/dotnet/fsharp/issues/3069) to deliver quality core tooling for F# as
+a default part of the dotnet SDK, see [this RFC](https://github.com/fsharp/fslang-design/blob/main/tooling/FST-1002-fsharp-in-dotnet-sdk.md)
 for discussion and pros/cons.
 
 Up to this point, Microsoft have found it difficult to commit to a dependency on the community-provided
@@ -164,7 +164,7 @@ Looking beyond ~September 2017, we propose:
 ## Proposal B
 
 1. Visual Studio deployed templates and the dotnet cli templates reference the FSharp.Core nuget package rather than Microsoft.FSharp.Core.netcore
-2. __Visual F# Compiler and tools OSS__ repo (https://github.com/Microsoft/visualfsharp) host, builds and signs the FSharp.Core nuget packages and publishes them to nuget.org
+2. __Visual F# Compiler and tools OSS__ repo (https://github.com/dotnet/fsharp) host, builds and signs the FSharp.Core nuget packages and publishes them to nuget.org
 3. __Visual F# compiler and tools OSS__ repo continues to update and publish __FSharp.Core.nuget, 4.1.xxx__ with all of the PCLs including the Xamarin specific FSharp.Core.dlls until they are deprecated in the OSS repo (currently planned at end of year 2017).
 4. __Visual F# compiler and tools OSS__ repo publishes __FSharp.Core.nuget, 4.2.xxx__ This release contains the net45 and the netstandard 1.6 build of FSharp.Core.dll.
 

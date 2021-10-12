@@ -9,7 +9,7 @@ The design suggestion [Allow using nameof as a constant in pattern matching](htt
 
 # Summary
 
-[FS-1003](https://github.com/fsharp/fslang-design/blob/master/preview/FS-1003-nameof-operator.md) introduces the `nameof` function, which creates a string literal that contains the source name of the value, type, namespace or module passed as argument. This RFC adds support for using `nameof` as a string constant in pattern matching.
+[FS-1003](https://github.com/fsharp/fslang-design/blob/master/FSharp-5.0/FS-1003-nameof-operator.md) introduces the `nameof` function, which creates a string literal that contains the source name of the value, type, namespace or module passed as argument. This RFC adds support for using `nameof` as a string constant in pattern matching.
 
 # Motivation
 
@@ -54,7 +54,7 @@ Before this RFC, the existing way of approaching this problem in F# is to either
 
 A new pattern syntax is available: `nameof expr`.
 
-The rules for resolving both the name `nameof` and the expression, type, namespace or module `expr` are identical to those for the expression `nameof expr`, [as detailed in RFC FS-1003](https://github.com/fsharp/fslang-design/blob/master/preview/FS-1003-nameof-operator.md).
+The rules for resolving both the name `nameof` and the expression, type, namespace or module `expr` are identical to those for the expression `nameof expr`, [as detailed in RFC FS-1003](https://github.com/fsharp/fslang-design/blob/master/FSharp-5.0/FS-1003-nameof-operator.md).
 
 Once resolved, the pattern `nameof expr` is equivalent to a literal string pattern whose value is the name of `expr` as defined in FS-1003.
 

@@ -10,7 +10,7 @@ This RFC covers the detailed proposal for this suggestion.
 
   [UserVoice]:https://fslang.uservoice.com/forums/245727-f-language/suggestions/5663074-enable-a-compiler-warning-when-a-recursive-algorit
   [Details]:https://github.com/fsharp/FSharpLangDesign/issues/82
-  [Implementation]:https://github.com/Microsoft/visualfsharp/pull/1976
+  [Implementation]:https://github.com/dotnet/fsharp/pull/1976
 
 # Summary
 [summary]: #summary

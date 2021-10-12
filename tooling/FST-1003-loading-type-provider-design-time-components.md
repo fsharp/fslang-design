@@ -8,7 +8,7 @@ loaded into F# tooling.  This change is backwards compatible but will impact the
 Despite being a tooling issue rather than a language issue, this is being treated as an F# RFC to facilitate discussion.
 
 * [Discussion](https://github.com/fsharp/fslang-design/issues/229)
-* [Implementation](https://github.com/Microsoft/visualfsharp/pull/3864)
+* [Implementation](https://github.com/dotnet/fsharp/pull/3864)
 
 ### Background and Terminology
 
@@ -158,7 +158,7 @@ Note the above is effectively a proposed package architecture for any cross-gene
 
 ### Drawbacks 
 
-This proposal has generated extensive discussion, see https://github.com/Microsoft/visualfsharp/issues/3736
+This proposal has generated extensive discussion, see https://github.com/dotnet/fsharp/issues/3736
 
 A primary concern is that the F# compiler must include some minimal logic about framework names and package layout. This is anathema in modern .NET design, where tools such as Paket and Nuget are used to manage references and dependencies.
 

@@ -1,9 +1,9 @@
 # F# RFC FS-1064 - Allow access of ValueTuple Properties from Struct Tuples
 
-The issue [ValueTuple Item1,Item2,.. fields and ITuple interface are not visible or accessible](https://github.com/Microsoft/visualfsharp/issues/5654) is a hole in the struct tuples features.
+The issue [ValueTuple Item1,Item2,.. fields and ITuple interface are not visible or accessible](https://github.com/dotnet/fsharp/issues/5654) is a hole in the struct tuples features.
 This RFC covers the detailed proposal for this suggestion.
 
-* [x] [Bug report](https://github.com/Microsoft/visualfsharp/issues/5654)
+* [x] [Bug report](https://github.com/dotnet/fsharp/issues/5654)
 * [ ] Details: [under discussion](https://github.com/fsharp/fslang-design/issues/FILL-ME-IN)
 * [ ] Implementation: N/A
 

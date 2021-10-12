@@ -3,7 +3,7 @@
 This proposes to add a `TryGetValue` method on the `FSharp.Collections.Map` type.
 
 * [x] Approved in principle
-* [x] Implementation: [Ready](https://github.com/Microsoft/visualfsharp/pull/4827)
+* [x] Implementation: [Ready](https://github.com/dotnet/fsharp/pull/4827)
 
 # Summary
 [summary]: #summary

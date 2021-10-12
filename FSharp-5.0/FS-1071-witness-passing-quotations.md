@@ -89,16 +89,16 @@ This affects quotation processing or execution, i.e. code that does any of the f
 
 a. evaluates quotations of code that uses calls to generic inlined math code.
 
-b. evaluates quotations of code that uses user-defined SRTP operators (e.g. anything using FSharpPlus or anything like it, or just plain user-defined code).  RFCs like [#4726](https://github.com/Microsoft/visualfsharp/pull/4726) make this kind of code more common.
+b. evaluates quotations of code that uses user-defined SRTP operators (e.g. anything using FSharpPlus or anything like it, or just plain user-defined code).  RFCs like [#4726](https://github.com/dotnet/fsharp/pull/4726) make this kind of code more common.
 
-c. evaluates quotations of code that uses any future extensions of SRTP features such as [RFC FS-1043](https://github.com/fsharp/fslang-design/blob/24d871a30b5c384579a27fd49fdf9dfb29b1080d/RFCs/FS-1043-extension-members-for-operators-and-srtp-constraints.md), see [#3582](https://github.com/Microsoft/visualfsharp/pull/3582)
+c. evaluates quotations of code that uses any future extensions of SRTP features such as [RFC FS-1043](https://github.com/fsharp/fslang-design/blob/24d871a30b5c384579a27fd49fdf9dfb29b1080d/RFCs/FS-1043-extension-members-for-operators-and-srtp-constraints.md), see [#3582](https://github.com/dotnet/fsharp/pull/3582)
 
-d. evaluates quotations that uses implicit operators, discussed in [#6344](https://github.com/Microsoft/visualfsharp/pull/6344)
+d. evaluates quotations that uses implicit operators, discussed in [#6344](https://github.com/dotnet/fsharp/pull/6344)
 
 We worked around many of these problems in FSharp.Core in F# 2.0 but did not solve the
 root cause of the problem, and haven't addressed the problem since. This problem spreads through any tools that process quotations
 (e.g. evaluators, or transpilers), requiring many special-case workarounds when operators are encountered, and causes
-FSharp.Core to contain a bunch of (sometimes half-implemented) [reflection-based primitives](https://github.com/Microsoft/visualfsharp/blob/44c7e10ca432d8f245a6d8f8e0ec19ca8c72edaf/src/fsharp/FSharp.Core/prim-types.fs#L2557)
+FSharp.Core to contain a bunch of (sometimes half-implemented) [reflection-based primitives](https://github.com/dotnet/fsharp/blob/44c7e10ca432d8f245a6d8f8e0ec19ca8c72edaf/src/fsharp/FSharp.Core/prim-types.fs#L2557)
 to re-solve SRTP constraints at runtime in order to support quotation evaluation. This also affects code generation for F# type providers, see https://github.com/fsprojects/FSharp.TypeProviders.SDK/pull/313.
 
 This RFC solves this issue at its core by changing the quotations to include "witnesses" for trait constraints.
@@ -461,11 +461,11 @@ args = [ Const(1); Const(2) ]
 
 Relevant issues
 * https://github.com/fsharp/fsharp/issues/18
-* https://github.com/Microsoft/visualfsharp/issues/1951
-* https://github.com/Microsoft/visualfsharp/issues/865#issuecomment-170399176
+* https://github.com/dotnet/fsharp/issues/1951
+* https://github.com/dotnet/fsharp/issues/865#issuecomment-170399176
 
 Relevant code
-* There is a host of code in FSharp.Core associated with the non-witness-passing implementation of some primitives like "+" and "Zero".  e.g. [this](https://github.com/Microsoft/visualfsharp/blob/44c7e10ca432d8f245a6d8f8e0ec19ca8c72edaf/src/fsharp/FSharp.Core/prim-types.fs#L2557).  Essentially all this code becomes redundant after this PR.
+* There is a host of code in FSharp.Core associated with the non-witness-passing implementation of some primitives like "+" and "Zero".  e.g. [this](https://github.com/dotnet/fsharp/blob/44c7e10ca432d8f245a6d8f8e0ec19ca8c72edaf/src/fsharp/FSharp.Core/prim-types.fs#L2557).  Essentially all this code becomes redundant after this PR.
 
 * There are many workarounds in existing quotation evaluators. 
 
