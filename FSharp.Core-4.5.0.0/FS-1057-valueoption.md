@@ -7,12 +7,12 @@ Likewise, the idea of a struct option type is implied by this suggestion and has
 * [x] Approved in principle
 * [x] [Suggestion](https://github.com/fsharp/fslang-suggestions/issues/612)
 * Details: [under discussion](https://github.com/fsharp/FSharpLangDesign/issues/230)
-* Implementation: [Done](https://github.com/Microsoft/visualfsharp/pull/4837)
+* Implementation: [Done](https://github.com/dotnet/fsharp/pull/4837)
 
 # Summary
 [summary]: #summary
 
-This RFC covers Part 1 of [RFC FS-1039 Struct representation for active patterns](../RFCs/FS-1039-struct-representation-for-active-patterns.md), but factors out the specific conern of a struct-based optional type, `ValueOption`.
+This RFC covers Part 1 of [RFC FS-1039 Struct representation for active patterns](../FSharp-6.0/FS-1039-struct-representation-for-active-patterns.md), but factors out the specific conern of a struct-based optional type, `ValueOption`.
 
 # Motivation
 [motivation]: #motivation

@@ -6,7 +6,7 @@ This RFC covers the detailed proposal for this suggestion.
 * [ ] Approved in principle
 * [ ] [Suggestion](https://github.com/fsharp/fslang-suggestions/issues/379)
 * [ ] Details: [under discussion](https://github.com/fsharp/fslang-suggestions/issues/379)
-* [ ] Implementation: [WIP](https://github.com/Microsoft/visualfsharp/pull/4511)
+* [ ] Implementation: [WIP](https://github.com/dotnet/fsharp/pull/4511)
 
 
 # Summary
@@ -129,7 +129,7 @@ Person(A.C.N = 3, A.C.M = 4)
 
 A: Need to look at it after we finish with the records
 
-Q: [_Will it work with struct records without introducing lot's of struct copy?_](https://github.com/Microsoft/visualfsharp/pull/4511#issuecomment-401640471)
+Q: [_Will it work with struct records without introducing lot's of struct copy?_](https://github.com/dotnet/fsharp/pull/4511#issuecomment-401640471)
 
 A: The current implementation is expanding the simplified AST into the existing one and will have the same struct copy issue mentioned by @zpodlovics. However, as this issue is present in the original copy and update expression this would have to be fixed as well as updating the new implementation. This will be investigated further once the open tasks are completed.
 

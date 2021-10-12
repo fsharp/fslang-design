@@ -1,6 +1,6 @@
 # F# 4.0 Speclet - Extending the F# type provider mechanism to allow methods to have static parameters
 
-[User Voice](http://fslang.uservoice.com/forums/245727-f-language/suggestions/6097685-allow-static-arguments-to-type-provider-methods-e), [Pull Request](https://visualfsharp.codeplex.com/SourceControl/network/forks/dsyme/cleanup/contribution/7634), [Commit](https://github.com/Microsoft/visualfsharp/commit/afe50271808ffa4f1b326c6ff029f45ec5ba0847)
+[User Voice](http://fslang.uservoice.com/forums/245727-f-language/suggestions/6097685-allow-static-arguments-to-type-provider-methods-e), [Pull Request](https://visualfsharp.codeplex.com/SourceControl/network/forks/dsyme/cleanup/contribution/7634), [Commit](https://github.com/dotnet/fsharp/commit/afe50271808ffa4f1b326c6ff029f45ec5ba0847)
 
 ### Background 
 
@@ -65,7 +65,7 @@ Notes:
 - The method ``m2`` must be added to the same type as ``exampleMethWithStaticParams``
 
 
-Underneath, the ITypeProvider API is extended by adding an ITypeProvider2 interface in FSharp.Core 4.4.0.0.  Additionally, the same methods can be defined using an idiom-pattern on a type provider, and we use reflection to interrogate the type provider object for the additional pair of methods if ITypeProvider2 is not implemented - for example if the type provider binds to FSharp.Core 4.3.1.0. See [the code in the commit](https://github.com/Microsoft/visualfsharp/commit/afe50271808ffa4f1b326c6ff029f45ec5ba0847).
+Underneath, the ITypeProvider API is extended by adding an ITypeProvider2 interface in FSharp.Core 4.4.0.0.  Additionally, the same methods can be defined using an idiom-pattern on a type provider, and we use reflection to interrogate the type provider object for the additional pair of methods if ITypeProvider2 is not implemented - for example if the type provider binds to FSharp.Core 4.3.1.0. See [the code in the commit](https://github.com/dotnet/fsharp/commit/afe50271808ffa4f1b326c6ff029f45ec5ba0847).
 
 ### Scenarios
 

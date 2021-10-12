@@ -1,13 +1,13 @@
 # F# RFC FS-1027 - Complete Optional and DefaultParameterValue Implementation
 
-The issue report [`[<DefaultParameterValue>]` is ignored in F#-authored code](https://github.com/Microsoft/visualfsharp/issues/96)
-has been addressed in [this Pull Request](https://github.com/Microsoft/visualfsharp/pull/1812).
+The issue report [`[<DefaultParameterValue>]` is ignored in F#-authored code](https://github.com/dotnet/fsharp/issues/96)
+has been addressed in [this Pull Request](https://github.com/dotnet/fsharp/pull/1812).
 
 Since it is a rather large change to F#'s behavior, this RFC covers the detailed design and implementation choices that were made.
 
 * [x] Approved in principle
-* [x] [Issue report](https://github.com/Microsoft/visualfsharp/issues/96)
-* [x] Implementation: [Complete](https://github.com/Microsoft/visualfsharp/pull/1812)
+* [x] [Issue report](https://github.com/dotnet/fsharp/issues/96)
+* [x] Implementation: [Complete](https://github.com/dotnet/fsharp/pull/1812)
 
 # Summary
 [summary]: #summary

@@ -3,7 +3,7 @@
 This proposes to be less stringent in enforcing indentation rules for `[` and `[|` in one particular case, aligning with the existing treatment of `{`.
 
 * [x] Approved in principle
-* [x] Implementation: [Complete](https://github.com/Microsoft/visualfsharp/pull/4929)
+* [x] Implementation: [Complete](https://github.com/dotnet/fsharp/pull/4929)
 * [x] Discussion: https://github.com/fsharp/fslang-design/issues/300
 
 # Summary

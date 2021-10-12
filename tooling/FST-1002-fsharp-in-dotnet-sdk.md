@@ -8,13 +8,13 @@ Despite being a tooling issue rather than a language issue, this is being treate
 
 * [ ] Most discussion is happening on [this PR](https://github.com/dotnet/sdk/pull/1172). There is also [the RFC discussion issue](https://github.com/fsharp/fslang-design/issues/188)
 
-The implementation of this RFC is fragmented into [dotnet/sdk](https://github.com/dotnet/sdk) and [Microsoft/visualfsharp](https://github.com/Microsoft/visualfsharp).
+The implementation of this RFC is fragmented into [dotnet/sdk](https://github.com/dotnet/sdk) and [dotnet/fsharp](https://github.com/dotnet/fsharp).
 Much of the functionality involves transitioning, merging or rejigging the logic of [FSharp.NET.Sdk](https://github.com/dotnet/netcorecli-fsc/).
 Some relevant PRs are:
 
 * [Update dotnet sdk to support F# and VS F#](https://github.com/dotnet/sdk/pull/1172)
 
-* [Update fsharp deployments to include simple Microsoft.NET.Sdk.FSharp.props](https://github.com/Microsoft/visualfsharp/pull/2993)
+* [Update fsharp deployments to include simple Microsoft.NET.Sdk.FSharp.props](https://github.com/dotnet/fsharp/pull/2993)
 
 ## Summary
 
@@ -149,8 +149,8 @@ __TargetFSharpCoreVersion__
 For desktop versions, E.g. those who want to target FSharp.Core.4.3.0.0 e.t.c use the ``TargetFSharpCoreVersion`` property. This has no effect on netstandar or netcoreapp target builds.
 These proposals are implemented within the VisualFSharp repo in targets we deploy with the compiler, and so will not require coordination with the cli or sdk to implement.
 
-The source files can be found here: https://github.com/Microsoft/visualfsharp/blob/master/src/fsharp/FSharp.Build/Microsoft.FSharp.NetSdk.props
-and here: https://github.com/Microsoft/visualfsharp/blob/master/src/fsharp/FSharp.Build/Microsoft.FSharp.NetSdk.targets
+The source files can be found here: https://github.com/dotnet/fsharp/blob/master/src/fsharp/FSharp.Build/Microsoft.FSharp.NetSdk.props
+and here: https://github.com/dotnet/fsharp/blob/master/src/fsharp/FSharp.Build/Microsoft.FSharp.NetSdk.targets
 
 A console app targeting multiple frameworks and the 4.4.0.0 ``FSharp.Core``
 ```

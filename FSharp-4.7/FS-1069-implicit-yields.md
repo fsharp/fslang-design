@@ -5,7 +5,7 @@ This RFC covers the detailed proposal for this suggestion.
 
 * [x] Approved in principle
 * [ ] Discussion
-* [x] [Implementation](https://github.com/Microsoft/visualfsharp/pull/6304)
+* [x] [Implementation](https://github.com/dotnet/fsharp/pull/6304)
 
 
 # Summary

@@ -781,7 +781,7 @@ FSharp.Core will be selective annotated, applying nullability to things only whe
 
 * Apply `[<AssertsTrue>]` and/or `[<AssertsFalse>]` if applicable to anything that may assert
 
-This also means that some internal helper functions could be done away with. For example, [`String.emptyIfNull`](https://github.com/Microsoft/visualfsharp/blob/master/src/fsharp/FSharp.Core/string.fs#L16) is not publically consumable, and is effectively a way to enforce that incoming `string` types aren't `null`. This would make all `String.` functions now only accept non-nullable strings (should such a decision be made).
+This also means that some internal helper functions could be done away with. For example, [`String.emptyIfNull`](https://github.com/dotnet/fsharp/blob/master/src/fsharp/FSharp.Core/string.fs#L16) is not publically consumable, and is effectively a way to enforce that incoming `string` types aren't `null`. This would make all `String.` functions now only accept non-nullable strings (should such a decision be made).
 
 This will be a nontrivial effort, not unlike efforts to selectively annotate CoreFX libraries.
 
@@ -1361,7 +1361,7 @@ Here's something tricky.  For an F# type C consider
 
 4. `unbox<string?>(s)`
 
-There are two unbox helpers - [`UnboxGeneric`](https://github.com/Microsoft/visualfsharp/blob/92247b886e4c3f8e637948de84b6d10f97b2b894/src/fsharp/FSharp.Core/prim-types.fs#L613) and [`UnboxFast`](https://github.com/Microsoft/visualfsharp/blob/92247b886e4c3f8e637948de84b6d10f97b2b894/src/fsharp/FSharp.Core/prim-types.fs#L620). Normally `unbox(s)` just gets inlined to become `UnboxGeneric`, e.g. this is what (1) becomes.  However the F# optimizer converts calls to `UnboxFast` for (2), see [here](https://github.com/Microsoft/visualfsharp/blob/99c667b0ee24f18775d4250a909ee5fdb58e2fae/src/fsharp/Optimizer.fs#L2576)
+There are two unbox helpers - [`UnboxGeneric`](https://github.com/dotnet/fsharp/blob/92247b886e4c3f8e637948de84b6d10f97b2b894/src/fsharp/FSharp.Core/prim-types.fs#L613) and [`UnboxFast`](https://github.com/dotnet/fsharp/blob/92247b886e4c3f8e637948de84b6d10f97b2b894/src/fsharp/FSharp.Core/prim-types.fs#L620). Normally `unbox(s)` just gets inlined to become `UnboxGeneric`, e.g. this is what (1) becomes.  However the F# optimizer converts calls to `UnboxFast` for (2), see [here](https://github.com/dotnet/fsharp/blob/99c667b0ee24f18775d4250a909ee5fdb58e2fae/src/fsharp/Optimizer.fs#L2576)
 
 `UnboxGeneric` guards against the input being `null` and refuses to unbox a `null` value to `C` for example.   It uses a runtime lookup on typeof<T> to do this
 

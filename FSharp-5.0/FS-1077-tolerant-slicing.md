@@ -1,10 +1,10 @@
 # F# RFC FS-1077 - Tolerant Slicing
 
-The design suggestion [Tolerant Slicing](https://github.com/Microsoft/visualfsharp/issues/2643) has been approved for RFC.
+The design suggestion [Tolerant Slicing](https://github.com/dotnet/fsharp/issues/2643) has been approved for RFC.
 This RFC covers the detailed proposal for this suggestion.
 
 * [ ] Approved in principle
-* [ ] [Suggestion](https://github.com/Microsoft/visualfsharp/issues/2643)
+* [ ] [Suggestion](https://github.com/dotnet/fsharp/issues/2643)
 * [ ] Details: [under discussion](https://github.com/fsharp/fslang-design/issues/217)
 * [ ] Implementation: [In Progress PR #2](https://github.com/dotnet/fsharp/pull/7541)
 

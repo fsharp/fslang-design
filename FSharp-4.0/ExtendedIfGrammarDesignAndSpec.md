@@ -1,6 +1,6 @@
 ## F# 4.0 Speclet: Extended ``#if`` Grammar (Part 1)
 
-[F# Language User Voice](https://fslang.uservoice.com/forums/245727-f-language/suggestions/6079342-allow-extended-if-grammar), [Pull Request](https://github.com/Microsoft/visualfsharp/pull/55/), [Commit](https://github.com/Microsoft/visualfsharp/commit/438eae21c91d8648f88ea8b343640b1b60460fad)
+[F# Language User Voice](https://fslang.uservoice.com/forums/245727-f-language/suggestions/6079342-allow-extended-if-grammar), [Pull Request](https://github.com/dotnet/fsharp/pull/55/), [Commit](https://github.com/dotnet/fsharp/commit/438eae21c91d8648f88ea8b343640b1b60460fad)
 
 ### Aim
 

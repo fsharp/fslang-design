@@ -5,7 +5,7 @@ This RFC covers the detailed proposal for this suggestion.
 
 * [x] [Approved in principle](https://fslang.uservoice.com/forums/245727-f-language/suggestions/6628026-accept-integer-literals-like-12-345-for-readabilit)
 * [x] Details: [discussion](https://github.com/fsharp/FSharpLangDesign/issues/52)
-* [x] Implementation: [Completed](https://github.com/Microsoft/visualfsharp/pull/1243)
+* [x] Implementation: [Completed](https://github.com/dotnet/fsharp/pull/1243)
 
 
 # Summary

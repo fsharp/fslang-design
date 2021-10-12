@@ -4,7 +4,7 @@ The design suggestion [Support byref returns to match C# 7](https://fslang.userv
 This RFC covers the detailed proposal for this suggestion.
 
 * [x] Details: [under discussion](https://github.com/fsharp/FSharpLangDesign/issues/115)
-* [x] Implementation: [Completed](https://github.com/Microsoft/visualfsharp/pull/1367)
+* [x] Implementation: [Completed](https://github.com/dotnet/fsharp/pull/1367)
 
 
 # Summary

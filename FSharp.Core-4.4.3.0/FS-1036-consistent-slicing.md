@@ -1,12 +1,12 @@
 # F# RFC FS-1036 - Consistent Slicing
 
-The design suggestion [Consistent Slicing](https://github.com/Microsoft/visualfsharp/issues/2643) has been approved for RFC [here](https://github.com/Microsoft/visualfsharp/issues/3474).
+The design suggestion [Consistent Slicing](https://github.com/dotnet/fsharp/issues/2643) has been approved for RFC [here](https://github.com/dotnet/fsharp/issues/3474).
 This RFC covers the detailed proposal for this suggestion.
 
 * [x] Approved in principle
-* [ ] [Suggestion](https://github.com/Microsoft/visualfsharp/issues/2643)
+* [ ] [Suggestion](https://github.com/dotnet/fsharp/issues/2643)
 * [ ] Details: [under discussion](https://github.com/fsharp/fslang-design/issues/217)
-* [ ] Implementation: [Complete](https://github.com/Microsoft/visualfsharp/pull/3475)
+* [ ] Implementation: [Complete](https://github.com/dotnet/fsharp/pull/3475)
 
 
 # Summary

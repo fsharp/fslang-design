@@ -3,7 +3,7 @@
 .NET has a new feature `Span`. This RFC adds support for this in F#.
 
 * [x] Approved in principle [suggestion](https://github.com/fsharp/fslang-suggestions/issues/648)
-* [x] Implementation: [Complete](https://github.com/Microsoft/visualfsharp/pull/4888)
+* [x] Implementation: [Complete](https://github.com/dotnet/fsharp/pull/4888)
 * [x] Discussion: https://github.com/fsharp/fslang-design/issues/287
 
 # Summary
@@ -35,10 +35,10 @@ Span is actually built from several features and a library:
 
 * [C# 7.2 feature "ref structs"](https://blogs.msdn.microsoft.com/mazhou/2018/03/02/c-7-series-part-9-ref-structs/)
 * [C# 7.2 "read only structs"](https://blogs.msdn.microsoft.com/mazhou/2017/11/21/c-7-series-part-6-read-only-structs/)
-* One key part of the F# compiler code for ref structs is [here](https://github.com/Microsoft/visualfsharp/blob/16dd8f40fd79d46aa832c0a2417a9fd4dfc8327c/src/fsharp/TastOps.fs#L5582)
+* One key part of the F# compiler code for ref structs is [here](https://github.com/dotnet/fsharp/blob/16dd8f40fd79d46aa832c0a2417a9fd4dfc8327c/src/fsharp/TastOps.fs#L5582)
 * [C# 7.1 "readonly references"](https://github.com/dotnet/csharplang/blob/master/proposals/csharp-7.2/readonly-ref.md)
 * [C# 7.2: Compile time enforcement of safety for ref-like types.](https://github.com/dotnet/csharplang/blob/master/proposals/csharp-7.2/span-safety.md)
-* Issue https://github.com/Microsoft/visualfsharp/pull/4576 deals with oddities in the warnings about struct mutation.
+* Issue https://github.com/dotnet/fsharp/pull/4576 deals with oddities in the warnings about struct mutation.
 
 # Motivation
 [motivation]: #motivation

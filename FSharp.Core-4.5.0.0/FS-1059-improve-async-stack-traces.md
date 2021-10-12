@@ -1,12 +1,12 @@
 # F# RFC FS-1058 - Improve async stack traces
 
-This RFC documents the change [Improve async stack traces](https://github.com/Microsoft/visualfsharp/pull/4867).
+This RFC documents the change [Improve async stack traces](https://github.com/dotnet/fsharp/pull/4867).
 
 The high-level goal is to make stack traces for exceptions which occur in an asynchronous workflow more comprehensible.
 
 * [x] Approved in principle
-* [x] Implementation: [Complete](https://github.com/Microsoft/visualfsharp/pull/4867)
-* [x] Discussion: https://github.com/Microsoft/visualfsharp/pull/4867
+* [x] Implementation: [Complete](https://github.com/dotnet/fsharp/pull/4867)
+* [x] Discussion: https://github.com/dotnet/fsharp/pull/4867
 
 # Summary
 [summary]: #summary

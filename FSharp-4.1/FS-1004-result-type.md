@@ -8,7 +8,7 @@ This RFC covers the detailed proposal for this suggestion.
 
 * [x] Approved in principle
 * [x] Details: [under discussion](https://github.com/fsharp/FSharpLangDesign/issues/49)
-* [x] Implementation: [Completed](https://github.com/Microsoft/visualfsharp/pull/964)
+* [x] Implementation: [Completed](https://github.com/dotnet/fsharp/pull/964)
 
 ### Introduction
 

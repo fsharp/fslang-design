@@ -1,12 +1,12 @@
 # F# RFC FS-1057 - Make Enum cases public
 
-This RFC documents the change [Make enum cases public](https://github.com/Microsoft/visualfsharp/pull/5002).
+This RFC documents the change [Make enum cases public](https://github.com/dotnet/fsharp/pull/5002).
 
 The goal is to align our code generation for enumerations with C# by making them emit as public.
 
 * [x] Approved in principle
-* [x] Implementation: [Complete](https://github.com/Microsoft/visualfsharp/pull/5002)
-* [x] Discussion: https://github.com/Microsoft/visualfsharp/pull/5002
+* [x] Implementation: [Complete](https://github.com/dotnet/fsharp/pull/5002)
+* [x] Discussion: https://github.com/dotnet/fsharp/pull/5002
 
 # Summary
 [summary]: #summary

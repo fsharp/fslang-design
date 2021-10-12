@@ -1,6 +1,6 @@
 ## F# 4.0 Speclet: Make printf handle units of measure
 
-[F# Language User Voice Entry](https://fslang.uservoice.com/forums/245727-f-language/suggestions/5752551-make-printf-handle-units-of-measure), [Pull Request](https://visualfsharp.codeplex.com/SourceControl/network/forks/dsyme/cleanup/contribution/7107), [Commit](https://github.com/Microsoft/visualfsharp/commit/aa7e945db107d0baf8af8d39c2d82185213c2796)
+[F# Language User Voice Entry](https://fslang.uservoice.com/forums/245727-f-language/suggestions/5752551-make-printf-handle-units-of-measure), [Pull Request](https://visualfsharp.codeplex.com/SourceControl/network/forks/dsyme/cleanup/contribution/7107), [Commit](https://github.com/dotnet/fsharp/commit/aa7e945db107d0baf8af8d39c2d82185213c2796)
 
 ### Background
 
