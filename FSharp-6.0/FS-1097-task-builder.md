@@ -149,7 +149,7 @@ module Task =
 In this RFC there is no specific support for producing `ValueTask<_>` or `ValueTask` struct values.  Instead
 use
 
-    task { ... } |> ValueTask
+    task { ... } |> ValueTask<_>
     
 which produces a `ValueTask<_>` of the right type.  This incurs an allocation. 
 
