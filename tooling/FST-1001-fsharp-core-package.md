@@ -1,7 +1,5 @@
 # F# Tooling RFC FST-1001 - FSharp.Core delivery via NuGet packages
 
-**NOTE:** This is a draft and remains to be reviewed by key contributors.  Please contribute to the discussion and submit adjustments to the draft.
-
 The purpose of this RFC document is to develop a shared plan of record for the delivery of FSharp.Core in NuGet package form that takes
 into account the needs of F# Core Engineering contributors. This is a long-term
 technical plan to converge to an optimal solution that satisfies both users of F# and those delivering tooling for it.
