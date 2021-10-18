@@ -763,8 +763,8 @@ and run it:
 ```fsharp
     let dumpCoroutine (t: Coroutine) = 
         printfn "-----"
-        while ( t.MoveNext()
-                not t.IsCompleted) do 
+        while (t.MoveNext() &&
+               not t.IsCompleted) do 
             printfn "yield"
 ```
 and be able to inspect the generated `MoveNext` method and see that it is efficient and without allocation due to the control structures
@@ -1054,13 +1054,9 @@ However it's not a perfect reimplementation - there are no tailcalls nor cancell
 
 That said it should be good enough to allow an FSharp.Control.Async2 package that is a drop-in replacement for F# async for 99.9% compat.  (The `Async2<T>` would be a different type in that case, though that may matter less now `Task<T>` is so established more as an interop standard)
 
-
-
-
-
 # Performance
 
-[Recent perf status of implementation](https://github.com/dotnet/fsharp/blob/feature/tasks/BenchmarkDotNet.Artifacts/results/TaskPerf.Benchmarks-report-github.md)
+[Recent perf status of implementation](https://github.com/dotnet/fsharp/blob/main/BenchmarkDotNet.Artifacts/results/TaskPerf.Benchmarks-report-github.md)
 
 # Drawbacks
 
