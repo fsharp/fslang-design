@@ -58,8 +58,29 @@ Users encountering these informational warnings can
 1. Convert their code to use a `let mutable`, appropriately scoped. For example
 
    ```fsharp
+   let f () =
+       let cell = ref 3
+       for i in 0..10 do
+           incr cell
+           printfn "cell = %A" !cell
+           cell := !cell + 5
+           printfn "cell = %A" !cell
+           decr cell
+   ```
    
+   can become
 
+   ```fsharp
+   let f () =
+       let mutable cell = 3
+       for i in 0..10 do
+           cell <- cell + 1
+           printfn "cell = %A" cell
+           cell <- cell + 5
+           printfn "cell = %A" cell
+           cell <- cell - 1
+   ```
+   
 2. Convert their code to use suggested forms
 
    ```fsharp
@@ -67,6 +88,7 @@ Users encountering these informational warnings can
       cell := expr   --->     cell.Value <- expr
       incr cell      --->     cell.Value <- cell.Value + 1
       decr cell      --->     cell.Value <- cell.Value - 1
+   ```
 
 3. OR add the following code to their project
 
