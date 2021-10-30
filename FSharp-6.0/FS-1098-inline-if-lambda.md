@@ -19,7 +19,7 @@ they are often not inlined because the compiler deems them too large.  This caus
 
 This problem is particularly chronic for F# computation expression  builders which compute functions and pass them as functions.
 
-This problem is particularly motivated by the fact that [RFC FS-1087](https://github.com/fsharp/fslang-design/blob/master/FSharp-6.0/FS-1087-resumable-code.md#potential-for-over-use) proposes to perform more aggressive inlining for resumable code by default.  This raises the likelihood (a.k.a. certainty) that people would start to use resumable code to achieve higher performance for synchronous code, which would be a tragedy of epic proportions, resulting in an endless sea of unreadable and unmaintainable high performance code.
+This problem is particularly motivated by the fact that [RFC FS-1087](https://github.com/fsharp/fslang-design/blob/main/FSharp-6.0/FS-1087-resumable-code.md#potential-for-over-use) proposes to perform more aggressive inlining for resumable code by default.  This raises the likelihood (a.k.a. certainty) that people would start to use resumable code to achieve higher performance for synchronous code, which would be a tragedy of epic proportions, resulting in an endless sea of unreadable and unmaintainable high performance code.
 
 # Examples
 
@@ -92,10 +92,10 @@ There is no really good reason not to do this, except it feels like it is useful
 
 ### Example: low-allocation list and array builders
 
-See the collector examples in [list.fs](https://github.com/dotnet/fsharp/blob/feature/tasks/tests/fsharp/perf/tasks/FS/list.fs)
-and [array.fs](https://github.com/dotnet/fsharp/blob/feature/tasks/tests/fsharp/perf/tasks/FS/array.fs) and compares them to examples
+See the collector examples in [list.fs](https://github.com/dotnet/fsharp/blob/main/tests/benchmarks/TaskPerf/list.fs)
+and [array.fs](https://github.com/dotnet/fsharp/blob/main/tests/benchmarks/TaskPerf/array.fs) and compares them to examples
 using the resumable code mechanism.  The colelctor examples rely on InlineIfLambda and the optimizations described in
-[Tooling RFC FST-1034](https://github.com/fsharp/fslang-design/blob/master/tooling/FST-1034-lambda-optimizations.md)
+[Tooling RFC FST-1034](https://github.com/fsharp/fslang-design/blob/main/tooling/FST-1034-lambda-optimizations.md)
 
 The sample defines  `listc { .. }`, `arrayc { .. }` for collections.
 The overall result is a list builder that runs up to 5x faster than the built-in `[ .. ]` for generated lists of
