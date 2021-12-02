@@ -47,6 +47,18 @@ Any or all of the [approved-in-principle](https://github.com/fsharp/fslang-sugge
 
 The BDFL (@dsyme) has put together a list of "proposed priority" approved language design items which he plans to focus on or which other people have taken past RFC stage.  This is _not_ a roadmap, because other people will choose to prioritize other approved items (e.g. match! - which is not a priority item for me), and is also subject to change and edit.. It is an informal list.  You can find that list here: https://github.com/fsharp/fslang-suggestions/labels/proposed-priority
 
+## Style Guide
+
+The F# style guide is hosted as part of the [.NET docs for F#](https://docs.microsoft.com/dotnet/fsharp/style-guide/) and by default [Fantomas](https://github.com/fsprojects/fantomas) aims to implement this style guide.
+
+The design process for raising issues arising about this style guide is managed via issues in this repository.  Issues are noted by `[style-guide]` in the title.
+
+The style guide itself is adjusted via PRs to [the style guide doc](https://github.com/dotnet/docs/blob/main/docs/fsharp/style-guide/formatting.md) however discussion should happen here.
+
+Adjustments to the style guide should generally only be made with consideration about their implementability in Fantomas, and if an adjustment is approved you should be prepared to contribute a matching pull request to Fantomas.
+
+The decision maker for the style guide is @dsyme, with input/veto from @nojaf (current maintainer of Fantomas) and input from all interested parties.
+
 ## Code of Conduct
 
 This repository is governed by the [Contributor Covenant Code of Conduct](https://www.contributor-covenant.org/).
