@@ -104,6 +104,11 @@ The following restrictions apply:
 
 A mix of type-checked and unchecked fills **is** allowed in a single format string when typed as type `string`. For example `$" abc %d{3} def {5}"` is allowed.
 
+> NOTE: If a .NET alignment contains an unusual character, then it can be escaped using double-backticks:
+> 
+>     $"{System.DateTime.UtcNow:``yyyy-MM-dd``}"
+
+
 ### Detailed Design - Elaborated Form
 
 The elaborated form of an interpolated string depends on its type:
