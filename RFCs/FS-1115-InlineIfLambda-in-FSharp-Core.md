@@ -4,6 +4,10 @@ F# 6 added the InlineIfLambda feature.
 
 This is a long-running pre-approved RFC tracking the use of this feature in FSharp.Core.
 
+> NOTE: It appears to make sense to just go through FSharp.Core systematically and use it on every inlined function that takes a lambda which is only applied once
+
+> NOTE: It is likely `inline` could be used more widely across FSharp.Core as well
+
 ### Approved uses in FSharp.Core 6.0.0
 
 * Array.map
@@ -13,6 +17,7 @@ This is a long-running pre-approved RFC tracking the use of this feature in FSha
 * Resumable code and tasks
 
 > NOTE: this list appears adhoc and we should be systematic, hence this RFC
+
 
 ### Approved uses in current preview
 
