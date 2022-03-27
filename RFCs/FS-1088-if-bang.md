@@ -49,7 +49,7 @@ In other words, the following code:
 ```
 async {
     if! cexpr1 then expr1
-    else! cexpr2 then expr2
+    elif! cexpr2 then expr2
     else expr3
 }
 ```
