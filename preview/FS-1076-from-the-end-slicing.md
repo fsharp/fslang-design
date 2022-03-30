@@ -142,3 +142,4 @@ We currently require third party collections to implement `<'T>.GetSlice` to sup
 * This bug: https://github.com/dotnet/fsharp/issues/12071
 * User SRTP-based extension to implement GetReverseIndex automatically for anything with Length property?
 * This whole set of things related to Index/Range interop https://github.com/fsharp/fslang-design/discussions/472#discussioncomment-235941
+* https://github.com/dotnet/fsharp/issues/9425
