@@ -37,3 +37,5 @@ This is a long-running pre-approved RFC tracking the use of this feature in FSha
 [unresolved]: #unresolved-questions
 
 * Other uses
+
+* See https://github.com/dotnet/fsharp/issues/6424
