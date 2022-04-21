@@ -156,7 +156,15 @@ This will generate an error because `System.Whatever` version `4.1.0` will alrea
 
 We may consider using `AssemblyLoadContext` in some clever way in the future, but it's very difficult to get right and well outside the scope of what we need to support for a .NET Core 2.0 timeframe.
 
-## Handler resolution
+## Handler resolution 
+
+It works in all FCS driven tool (or even fsc itself) through :
+* having the extension assembly next to the process one
+* the `--compilertool:`  flag, whilch can point to a directory containing the extensions
+
+Note: additional stable locations were considered by not implemented in earlier drafts of this RFC.
+
+### proposed design in initial draft (this is NOT implemented) ###
 
 FSI/Design time support will look at the following places in order:
 
@@ -175,6 +183,7 @@ The fact that those dll will be loadable for both .NET Core and .NET Framework c
 In context of tooling, the location are scanned initially once per interactive session, but as evaluation of additional script occurs, it might be necessary to scan additional locations (same rules apply, but it will only scan the additional places from first point in the list above, and won't scan again those folders already scanned).
 
 If a handler key (such as `nuget` or `paket`) is found several times, report a warning showing location of assemblies and showing which one was picked (we apply same order of precedence as for finding the assemblies).
+
 
 # Tooling and FSharp.Compiler.Service 
 
