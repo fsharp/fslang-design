@@ -160,7 +160,11 @@ We may consider using `AssemblyLoadContext` in some clever way in the future, bu
 
 It works in all FCS driven tool (or even fsc itself) through :
 * having the extension assembly next to the process one
-* the `--compilertool:`  flag, whilch can point to a directory containing the extensions
+* the `--compilertool:` flag, whilch can point to a directory containing the extensions
+
+By convention, tools that load extensions in other locations, should also load extensions that are sitting in same folder, unless there are good reasons not doing so.
+
+By convention, tools that load extensions, should never fail to do so for binding redirect matters related to FSharp.Core version the extensions must have been compiled against.
 
 Note: additional stable locations were considered by not implemented in earlier drafts of this RFC.
 
