@@ -1,4 +1,4 @@
-# F# RFC FS-1024 - Simplify call syntax for statically resolved member constraints and static interface methods
+# F# RFC FS-1024 - Simplify syntax for constrained calls
 
 The design suggestion [Simplify call syntax for statically resolved member constraints](https://github.com/fsharp/fslang-suggestions/issues/440) has been marked "approved in principle".
 This RFC covers the detailed proposal for this suggestion.
