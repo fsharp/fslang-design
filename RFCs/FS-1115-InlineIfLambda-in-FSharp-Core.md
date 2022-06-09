@@ -22,6 +22,16 @@ This is a long-running pre-approved RFC tracking the use of this feature in FSha
 ### Approved uses in current preview
 
 * lock
+* Array.init
+* Array.sumBy
+* Array.averageBy
+* List.iter
+* List.iteri
+* List.sumBy
+* List.averageBy
+* List.compareWith
+* Seq.sumBy
+* Seq.averageBy
 
 # Drawbacks
 [drawbacks]: #drawbacks
