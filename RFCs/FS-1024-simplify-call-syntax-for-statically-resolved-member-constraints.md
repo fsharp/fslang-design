@@ -1,4 +1,4 @@
-# F# RFC FS-1024 - Simplify call syntax for statically resolved member constraints
+# F# RFC FS-1024 - Simplify call syntax for statically resolved member constraints and static interface methods
 
 The design suggestion [Simplify call syntax for statically resolved member constraints](https://github.com/fsharp/fslang-suggestions/issues/440) has been marked "approved in principle".
 This RFC covers the detailed proposal for this suggestion.
@@ -32,7 +32,7 @@ let inline f (x : ^a when ^a : (member F : int -> unit)) =
 ```
 Note that in the signature, the member constraint syntax remains unchanged.
 
-A similar suggestion can be made for static member constraint invocations. This is not in the user voice suggestion, but extrapolating - the following
+The same applied to the more common static member constraint invocations:
 
 ```fsharp
 let inline inc< ^T when ^T : (static member Inc : int -> int)> i =
@@ -42,8 +42,22 @@ could be simplified to:
 
 ```fsharp
 let inline inc< ^T when ^T : (static member Inc : int -> int)> i =
-    T.Inc i
+    ^T.Inc i
 ```
+
+Likewise, static interface method calls are being added to C#, F# and .NET, see https://github.com/dotnet/fsharp/pull/13119/ and linked issues/RFCs.
+
+```fsharp
+type ISin<'T> =
+    interface 
+        static abstract Sin: x: 'T -> 'T
+```
+Currently there is no call syntax for these.  This RFC proposes the following call syntax:
+```fsharp
+let inline sinTwice<'T when 'T : ISin<'T>> (i: 'T) =
+    'T.Sin ('T.Sin i)
+```
+
 
 # Motivation
 [motivation]: #motivation
