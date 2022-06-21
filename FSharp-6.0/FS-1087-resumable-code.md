@@ -512,6 +512,108 @@ In this case, the alternative must set the `ResumptionFunc` field in `Resumption
 the enclosing state machine to an appropriate dynamic continuation.  For example, see the implementation of `ResumableCode.Yield`
 and `ResumableCode.YieldDynamic`.
 
+## Library additions (debuggable two-phase code)
+
+A general construct `__debugPoint` is added to allow manual specification of debug points in delayed-execution portions of inlined code. `__debugPoint ""` should only be used in inlined code, though this is not checked. In this RFC it is used to improve debugging of `for` loops, however the construct is more generally useful for inlined code.
+
+As background, debug points are removed from inlined code. This means, for example, that any local functions within that code (that are not themselves inlined) will show as "code not available".
+
+To avoid this, inlined code may use `__debugPoint` to place debug points. The source range associated with the debug point is "where the code is inlined to". For example consider:
+
+
+```fsharp
+open FSharp.Core.CompilerServices.StateMachineHelpers
+
+// ----- Composable computation framework
+
+type F = F of (unit -> unit)
+
+let inline Compose(F f, F g) = F (fun () -> __debugPoint ""; f(); g())
+
+let inline Print s = F (fun () -> __debugPoint ""; printfn "%s" s)
+
+let Run (F f) = f()
+
+// ----- Composition
+let f = Compose(Print "a", Print "b")
+
+// ----- Execution
+Run f
+```
+
+Here the inlined closures have debug points associated with the source ranges `Compose(Print "a", Print "b")`, `Print "a"` and `Print "b"`.
+
+This is useful to help improve debugging of computation expressions:
+
+```fsharp
+type ValueOrCancelled<'TResult> =
+    | Value of result: 'TResult
+    | Cancelled of ``exception``: OperationCanceledException
+
+// Cold-start cancellable code
+type Cancellable<'T> = Cancellable of (CancellationToken -> ValueOrCancelled<'T>)
+```
+
+Now consider the code
+
+```fsharp
+    cancellable {
+        let! v = expr
+        body 
+    }
+```
+
+The `Bind` operation for `let!` can be written as follows:
+
+```fsharp
+module Cancellable =
+
+    /// Run a cancellable computation using the given cancellation token
+    let inline run (ct: CancellationToken) (Cancellable oper) =
+        if ct.IsCancellationRequested then
+            Cancelled(OperationCanceledException ct)
+        else
+            oper ct
+
+type CancellableBuilder() =
+    member inline _.Bind(comp, [<InlineIfLambda>] body) =
+        Cancellable(fun ct ->
+            __debugPoint ""
+            match Cancellable.run ct comp with
+            | Value v1 -> Cancellable.run ct (body v1)
+            | Cancelled err1 -> Cancelled err1)
+```
+
+Now, the implied `cancellable.Bind(expr, (fun v -> body))` call is given source range `let! v = expr` by the F# compiler. Two debug points will be associated with this range
+
+* A debug point for the `Bind` call, hit before the `Bind` call is executed, and prior to the execution of `expr`
+* A 2nd debug point corresponding to `__debugPoint ""`, hit after the execution of `expr` but before the execution of the cancellable resulting from the `expr`.
+
+The flatteneed code can be visualized like this:
+```fsharp
+    DebugPoint "let! v = expr"
+    let comp = expr
+    Cancellable(fun ct ->
+        DebugPoint "let! v = expr"
+        match Cancellable.run ct comp with
+        | Value v1 -> Cancellable.run ct (k v1)
+        | Cancelled err1 -> Cancelled err1))
+```
+
+This has the following properties
+
+* Stack traces when running `comp` include a function at location `let! v = expr`
+
+* A breakpoint may be placed on `let!`, associated with each of the two debug points. The first causes a break before the evaluation of `expr` (producing `comp`) and the second causes a break before the "run" of `comp`.
+
+* If a breakpoint has been placed on `let!`, then step-into or step-over at the first debug point will progress to the second debug point at the same source location. After reaching the second debug point, the `body` code can then be stepped through.
+
+Note while this is useful, it doesn't give perfect debugging, in particular:
+
+* If no debug point has been placed on `let!`, then step-over at the first debug point will not proceed to the body of the computation, as the user will intuitively assume, but instead the whole invocation of the `Cancellable` resulting from the `Bind` will be stepped-over.
+
+* The use of two debug points with identical source ranges `"let! v = expr"` is not ideal, however it does mean reasonable stack traces are given on the second phase of execution. The first debug point may not currently be suppressed. In future RFCs the debug locations used may be refined, or further options added for the string argument to `__debugPoint`.
+
 ## Library additions (primitive resumable code)
 
 ```fsharp
@@ -530,7 +632,6 @@ module StateMachineHelpers =
     /// This may be the first statement in a MoveNextMethodImpl.
     /// The integer must be a valid resumption point within this resumable code.
     val __resumeAt : programLabel: int -> 'T
-
 ```
 
 ## Library additions (resumable code combinators)
@@ -702,6 +803,29 @@ namespace Microsoft.FSharp.Core.CompilerServices
 ```
 
 This function can also be used for higher-performance list function implementations external to FSharp.Core, though must be used with care.
+
+## Library additions (debuggable two-phase code)
+
+```fsharp
+module StateMachineHelpers = 
+
+    /// Indicates a named debug point arising from the context of inlined code.
+    ///
+    /// Only a limited range of debug point names are supported.
+    ///
+    /// If the debug point name is the empty string then the range used for the debug point will be
+    /// the range of the outermost expression prior to inlining.
+    ///
+    /// If the debug point name is <c>ForLoop.InOrToKeyword</c> and the code was ultimately
+    /// from a <c>for .. in .. do</c> or <c>for .. = .. to .. do</c> construct in a computation expression,
+    /// de-sugared to an inlined <c>builder.For</c> call, then the name "ForLoop.InOrToKeyword" can be used.
+    /// The range of the debug point will be precisely the range of the <c>in</c> or <c>to</c> keyword.
+    ///
+    /// If the name doesn't correspond to a known debug point arising from the original source context, then
+    /// an opt-in warning 3514 is emitted, and the range used for the debug point will be
+    /// the range of the root expression prior to inlining.
+    val __debugPoint: string -> unit
+```
 
 ## Examples
 
