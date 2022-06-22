@@ -1,6 +1,6 @@
-# F# RFC FS-1124 - Interfaces with static abstract methods 
+# F# RFC FS-1124 - Interfaces with static abstract members 
 
-The design suggestion [Support static abstract methods in interfaces](https://github.com/fsharp/fslang-suggestions/issues/1151) has been marked "approved in principle". This RFC covers the detailed proposal for this suggestion.
+The design suggestion [Support static abstract members in interfaces](https://github.com/fsharp/fslang-suggestions/issues/1151) has been marked "approved in principle". This RFC covers the detailed proposal for this suggestion.
 
 * [x] Approved in principle
 * [ ] Details: [under discussion](FILL-ME-IN)
@@ -9,7 +9,7 @@ The design suggestion [Support static abstract methods in interfaces](https://gi
 # Summary
 [summary]: #summary
 
-.NET 7 and C# 11 are [adding the ability to define interfaces with static abstract methods](https://github.com/dotnet/csharplang/issues/4436) and to use these from generic code.  
+.NET 7 and C# 11 are [adding the ability to define interfaces with static abstract members](https://github.com/dotnet/csharplang/issues/4436) and to use these from generic code.  
 
 To match this in F#, we add the capability to specify abstract static members that implementing classes and structs are then required to provide an explicit
 or implicit implementation of. The members can be accessed off of type parameters that are constrained by the interface.
@@ -19,7 +19,7 @@ or implicit implementation of. The members can be accessed off of type parameter
 
 See motivation at https://github.com/dotnet/csharplang/issues/4436.
 
-Static abstract methods allow statically-constrained generic code. This is being utilised heavily in the [generic numeric code](https://visualstudiomagazine.com/articles/2022/03/14/csharp-11-preview-feature.aspx) library feature of .NET 7.
+Static abstract members allow statically-constrained generic code. This is being utilised heavily in the [generic numeric code](https://visualstudiomagazine.com/articles/2022/03/14/csharp-11-preview-feature.aspx) library feature of .NET 7.
 
 # Considerations
 
@@ -34,17 +34,15 @@ This RFC must consider any interactions between SRTP constraints and static inte
 # Detailed design
 [design]: #detailed-design
 
-Interface types (defined or imported) can define static abstract methods.  These types are called "Interfaces with static abstract methods" or IWSAM for short.
+Interface types (defined or imported) can define static abstract members.  These types are called "Interfaces with static abstract members" or IWSAM for short.
 
-Interfaces with static abstract methods can be implemented by classes and structs.
+Interfaces with static abstract members can be implemented by classes, structs, unions and records.
 
 Generic code can be written where generic parameters are constrained by these interfaces.
 
-
 ## Implementing IWSAMs
 
-A class or struct can declare implementations of interfaces with static abstract members.
-The requirements and inference/checking rules are the same as for instance members.
+A class or struct can declare implementations of interfaces with static abstract members. The requirements and inference/checking rules are the same as for instance members.
 
 ```fsharp
 type IAdditionOperator<'T> =
@@ -103,7 +101,7 @@ This code is useless as the static addition operator may not be invoked via the 
 
 ## Interaction with SRTP constraints
 
-If a generic type parameter has a interface constraint with abstract static members, then
+If a generic type parameter is constrained by an IWSAM, then
 
 1. The type parameter is considered a statically-known, nominal type for the purposes of SRTP resolution.
 2. The static members from the interface can be used as solutions for any SRTP constraints.
@@ -121,7 +119,6 @@ let someFunction2<'T when 'T : IZeroProperty<'T>>() = LanguagePrimitives.Generic
 ```
 
 Note that in these examples neither function is inlined.  The non-static type parameter `'T` is considered a type suitable for static resolution of the SRTP constraint.
-
 
 ## Invoking static abstract member implementations directly
 
