@@ -64,6 +64,6 @@ The addition of these functions brings the core library to four different `print
 # Unresolved questions
 
 * **Are `print` and `println` the best names for these functions?**
-  * The `print` and `println` names were used in writing this RFC as they seem to be commonly used in other languages, analogous to the `printf` and `printfn` names, and allow for the mnemonic "print line" for `println`. However, the naming is still up for discussion and subject to change.
+  * The `print` and `println` names were used in writing this RFC as they seem to be commonly used in other languages, analogous to the `printf` and `printfn` names, and allow for the mnemonic "print line" for `println`. However, the naming is still up for discussion and subject to change. Some of the options discussed in the suggestion thread were: `print`/`printn`, `print`/`printline`, `write`/`writeline`, and `put`/`putln`. One advantage to the `print`/`printn` option is closer consistency with `printf`/`printfn`.
 * **Should we provide a `print` function without the trailing newline at all?**
   * Printing output without a newline is a fairly uncommon need and could make the `print` function surprising for some users who expected it to behave like `println`.
