@@ -3,7 +3,7 @@
 The design suggestion [Support static abstract members in interfaces](https://github.com/fsharp/fslang-suggestions/issues/1151) has been marked "approved in principle". This RFC covers the detailed proposal for this suggestion.
 
 * [x] Approved in principle
-* [ ] Details: [under discussion](FILL-ME-IN)
+* [ ] Discussion: use implementation PR please
 * [ ] Implementation: [In progress](https://github.com/dotnet/fsharp/pull/13119)
 
 # Summary
@@ -120,7 +120,11 @@ let someFunction2<'T when 'T : IZeroProperty<'T>>() = LanguagePrimitives.Generic
 
 Note that in these examples neither function is inlined.  The non-static type parameter `'T` is considered a type suitable for static resolution of the SRTP constraint.
 
-## Invoking static abstract member implementations directly
+## Interaction with object expressions
+
+Object expressions may not be used to implement interfaces that contain static abstract methods.  This is because the only use for such an implementation is to pass as a type argument to a generic construct constrained by the interface.
+
+## Consideration: Invoking static abstract member implementations directly
 
 Consider:
 ```csharp
