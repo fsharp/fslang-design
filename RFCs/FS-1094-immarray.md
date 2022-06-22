@@ -1,4 +1,4 @@
-# F# RFC FS-1094 - `block` as FSharp.Core collection, an abbreviation for System.Collections.Immutable.ImmutableArray
+# F# RFC FS-1094 - `immarray` as FSharp.Core collection, an abbreviation for System.Collections.Immutable.ImmutableArray
 
 The design suggestion [A normative immutable array type](https://github.com/fsharp/fslang-suggestions/issues/619) has been marked "approved in principle".
 
@@ -10,7 +10,7 @@ This RFC covers the detailed proposal for this suggestion.
 
 # Summary
 
-A new collection type `'T block` will be added to FSharp.Core, and FSharp.Core will now depend on System.Collections.Immutable
+A new collection type `'T immarray` will be added to FSharp.Core, and FSharp.Core will now depend on System.Collections.Immutable
 
 # Motivation
 
@@ -42,15 +42,15 @@ namespace FSharp.Collections
 
 ...
 
-type 'T block = System.Collections.Immutable.ImmutableArray<'T>
+type 'T immarray = System.Collections.Immutable.ImmutableArray<'T>
 
 [<CompilationRepresentation(CompilationRepresentationFlags.ModuleSuffix)>]
 [<RequireQualifiedAccess>]
-module Block =
+module ImmArray =
 
-    let append(l1 : 'T block) (l2 : 'T block) = l1.AddRange(l2)
+    let append(l1 : 'T immarray) (l2 : 'T immarray) = l1.AddRange(l2)
 
-    let empty<'T> = block<'T>.Empty
+    let empty<'T> = immarray<'T>.Empty
     ...
 ```
 
@@ -74,7 +74,7 @@ TBD: examples and test cases
 
 - Don't do this and maintain status quo
 
-- Make a separate package `FSharp.Collections.Block.dll`
+- Make a separate package `FSharp.Collections.Immutable.dll`
 
 - Use a different name
 
