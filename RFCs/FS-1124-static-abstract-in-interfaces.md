@@ -1,4 +1,4 @@
-# F# RFC FS-1124 - Static abstract methods in interfaces
+# F# RFC FS-1124 - Interfaces with static abstract methods 
 
 The design suggestion [Support static abstract methods in interfaces](https://github.com/fsharp/fslang-suggestions/issues/1151) has been marked "approved in principle". This RFC covers the detailed proposal for this suggestion.
 
@@ -9,7 +9,7 @@ The design suggestion [Support static abstract methods in interfaces](https://gi
 # Summary
 [summary]: #summary
 
-.NET 7 and C# 11 is adding the ability to define static abstract methods in interfaces and to use these from generic code.  
+.NET 7 and C# 11 are [adding the ability to define interfaces with static abstract methods](https://github.com/dotnet/csharplang/issues/4436) and to use these from generic code.  
 
 To match this in F#, we add the capability to specify abstract static members that implementing classes and structs are then required to provide an explicit
 or implicit implementation of. The members can be accessed off of type parameters that are constrained by the interface.
