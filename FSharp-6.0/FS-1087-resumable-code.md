@@ -512,7 +512,7 @@ In this case, the alternative must set the `ResumptionFunc` field in `Resumption
 the enclosing state machine to an appropriate dynamic continuation.  For example, see the implementation of `ResumableCode.Yield`
 and `ResumableCode.YieldDynamic`.
 
-## Library additions (debuggable two-phase code)
+## Debuggable two-phase inlined code
 
 A general construct `__debugPoint` is added to allow manual specification of debug points in delayed-execution portions of inlined code. `__debugPoint ""` should only be used in inlined code, though this is not checked. In this RFC it is used to improve debugging of `for` loops, however the construct is more generally useful for inlined code.
 
