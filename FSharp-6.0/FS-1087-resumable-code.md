@@ -862,7 +862,7 @@ let makeStateMachine()  =
 At high approximation a Coroutine is Task<unit> without async I/O allowed. They make an interesting entry-level example of what you can build with resumable code.
    
 > NOTE: Co-routines are not particularly useful in F# programming, with higher-level control structures like `task` and `taskSeq` and `async`
-> and so on preferred. There is no plan to add co-routines to FSHarp.Core.  Tasks are "better" then coroutines in that 
+> and so on preferred. There is no plan to add co-routines to FSHarp.Core.  Tasks are "better" than coroutines in that: 
 >  
 > * you get async I/O
 > * exceptions get stored away when they happen
