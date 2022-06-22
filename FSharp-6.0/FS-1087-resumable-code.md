@@ -541,26 +541,30 @@ let f = Compose(Print "a", Print "b")
 Run f
 ```
 
-Here the inlined closures have debug points associated with the source ranges `Compose(Print "a", Print "b")`, `Print "a"` and `Print "b"`.
+Here the inlined closures have debug points associated with the source ranges `Compose(Print "a", Print "b")`, `Print "a"` and `Print "b"`. That is, debugging the _execution_ of the composition steps uses source code locations at the composition itself, rather than the implementations (if not inlined) or "no source code available" (if `__debugPoint` is not used).
 
-This is useful to help improve debugging of computation expressions:
+Although orthogonal to this RFC, this construct is useful to help improve debugging of computation expressions, which we document here for completeness. Consider for example the following compositional computations:
 
 ```fsharp
-type ValueOrCancelled<'TResult> =
-    | Value of result: 'TResult
-    | Cancelled of ``exception``: OperationCanceledException
-
 // Cold-start cancellable code
-type Cancellable<'T> = Cancellable of (CancellationToken -> ValueOrCancelled<'T>)
+type Cancellable<'T> = Cancellable of (CancellationToken -> unit)
 ```
 
 Now consider the code
 
 ```fsharp
+let f() =
     cancellable {
         let! v = expr
         body 
     }
+```
+
+which is equivalent to this (ignoring details such as `cancellable.Delay` calls):
+
+```fsharp
+let f() =
+    cancellable.Bind(expr, (fun v -> body))
 ```
 
 The `Bind` operation for `let!` can be written as follows:
@@ -569,9 +573,9 @@ The `Bind` operation for `let!` can be written as follows:
 module Cancellable =
 
     /// Run a cancellable computation using the given cancellation token
-    let inline run (ct: CancellationToken) (Cancellable oper) =
+    let run (ct: CancellationToken) (Cancellable oper) =
         if ct.IsCancellationRequested then
-            Cancelled(OperationCanceledException ct)
+            raise (System.OperationCanceledException ct)
         else
             oper ct
 
@@ -579,28 +583,29 @@ type CancellableBuilder() =
     member inline _.Bind(comp, [<InlineIfLambda>] body) =
         Cancellable(fun ct ->
             __debugPoint ""
-            match Cancellable.run ct comp with
-            | Value v1 -> Cancellable.run ct (body v1)
-            | Cancelled err1 -> Cancelled err1)
+            Cancellable.run ct (body v1))
 ```
 
-Now, the implied `cancellable.Bind(expr, (fun v -> body))` call is given source range `let! v = expr` by the F# compiler. Two debug points will be associated with this range
+Now, `cancellable.Bind(expr, (fun v -> body))` is by default given source range `let! v = expr` by the F# compiler, and a default debug point is places before the `Bind` call with this source range. We can visualize this as follows:
 
-* A debug point for the `Bind` call, hit before the `Bind` call is executed, and prior to the execution of `expr`
-* A 2nd debug point corresponding to `__debugPoint ""`, hit after the execution of `expr` but before the execution of the cancellable resulting from the `expr`.
-
-The flatteneed code can be visualized like this:
 ```fsharp
+let f() =
+    DebugPoint "let! v = expr"
+    cancellable.Bind(expr, (fun v -> body))
+```
+
+Because of inlining `Bind` and `__debugPoint`, a 2nd debug point is also placed, and the flattened code after inlining can be visualized like this:
+
+```fsharp
+let f() =
     DebugPoint "let! v = expr"
     let comp = expr
     Cancellable(fun ct ->
         DebugPoint "let! v = expr"
-        match Cancellable.run ct comp with
-        | Value v1 -> Cancellable.run ct (k v1)
-        | Cancelled err1 -> Cancelled err1))
+        Cancellable.run ct (k v1))
 ```
 
-This has the following properties
+This has the following properties:
 
 * Stack traces when running `comp` include a function at location `let! v = expr`
 
@@ -610,9 +615,9 @@ This has the following properties
 
 Note while this is useful, it doesn't give perfect debugging, in particular:
 
-* If no debug point has been placed on `let!`, then step-over at the first debug point will not proceed to the body of the computation, as the user will intuitively assume, but instead the whole invocation of the `Cancellable` resulting from the `Bind` will be stepped-over.
+* If no debug point has been placed on `let!`, then step-over at the first debug point will **not** proceed to the body of the computation (as the user will assume), but instead the whole invocation of the `Cancellable` resulting from the `Bind` will be stepped-over.
 
-* The use of two debug points with identical source ranges `"let! v = expr"` is not ideal, however it does mean reasonable stack traces are given on the second phase of execution. The first debug point may not currently be suppressed. In future RFCs the debug locations used may be refined, or further options added for the string argument to `__debugPoint`.
+The use of two debug points with identical source ranges `"let! v = expr"` is not ideal for stepping or breaking, however it does mean reasonable stack traces and source locations are given on the second phase of execution. In future RFCs the debug locations available to be named when using `__debugPoint` may be refined.
 
 ## Library additions (primitive resumable code)
 
