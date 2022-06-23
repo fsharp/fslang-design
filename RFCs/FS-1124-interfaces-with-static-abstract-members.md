@@ -53,6 +53,8 @@ type C() =
          static member op_Addition(x: C, y: C) = C()
 ```
 
+Static abstract methods may not be declared in classes.
+
 ## Invoking static abstract interface members in generic code
 
 The syntax of expressions is extended with
