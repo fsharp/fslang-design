@@ -67,8 +67,8 @@ A static abstract interface member `M` may be accessed on a type parameter `'T` 
 
 ```fsharp
 let someFunction<'T when 'T : I<'T>>() =
-    'T.M();
-    let t = 'T.P;
+    'T.M()
+    let t = 'T.P
     return t + 'T.P
 ```
 
