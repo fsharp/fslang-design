@@ -305,7 +305,7 @@ SomeGenericThing<MyType1> arg1
 SomeGenericThing<MyType2> arg2 // oh no, MyType2 doesn't have the interface! Stuck!
 ```
 
-When the number of methods being abstracted over is small (e.g. up to, say, 10) then alternative is simply to pass a `DoSomething` function explicitly:
+When the number of methods being abstracted over is small (e.g. up to, say, 10) an alternative is simply to pass a `DoSomething` function explicitly:
 
 ```fsharp
 let SomeGenericThing doSomething arg =
