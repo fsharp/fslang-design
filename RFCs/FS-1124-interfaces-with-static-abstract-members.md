@@ -284,6 +284,32 @@ public readonly struct Double :
 
 At this point, any reader should stop to consider carefully the pros and cons here.  Each and every new interface adds conceptual overhead, and what was previously comparatively simple and compelling has become complex and curios. This complexity is potentially encountered by any and all users of .NET - beginner users trained in abstract math seem particularly fond of such numeric hierarchies, and are drawn to them like a moth to the flame.  Yet these abstractions are useful only to the extent that writing generic math code is successfully and regularly instantiated at many types - yet this is not known to be a significant real-world limiting problem for .NET today in practice.
 
+**Two ways to abstract.** One specific drawback applies to F# - there are now two mecahnisms to do type-level abstraction of patterns, ISWAMs and SRTP.
+
+ISWAM: 
+
+```fsharp
+type IAddition<'T when 'T :> IAddition<'T>> =
+    static abstract Add: 'T * 'T -> 'T
+
+let f1<'T when 'T :> IAddition<'T>>(x: 'T, y: 'T) =
+    'T.Add(x, y)
+```
+
+SRTP: 
+```fsharp
+let inline f2<'T when 'T : (static member Add: 'T * 'T -> 'T)>(x: 'T, y: 'T) = 
+    'T.Add(x, y)
+```
+
+These have pros and cons and can actually be used perfectly well together:
+* **What is constrained.** ISWAM constrain the interfaces on the type, while SRTP constrains the members.
+* **Satisfying constraints.** ISWAM require the interface be defined in the type. This massively restricts their use, and effectively makes them primarily usable by the BCL team. SRTP also only operate on the intrinsically defined members, though FS-1043 proposes to extend these to extension members.
+* **What can be generic.** SRTP can only be used in inlined F# code. This is currently enforced. For non-inlined code SRTP will only ever be implemented via witness passing. SRTP cannot realistically be used on the generic parameters of types.
+* **Corner cases.** SRTP has many unusual rules for operators, and there are several known bugs with the mecahnism
+
+Within F#, this means those seeking more type-level abstraction will likely be spending considerable time arguing about whether to use IWSAM or SRTP.
+
 ## Alternatives
 [alternatives]: #alternatives
 
