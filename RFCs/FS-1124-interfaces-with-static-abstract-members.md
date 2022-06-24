@@ -30,6 +30,11 @@ F# has an existing mechanism for statically-constrained generic code called SRTP
 
 This RFC must consider any interactions between SRTP constraints and static interface constraints.  
 
+## Limitations
+
+This feature sits uncomfortably in F#.  Its addition to the .NET object model has been driven by C#, and its use in .NET libraries, and thus consuming and, to some extent, authoring IWSAMs is necessary in F#.  However there are many drawbacks to its addition, documented below.
+
+Because of this, we will consider requiring a special opt-in before new IWSAMs are declared in F#.
 
 ## Detailed design
 [design]: #detailed-design
@@ -226,9 +231,8 @@ In this RFC we go with Option A+B, with the possibility of adding Option D at so
 ## Drawbacks
 [drawbacks]: #drawbacks
 
-This feature sits uncomfortably in F#.  Its addition to the .NET object model has been driven by C#, and its use in .NET libraries, and thus consuming and, to some extent, authoring IWSAMs is necessary in F#.  However there are many drawbacks to its addition, documented below.
 
-Because of this, we will consider requiring a special opt-in before new IWSAMs are declared in F#.
+### General drawbacks
 
 Some of the drawbacks are as follows:
 
@@ -284,7 +288,9 @@ public readonly struct Double :
 
 At this point, any reader should stop to consider carefully the pros and cons here.  Each and every new interface adds conceptual overhead, and what was previously comparatively simple and compelling has become complex and curios. This complexity is potentially encountered by any and all users of .NET - beginner users trained in abstract math seem particularly fond of such numeric hierarchies, and are drawn to them like a moth to the flame.  Yet these abstractions are useful only to the extent that writing generic math code is successfully and regularly instantiated at many types - yet this is not known to be a significant real-world limiting problem for .NET today in practice.
 
-**Two ways to abstract.** One specific drawback applies to F# - there are now two mecahnisms to do type-level abstraction of patterns, ISWAMs and SRTP.
+### Two ways to abstract.
+
+One specific drawback applies to F# - there are now two mecahnisms to do type-level abstraction of patterns, ISWAMs and SRTP.
 
 ISWAM: 
 
