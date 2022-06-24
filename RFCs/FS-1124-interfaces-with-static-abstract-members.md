@@ -236,7 +236,7 @@ In this RFC we go with Option A+B, with the possibility of adding Option D at so
 
 Some of the drawbacks are as follows:
 
-**Encouraging the Max-Abstraction impulse.** It is highly likely this feature will encourage the practice of "max-abstraction" in F# - that is, using more and more abstraction (in this case over types constrained by IWSAMs) to try to get maximal code reuse, even at the cost of massive loss of code readability and simplicity. This kind of programming can be enormously enjoyable - it seems to satisfy a primitive and powerful desire in the human mind to abstract and generalise, and almost never loses its attraction. Perhaps it even allows us to draw closer to the divine - a world of essences untainted by reality. However, back in the land of the real, it can also be an enormous waste of time, as very often the amount of code successfully reused is very low, while the complexity in comprehending, using, debugging, extending and code-reviewing the corresponding frameworks is high.
+**Encouraging the Max-Abstraction impulse.** It is highly likely this feature will encourage the practice of "max-abstraction" in F# - that is, using more and more abstraction (in this case over types constrained by IWSAMs) to try to get maximal code reuse, even at the cost of massive loss of code readability and simplicity. This kind of programming can be enormously enjoyable - it seems to satisfy a primitive and powerful desire in the human mind to abstract and generalise, and almost never loses its attraction. Perhaps this is because it is perceived to allow us to draw closer to the divine - a world of perfect abstractions untainted by reality - and indeed advocacy for these techniques can often verge on the evangelical. However, back in the land of the real, it can also be an enormous waste of time, as very often the amount of code successfully reused is very low, while the complexity in learning, comprehending, using, debugging and code-reviewing the corresponding frameworks is high, and the frameworks are often fragile.
 
 **Subsequent demands for more type-level computation.**  This feature will lead to extensive demands for more features for type-level computation, giving ever more obscure code that is abstract, general and impenetrable. This in turn can give demand for more abstraction capabilities in the language. These will in turn feed the productivity-burning bonfire of max-abstraction.
 
@@ -287,6 +287,39 @@ public readonly struct Double :
 ```
 
 At this point, any reader should stop to consider carefully the pros and cons here.  Each and every new interface adds conceptual overhead, and what was previously comparatively simple and compelling has become complex and curious. This complexity is potentially encountered by any and all users of .NET - beginner users trained in abstract math seem particularly fond of such numeric hierarchies, and are drawn to them like a moth to the flame.  Yet these abstractions are useful only to the extent that writing generic math code is successfully and regularly instantiated at many types - yet this is not known to be a significant real-world limiting problem for .NET today in practice.
+
+### Drawback - Type-generic code is less succinct and less general than explicit function-passing code
+
+Type-generic code relying on ISWAMs (and SRTP) can only be used with types that satisfy the constraints. If the types don't satisfy, you have a lot of trouble.
+
+```fsharp
+type ISomeFunctionality<'T when 'T :> ISomeFunctionality<'T>>() =
+    static abstract DoSomething: 'T -> 'T
+
+let SomeGenericThing<'T :> ISomeFunctionality<'T>> arg = 
+    ...
+    'T.DoSomething(arg1)
+    ...
+
+SomeGenericThing<MyType1> arg1
+SomeGenericThing<MyType2> arg2 // oh no, MyType2 doesn't have the interface! Stuck!
+```
+
+When the number of methods being abstracted over is small (e.g. up to, say, 10) then alternative is simply to pass a `DoSomething` function explicitly:
+
+```fsharp
+let SomeGenericThing doSomething arg =
+    ...
+    doSomething arg
+    ...
+
+SomeGenericThing MyType1.DoSomething arg1
+SomeGenericThing MyType2.DoSomethingElse arg2
+```
+
+Note that the second kind of code is much shorter, and is more general.  In F# this kind of code is incredibly safe and succinct because of HM type inference - passing functions and making code generic are two of the very easiest things to do in F#, the language is almost made for exactly those activities.
+
+For the vast majority of generic coding in F# the second technique is perfectly acceptable, with the massive benefit that the programmer doesn't burn their time trying to create or use a cathedral of perfect abstractions.
 
 ### Drawback - Two ways to abstract
 
