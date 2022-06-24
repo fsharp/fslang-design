@@ -226,7 +226,30 @@ In this RFC we go with Option A+B, with the possibility of adding Option D at so
 # Drawbacks
 [drawbacks]: #drawbacks
 
-It is highly likely this feature will be used and abused to perform "max-abstraction" code in F#, using more and more abstraction to try to get maximal code reuse, even at the cost of massive loss of code readability and simplicity.  This kind of programming can be an enormous waste of time, as very often the amount of code successfully reused is very low.  It can also lead to extensive demands for more and more type-level computation, giving ever more obscure code that is abstract, general and impenetrable.  This in turn can give demand for more abstraction capabilities and more tooling to support compile-time type-level computation (compile-time debugging, profiling etc.).  It can also be very difficult to debug at runtime too.
+It is highly likely this feature will be used and abused to perform "max-abstraction" code in F#, using more and more abstraction (in this case over types constrained by IWSAMs) to try to get maximal code reuse, even at the cost of massive loss of code readability and simplicity.
+
+This kind of programming can be an enormous waste of time, as very often the amount of code successfully reused is very low, and the complexity in comprehending the corresponding frameworks high. 
+
+It can also lead to extensive demands for more and more type-level computation, giving ever more obscure code that is abstract, general and impenetrable.
+
+This in turn can give demand for more abstraction capabilities in the language.
+
+This can also lead to more and more requests for tooling to support compile-time type-level computation (compile-time debugging, profiling etc.).  It can also be very difficult to debug at runtime too.
+
+The use of nominal interfaces means there will be a proliferation of interfaces, one for each method.  The need to implement these explicitly will make the feature highly "rigid" and there will be a sea of complaints that the .NET Framework is not regular enough - that not enough interfaces are defined and that not enough types implement the those interfaces.
+
+Further, how many interfaces are "enough"?  And how generic are they? There can never be enough of these - ultimately you end up with one method for every single categorizable concept in the entire .NET Framework. The appetite for such abstraction is never-ending, and largely futile, defeating other reasonable goals in software engineering.
+
+As an example, the `System.Double` type in .NET has now the following list of interfaces:
+```csharp
+public readonly struct Double : IComparable<double>, IConvertible, IEquatable<double>, IParsable<double>, ISpanParsable<double>, System.Numerics.IAdditionOperators<double,double,double>, System.Numerics.IAdditiveIdentity<double,double>, System.Numerics.IBinaryFloatingPointIeee754<double>, System.Numerics.IBinaryNumber<double>, System.Numerics.IBitwiseOperators<double,double,double>, System.Numerics.IComparisonOperators<double,double>, System.Numerics.IDecrementOperators<double>, System.Numerics.IDivisionOperators<double,double,double>, System.Numerics.IEqualityOperators<double,double>, System.Numerics.IExponentialFunctions<double>, System.Numerics.IFloatingPoint<double>, System.Numerics.IFloatingPointIeee754<double>, System.Numerics.IHyperbolicFunctions<double>, System.Numerics.IIncrementOperators<double>, System.Numerics.ILogarithmicFunctions<double>, System.Numerics.IMinMaxValue<double>, System.Numerics.IModulusOperators<double,double,double>, System.Numerics.IMultiplicativeIdentity<double,double>, System.Numerics.IMultiplyOperators<double,double,double>, System.Numerics.INumber<double>, System.Numerics.INumberBase<double>, System.Numerics.IPowerFunctions<double>, System.Numerics.IRootFunctions<double>, System.Numerics.ISignedNumber<double>, System.Numerics.ISubtractionOperators<double,double,double>, System.Numerics.ITrigonometricFunctions<double>, System.Numerics.IUnaryNegationOperators<double,double>, System.Numerics.IUnaryPlusOperators<double,double>
+```
+
+These add conceptual overhead - potentially for any and all users of .NET - and are useful only to the extent that writing generic math code that can be successfully instantiated at many types is useful, clear and higher-productivity than other means for writing the same generic code.  On the whole, writing such generic code is not a productive exercise.
+
+The presence of such enormous generic interface lists can also cause compiler slow-down.
+
+Many of these decisions are out of the control of F# - the feature has been added to .NET and we are exposed to these considerations.
 
 # Alternatives
 [alternatives]: #alternatives
@@ -243,5 +266,8 @@ No.
 # Unresolved questions
 [unresolved]: #unresolved-questions
 
-* Decide the relationship between this and https://github.com/fsharp/fslang-design/blob/main/RFCs/FS-1024-simplify-constrained-call-syntax.md
+* [ ] Decide the relationship between this and https://github.com/fsharp/fslang-design/blob/main/RFCs/FS-1024-simplify-constrained-call-syntax.md
+* [ ] Check carefully against https://github.com/dotnet/csharplang/blob/main/proposals/static-abstracts-in-interfaces.md
+* [ ] Decide if the feature must be explicitly enabled before declaring new static abstract methods is allowed.
+
 
