@@ -337,7 +337,7 @@ No.
 
 * [ ] Decide if the feature must be explicitly enabled before declaring new IWSAMs.
 
-* [ ] We need to look carefully at a few things - e.g. IWSAM that define op_Implicit and op_Explicit. I've done "the right thing" in the code but we will need to test it.
+* [ ] We need to look carefully at a few things - e.g. IWSAM that define op_Implicit and op_Explicit. @dsyme says: I've done "the right thing" in the code but we will need to test it.
 
 * [ ] This:
 
