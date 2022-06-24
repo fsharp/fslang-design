@@ -304,8 +304,8 @@ let f1<'T when 'T :> IAddition<'T>>(x: 'T, y: 'T) =
 
 SRTP: 
 ```fsharp
-let inline f2<'T when 'T : (static member Add: 'T * 'T -> 'T)>(x: 'T, y: 'T) = 
-    'T.Add(x, y)
+let inline f2<^T when ^T : (static member Add: ^T * ^T -> ^T)>(x: ^T, y: ^T) = 
+    ^T.Add(x, y)
 ```
 
 These have pros and cons and can actually be used perfectly well together:
