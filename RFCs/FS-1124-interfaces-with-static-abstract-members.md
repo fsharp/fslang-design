@@ -6,7 +6,7 @@ The design suggestion [Support static abstract members in interfaces](https://gi
 * [ ] Discussion: use implementation PR please
 * [ ] Implementation: [In progress](https://github.com/dotnet/fsharp/pull/13119)
 
-# Summary
+## Summary
 [summary]: #summary
 
 .NET 7 and C# 11 are [adding the ability to define interfaces with static abstract members](https://github.com/dotnet/csharplang/issues/4436) and to use these from generic code.  
@@ -14,14 +14,14 @@ The design suggestion [Support static abstract members in interfaces](https://gi
 To match this in F#, we add the capability to specify abstract static members that implementing classes and structs are then required to provide an explicit
 or implicit implementation of. The members can be accessed off of type parameters that are constrained by the interface.
 
-# Motivation
+## Motivation
 [motivation]: #motivation
 
 See motivation at https://github.com/dotnet/csharplang/issues/4436.
 
 Static abstract members allow statically-constrained generic code. This is being utilised heavily in the [generic numeric code](https://visualstudiomagazine.com/articles/2022/03/14/csharp-11-preview-feature.aspx) library feature of .NET 7.
 
-# Considerations
+## Considerations
 
 F# has an existing mechanism for statically-constrained generic code called SRTP (statically resolved type parameters). These have considerable advantages and disadvantages:
 * SRTP constraints can only be used in inlined code.
@@ -31,7 +31,7 @@ F# has an existing mechanism for statically-constrained generic code called SRTP
 This RFC must consider any interactions between SRTP constraints and static interface constraints.  
 
 
-# Detailed design
+## Detailed design
 [design]: #detailed-design
 
 Interface types (defined or imported) can define static abstract members.  These types are called "Interfaces with static abstract members" or IWSAM for short.
@@ -40,7 +40,7 @@ Interfaces with static abstract members can be implemented by classes, structs, 
 
 Generic code can be written where generic parameters are constrained by these interfaces.
 
-## Implementing IWSAMs
+### Implementing IWSAMs
 
 A class or struct can declare implementations of interfaces with static abstract members. The requirements and inference/checking rules are the same as for instance members.
 
@@ -55,7 +55,7 @@ type C() =
 
 Static abstract methods may not be declared in classes.
 
-## Invoking static abstract interface members in generic code
+### Invoking static abstract interface members in generic code
 
 The syntax of expressions is extended with
 ```fsharp
@@ -74,7 +74,7 @@ let someFunction<'T when 'T : I<'T>>() =
 
 TBD: See also https://github.com/fsharp/fslang-design/blob/main/RFCs/FS-1024-simplify-constrained-call-syntax.md.  It is expected that this syntax will be usable for SRTP invocations in the case that the type parameter has been explicitly constrained with an SRTP constraint.
 
-## Interfaces with static abstract members are constraints, not types
+### Interfaces with static abstract members are constraints, not types
 
 Interfaces with static abstract members should never generally be used as **types**, but rather as **constraints on generic type parameters**.
 
@@ -101,7 +101,7 @@ let badFunction(x: IAdditionOperator<C>) = 1   // This is not useful code
 
 This code is useless as the static addition operator may not be invoked via the object `x`.  However because interfaces may contain both static abstract methods and instance abstract methods, it is likely that we won't specifically rule out writing the code above. Equally, methodologically it is almost certainly wise to distinguish between IWSAMs (constraining types) and interfaces with instance members (constraining types and values).
 
-## Interaction with SRTP constraints
+### Interaction with SRTP constraints
 
 If a generic type parameter is constrained by an IWSAM, then
 
@@ -122,11 +122,11 @@ let someFunction2<'T when 'T : IZeroProperty<'T>>() = LanguagePrimitives.Generic
 
 Note that in these examples neither function is inlined.  The non-static type parameter `'T` is considered a type suitable for static resolution of the SRTP constraint.
 
-## Interaction with object expressions
+### Interaction with object expressions
 
 Object expressions may not be used to implement interfaces that contain static abstract methods.  This is because the only use for such an implementation is to pass as a type argument to a generic construct constrained by the interface.
 
-## Consideration: Invoking static abstract member implementations directly
+### Consideration: Invoking static abstract member implementations directly
 
 Consider:
 ```csharp
@@ -155,7 +155,7 @@ However, that begs the question about how we call `MyRepeatSequence.Next` "direc
 
 to make the interface call explicit. 
 
-### Option A - expect people to make a call via a type parameter
+#### Option A - expect people to make a call via a type parameter
 
 Option A is to do nothing, and expect users to write constrained generic code to make the call:
 
@@ -173,7 +173,7 @@ CallNext<MyRepeatSequence>(str)
 
 This option is a bit unfortunate as it means extra obfuscating generic helper functions when there is actually no generic code around.  It also means users have no way of manually inlining such a helper function, and it makes another case where you don't get "closure under substitution" for F# generic code (which also happens for some SRTP calls, where generic helpers are also needed).
 
-### Option B - expect the type authors to resolve this by authoring an explicitly accessible method
+#### Option B - expect the type authors to resolve this by authoring an explicitly accessible method
 
 Option B is to expect the type authors to resolve this by authoring an explicitly accessible method:
 
@@ -191,13 +191,13 @@ MyRepeatSequence.Next(str)
 Note that C# code using implicit interface impls will automatically have such a method available.  We should check if most of the math stuff in System.* will use explicit or implicit impls - we assume implicit.
 
 
-### Option C - make an exception for statics and have those be name-accessible.
+#### Option C - make an exception for statics and have those be name-accessible.
 
 Option C is to make an exception for static abstract implementations and have those be name-accessible.
 
 However ambiguities can arise in the name resolution if several different unrelated interfaces implement that same named method - we could likely resolve those ambiguities but it does expose us to this kind of problem in a different way than currently.
 
-### Option D - give some kind of explicit call syntax, e.g.
+#### Option D - give some kind of explicit call syntax, e.g.
 
 ```fsharp
     (MyRepeatSequence :> IGenNext<MyRepeatSequence>).Next(str)
@@ -223,7 +223,7 @@ ConcreteMathCode ( .... ) {
 
 In this RFC we go with Option A+B, with the possibility of adding Option D at some later point. 
 
-# Drawbacks
+## Drawbacks
 [drawbacks]: #drawbacks
 
 This feature sits uncomfortably in F#.  Its addition to the .NET object model has been driven by C#, and its use in .NET libraries, and thus consuming and, to some extent, authoring IWSAMs is necessary in F#.  However there are many drawbacks to its addition, documented below.
@@ -284,19 +284,19 @@ public readonly struct Double :
 
 At this point, any reader should stop to consider carefully the pros and cons here.  Each and every new interface adds conceptual overhead, and what was previously comparatively simple and compelling has become complex and curios. This complexity is potentially encountered by any and all users of .NET - beginner users trained in abstract math seem particularly fond of such numeric hierarchies, and are drawn to them like a moth to the flame.  Yet these abstractions are useful only to the extent that writing generic math code is successfully and regularly instantiated at many types - yet this is not known to be a significant real-world limiting problem for .NET today in practice.
 
-# Alternatives
+## Alternatives
 [alternatives]: #alternatives
 
 Not add anything
 
-# Compatibility
+## Compatibility
 [compatibility]: #compatibility
 
 * Is this a breaking change?
 
 No.
 
-# Unresolved questions
+## Unresolved questions
 [unresolved]: #unresolved-questions
 
 * [ ] Decide the relationship between this and https://github.com/fsharp/fslang-design/blob/main/RFCs/FS-1024-simplify-constrained-call-syntax.md
