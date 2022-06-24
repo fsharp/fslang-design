@@ -1,4 +1,4 @@
-# F# RFC FS-1124 - Interfaces with static abstract members 
+# F# RFC FS-1124 - Interfaces with static abstract members (IWSAMs)
 
 The design suggestion [Support static abstract members in interfaces](https://github.com/fsharp/fslang-suggestions/issues/1151) has been marked "approved in principle". This RFC covers the detailed proposal for this suggestion.
 
@@ -21,6 +21,10 @@ See motivation at https://github.com/dotnet/csharplang/issues/4436 and https://g
 
 Static abstract members allow statically-constrained generic code. This is being utilised heavily in the [generic numeric code](https://visualstudiomagazine.com/articles/2022/03/14/csharp-11-preview-feature.aspx) library feature of .NET 7.
 
+This feature sits uncomfortably in F#.  Its addition to the .NET object model has been driven by C#, and its use in .NET libraries, and thus consuming and, to some extent, authoring IWSAMs is necessary in F#.  However there are many drawbacks to its addition, documented below.
+
+Because of this, we will consider requiring a special opt-in before new IWSAMs are declared in F#.
+
 ## Considerations
 
 F# has an existing mechanism for statically-constrained generic code called SRTP (statically resolved type parameters). These have considerable advantages and disadvantages:
@@ -29,12 +33,6 @@ F# has an existing mechanism for statically-constrained generic code called SRTP
 * Many SRTP constraints such as `op_Addition` are special to the F# compiler, and F# retrofits solution witnesses for these constraints onto base types such as `System.Double`.  It also adjusts the solving of these constraints for units-of-measure.
 
 This RFC must consider any interactions between SRTP constraints and static interface constraints.  
-
-## Limitations
-
-This feature sits uncomfortably in F#.  Its addition to the .NET object model has been driven by C#, and its use in .NET libraries, and thus consuming and, to some extent, authoring IWSAMs is necessary in F#.  However there are many drawbacks to its addition, documented below.
-
-Because of this, we will consider requiring a special opt-in before new IWSAMs are declared in F#.
 
 ## Detailed design
 [design]: #detailed-design
