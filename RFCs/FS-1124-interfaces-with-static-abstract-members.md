@@ -9,7 +9,7 @@ The design suggestion [Support static abstract members in interfaces](https://gi
 ## Summary
 [summary]: #summary
 
-.NET 7 and C# 11 are [adding the ability to define interfaces with static abstract members](https://github.com/dotnet/csharplang/issues/4436) and to use these from generic code.  
+.NET 7 and C# 11 are [adding the ability to define interfaces with static abstract members](https://github.com/dotnet/csharplang/blob/main/proposals/static-abstracts-in-interfaces.md) and to use these from generic code.  
 
 To match this in F#, we add the capability to specify abstract static members that implementing classes and structs are then required to provide an explicit
 or implicit implementation of. The members can be accessed off of type parameters that are constrained by the interface.
@@ -17,7 +17,7 @@ or implicit implementation of. The members can be accessed off of type parameter
 ## Motivation
 [motivation]: #motivation
 
-See motivation at https://github.com/dotnet/csharplang/issues/4436.
+See motivation at https://github.com/dotnet/csharplang/issues/4436 and https://github.com/dotnet/csharplang/blob/main/proposals/static-abstracts-in-interfaces.md.
 
 Static abstract members allow statically-constrained generic code. This is being utilised heavily in the [generic numeric code](https://visualstudiomagazine.com/articles/2022/03/14/csharp-11-preview-feature.aspx) library feature of .NET 7.
 
