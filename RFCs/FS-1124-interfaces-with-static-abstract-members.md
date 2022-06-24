@@ -317,7 +317,7 @@ SomeGenericThing MyType1.DoSomething arg1
 SomeGenericThing MyType2.DoSomethingElse arg2
 ```
 
-Note that the second kind of code is much shorter, and is more general.  In F# this kind of code is incredibly safe and succinct because of HM type inference - passing functions and making code generic are two of the very easiest things to do in F#, the language is almost made for exactly those activities.
+Note that the second kind of code is much shorter, and is more general - it works with both `MyType1` and `MyType2` without any significant square-peg-in-round-hole code required.  In F# this kind of code is incredibly safe and succinct because of Hindley-Milner type inference - passing functions and making code generic are two of the very easiest things to do in F#, the language is almost made for exactly those activities.
 
 For the vast majority of generic coding in F# the second technique is perfectly acceptable, with the massive benefit that the programmer doesn't burn their time trying to create or use a cathedral of perfect abstractions.
 
