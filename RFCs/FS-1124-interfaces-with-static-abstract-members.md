@@ -242,7 +242,40 @@ Further, how many interfaces are "enough"?  And how generic are they? There can 
 
 As an example, the `System.Double` type in .NET has now the following list of interfaces:
 ```csharp
-public readonly struct Double : IComparable<double>, IConvertible, IEquatable<double>, IParsable<double>, ISpanParsable<double>, System.Numerics.IAdditionOperators<double,double,double>, System.Numerics.IAdditiveIdentity<double,double>, System.Numerics.IBinaryFloatingPointIeee754<double>, System.Numerics.IBinaryNumber<double>, System.Numerics.IBitwiseOperators<double,double,double>, System.Numerics.IComparisonOperators<double,double>, System.Numerics.IDecrementOperators<double>, System.Numerics.IDivisionOperators<double,double,double>, System.Numerics.IEqualityOperators<double,double>, System.Numerics.IExponentialFunctions<double>, System.Numerics.IFloatingPoint<double>, System.Numerics.IFloatingPointIeee754<double>, System.Numerics.IHyperbolicFunctions<double>, System.Numerics.IIncrementOperators<double>, System.Numerics.ILogarithmicFunctions<double>, System.Numerics.IMinMaxValue<double>, System.Numerics.IModulusOperators<double,double,double>, System.Numerics.IMultiplicativeIdentity<double,double>, System.Numerics.IMultiplyOperators<double,double,double>, System.Numerics.INumber<double>, System.Numerics.INumberBase<double>, System.Numerics.IPowerFunctions<double>, System.Numerics.IRootFunctions<double>, System.Numerics.ISignedNumber<double>, System.Numerics.ISubtractionOperators<double,double,double>, System.Numerics.ITrigonometricFunctions<double>, System.Numerics.IUnaryNegationOperators<double,double>, System.Numerics.IUnaryPlusOperators<double,double>
+public readonly struct Double :
+    IComparable<double>
+    IConvertible
+    IEquatable<double>
+    IParsable<double>
+    ISpanParsable<double>
+    System.Numerics.IAdditionOperators<double,double,double>
+    System.Numerics.IAdditiveIdentity<double,double>
+    System.Numerics.IBinaryFloatingPointIeee754<double>
+    System.Numerics.IBinaryNumber<double>
+    System.Numerics.IBitwiseOperators<double,double,double>
+    System.Numerics.IComparisonOperators<double,double>
+    System.Numerics.IDecrementOperators<double>
+    System.Numerics.IDivisionOperators<double,double,double>
+    System.Numerics.IEqualityOperators<double,double>
+    System.Numerics.IExponentialFunctions<double>
+    System.Numerics.IFloatingPoint<double>
+    System.Numerics.IFloatingPointIeee754<double>
+    System.Numerics.IHyperbolicFunctions<double>
+    System.Numerics.IIncrementOperators<double>
+    System.Numerics.ILogarithmicFunctions<double>
+    System.Numerics.IMinMaxValue<double>
+    System.Numerics.IModulusOperators<double,double,double>
+    System.Numerics.IMultiplicativeIdentity<double,double>
+    System.Numerics.IMultiplyOperators<double,double,double>
+    System.Numerics.INumber<double>
+    System.Numerics.INumberBase<double>
+    System.Numerics.IPowerFunctions<double>
+    System.Numerics.IRootFunctions<double>
+    System.Numerics.ISignedNumber<double>
+    System.Numerics.ISubtractionOperators<double,double,double>
+    System.Numerics.ITrigonometricFunctions<double>
+    System.Numerics.IUnaryNegationOperators<double,double>
+    System.Numerics.IUnaryPlusOperators<double,double>
 ```
 
 These add conceptual overhead - potentially for any and all users of .NET - and are useful only to the extent that writing generic math code that can be successfully instantiated at many types is useful, clear and higher-productivity than other means for writing the same generic code.  On the whole, writing such generic code is not a productive exercise.
