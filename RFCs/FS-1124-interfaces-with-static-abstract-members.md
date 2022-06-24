@@ -298,7 +298,7 @@ type ISomeFunctionality<'T when 'T :> ISomeFunctionality<'T>>() =
 
 let SomeGenericThing<'T :> ISomeFunctionality<'T>> arg = 
     ...
-    'T.DoSomething(arg1)
+    'T.DoSomething(arg)
     ...
 
 SomeGenericThing<MyType1> arg1
