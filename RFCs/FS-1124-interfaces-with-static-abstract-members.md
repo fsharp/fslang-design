@@ -323,7 +323,7 @@ For the vast majority of generic coding in F# the second technique is perfectly 
 
 ### Drawback - Two ways to abstract
 
-One specific drawback applies to F# - there are now two mecahnisms to do type-level abstraction of patterns, ISWAMs and SRTP.
+One specific drawback applies to F# - there are now two mechanisms to do type-level abstraction of patterns, ISWAMs and SRTP.
 
 ISWAM: 
 
