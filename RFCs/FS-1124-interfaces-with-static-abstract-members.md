@@ -303,4 +303,16 @@ No.
 * [ ] Check carefully against https://github.com/dotnet/csharplang/blob/main/proposals/static-abstracts-in-interfaces.md
 * [ ] Decide if the feature must be explicitly enabled before declaring new IWSAMs.
 
+* [ ] This:
 
+```
+Just to note ^T.X   may have a conflict with ^expr in from-the-end-of-collection-slicing.  
+
+  | INFIX_AT_HAT_OP declExpr
+    { if not (parseState.LexBuffer.SupportsFeature LanguageFeature.FromEndSlicing) then 
+        raiseParseErrorAt (rhs parseState 1) (FSComp.SR.fromEndSlicingRequiresVFive())
+      if $1 <> "^" then reportParseErrorAt (rhs parseState 1) (FSComp.SR.parsInvalidPrefixOperator())
+      let m = (rhs2 parseState 1 2)
+      SynExpr.IndexFromEnd($2, m) }
+That feature is only in  preview so we can change this if needed
+```
