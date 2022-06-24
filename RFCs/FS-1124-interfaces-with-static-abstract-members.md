@@ -300,8 +300,12 @@ No.
 [unresolved]: #unresolved-questions
 
 * [ ] Decide the relationship between this and https://github.com/fsharp/fslang-design/blob/main/RFCs/FS-1024-simplify-constrained-call-syntax.md
+
 * [ ] Check carefully against https://github.com/dotnet/csharplang/blob/main/proposals/static-abstracts-in-interfaces.md
+
 * [ ] Decide if the feature must be explicitly enabled before declaring new IWSAMs.
+
+* [ ] We need to look carefully at a few things - e.g. IWSAM that define op_Implicit and op_Explicit. I've done "the right thing" in the code but we will need to test it.
 
 * [ ] This:
 
