@@ -3,7 +3,7 @@
 The design suggestion [Support static abstract members in interfaces](https://github.com/fsharp/fslang-suggestions/issues/1151) has been marked "approved in principle". This RFC covers the detailed proposal for this suggestion.
 
 * [x] Approved in principle
-* [ ] Discussion: use implementation PR please
+* [ ] Discussion: use implementation PR or [https://github.com/fsharp/fslang-design/discussions/677]
 * [ ] Implementation: [In progress](https://github.com/dotnet/fsharp/pull/13119)
 
 ## Summary
