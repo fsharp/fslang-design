@@ -3,7 +3,7 @@
 The design suggestion [Support static abstract members in interfaces](https://github.com/fsharp/fslang-suggestions/issues/1151) has been marked "approved in principle". This RFC covers the detailed proposal for this suggestion.
 
 * [x] Approved in principle
-* [ ] Discussion: use implementation PR or [https://github.com/fsharp/fslang-design/discussions/677]
+* [ ] Discussion: use implementation PR or https://github.com/fsharp/fslang-design/discussions/677
 * [ ] Implementation: [In progress](https://github.com/dotnet/fsharp/pull/13119)
 
 ## Summary
@@ -209,7 +209,7 @@ However ambiguities can arise in the name resolution if several different unrela
 This is a bit ugly and undiscoverable. However it has the huge advantage of allow very precise concretization of generic code, e.g. imagine the user writes:
 
 ```fsharp
-GenericMathCode<'T  when 'T : IMath<'T>> ( .... ) =
+let GenericMathCode<'T  when 'T : IMath<'T>> ( .... ) =
    blah //100s of lines
    'T.Sin(...)
    'T.Cos(...)
@@ -218,7 +218,7 @@ GenericMathCode<'T  when 'T : IMath<'T>> ( .... ) =
 Then wants to accurately make this concrete to some specific type 
 
 ```fsharp
-ConcreteMathCode ( .... ) =
+let ConcreteMathCode ( .... ) =
    blah //100s of lines
    (Double :> IMath<'T>).Sin(...)
    (Double :> IMath<'T>).Cos(...)
