@@ -335,7 +335,7 @@ let f1<'T when 'T :> IAddition<'T>>(x: 'T, y: 'T) =
 
 SRTP: (N.B: this simplified syntax is not part of the language yet)
 ```fsharp
-let inline f2< ^T when ^T : (static member Add: ^T * ^T -> ^T) >(x: ^T, y: ^T) = 
+let inline f2<^T when ^T : (static member Add: ^T * ^T -> ^T)>(x: ^T, y: ^T) = 
     ^T.Add(x, y)
 ```
 
