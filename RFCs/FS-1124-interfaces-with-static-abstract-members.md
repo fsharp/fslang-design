@@ -3,7 +3,7 @@
 The design suggestion [Support static abstract members in interfaces](https://github.com/fsharp/fslang-suggestions/issues/1151) has been marked "approved in principle". This RFC covers the detailed proposal for this suggestion.
 
 * [x] Approved in principle
-* [ ] Discussion: use implementation PR please
+* [ ] Discussion: use implementation PR or https://github.com/fsharp/fslang-design/discussions/677
 * [ ] Implementation: [In progress](https://github.com/dotnet/fsharp/pull/13119)
 
 ## Summary
@@ -208,20 +208,20 @@ However ambiguities can arise in the name resolution if several different unrela
 
 This is a bit ugly and undiscoverable. However it has the huge advantage of allow very precise concretization of generic code, e.g. imagine the user writes:
 
-```
-GenericMathCode<'T  when 'T : IMath<'T>> ( .... ) {
+```fsharp
+let GenericMathCode<'T  when 'T : IMath<'T>> ( .... ) =
    blah //100s of lines
    'T.Sin(...)
    'T.Cos(...)
-}
 ```
+
 Then wants to accurately make this concrete to some specific type 
-```
-ConcreteMathCode ( .... ) {
+
+```fsharp
+let ConcreteMathCode ( .... ) =
    blah //100s of lines
    (Double :> IMath<'T>).Sin(...)
    (Double :> IMath<'T>).Cos(...)
-}
 ```
 
 In this RFC we go with Option A+B, with the possibility of adding Option D at some later point. 
@@ -288,16 +288,16 @@ At this point, any reader should stop to consider carefully the pros and cons he
 
 ### Drawback - Type-generic code is less succinct and less general than explicit function-passing code
 
-Type-generic code relying on ISWAMs (and SRTP) can only be used with types that satisfy the constraints. If the types don't satisfy, you have a lot of trouble.
+Type-generic code relying on IWSAMs (and SRTP) can only be used with types that satisfy the constraints. If the types don't satisfy, you have a lot of trouble.
 
 ```fsharp
 type ISomeFunctionality<'T when 'T :> ISomeFunctionality<'T>>() =
     static abstract DoSomething: 'T -> 'T
 
 let SomeGenericThing<'T :> ISomeFunctionality<'T>> arg = 
-    ...
+    //...
     'T.DoSomething(arg)
-    ...
+    //...
 
 SomeGenericThing<MyType1> arg1
 SomeGenericThing<MyType2> arg2 // oh no, MyType2 doesn't have the interface! Stuck!
@@ -307,9 +307,9 @@ When the number of methods being abstracted over is small (e.g. up to, say, 10) 
 
 ```fsharp
 let SomeGenericThing doSomething arg =
-    ...
+    //...
     doSomething arg
-    ...
+    //...
 
 SomeGenericThing MyType1.DoSomething arg1
 SomeGenericThing MyType2.DoSomethingElse arg2
@@ -321,9 +321,9 @@ For the vast majority of generic coding in F# the second technique is perfectly 
 
 ### Drawback - Two ways to abstract
 
-One specific drawback applies to F# - there are now two mechanisms to do type-level abstraction of patterns, ISWAMs and SRTP.
+One specific drawback applies to F# - there are now two mechanisms to do type-level abstraction of patterns, IWSAMs and SRTP.
 
-ISWAM: 
+IWSAM: 
 
 ```fsharp
 type IAddition<'T when 'T :> IAddition<'T>> =
@@ -333,15 +333,15 @@ let f1<'T when 'T :> IAddition<'T>>(x: 'T, y: 'T) =
     'T.Add(x, y)
 ```
 
-SRTP: 
+SRTP: (N.B: this simplified syntax is not part of the language yet)
 ```fsharp
 let inline f2<^T when ^T : (static member Add: ^T * ^T -> ^T)>(x: ^T, y: ^T) = 
     ^T.Add(x, y)
 ```
 
 These have pros and cons and can actually be used perfectly well together:
-* **What is constrained.** ISWAM constrain the interfaces on the type, while SRTP constrains the members.
-* **Satisfying constraints.** ISWAM require the interface be defined in the type. This massively restricts their use, and effectively makes them primarily usable by the BCL team. SRTP also only operate on the intrinsically defined members, though FS-1043 proposes to extend these to extension members.
+* **What is constrained.** IWSAM constrain the interfaces on the type, while SRTP constrains the members.
+* **Satisfying constraints.** IWSAM require the interface be defined in the type. This massively restricts their use, and effectively makes them primarily usable by the BCL team. SRTP also only operate on the intrinsically defined members, though [FS-1043](https://github.com/fsharp/fslang-design/blob/main/RFCs/FS-1043-extension-members-for-operators-and-srtp-constraints.md) proposes to extend these to extension members.
 * **What can be generic.** SRTP can only be used in inlined F# code. This is currently enforced. For non-inlined code SRTP will only ever be implemented via witness passing. SRTP cannot realistically be used on the generic parameters of types.
 * **Corner cases.** SRTP has many unusual rules for operators, and there are several known bugs with the mecahnism
 
@@ -362,7 +362,7 @@ No.
 ## Unresolved questions
 [unresolved]: #unresolved-questions
 
-* [ ] Decide the relationship between this and https://github.com/fsharp/fslang-design/blob/main/RFCs/FS-1024-simplify-constrained-call-syntax.md
+* [ ] Decide the relationship between this and [RFC-1024](https://github.com/fsharp/fslang-design/blob/main/RFCs/FS-1024-simplify-constrained-call-syntax.md)
 
 * [ ] Check carefully against https://github.com/dotnet/csharplang/blob/main/proposals/static-abstracts-in-interfaces.md
 
@@ -370,16 +370,13 @@ No.
 
 * [ ] We need to look carefully at a few things - e.g. IWSAM that define op_Implicit and op_Explicit. @dsyme says: I've done "the right thing" in the code but we will need to test it.
 
-* [ ] This:
+* [ ] `^T.X` may have a conflict with `^expr` in [from-the-end-of-collection-slicing](https://github.com/fsharp/fslang-design/blob/main/preview/FS-1076-from-the-end-slicing.md); That feature is only in preview so we can change this if needed.
 
-```
-Just to note ^T.X   may have a conflict with ^expr in from-the-end-of-collection-slicing.  
-
+```yacc
   | INFIX_AT_HAT_OP declExpr
     { if not (parseState.LexBuffer.SupportsFeature LanguageFeature.FromEndSlicing) then 
         raiseParseErrorAt (rhs parseState 1) (FSComp.SR.fromEndSlicingRequiresVFive())
       if $1 <> "^" then reportParseErrorAt (rhs parseState 1) (FSComp.SR.parsInvalidPrefixOperator())
       let m = (rhs2 parseState 1 2)
       SynExpr.IndexFromEnd($2, m) }
-That feature is only in  preview so we can change this if needed
 ```
