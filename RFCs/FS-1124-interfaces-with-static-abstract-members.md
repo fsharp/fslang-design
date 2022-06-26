@@ -242,7 +242,7 @@ Some of the drawbacks are as follows:
 
 **A proliferation of complexifying micro-interfaces.** The use of nominal, declared interfaces means there will be a proliferation of interfaces, even to the granularity of one fully-generic interface for each method.  The need to implement these explicitly will make the feature highly "rigid" and there will be a sea of complaints that the .NET Framework is not regular enough - that not enough interfaces are defined and that not enough types implement the those interfaces.
 
-**No stable point in library design.**  How many micro-interfaces are "enough"?  And how generic are they? In truth there can never be enough of these - ultimately you end up with one method for every single categorizable concept in the entire .NET Framework. The appetite for such abstraction is never-ending, and largely futile, defeating other reasonable goals in software engineering.
+**No stable point in library design.**  How many micro-interfaces are "enough"?  And how generic are they? In truth there can never be enough of these - ultimately you end up with one method for every single categorizable concept in the entire .NET Framework. The appetite for such abstractions is never-ending, and risks defeating other reasonable goals in software engineering.
 
 **Compiler and tooling slow-downs on large interface lists.**  The presence of enormous generic interface lists can cause compiler slow-down. No one ever expected such lists of interfaces in .NET, this is a volcano of hidden complexity lying under the simple type `double` or `decimal`.
 
