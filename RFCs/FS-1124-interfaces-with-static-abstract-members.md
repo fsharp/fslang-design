@@ -331,17 +331,32 @@ let SomeGenericThing<'T :> ISomeFunctionality<'T>> arg =
     'T.DoSomething(arg)
     //...
 
+type MyType1 =
+    interface ISomeFunctionality<MyType1> with
+        static member DoSomething(x) = ...
+       
+type MyType2 =
+    static member DoSomethingElse(x) = ...
+       
 SomeGenericThing<MyType1> arg1
 SomeGenericThing<MyType2> arg2 // oh no, MyType2 doesn't have the interface! Stuck!
 ```
 
-When the number of methods being abstracted over is small (e.g. up to, say, 10) an alternative is simply to pass a `DoSomething` function explicitly:
+When the number of methods being abstracted over is small (e.g. up to, say, 10) an alternative is to do away with the IWSAMs and simply to pass a `DoSomething` function explicitly:
 
 ```fsharp
 let SomeGenericThing doSomething arg =
     //...
     doSomething arg
     //...
+```
+with callsites:
+```fsharp
+type MyType1 =
+    static member DoSomething(x) = ...
+       
+type MyType2 =
+    static member DoSomethingElse(x) = ...
 
 SomeGenericThing MyType1.DoSomething arg1
 SomeGenericThing MyType2.DoSomethingElse arg2
@@ -350,6 +365,45 @@ SomeGenericThing MyType2.DoSomethingElse arg2
 Note that the second kind of code is much shorter, and is more general - it works with both `MyType1` and `MyType2` without any significant square-peg-in-round-hole code required.  In F# this kind of code is incredibly safe and succinct because of Hindley-Milner type inference - passing functions and making code generic are two of the very easiest things to do in F#, the language is almost made for exactly those activities.
 
 For the vast majority of generic coding in F# the second technique is perfectly acceptable, with the massive benefit that the programmer doesn't burn their time trying to create or use a cathedral of perfect abstractions.
+
+### Drawback - Implementations of static abstract methods are not parameterizable, they can't close over anything
+
+F# is driven by parameterization, for example functions:
+
+```fsharp
+let f x = 
+   ...
+```
+
+or classes:
+```
+type C(x) = 
+   ...
+```
+
+These constructs are parameterizable and can close of arbitrary new dependencies by adding them to the parameter lists. This is powerful because later requirements can change: what is initially unparameterized may later become dependent on something new, and the adjustments are relatively straight-forward.
+
+Interfaces with static abstract methods are not parameterizable: they are static methods in types. If the implementation later needs something new, unavailable from the inputs, you are stuck.
+
+To see why this matters, let's continue the example above and assume `MyType1.DoSomething` now becomes an instance member of objects capturing `newArg`. If using explicit function passing, the generic code doesn't need to change and can be reused:
+```fsharp
+type MyType1(newArg) =
+    static member DoSomething(x) = ...newArg...
+       
+let SomeEntryPoint newArg =
+    ...
+    let ctxt = MyType1(newArg)
+    SomeGenericThing ctxt.DoSomething 1
+    ...
+```
+This is simple capture and it is the routine way of propagating and tracking new requirements in F# and any other functional language. In contrast, if using SRTP of IWSAMs, 
+```fsharp
+let SomeEntryPoint newArg =
+    SomeGenericThing<MyType1> arg1 // It is not possible to get `newArg` to `MyType1.DoSomething`
+```
+It is simply impossible for implementations of static abstract methods to close over anything except the top-level static environment. They are static.
+
+That is, IWSAM implementations do not participate in functional programming: they are not within the parameterizable portion of the langauge.
 
 ### Drawback - Three ways to abstract
 
