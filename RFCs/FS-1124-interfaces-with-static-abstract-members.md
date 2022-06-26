@@ -376,14 +376,14 @@ let f x =
 ```
 
 or classes:
-```
+```fsharp
 type C(x) = 
    ...
 ```
 
-These constructs are parameterizable and can close of arbitrary new dependencies by adding them to the parameter lists. This is powerful because later requirements can change: what is initially unparameterized may later become dependent on something new, and the adjustments are relatively straight-forward.
+These constructs are parameterizable: they can close of arbitrary new dependencies by adding them to the parameter lists. This is at the heart of functional programming and powerful because later requirements can change: what is initially unparameterized may later become dependent on something new, and the adjustments are relatively straight-forward.
 
-Interfaces with static abstract methods are not parameterizable: they are static methods in types. If the implementation later needs something new, unavailable from the inputs, you are stuck.
+Implementations of static abstract methods are not parameterizable: they are static. If the implementation later needs something new, unavailable from the inputs or global state, you are stuck.  Normally static methods can become instance methods in this situation, or take additional parameters.  But implementations of static abstract methods can't do this, since they **must** be forever static.
 
 To see why this matters, let's continue the example above and assume `MyType1.DoSomething` now becomes an instance member of objects capturing `newArg`. If using explicit function passing, the generic code doesn't need to change and can be reused:
 ```fsharp
@@ -396,7 +396,9 @@ let SomeEntryPoint newArg =
     SomeGenericThing ctxt.DoSomething 1
     ...
 ```
+
 This is simple capture and it is the routine way of propagating and tracking new requirements in F# and any other functional language. In contrast, if using SRTP of IWSAMs, 
+
 ```fsharp
 let SomeEntryPoint newArg =
     SomeGenericThing<MyType1> arg1 // It is not possible to get `newArg` to `MyType1.DoSomething`
