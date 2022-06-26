@@ -26,20 +26,21 @@ There is a [strong desire](https://github.com/fsharp/fslang-suggestions/issues/5
 
 To begin, existing behavior with `#r` will remain unchanged for FSI.  That is, if you reference an assembly today via `#r`, it will always continue to work in the same way that it always has.
 
-.NET Core necessitates the introduction of `#r "nuget: name, version"` to simplify referencing dependencies in F# script files for .NET Core.  The intention is that FSI Scripts in the future will always specify dependencies via `#r "nuget:...` (or other extensions, like `#r "paket:..."`, `#r "frameworkreference:...", `#r "project:..."`, etc.), allowing only FSI to be concerned with referencing the correct assemblies.
+The introduction of `#r "nuget: name, version"` and of the extension mechanism underlying it will simplify referencing dependencies in F# script files in many use cases.
 
 ## Design-Time
 
 A few things should happen at design time when using F# Scripting in an editor (VS, VS for Mac, Ionide) which supports IntelliSense.
 
-In the case of referencing a package via a specific tool (e.g., `#r "nuget:..."` or `#r "paket:..."`), F#
+In the case of referencing a package via a specific tool (e.g., `#r "nuget:..."` or `#r "paket:..."`), F# interpreter will follow such process:
 
-1. Look for the tool on the PATH (or some other blessed location).  If it can't find it, error out with a nice error message.
+1. Look for the extension assemblies in a blessed location which is not specified, and is tooling dependent, but can also be passed to the `
+--compilertool:` flag to fsi or FCS enabled tooling. If it can't find it, error message point at the locations scanned and the currently loaded extensions and abort, otherwise proceed.
 2. Call out to the tool to fetch packages and resolve dependencies.
 3. Reference the resolved `.dll`s via `#r` in an ephemeral script.
 4. Implicitly `#load` that ephemeral script to the current script.
 
-In the case of referencing a project, the editor will fall back on MSBuild.
+Note that in the following examples, the implementation details are only indicative and may not match actual implementation of such extensions.
 
 ### Example - Paket:
 
@@ -47,15 +48,15 @@ In the case of referencing a project, the editor will fall back on MSBuild.
 #r "paket: nuget Newtonsoft.Json ~> 9.0.1" // Example. All paket features are allowed
 ```
 
-After the above is typed, the editor will:
+After the above is submitted as an evaluation, the editor will:
 
 1. Check if it can find a registered dependency manager which reacts to the prefix "paket:"
-2. If the paket tool is found it will call the `resolve` method on it
+2. If the paket FSI extension is found it will call a `ResolveDependencies` method on it
     a. Paket will internally check if it needs to restore the dependency or if everything is already in place. Any error from Paket will be shown.
     b. Paket will create an ephemeral script that `#r` all direct and indirect libraries for the specified dependency.
 4. Implicitly `#load` the generated script in the current script.
    
-After everything is fetched, resolved, and loaded, types from `Newtonsoft.Jon` will be available after `open`ing the namespace.
+After everything is fetched, resolved, and loaded, types from `Newtonsoft.Json` will be available after `open`ing the namespace.
 
 ### Example - NuGet:
 
@@ -65,14 +66,13 @@ After everything is fetched, resolved, and loaded, types from `Newtonsoft.Jon` w
 
 After the above is typed, the editor will:
 
-1. Check to see if the specified dependency is already in the `packages` folder on the given machine.
-
+1. Check if it can find a registered dependency manager which reacts to the prefix "nuget:"
+2. If the nuget FSI extension is found, check to see if the specified dependency is already in the nuget cache folder on the given machine.
     a. If the exist, create an ephemeral script which loads the `.dll` with `#r`, and then implicitly `#load` that script into the current one.
-
-2. If there is no such folder or dependency, will look for NuGet on the PATH (or some other blessed location).
-3. Call out to NuGet to fetch and resolve the dependency.
-4. Create an ephemeral script and `#r` the assemblies that NuGet just resolved.  Any error from NuGet will be shown.
-5. Implicitly `#load` the generated script into the current script.
+3. If there is no such folder or dependency, will look for NuGet on the PATH (or some other blessed location).
+4. Call out to NuGet to fetch and resolve the dependency.
+5. Create an ephemeral script and `#r` the assemblies that NuGet just resolved.  Any error from NuGet will be shown.
+6. Implicitly `#load` the generated script into the current script.
 
 ### Example - Projects:
 
@@ -156,7 +156,19 @@ This will generate an error because `System.Whatever` version `4.1.0` will alrea
 
 We may consider using `AssemblyLoadContext` in some clever way in the future, but it's very difficult to get right and well outside the scope of what we need to support for a .NET Core 2.0 timeframe.
 
-## Handler resolution
+## Handler resolution 
+
+It works in all FCS driven tool (or even fsc itself) through :
+* having the extension assembly next to the process one
+* the `--compilertool:` flag, whilch can point to a directory containing the extensions
+
+By convention, tools that load extensions in other locations, should also load extensions that are sitting in same folder, unless there are good reasons not doing so.
+
+By convention, tools that load extensions, should never fail to do so for binding redirect matters related to FSharp.Core version the extensions must have been compiled against.
+
+Note: additional stable locations were considered but not implemented in earlier drafts of this RFC.
+
+### proposed design in initial draft (this is NOT implemented) ###
 
 FSI/Design time support will look at the following places in order:
 
