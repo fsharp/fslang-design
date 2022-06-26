@@ -286,6 +286,38 @@ public readonly struct Double :
 
 At this point, any reader should stop to consider carefully the pros and cons here.  Each and every new interface adds conceptual overhead, and what was previously comparatively simple and compelling has become complex and curious. This complexity is potentially encountered by any and all users of .NET - beginner users trained in abstract math seem particularly fond of such numeric hierarchies, and are drawn to them like a moth to the flame.  Yet these abstractions are useful only to the extent that writing generic math code is successfully and regularly instantiated at many types - yet this is not known to be a significant real-world limiting problem for .NET today in practice.
 
+### Drawback - Interfaces with static abstract methods will get misunderstood as types, not type-constraints
+
+Consider this code:
+```fsharp
+let addThem (x: INumber<'T>) (y: INumber<'T>) = x + y
+```
+
+This code will not compile. A simplified version of the relevant static abstract method in the hierarchy is this:
+```fsharp
+type IAdditionOperators<'T, when 'T : IAdditionOperators<'T>> =
+    static abstract (+): x: 'T * y: 'T -> 'T
+```
+
+Note that the operator takes arguments of type `'T`, but the arguments to `addThem` are of type `INumber<'T>`, and not `'T` (`'T` implies `INumber<'T>` but not the other way around).    Instead the code should be made functorial as follows:
+
+```fsharp
+let addThem (x: 'T) (y: 'T) when 'T :> INumber<'T> = x + y
+```
+
+This is really very very subtle - any beginner user will think that `INumber<'T>` can be used as a type for a number.  But it can only be used like this in generic code.  Beginner users may not be at all comfortable in writing generic code.  But as mentioned above, beginner users are inevitably drawn to generic arithmetic, it's like a 101 of learning the language.
+
+Fortunately in F# people can just use the simpler SRTP code on most beginner learning paths:
+```fsharp
+let inline addThem x y = x + y
+```
+This uses an SRTP constraint instead. Alternatively they can write:
+```fsharp
+let addThem (x: #INumber<'T>) y = x + y
+```
+
+> NOTE: the above example needs to be checked.
+
 ### Drawback - Type-generic code is less succinct and less general than explicit function-passing code
 
 Type-generic code relying on IWSAMs (and SRTP) can only be used with types that satisfy the constraints. If the types don't satisfy, you have a lot of trouble.
@@ -319,10 +351,17 @@ Note that the second kind of code is much shorter, and is more general - it work
 
 For the vast majority of generic coding in F# the second technique is perfectly acceptable, with the massive benefit that the programmer doesn't burn their time trying to create or use a cathedral of perfect abstractions.
 
-### Drawback - Two ways to abstract
+### Drawback - Three ways to abstract
 
-One specific drawback applies to F# - there are now two mechanisms to do type-level abstraction of patterns, IWSAMs and SRTP.
+One specific drawback applies to F# - there are now three mechanisms to do type-level abstraction: Explicit function passing, IWSAMs and SRTP.
 
+Explicit function passing 
+
+```fsharp
+let f0 add x y =
+    (add x y, add y x)
+
+```
 IWSAM: 
 
 ```fsharp
@@ -330,14 +369,19 @@ type IAddition<'T when 'T :> IAddition<'T>> =
     static abstract Add: 'T * 'T -> 'T
 
 let f1<'T when 'T :> IAddition<'T>>(x: 'T, y: 'T) =
-    'T.Add(x, y)
+    let res1 = 'T.Add(x, y)
+    let res2 = 'T.Add(y, x)
+    res1, res2
 ```
 
-SRTP: (N.B: this simplified syntax is not part of the language yet)
+SRTP: 
 ```fsharp
 let inline f2<^T when ^T : (static member Add: ^T * ^T -> ^T)>(x: ^T, y: ^T) = 
-    ^T.Add(x, y)
+    let res1 = ^T.Add(x, y)
+    let res2 = ^T.Add(x, y)
+    res1, res2
 ```
+> NOTE: this simplified syntax is part of this RFC
 
 These have pros and cons and can actually be used perfectly well together:
 * **What is constrained.** IWSAM constrain the interfaces on the type, while SRTP constrains the members.
@@ -379,4 +423,10 @@ No.
       if $1 <> "^" then reportParseErrorAt (rhs parseState 1) (FSComp.SR.parsInvalidPrefixOperator())
       let m = (rhs2 parseState 1 2)
       SynExpr.IndexFromEnd($2, m) }
+```
+
+* [ ] Carefully check this case.  For example, check that we do not apply the "condensation" rule that removes the implied type ariable in this case (we shouldn't)
+
+```fsharp
+let addThem (x: #INumeric<'T>) y = x + y
 ```
