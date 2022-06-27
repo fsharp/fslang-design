@@ -381,13 +381,27 @@ type C(x) =
    ...
 ```
 
-These constructs are parameterizable: they can close of arbitrary new dependencies by adding them to the parameter lists. This is at the heart of functional programming and powerful because later requirements can change: what is initially unparameterized may later become dependent on something new, and the adjustments are relatively straight-forward.
+These constructs are parameterizable: they can close of arbitrary new dependencies by adding them to the parameter lists. For example:
 
-Implementations of static abstract methods are not parameterizable: they are static. If the implementation later needs something new, unavailable from the inputs or global state, you are stuck.  Totally stuck. Normally static methods can become instance methods in this situation, or take additional parameters.  But implementations of static abstract methods can't do this, since they **must be forever static** and **must always take exactly the necessary arguments**.
+```fsharp
+let f newArg x = 
+   ...newArg...
+```
 
-This means that starting to use IWSAMs is a major risk within your own code: at any later time part of your code may become dependent on a parameter, and if this happens, you may have to entirely remove your use of IWSAMs, or else use a global mutable variable.
+or classes:
+```fsharp
+type C(newArg , x) = 
+   ...
+```
 
-To see why this matters, let's continue the example above and assume `MyType1.DoSomething` now becomes an instance member of objects capturing `newArg`. When using explicit function passing, the generic code doesn't need to change at all and can simply be reused:
+
+This is at the heart of F# programming and powerful because later requirements can change: what is initially unparameterized may later become dependent on something new. In F#, when this happens, the adjustments are relatively straight-forward.
+
+It is obvious-yet-crucial to understand that **implementations of static abstract methods are not parameterizable: they are static**. If the implementation later needs something new, unavailable from the inputs or global state, you are stuck.  Totally stuck. Normal static methods can become instance methods in this situation, or take additional parameters.  But implementations of static abstract methods can't do this, since they **must be forever static** and **must always take exactly the necessary arguments**.
+
+This means that starting to use IWSAMs is a major risk within your own code: if at any later time part of your code becomes dependent on a new parameter, you may have no choice but to entirely remove your use of IWSAMs (or else use a global mutable variable or thread local, ugh).
+
+To see why this matters, let's continue the example above and assume `MyType1.DoSomething` needs a new parameter `newArg`.  As expected it now becomes an instance member. When using explicit function passing, the generic code doesn't need to change at all and can simply be reused:
 ```fsharp
 type MyType1(newArg) =
     member _.DoSomething(x) = ...newArg...
@@ -399,7 +413,7 @@ let SomeEntryPoint newArg =
     ...
 ```
 
-This is simple capture and it is the routine way of propagating and tracking new requirements in F# and any other functional language. In contrast, if using SRTP of IWSAMs, you are stuck:
+This is simple capture and it is the routine way of propagating and tracking new requirements in F# and any other functional language. In contrast, if using SRTP of IWSAMs, you are stuck (unless you have the ability to adjust `ISomeFunctionality`):
 
 ```fsharp
 type MyType1 =
