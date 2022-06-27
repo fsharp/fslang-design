@@ -376,9 +376,9 @@ SomeGenericThing MyType1.DoSomething arg1
 SomeGenericThing MyType2.DoSomethingElse arg2
 ```
 
-Note that the second kind of code is much shorter, and is more general - it works with both `MyType1` and `MyType2` without any significant square-peg-in-round-hole code required.  In F# this kind of code is incredibly safe and succinct because of Hindley-Milner type inference - passing functions and making code generic are two of the very easiest things to do in F#, the language is almost made for exactly those activities.
+Note that explicit function-passing code is shorter and more general - it works with both `MyType1` and `MyType2`.  In F# this kind of code is incredibly safe and succinct because of Hindley-Milner type inference - passing functions and making code generic are two of the very easiest things to do in F#, the language is almost made for exactly those activities.
 
-For the vast majority of generic coding in F# the second technique is perfectly acceptable, with the massive benefit that the programmer doesn't burn their time trying to create or use a cathedral of perfect abstractions.
+For the vast majority of generic coding in F# explicit function-passing is perfectly acceptable, with the massive benefit that the programmer doesn't burn their time trying to create or use a cathedral of perfect abstractions. SRTP handles most other cases.
 
 ### Drawback - Implementations of static abstract methods are not parameterizable, they can't close over anything
 
@@ -409,11 +409,11 @@ type C(newArg , x) =
 ```
 
 
-This is at the heart of F# programming. It is powerful because requirements can change: what is initially unparameterized may later need to become dependent on something new - even something as simple as a command-line parameter. In F#, when this happens, the adjustments are relatively straight-forward. That's the whole point.
+This is at the heart of F# programming. It is powerful because requirements can change: what is initially unparameterized may later need to become dependent on something new. In F#, when this happens, the adjustments are relatively straight-forward. That's the whole point.
 
-It is obvious-yet-crucial that **implementations of static abstract methods are not parameterizable: they are static**. If an implementation of a static abstract method later needs something new, something unavailable from the inputs or global state, you are stuck.   Normal static methods can become instance methods in this situation, or take additional parameters.  But implementations of static abstract methods can't do this, since they **must be forever static** and **must always take exactly the necessary arguments**.  You are stuck, totally stuck.
+It is obvious-yet-crucial that **implementations of static abstract methods are not parameterizable: they are static**. If an implementation of a static abstract method later needs something new, something unavailable from the inputs or global state, you are stuck.   Normal static methods can become instance methods in this situation, or take additional parameters.  But implementations of static abstract methods can't do this, since they **must be forever static** and **must always take exactly the necessary arguments**.  You are stuck, totally stuck. You literally have no way of plumbing information from A to B.
 
-This is an immense rigidity and means that IWSAMs live at a different "level" than the rest of application - the level of static composition. It also means that starting to use IWSAMs is a major risk within your own code, especially if you can't adjust the IWSAM definitions (e.g. are implementing existing IWSAMs): if at **any** later time part of your code becomes dependent on a new parameter, you likely have no choice but to entirely remove your use of IWSAMs. (If you can edit the IWSAM definitions you can adjust to regular interfaces. Or use a global mutable variable or thread local, ugh).
+Another way of looking at this is that IWSAM implementations live at a different "level" than the rest of application - the level of static composition. This means using IWSAMs has some of the same characteristics as Standard ML functors or C++ templates, which partitions software into two layers - the core language and the composition framework. It also means that starting to use IWSAMs is a major risk within your own code, especially if you can't adjust the IWSAM definitions (e.g. are implementing framework IWSAMs): if at **any** later time part of your code becomes dependent on a new parameter, you likely have no choice but to entirely remove your use of IWSAMs. (If you can edit the IWSAM definitions you can adjust to regular interfaces. Or use a global mutable variable or thread local, ugh).
 
 To see why this matters, let's continue the example above and assume `MyType1.DoSomething` needs a new parameter `newArg`.  As expected it now becomes an instance member. When using explicit function passing, the generic code doesn't need to change at all and can simply be reused:
 ```fsharp
@@ -438,15 +438,19 @@ let SomeEntryPoint newArg =
     SomeGenericThing<MyType1> arg1 
 ```
 
-To recap, IWSAM implementations are not within the parameterizable portion of the langauge. Using them in your own code exposes you to necessary-removal should any of your assumptions change.  
+As another example, consider `IParseable<T>`. Let's assume you have a set of 100 domain object classes using `IParseable<T>` and a framework to compose these. Now assume the specification of your parsing implementations changes so that, for example, there are now **two** textual formats you need to parse, and you want a parameter to control which ones are accepted.  In this case, there is literally  no way to communicate that control parameter to your 100 implementations of `IParseable<T>`. This means your composition framework built on `IParseable<T>` may become entirely useless to you, simply due to this one small unexpected change in requirement. You now have to remove all use of `IParseable<T>`, shifting to another technnique.  What's gone wrong?  Perhaps the initial use of `IParseable<T>` should carry a warning, saying "one day you or your users may  regret this, and have to undo everything you've done".
 
-The same problem applies to some other C#/F# constructs such as operators, which must have static implementations.  However it is fairly routine to remove the use of these, and they rarely need to capture.
+To recap, IWSAM implementations are not within the parameterizable "core" portion of the langauge. Plumbing parameters to IWASM implementations is not possible without changing IWSAM definitions. This means using existing abstractions in your own code exposes you to removal should your requirements change.
 
-> NOTE: Haskell's type classes have this problem.  Scala's 'implicits' do **not** suffer this problem - implicit implementations can be local and can capture. This seen as adding major flexibility and was built on long experience. F# SRTP have this problem (but are not widely used in user code). The proposed extension methods for SRTP (RFC FS-1043) could in theory be adjusted to allow local SRTP implementations and capture, like Scala implicits, but this is not yet proposed.
+> ASIDE: The same problem applies to a very small extent when using some other C#/F# constructs such as operators, which must have static implementations.  However it is fairly routine to remove the use of these, and they rarely need to capture, and they do not participate in compositional framework design.
+
+> NOTE: Haskell's type classes have this problem.  Scala's 'implicits' do **not** suffer this problem - implicit implementations can be local and can capture, something seen as adding major flexibility and built on long experience. F# SRTPs have this problem but are not widely used in user code.
 
 ### Drawback - Three ways to abstract
 
-There are now three mechanisms to do type-level abstraction: Explicit function passing, IWSAMs and SRTP.
+In F# there are now three mechanisms to do type-level abstraction: Explicit function passing, IWSAMs and SRTP.
+
+Within F#, explicit function passing should generally be preferred. SRTP and IWSAMs can be used as needed.
 
 **Explicit function passing:**
 
@@ -479,11 +483,12 @@ let f0<'T when 'T :> IAddition<'T>>(x: 'T, y: 'T) =
 ```
 
 These have pros and cons and can actually be used perfectly well together:
-* **What is constrained.** Explicit function passing constrains nothing, IWSAMs constrain the interfaces on the type, while SRTP constrains the members.
-* **Satisfying constraints.** Explicit function passing has no constraints besides coming up with a suitable function; IWSAM require the interface be defined in the type (this massively restricts their use, and effectively makes them primarily usable by the BCL team); SRTP constrains to types with suitably named intrinsically defined members ([FS-1043](https://github.com/fsharp/fslang-design/blob/main/RFCs/FS-1043-extension-members-for-operators-and-srtp-constraints.md) proposes to extend these to extension members.)
-* **What can be generic.** Explicit function passing can be used for any code. IWSAMs can be used for any code at the cost the the entire scope of the generic code is subject to the constraint.  SRTP can only be used in inlined F# code.
 
-Within F#, explicit function passing should generally be preferred. 
+|  **Technique** | **What constraints** | **Satisfying constraints** | **Limitations** |
+|:----:|:----:|:----:|:----:|
+| Explicit function passing | No constraints | Find a suitable function | None |
+| IWSAMs | Interfaces constraints | Interface must be defined on the type |  The entire scope of the generic code is subject to the constraint |
+| SRTP | Member trait constraints | Member must be defined on the type ([FS-1043](https://github.com/fsharp/fslang-design/blob/main/RFCs/FS-1043-extension-members-for-operators-and-srtp-constraints.md) proposes to extend these to extension members.) |  SRTP can only be used in inlined F# code |
 
 ## Alternatives
 
