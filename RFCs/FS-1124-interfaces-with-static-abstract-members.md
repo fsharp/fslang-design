@@ -383,12 +383,14 @@ type C(x) =
 
 These constructs are parameterizable: they can close of arbitrary new dependencies by adding them to the parameter lists. This is at the heart of functional programming and powerful because later requirements can change: what is initially unparameterized may later become dependent on something new, and the adjustments are relatively straight-forward.
 
-Implementations of static abstract methods are not parameterizable: they are static. If the implementation later needs something new, unavailable from the inputs or global state, you are stuck.  Normally static methods can become instance methods in this situation, or take additional parameters.  But implementations of static abstract methods can't do this, since they **must** be forever static.
+Implementations of static abstract methods are not parameterizable: they are static. If the implementation later needs something new, unavailable from the inputs or global state, you are stuck.  Totally stuck. Normally static methods can become instance methods in this situation, or take additional parameters.  But implementations of static abstract methods can't do this, since they **must be forever static** and **must always take exactly the necessary arguments**.
 
-To see why this matters, let's continue the example above and assume `MyType1.DoSomething` now becomes an instance member of objects capturing `newArg`. If using explicit function passing, the generic code doesn't need to change and can be reused:
+This means that starting to use IWSAMs is a major risk within your own code: at any later time part of your code may become dependent on a parameter, and if this happens, you may have to entirely remove your use of IWSAMs, or else use a global mutable variable.
+
+To see why this matters, let's continue the example above and assume `MyType1.DoSomething` now becomes an instance member of objects capturing `newArg`. When using explicit function passing, the generic code doesn't need to change at all and can simply be reused:
 ```fsharp
 type MyType1(newArg) =
-    static member DoSomething(x) = ...newArg...
+    member _.DoSomething(x) = ...newArg...
        
 let SomeEntryPoint newArg =
     ...
@@ -397,15 +399,18 @@ let SomeEntryPoint newArg =
     ...
 ```
 
-This is simple capture and it is the routine way of propagating and tracking new requirements in F# and any other functional language. In contrast, if using SRTP of IWSAMs, 
+This is simple capture and it is the routine way of propagating and tracking new requirements in F# and any other functional language. In contrast, if using SRTP of IWSAMs, you are stuck:
 
 ```fsharp
-let SomeEntryPoint newArg =
-    SomeGenericThing<MyType1> arg1 // It is not possible to get `newArg` to `MyType1.DoSomething`
-```
-It is simply impossible for implementations of static abstract methods to close over anything except the top-level static environment. They are static.
+type MyType1 =
+    interface ISomeFunctionality<MyType1> with
+        static member DoSomething(x) = ...  // It is not possible to get `newArg` to `MyType1.DoSomething`
 
-That is, IWSAM implementations do not participate in functional programming: they are not within the parameterizable portion of the langauge.
+let SomeEntryPoint newArg =
+    SomeGenericThing<MyType1> arg1 
+```
+
+To recap, IWSAMs are not within the parameterizable portion of the langauge. Using them in your own code exposes you to risk-of-expensive-removal should any of your assumptions change.
 
 ### Drawback - Three ways to abstract
 
