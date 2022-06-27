@@ -295,7 +295,7 @@ let addThem (x: INumber<'T>) (y: INumber<'T>) = x + y
 
 This code will not compile. A simplified version of the relevant static abstract method in the hierarchy is this:
 ```fsharp
-type IAdditionOperators<'T, when 'T : IAdditionOperators<'T>> =
+type IAdditionOperators<'T when 'T : IAdditionOperators<'T>> =
     static abstract (+): x: 'T * y: 'T -> 'T
 ```
 
