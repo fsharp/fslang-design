@@ -375,7 +375,7 @@ type C(x) =
    ...
 ```
 
-These constructs are parameterizable: they can close of arbitrary new dependencies by adding them to the parameter lists. For example:
+These constructs are parameterizable: they can close over arbitrary new dependencies by adding them to the parameter lists. For example:
 
 ```fsharp
 let f newArg x = 
@@ -389,11 +389,11 @@ type C(newArg , x) =
 ```
 
 
-This is at the heart of F# programming and powerful because later requirements can change: what is initially unparameterized may later become dependent on something new. In F#, when this happens, the adjustments are relatively straight-forward. That's the whole point.
+This is at the heart of F# programming. It is powerful because requirements can change: what is initially unparameterized may later need to become dependent on something new - even something as simple as a command-line parameter. In F#, when this happens, the adjustments are relatively straight-forward. That's the whole point.
 
-It is obvious-yet-crucial to understand that **implementations of static abstract methods are not parameterizable: they are static**. If the implementation later needs something new, unavailable from the inputs or global state, you are stuck.  Totally stuck. Normal static methods can become instance methods in this situation, or take additional parameters.  But implementations of static abstract methods can't do this, since they **must be forever static** and **must always take exactly the necessary arguments**.  
+It is obvious-yet-crucial that **implementations of static abstract methods are not parameterizable: they are static**. If an implementation of a static abstract method later needs something new, something unavailable from the inputs or global state, you are stuck.   Normal static methods can become instance methods in this situation, or take additional parameters.  But implementations of static abstract methods can't do this, since they **must be forever static** and **must always take exactly the necessary arguments**.  You are stuck, totally utterly stuck.
 
-This is an immense rigidity, and means that starting to use IWSAMs is a major risk within your own code, especially if you can't adjust the IWSAM implementations and are implementing existing concepts: if at any later time part of your code becomes dependent on a new parameter, you may have no choice but to entirely remove your use of IWSAMs (or else adjust to regular interfaces if you can, or use a global mutable variable or thread local, ugh).
+This is an immense rigidity. It also means that starting to use IWSAMs is a major risk within your own code, especially if you can't adjust the IWSAM definitions (e.g. are implementing existing concepts): if at **any** later time part of your code becomes dependent on a new parameter, you likely have no choice but to entirely remove your use of IWSAMs (If you can edit the IWSAM definitions you can adjust to regular interfaces. Or use a global mutable variable or thread local, ugh).
 
 To see why this matters, let's continue the example above and assume `MyType1.DoSomething` needs a new parameter `newArg`.  As expected it now becomes an instance member. When using explicit function passing, the generic code doesn't need to change at all and can simply be reused:
 ```fsharp
