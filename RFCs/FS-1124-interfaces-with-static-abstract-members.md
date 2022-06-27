@@ -233,7 +233,7 @@ This feature sits uncomfortably in F#.  Its addition to the .NET object model ha
 
 ### General drawbacks
 
-Statically-constrained genericity has fundamental drawbacks that are strongly distortive of the practical experience of using a programming language, whether in personal, team or community situations. The effect of these distortions are well known from:
+Statically-constrained qualified genericity is strongly distortive of the practical experience of using a programming language, whether in personal, framework-building, team or community situations. The effect of these distortions are well known from:
 * Standard ML in the 1990s (e.g. SML functors and "fully functorized programming")
 * C++ templates
 * Haskell (type classes and their many technical extensions, abstract uses, generalizations and intensely intricate community discussions)
@@ -242,7 +242,7 @@ Statically-constrained genericity has fundamental drawbacks that are strongly di
 
 While beguilingly simple as language design elements, these features are contested in programming communities. Their presence is deeply attractive to programmers who desire them - in many cases they become part of the fundamental organisational machinery applied to code and composition. They are equally problematic for those who don't see overall value in the complexity their use brings. We should also note the relative success, simplicity and practical productivity of languages that omit these features including Elm, Go and even Python.
 
-.NET has historically avoided this space. This was a deliberate decision in C# 2.0 by Anders Hejlsberg, who rejected proposals for statically-constrained genericity. C# 11 and .NET 6/7 has since revisted this decision, primarily because reflective code of any kind is now considered more expensive in static compilation scenarios.
+.NET has historically avoided this space. This was a deliberate decision in C# 2.0 by Anders Hejlsberg, who rejected proposals for statically-constrained genericity on the grounds of the complexity introduced v. the benefit achieved - a decision the initial author of this RFC (Don Syme) was involved with and agreed with. C# 11 and .NET 6/7 has since revisted this decision, primarily because reflective code of any kind is now considered more expensive in static compilation scenarios, and in C# reflection had frequently been used as a workaround for the absence of qualified genericity (other practical workarounds are available in F#, including the use of SRTP).
 
 The following summarises the well-known drawbacks of these features, based on the author's experience with all of the above. Emphatic language is used to act as a corrective.
 
