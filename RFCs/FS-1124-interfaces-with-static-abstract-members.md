@@ -486,7 +486,7 @@ These have pros and cons and can actually be used perfectly well together:
 
 |  **Technique** | **What constraints** | **Satisfying constraints** | **Limitations** |
 |:----:|:----:|:----:|:----:|
-| Explicit function passing | No constraints | Find a suitable function | None |
+| Explicit function/interface passing | No constraints | Find a suitable function/interface | None |
 | IWSAMs | Interfaces constraints | Interface must be defined on the type |  The entire scope of the generic code is subject to the constraint |
 | SRTP | Member trait constraints | Member must be defined on the type ([FS-1043](https://github.com/fsharp/fslang-design/blob/main/RFCs/FS-1043-extension-members-for-operators-and-srtp-constraints.md) proposes to extend these to extension members.) |  SRTP can only be used in inlined F# code |
 
