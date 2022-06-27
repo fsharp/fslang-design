@@ -293,19 +293,19 @@ Consider this code:
 let addThem (x: INumber<'T>) (y: INumber<'T>) = x + y
 ```
 
-This code will not compile. A simplified version of the relevant static abstract method in the hierarchy is this:
+This code will not compile.  To understand why, a simplified version of the relevant static abstract method in the `INumber<'T>` hierarchy is this:
 ```fsharp
 type IAdditionOperators<'T when 'T : IAdditionOperators<'T>> =
     static abstract (+): x: 'T * y: 'T -> 'T
 ```
 
-Note that the operator takes arguments of type `'T`, but the arguments to `addThem` are of type `INumber<'T>`, and not `'T` (`'T` implies `INumber<'T>` but not the other way around).    Instead the code should be made functorial as follows:
+Note that the operator takes arguments of type `'T`, but the arguments to `addThem` are of type `INumber<'T>`, and not `'T` (`'T` implies `INumber<'T>` but not the other way around).  Instead the code should be as follows:
 
 ```fsharp
 let addThem (x: 'T) (y: 'T) when 'T :> INumber<'T> = x + y
 ```
 
-This is really very very subtle - any beginner user will surely think that `INumber<'T>` can be used as a type for a number.  But it can't - it can only be used as a type-constraint in generic code. Perhaps analyzers will check this - but beginner users may not be at all comfortable in writing generic code.  Yet as mentioned above, beginner users are inevitably drawn to generic arithmetic - it's like a 101 of learning the language.
+This is really very very subtle - beginner users are often drawn to generic arithmetic, and any beginner user will surely think that `INumber<'T>` can be used as a type for a number.  But it can't - it can only be used as a type-constraint in generic code. Perhaps analyzers will check this, or special warnings added.
 
 Fortunately in F# people can just use the simpler SRTP code on most beginner learning paths:
 ```fsharp
