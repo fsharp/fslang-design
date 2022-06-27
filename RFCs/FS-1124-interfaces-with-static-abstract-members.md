@@ -407,7 +407,7 @@ let SomeEntryPoint newArg =
     ...
 ```
 
-This is simple capture and it is the routine way of propagating and tracking new requirements in F# and any other functional or functional-object language. In contrast, if using SRTP of IWSAMs, you are stuck (unless you have the ability to adjust `ISomeFunctionality`):
+This is simple capture and it is the routine way of propagating and tracking new requirements in F# or any other functional-object language. In contrast, if using SRTP of IWSAMs, you are stuck (unless you have the ability to adjust `ISomeFunctionality`):
 
 ```fsharp
 type MyType1 =
