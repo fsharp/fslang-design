@@ -389,11 +389,11 @@ type C(newArg , x) =
 ```
 
 
-This is at the heart of F# programming and powerful because later requirements can change: what is initially unparameterized may later become dependent on something new. In F#, when this happens, the adjustments are relatively straight-forward.
+This is at the heart of F# programming and powerful because later requirements can change: what is initially unparameterized may later become dependent on something new. In F#, when this happens, the adjustments are relatively straight-forward. That's the whole point.
 
-It is obvious-yet-crucial to understand that **implementations of static abstract methods are not parameterizable: they are static**. If the implementation later needs something new, unavailable from the inputs or global state, you are stuck.  Totally stuck. Normal static methods can become instance methods in this situation, or take additional parameters.  But implementations of static abstract methods can't do this, since they **must be forever static** and **must always take exactly the necessary arguments**.
+It is obvious-yet-crucial to understand that **implementations of static abstract methods are not parameterizable: they are static**. If the implementation later needs something new, unavailable from the inputs or global state, you are stuck.  Totally stuck. Normal static methods can become instance methods in this situation, or take additional parameters.  But implementations of static abstract methods can't do this, since they **must be forever static** and **must always take exactly the necessary arguments**.  
 
-This means that starting to use IWSAMs is a major risk within your own code: if at any later time part of your code becomes dependent on a new parameter, you may have no choice but to entirely remove your use of IWSAMs (or else use a global mutable variable or thread local, ugh).
+This is an immense rigidity, and means that starting to use IWSAMs is a major risk within your own code, especially if you can't adjust the IWSAM implementations and are implementing existing concepts: if at any later time part of your code becomes dependent on a new parameter, you may have no choice but to entirely remove your use of IWSAMs (or else adjust to regular interfaces if you can, or use a global mutable variable or thread local, ugh).
 
 To see why this matters, let's continue the example above and assume `MyType1.DoSomething` needs a new parameter `newArg`.  As expected it now becomes an instance member. When using explicit function passing, the generic code doesn't need to change at all and can simply be reused:
 ```fsharp
@@ -407,7 +407,7 @@ let SomeEntryPoint newArg =
     ...
 ```
 
-This is simple capture and it is the routine way of propagating and tracking new requirements in F# and any other functional language. In contrast, if using SRTP of IWSAMs, you are stuck (unless you have the ability to adjust `ISomeFunctionality`):
+This is simple capture and it is the routine way of propagating and tracking new requirements in F# and any other functional or functional-object language. In contrast, if using SRTP of IWSAMs, you are stuck (unless you have the ability to adjust `ISomeFunctionality`):
 
 ```fsharp
 type MyType1 =
@@ -418,7 +418,13 @@ let SomeEntryPoint newArg =
     SomeGenericThing<MyType1> arg1 
 ```
 
-To recap, IWSAMs are not within the parameterizable portion of the langauge. Using them in your own code exposes you to risk-of-expensive-removal should any of your assumptions change.
+To recap, IWSAMs are not within the parameterizable portion of the langauge. Using them in your own code exposes you to risk-of-expensive-removal should any of your assumptions change.  
+
+> As an aside,
+> * The same problem applies to some other C#/F# constructs such as operators, which have static implementations.  However it is fairly routine to remove the use of these, and they rarely need to capture.
+> * Haskell's type classes have this problem.
+> * Scala's 'implicits' do **not** suffer this problem - implicit implementations can be local and can capture. This seen as adding major flexibility and was built on long experience.
+> * F# SRTP have this problem (but are not widely used in user code). The proposed extension methods for SRTP (RFC FS-1043) could in theory be adjusted to allow local SRTP implementations and capture, like Scala implicits, but this is not yet proposed.
 
 ### Drawback - Three ways to abstract
 
