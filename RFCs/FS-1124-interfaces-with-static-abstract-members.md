@@ -23,7 +23,7 @@ Static abstract members allow statically-constrained generic code. This is being
 
 This feature sits uncomfortably in F#.  Its addition to the .NET object model has been driven by C#, and its use in .NET libraries, and thus consuming and, to some extent, authoring IWSAMs is necessary in F#.  However there are many drawbacks to its addition, documented below.
 
-Because of this, we will consider requiring a special opt-in before new IWSAMs are declared in F#.
+Because of this, we will require a special opt-in before new IWSAMs are declared and implemented in F#. The form of this opt-in is TBD.
 
 ## Considerations
 
@@ -158,7 +158,7 @@ However, that begs the question about how we call `MyRepeatSequence.Next` "direc
 
 to make the interface call explicit. 
 
-#### Option A - expect people to make a call via a type parameter
+**Option A - expect people to make a call via a type parameter**
 
 Option A is to do nothing, and expect users to write constrained generic code to make the call:
 
@@ -176,7 +176,7 @@ CallNext<MyRepeatSequence>(str)
 
 This option is a bit unfortunate as it means extra obfuscating generic helper functions when there is actually no generic code around.  It also means users have no way of manually inlining such a helper function, and it makes another case where you don't get "closure under substitution" for F# generic code (which also happens for some SRTP calls, where generic helpers are also needed).
 
-#### Option B - expect the type authors to resolve this by authoring an explicitly accessible method
+**Option B - expect the type authors to resolve this by authoring an explicitly accessible method.**
 
 Option B is to expect the type authors to resolve this by authoring an explicitly accessible method:
 
@@ -194,13 +194,13 @@ MyRepeatSequence.Next(str)
 Note that C# code using implicit interface impls will automatically have such a method available.  We should check if most of the math stuff in System.* will use explicit or implicit impls - we assume implicit.
 
 
-#### Option C - make an exception for statics and have those be name-accessible.
+**Option C - make an exception for statics and have those be name-accessible.**
 
 Option C is to make an exception for static abstract implementations and have those be name-accessible.
 
 However ambiguities can arise in the name resolution if several different unrelated interfaces implement that same named method - we could likely resolve those ambiguities but it does expose us to this kind of problem in a different way than currently.
 
-#### Option D - give some kind of explicit call syntax, e.g.
+**Option D - give some kind of explicit call syntax**
 
 ```fsharp
     (MyRepeatSequence :> IGenNext<MyRepeatSequence>).Next(str)
@@ -229,20 +229,32 @@ In this RFC we go with Option A+B, with the possibility of adding Option D at so
 ## Drawbacks
 [drawbacks]: #drawbacks
 
+This feature sits uncomfortably in F#.  Its addition to the .NET object model has been driven by C#, and its use in .NET libraries, and thus consuming and, to some extent, authoring IWSAMs is necessary in F#.  However there are many drawbacks to its addition, documented below.
 
 ### General drawbacks
 
-Some of the drawbacks are as follows:
+Statically-constrained genericity has fundamental drawbacks that are strongly distortive of the practical experience of using a programming language, whether in personal, team or community situations. The effect of these distortions are well known from:
+* Standard ML in the 1990s (e.g. SML functors and "fully functorized programming")
+* C++ templates
+* Haskell (type classes and their many technical extensions, abstract uses, generalizations and intensely intricate community discussions)
+* Scala (implicits, their uses and abuses)
+* Swift (traits, their uses and abuses)
+
+These features are highly contested in programming communities and their presence is highly attractive to programmers who desire them, and highly problematic to those who don't see overall value in the complexity they bring. In addition we should note the relative success, simplicity and practical productivity of languages that omit these features including Elm, Go and even Python.
+
+The following summarise the well-known drawbacks of these features.
 
 **Encouraging the Max-Abstraction impulse.** It is highly likely this feature will encourage the practice of "max-abstraction" in C# and F# - that is, using more and more abstraction (in this case over types constrained by IWSAMs) to try to get maximal code reuse, even at the expense of code readability and simplicity. This kind of programming can be enormously enjoyable - it seems to satisfy a powerful desire in the human mind to abstract and generalise, and almost never loses its attraction. However, these techniques can also be an enormous waste of time, as very often the amount of code successfully reused is small, while the complexity in learning, comprehending, using, debugging and code-reviewing the corresponding frameworks is high, and the frameworks are often fragile.
 
-**Subsequent demands for more type-level computation.**  This feature will lead to extensive demands for more features for type-level computation, giving ever more obscure code that is abstract, general and impenetrable. This in turn can give demand for more abstraction capabilities in the language. These will in turn feed the productivity-burning bonfire of max-abstraction.
+**Subsequent demands for more type-level computation.**  This feature will lead to demands for more features for type-level computation, giving ever more obscure code that is abstract, general and impenetrable. This in turn can give demand for more abstraction capabilities in the language. These will in turn feed the productivity-burning bonfire of max-abstraction.
 
 **Subsequent demand for compiler support for type-level debugging, profiling etc.** Features in this space will lead to requests for tooling to support compile-time type-level computation (compile-time debugging, profiling etc.).  Features in this space can also be very difficult to debug at runtime too, due to the numerous indirections and concepts encountered in even simple generic code.
 
-**A proliferation of complexifying micro-interfaces.** The use of nominal, declared interfaces means there will be a proliferation of interfaces, even to the granularity of one fully-generic interface for each method.  The need to implement these explicitly will make the feature highly "rigid" and there will be a sea of complaints that the .NET Framework is not regular enough - that not enough interfaces are defined and that not enough types implement the those interfaces.
+**A proliferation of complexifying micro-interfaces.** The use of nominal, declared interfaces means there will be a proliferation of interfaces, even to the granularity of one fully-generic interface for each method.  The need to implement these explicitly will make the feature highly "rigid" and there will be a sea of complaints that the .NET Framework is not regular enough - that not enough interfaces are defined and that not enough types implement the those interfaces. Knowing the role and meaning of these interfaces is a cost inflicted on more or less every .NET programmer - they can occur in error messages, and may be discussed in code review.
 
 **No stable point in library design.**  How many micro-interfaces are "enough"?  And how generic are they? In truth there can never be enough of these - ultimately you end up with one method for every single categorizable concept in the entire .NET Framework. The appetite for such abstractions is never-ending, and risks defeating other reasonable goals in software engineering.
+
+**The 'correct' degree of genericity becomes contested.** These features bring a cultural attitude that "code is better if it is made more generic". Some evangelical people will even claim such code is 'simpler' - meaning only that it can be reused, and not that it is conceptually simpler. In code review, for example, one reviewer may say that the numeric code can be made more generic by constraining with  the `IBinaryFloatingPointIeee754<T>` interface, regardless of whether this genericity is needed. Another reviewer may have different point of view, and the end result is that the amount of genericity to use can become unproductively contested. This is however not such a problem in F#, as it is type-inferred languages with HM-type inference, and adjusting the amount of genericity is relatively simple. However it is much more problematic in framework and type design.
 
 **Compiler and tooling slow-downs on large interface lists.**  The presence of enormous generic interface lists can cause compiler slow-down. No one ever expected such lists of interfaces in .NET, this is a volcano of hidden complexity lying under the simple type `double` or `decimal`.
 
@@ -395,9 +407,9 @@ type C(newArg , x) =
 
 This is at the heart of F# programming. It is powerful because requirements can change: what is initially unparameterized may later need to become dependent on something new - even something as simple as a command-line parameter. In F#, when this happens, the adjustments are relatively straight-forward. That's the whole point.
 
-It is obvious-yet-crucial that **implementations of static abstract methods are not parameterizable: they are static**. If an implementation of a static abstract method later needs something new, something unavailable from the inputs or global state, you are stuck.   Normal static methods can become instance methods in this situation, or take additional parameters.  But implementations of static abstract methods can't do this, since they **must be forever static** and **must always take exactly the necessary arguments**.  You are stuck, totally utterly stuck.
+It is obvious-yet-crucial that **implementations of static abstract methods are not parameterizable: they are static**. If an implementation of a static abstract method later needs something new, something unavailable from the inputs or global state, you are stuck.   Normal static methods can become instance methods in this situation, or take additional parameters.  But implementations of static abstract methods can't do this, since they **must be forever static** and **must always take exactly the necessary arguments**.  You are stuck, totally stuck.
 
-This is an immense rigidity. It also means that starting to use IWSAMs is a major risk within your own code, especially if you can't adjust the IWSAM definitions (e.g. are implementing existing concepts): if at **any** later time part of your code becomes dependent on a new parameter, you likely have no choice but to entirely remove your use of IWSAMs (If you can edit the IWSAM definitions you can adjust to regular interfaces. Or use a global mutable variable or thread local, ugh).
+This is an immense rigidity and means that IWSAMs live at a different "level" than the rest of application - the level of static composition. It also means that starting to use IWSAMs is a major risk within your own code, especially if you can't adjust the IWSAM definitions (e.g. are implementing existing IWSAMs): if at **any** later time part of your code becomes dependent on a new parameter, you likely have no choice but to entirely remove your use of IWSAMs. (If you can edit the IWSAM definitions you can adjust to regular interfaces. Or use a global mutable variable or thread local, ugh).
 
 To see why this matters, let's continue the example above and assume `MyType1.DoSomething` needs a new parameter `newArg`.  As expected it now becomes an instance member. When using explicit function passing, the generic code doesn't need to change at all and can simply be reused:
 ```fsharp
@@ -411,67 +423,65 @@ let SomeEntryPoint newArg =
     ...
 ```
 
-This is simple capture and it is the routine way of propagating and tracking new requirements in F# or any other functional-object language. In contrast, if using SRTP of IWSAMs, you are stuck (unless you have the ability to adjust `ISomeFunctionality`):
+This is simple capture and it is the routine way of propagating and tracking new requirements in F# or any other functional-object language. In contrast, if using IWSAMs, you are stuck (unless you have the ability to adjust `ISomeFunctionality` to become a non-IWSAM):
 
 ```fsharp
 type MyType1 =
     interface ISomeFunctionality<MyType1> with
-        static member DoSomething(x) = ...  // It is not possible to get `newArg` to `MyType1.DoSomething`
+        static member DoSomething(x) = ...  // It is not possible to plumb `newArg` to `MyType1.DoSomething`
 
 let SomeEntryPoint newArg =
     SomeGenericThing<MyType1> arg1 
 ```
 
-To recap, IWSAMs are not within the parameterizable portion of the langauge. Using them in your own code exposes you to risk-of-expensive-removal should any of your assumptions change.  
+To recap, IWSAM implementations are not within the parameterizable portion of the langauge. Using them in your own code exposes you to necessary-removal should any of your assumptions change.  
 
-> As an aside,
-> * The same problem applies to some other C#/F# constructs such as operators, which have static implementations.  However it is fairly routine to remove the use of these, and they rarely need to capture.
-> * Haskell's type classes have this problem.
-> * Scala's 'implicits' do **not** suffer this problem - implicit implementations can be local and can capture. This seen as adding major flexibility and was built on long experience.
-> * F# SRTP have this problem (but are not widely used in user code). The proposed extension methods for SRTP (RFC FS-1043) could in theory be adjusted to allow local SRTP implementations and capture, like Scala implicits, but this is not yet proposed.
+The same problem applies to some other C#/F# constructs such as operators, which must have static implementations.  However it is fairly routine to remove the use of these, and they rarely need to capture.
+
+> NOTE: Haskell's type classes have this problem.  Scala's 'implicits' do **not** suffer this problem - implicit implementations can be local and can capture. This seen as adding major flexibility and was built on long experience. F# SRTP have this problem (but are not widely used in user code). The proposed extension methods for SRTP (RFC FS-1043) could in theory be adjusted to allow local SRTP implementations and capture, like Scala implicits, but this is not yet proposed.
 
 ### Drawback - Three ways to abstract
 
-One specific drawback applies to F# - there are now three mechanisms to do type-level abstraction: Explicit function passing, IWSAMs and SRTP.
+There are now three mechanisms to do type-level abstraction: Explicit function passing, IWSAMs and SRTP.
 
-Explicit function passing 
+**Explicit function passing:**
 
 ```fsharp
 let f0 add x y =
     (add x y, add y x)
 
 ```
-IWSAM: 
+
+**SRTP**
 
 ```fsharp
-type IAddition<'T when 'T :> IAddition<'T>> =
-    static abstract Add: 'T * 'T -> 'T
-
-let f1<'T when 'T :> IAddition<'T>>(x: 'T, y: 'T) =
-    let res1 = 'T.Add(x, y)
-    let res2 = 'T.Add(y, x)
-    res1, res2
-```
-
-SRTP: 
-```fsharp
-let inline f2<^T when ^T : (static member Add: ^T * ^T -> ^T)>(x: ^T, y: ^T) = 
+let inline f0<^T when ^T : (static member Add: ^T * ^T -> ^T)>(x: ^T, y: ^T) = 
     let res1 = ^T.Add(x, y)
     let res2 = ^T.Add(x, y)
     res1, res2
 ```
 > NOTE: this simplified syntax is part of this RFC
 
-These have pros and cons and can actually be used perfectly well together:
-* **What is constrained.** IWSAM constrain the interfaces on the type, while SRTP constrains the members.
-* **Satisfying constraints.** IWSAM require the interface be defined in the type. This massively restricts their use, and effectively makes them primarily usable by the BCL team. SRTP also only operate on the intrinsically defined members, though [FS-1043](https://github.com/fsharp/fslang-design/blob/main/RFCs/FS-1043-extension-members-for-operators-and-srtp-constraints.md) proposes to extend these to extension members.
-* **What can be generic.** SRTP can only be used in inlined F# code. This is currently enforced. For non-inlined code SRTP will only ever be implemented via witness passing. SRTP cannot realistically be used on the generic parameters of types.
-* **Corner cases.** SRTP has many unusual rules for operators, and there are several known bugs with the mecahnism
+**IWSAMs**
 
-Within F#, this means those seeking more type-level abstraction will likely be spending considerable time arguing about whether to use IWSAM or SRTP.
+```fsharp
+type IAddition<'T when 'T :> IAddition<'T>> =
+    static abstract Add: 'T * 'T -> 'T
+
+let f0<'T when 'T :> IAddition<'T>>(x: 'T, y: 'T) =
+    let res1 = 'T.Add(x, y)
+    let res2 = 'T.Add(y, x)
+    res1, res2
+```
+
+These have pros and cons and can actually be used perfectly well together:
+* **What is constrained.** Explicit function passing constrains nothing, IWSAMs constrain the interfaces on the type, while SRTP constrains the members.
+* **Satisfying constraints.** Explicit function passing has no constraints besides coming up with a suitable function; IWSAM require the interface be defined in the type (this massively restricts their use, and effectively makes them primarily usable by the BCL team); SRTP constrains to types with suitably named intrinsically defined members ([FS-1043](https://github.com/fsharp/fslang-design/blob/main/RFCs/FS-1043-extension-members-for-operators-and-srtp-constraints.md) proposes to extend these to extension members.)
+* **What can be generic.** Explicit function passing can be used for any code. IWSAMs can be used for any code at the cost the the entire scope of the generic code is subject to the constraint.  SRTP can only be used in inlined F# code.
+
+Within F#, explicit function passing should generally be preferred. 
 
 ## Alternatives
-[alternatives]: #alternatives
 
 Not add anything
 
