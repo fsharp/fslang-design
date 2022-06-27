@@ -129,7 +129,7 @@ Note that in these examples neither function is inlined.  The non-static type pa
 
 Object expressions may not be used to implement interfaces that contain static abstract methods.  This is because the only use for such an implementation is to pass as a type argument to a generic construct constrained by the interface.
 
-### Consideration: Invoking static abstract member implementations directly
+### Invoking static abstract member implementations directly
 
 Consider:
 ```csharp
