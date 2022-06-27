@@ -305,18 +305,12 @@ Note that the operator takes arguments of type `'T`, but the arguments to `addTh
 let addThem (x: 'T) (y: 'T) when 'T :> INumber<'T> = x + y
 ```
 
-This is really very very subtle - any beginner user will think that `INumber<'T>` can be used as a type for a number.  But it can only be used like this in generic code.  Beginner users may not be at all comfortable in writing generic code.  But as mentioned above, beginner users are inevitably drawn to generic arithmetic, it's like a 101 of learning the language.
+This is really very very subtle - any beginner user will surely think that `INumber<'T>` can be used as a type for a number.  But it can't - it can only be used as a type-constraint in generic code. Perhaps analyzers will check this - but beginner users may not be at all comfortable in writing generic code.  Yet as mentioned above, beginner users are inevitably drawn to generic arithmetic - it's like a 101 of learning the language.
 
 Fortunately in F# people can just use the simpler SRTP code on most beginner learning paths:
 ```fsharp
 let inline addThem x y = x + y
 ```
-This uses an SRTP constraint instead. Alternatively they can write:
-```fsharp
-let addThem (x: #INumber<'T>) y = x + y
-```
-
-> NOTE: the above example needs to be checked.
 
 ### Drawback - Type-generic code is less succinct and less general than explicit function-passing code
 
