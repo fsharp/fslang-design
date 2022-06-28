@@ -528,3 +528,7 @@ No.
 ```fsharp
 let addThem (x: #INumeric<'T>) y = x + y
 ```
+
+* [ ] Spec name resolution of `^T.Name` when `^T` has both SRTP and IWSAM members with the same name `Name` (SRTP is preferred)
+
+
