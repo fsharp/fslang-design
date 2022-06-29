@@ -374,41 +374,40 @@ For the vast majority of generic coding in F# explicit function-passing is perfe
 F# is driven by parameterization, for example functions:
 
 ```fsharp
-let f x = 
-   ...
+let someFunction x = 
+   ...x...
 ```
 
 or classes:
 ```fsharp
-type C(x) = 
-   ...
+type SomeClass(x) = 
+   ...x...
 ```
 
 These constructs are parameterizable: they can close over arbitrary new dependencies by adding them to the parameter lists. For example:
 
 ```fsharp
-let f newArg x = 
-   ...newArg...
+let someFunction newArg x = 
+   ...x...newArg...
 ```
 
 or classes:
 ```fsharp
-type C(newArg , x) = 
-   ...
+type SomeClass(newArg , x) = 
+   ...x...newArg...
 ```
 
+This is at the heart of F# programming. It is powerful because plumbing information around accurately is at the heart of programming Additionally, requirements change: what is initially independent may later need to become dependent on something new. In F#, when this happens, one way or another you plumb a parameter through: perhaps organising them via tuples, or records, or objects. Either way the adjustments are relatively straight-forward. That's the whole point.
 
-This is at the heart of F# programming - Lambda the Ultimate. It is powerful because plumbing information around accurately is at the heart of programming.  Further, requirements can change: what is initially independent may later need to become dependent on something new. In F#, when this happens, you plumb a parameter through, perhaps organising them via tuples, or records, or objects, and the adjustments are relatively straight-forward. That's the whole point.
+It is obvious-yet-crucial that **implementations of static abstract methods are not parameterizable: they are static**. If an implementation of a static abstract method later needs something new - something unavailable from the inputs or global state - you are stuck. Normal static methods can become instance methods in this situation, or take additional parameters.  But implementations of static abstract methods can't become instance, and they can't take additional parameters: since they **must be forever static** and **must always take specific arguments**.  You are stuck, totally stuck. You literally have no way of plumbing information from A to B, short of adding additional IWSAM generic parameters (and even then these can only ultimately be instantiated statically).
 
-It is obvious-yet-crucial that **implementations of static abstract methods are not parameterizable: they are static**. If an implementation of a static abstract method later needs something new - something unavailable from the inputs or global state - you are stuck. Normal static methods can become instance methods in this situation, or take additional parameters.  But implementations of static abstract methods can't do this, since they **must be forever static** and **must always take specific arguments**.  You are stuck, totally stuck. You literally have no way of plumbing information from A to B, short of adding additional IWSAM generic parameters (and even then these can only ultimately be instantiated statically).
+Another way of looking at this is that IWSAM implementations live and are composed at a different "level" than the rest of application - the level of static composition with generics. This means using IWSAMs have some of the same characteristics as original Standard ML functors or C++ templates, both of which partition software into two layers - the core language and the composition language.
 
-Another way of looking at this is that IWSAM implementations live at a different "level" than the rest of application - the level of static composition with generics. This means using IWSAMs have some of the same characteristics as original Standard ML functors or C++ templates, both of which partition software into two layers - the core language and the composition framework.
+Practically speaking, this means that if you start to use IWSAMs within your own code then you are exposed to major risks, especially if you can't adjust the IWSAM definitions (i.e. are implementing framework IWSAMs). If at **any** later time part of your code becomes dependent on a new parameter, you likely have no choice but to **entirely** remove your use of those particular IWSAMs. (If you can edit the IWSAM definitions you can adjust to regular interfaces. Or use a global mutable variable or thread local, ugh).
 
-Practically speaking, this means that if you start to use IWSAMs within your own code then you are exposed to major risks, especially if you can't adjust the IWSAM definitions (i.e. are implementing framework IWSAMs). If at **any** later time part of your code becomes dependent on a new parameter, you likely have no choice but to entirely remove your use of IWSAMs. (If you can edit the IWSAM definitions you can adjust to regular interfaces. Or use a global mutable variable or thread local, ugh).
+To see why this matters, consider `IParseable<T>`. Let's assume you have a set of 100 domain classes using `IParseable<T>` and a framework to compose these. Now assume the specification of your parsing changes so that, there are now **two** textual formats you need to parse, and a user-facing parameter controls which format is accepted. In this case, there is literally no way to communicate the control parameter to your 100 implementations of `IParseable<T>`. This means your composition framework built on `IParseable<T>` may become **entirely useless** to you, due to nothing but this one small unexpected change in requirements. You will now have to remove all use of `IParseable<T>`, shifting to another technnique.
 
-To see why this matters, consider `IParseable<T>`. Let's assume you have a set of 100 domain object classes using `IParseable<T>` and a framework to compose these. Now assume the specification of your parsing changes so that, there are now **two** textual formats you need to parse, and a user-facing parameter controls which format is accepted. In this case, there is literally no way to communicate the control parameter to your 100 implementations of `IParseable<T>`. This means your composition framework built on `IParseable<T>` may become **entirely useless** to you, due to nothing but this one small unexpected change in requirements. You will now have to remove all use of `IParseable<T>`, shifting to another technnique.
-
-What's gone wrong? Well, IWSAMs should never have been used for this in your code. Perhaps `IParseable<T>` should carry a warning, saying "one day you will regret using this, and have to undo everything you've done".
+What's gone wrong? Well, IWSAMs should never have been used for this in your code. You should always have used explicit composition of functions and objects. Perhaps `IParseable<T>` should carry a warning, saying "one day you may well regret using this, and have to undo everything you've done".
 
 In more detail, let's continue the example above and assume `MyType1.DoSomething` needs a new parameter `newArg`.  As expected it now becomes an instance member. When using explicit function passing, the generic code doesn't need to change at all and can simply be reused:
 ```fsharp
