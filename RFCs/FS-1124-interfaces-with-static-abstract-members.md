@@ -435,7 +435,9 @@ let SomeEntryPoint newArg =
 
 IWSAMs work best on highly stable types and operations where there is essentially no possibility of requirements changing to include new dependencies. Numerics are a good example: these types and operations are highly semantically stable and require little additional information. However your application code almost certainly isn't like this.
 
-> Note: `IParseable` does have an **implicit** way of passing control parameters, through the optional `IFormatProvider` argument. However in this section we are discussing explicit parameterization or any additional information that informs the action of particular parsing.
+> Note: `IParseable` does have an *implicit* way of passing extra information, through the optional `IFormatProvider` argument, though in practice that's unusable for such purposes as it is effectively specific to numerics and culture formatting data. In this section we are discussing *explicit* parameterization of additional information that informs the action of parsing domain objects.
+
+> Note: It could be said "`IParseable` is for parsing numbers, dates and so on. It's not for parsing domain objects where parsing different variations requires significant code.". However the above would apply to any attempt to write a domain object parsing framework using IWSAMs.
 
 > Note: As [pointed out on twitter](https://twitter.com/Savlambda/status/1542141589551779841) it is possible to plumb "statically known" information to an IWSAM implementation by passing additional IWSAM constrained type parameters. This means doubling down on more type-level parameterization, and any further IWSAMs passed are subject to the same problems.
 
