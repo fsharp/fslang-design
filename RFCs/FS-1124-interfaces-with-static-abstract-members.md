@@ -66,12 +66,11 @@ Static abstract methods may not be declared in classes.
 The syntax of expressions is extended with
 ```fsharp
     'T.<identifier>
-    ^T.<identifier>
 ```
 
-> NOTE: The status of `^T.<identifier>` is being evaluated.  In some cases, parenthesization may be needed.
+> NOTE: An earlier proposal also allowed  `^T.<identifier>`. However this was found to be a breaking change.
 
-`typar.M` is resolved to either
+`'T.M` is resolved to either
 
 * A static abstract method when `'T` is constrained by an interface `I` and `M` is an accessible static abstract member of `I`.
   These are processed as normal member calls.
@@ -87,16 +86,20 @@ The syntax of expressions is extended with
 * A static member trait constraint when `'T` is constrained by an SRTP constraint with name `M`. Constrained calls on SRTP constraints are limited. Property and member calls are allowed:
 
   ```fsharp
-  let inline f_StaticProperty<^T when ^T : (static member StaticProperty: int) >() : int = ^T.StaticProperty
+  let inline f_StaticProperty<^T when ^T : (static member StaticProperty: int) >() : int = 'T.StaticProperty
 
-  let inline f_StaticMethod<^T when ^T : (static member StaticMethod: int -> int) >() : int = ^T.StaticMethod(3)
+  let inline f_StaticMethod<^T when ^T : (static member StaticMethod: int -> int) >() : int = 'T.StaticMethod(3)
+
+  let inline f_InstanceProperty<^T when ^T : (member InstanceMethod: int -> int) >(x: ^T) : int = x.InstanceProperty
+
+  let inline f_InstanceMethod<^T when ^T : (member InstanceMethod: int -> int) >(x: ^T) : int = x.InstanceMethod(3)
   ```
 
   However indexing, slicing and property-setting are not allowed and explicit forms must be used instead.  This is because SRTP constraints calls are not processed using method overloading rules.
 
   ```fsharp
   let inline f_set_StaticProperty<^T when ^T : (static member StaticProperty: int with set) >() =
-      ^T.set_StaticProperty(3)
+      'T.set_StaticProperty(3)
 
   let inline f_set_Length<^T when ^T : (member Length: int with set) >(x: ^T) =
       x.set_Length(3)
@@ -191,8 +194,8 @@ type WithStaticMethod<^T when ^T : (static member StaticMethod: int -> int)> = ^
 type WithBoth<^T when WithStaticProperty<^T> and WithStaticMethod<^T>> = ^T
 
 let inline f<^T when WithBoth<^T>>() =
-    let v1 = ^T.StaticProperty
-    let v2 = ^T.StaticMethod(3)
+    let v1 = 'T.StaticProperty
+    let v2 = 'T.StaticMethod(3)
     v1 + v2
 ```
 
@@ -450,8 +453,8 @@ let f0 add x y =
 
 ```fsharp
 let inline f0<^T when ^T : (static member Add: ^T * ^T -> ^T)>(x: ^T, y: ^T) = 
-    let res1 = ^T.Add(x, y)
-    let res2 = ^T.Add(x, y)
+    let res1 = 'T.Add(x, y)
+    let res2 = 'T.Add(x, y)
     res1, res2
 ```
 > NOTE: this simplified syntax is part of this RFC
@@ -478,7 +481,7 @@ These have pros and cons and can actually be used perfectly well together:
 
 ## Alternatives
 
-### Invoking static abstract member implementations directly
+### Alternatives for invoking static abstract member implementations directly
 
 Consider:
 ```csharp
@@ -575,6 +578,23 @@ let ConcreteMathCode ( .... ) =
 
 In this RFC we go with Option A+B, with the possibility of adding Option D at some later point. 
 
+### Alternatives for Invocation Syntax
+
+`^T.X` has a conflict with `^expr` in [from-the-end-of-collection-slicing](https://github.com/fsharp/fslang-design/blob/main/preview/FS-1076-from-the-end-slicing.md). We have precedence woes for cases like this:
+
+
+```fsharp
+        call()
+        ^T.call()
+```
+
+Here the `^` on the last line is causing the expression to be interpreted as an infix expression `a^b`. The resolution is to require the use of `'T' for invocationse.g.
+```fsharp
+    let inline f<^T when ^T : (static member StaticMethod: int -> int)>() =
+        'T.StaticMethod(3)
+        'T.StaticMethod(3)
+```
+Note that `^T` and `'T` are not considered different names.
 
 ## Compatibility
 [compatibility]: #compatibility
@@ -594,17 +614,6 @@ No.
 
 * [ ] We need to look carefully at a few things - e.g. IWSAM that define op_Implicit and op_Explicit. @dsyme says: I've done "the right thing" in the code but we will need to test it.
 
-* [ ] `^T.X` may have a conflict with `^expr` in [from-the-end-of-collection-slicing](https://github.com/fsharp/fslang-design/blob/main/preview/FS-1076-from-the-end-slicing.md); That feature is only in preview so we can change this if needed.
-
-```yacc
-  | INFIX_AT_HAT_OP declExpr
-    { if not (parseState.LexBuffer.SupportsFeature LanguageFeature.FromEndSlicing) then 
-        raiseParseErrorAt (rhs parseState 1) (FSComp.SR.fromEndSlicingRequiresVFive())
-      if $1 <> "^" then reportParseErrorAt (rhs parseState 1) (FSComp.SR.parsInvalidPrefixOperator())
-      let m = (rhs2 parseState 1 2)
-      SynExpr.IndexFromEnd($2, m) }
-```
-
 * [ ] Carefully check this case.  For example, check that we do not apply the "condensation" rule that removes the implied type ariable in this case (we shouldn't)
 
 ```fsharp
@@ -612,31 +621,4 @@ let addThem (x: #INumeric<'T>) y = x + y
 ```
 
 * [ ] Spec name resolution of `^T.Name` when `^T` has both SRTP and IWSAM members with the same name `Name` (SRTP is preferred)
-
-* [ ] We have precedence woes for cases like this:
-
-
-```fsharp
-    let inline f<^T when ^T : (static member StaticMethod: int -> int)>() =
-        ^T.StaticMethod(3)
-        ^T.StaticMethod(3)
-```
-
-Here the `^` on the last line is causing the expression to be interpreted as an infix expression `a^b`. This is unfortunate - while there is a workaround of simply parenthesizing it is non-obvious.
-
-```fsharp
-    let inline f<^T when ^T : (static member StaticMethod: int -> int)>() =
-        (^T.StaticMethod(3))
-        (^T.StaticMethod(3))
-```
-
-A possible resolution is to require the use of `'T' for invocations or to use this as a workaround, e.g.
-```fsharp
-    let inline f<^T when ^T : (static member StaticMethod: int -> int)>() =
-        'T.StaticMethod(3)
-        'T.StaticMethod(3)
-```
-This actually works today (`^T` and `'T` are not considered different names).  
-
-
 
