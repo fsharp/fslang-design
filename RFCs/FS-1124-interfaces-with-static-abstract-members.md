@@ -400,7 +400,7 @@ type C(newArg , x) =
 
 This is at the heart of F# programming - Lambda the Ultimate. It is powerful because plumbing information around accurately is at the heart of programming.  Further, requirements can change: what is initially independent may later need to become dependent on something new. In F#, when this happens, you plumb a parameter through, perhaps organising them via tuples, or records, or objects, and the adjustments are relatively straight-forward. That's the whole point.
 
-It is obvious-yet-crucial that **implementations of static abstract methods are not parameterizable: they are static**. If an implementation of a static abstract method later needs something new - something unavailable from the inputs or global state - you are stuck. Normal static methods can become instance methods in this situation, or take additional parameters.  But implementations of static abstract methods can't do this, since they **must be forever static** and **must always take specific arguments**.  You are stuck, totally stuck. You literally have no way of plumbing information from A to B, short of adding additional IWSAM generic parameters.
+It is obvious-yet-crucial that **implementations of static abstract methods are not parameterizable: they are static**. If an implementation of a static abstract method later needs something new - something unavailable from the inputs or global state - you are stuck. Normal static methods can become instance methods in this situation, or take additional parameters.  But implementations of static abstract methods can't do this, since they **must be forever static** and **must always take specific arguments**.  You are stuck, totally stuck. You literally have no way of plumbing information from A to B, short of adding additional IWSAM generic parameters (and even then these can only ultimately be instantiated statically).
 
 Another way of looking at this is that IWSAM implementations live at a different "level" than the rest of application - the level of static composition with generics. This means using IWSAMs have some of the same characteristics as original Standard ML functors or C++ templates, both of which partition software into two layers - the core language and the composition framework.
 
@@ -435,11 +435,13 @@ let SomeEntryPoint newArg =
 
 **Summary:** IWSAM implementations are not within the parameterizable "core" portion of the langauge. Plumbing parameters to IWASM implementations is not possible without changing IWSAM definitions or adding more generic parameters. Using IWSAMs expose you to the open-ended risk that you will have to remove them should the structure or requirements of your code change.
 
-> ASIDE: The same problem applies to a very small extent when using some other C#/F# constructs such as operators, which must have static implementations.  However it is fairly routine to remove the use of these, and they rarely need to capture, and they do not participate in compositional framework design.
+> NOTE: Some types are highly semantically stable, e.g. framework types and numeric types.  In these cases IWSAM implementations like "add two integers" are highly stable and aren't subject to requirements change. This is why these types are so amenable to IWSAMs. However your application code almost certainly isn't like this.
+
+> ASIDE: A similar class of "it's static" problem applies when using some other C#/F# constructs such as operators, which must have static method implementations.  However it's fairly routine to switch these to methods if necessary.
 
 > NOTE: Haskell's type classes have this problem.  Scala's 'implicits' do **not** suffer this problem - implicit implementations can be local and can capture, something seen as adding major flexibility and built on long experience. F# SRTPs have this problem but are not widely used in user code.
 
-> NOTE: As [pointed out on twitter](https://twitter.com/Savlambda/status/1542141589551779841) it is possible to plumb "ultimately statically known" information to an IWSAM implementation by passing yet another IWSAM constrained type parameter. This means doubling down on the complexity and more and more type-level parameterization. However any feature which takes away the ability to plumb information from A to B by passing a simple, normal parameter takes you away from the most fundamental way to control complexity in programming. It's saying Lambda is not the Ultimate, but rather TypeLambda or Functor etc. is.
+> NOTE: As [pointed out on twitter](https://twitter.com/Savlambda/status/1542141589551779841) it is possible to plumb "ultimately statically known" information to an IWSAM implementation by passing yet another IWSAM constrained type parameter. This means doubling down on more type-level parameterization, with ever more IWSAMs for passing information around.
 
 ### Drawback - Three ways to abstract
 
