@@ -2,9 +2,12 @@
 
 The design suggestion [Support static abstract members in interfaces](https://github.com/fsharp/fslang-suggestions/issues/1151) has been marked "approved in principle". This RFC covers the detailed proposal for this suggestion.
 
-* [x] Approved in principle
-* [ ] Discussion: use implementation PR or https://github.com/fsharp/fslang-design/discussions/677
-* [ ] Implementation: [In progress](https://github.com/dotnet/fsharp/pull/13119)
+Two other suggestions/RFCs are effectively incorporated into this RFC:
+* [Allow static constraints to be named and reused](https://github.com/fsharp/fslang-suggestions/issues/1089)
+* [Simplify constrained call syntax](https://github.com/fsharp/fslang-design/blob/main/RFCs/FS-1024-simplify-constrained-call-syntax.md)
+
+* Discussion: https://github.com/fsharp/fslang-design/discussions/677
+* Implementation: [In progress](https://github.com/dotnet/fsharp/pull/13119)
 
 ## Summary
 [summary]: #summary
@@ -75,7 +78,7 @@ let someFunction<'T when 'T : I<'T>>() =
     return t + 'T.P
 ```
 
-TBD: See also https://github.com/fsharp/fslang-design/blob/main/RFCs/FS-1024-simplify-constrained-call-syntax.md.  It is expected that this syntax will be usable for SRTP invocations in the case that the type parameter has been explicitly constrained with an SRTP constraint.
+See also https://github.com/fsharp/fslang-design/blob/main/RFCs/FS-1024-simplify-constrained-call-syntax.md.  This syntax will be usable for SRTP invocations in the case that the type parameter has been explicitly constrained with an SRTP constraint. Some limitations may apply.
 
 ### Interfaces with static abstract members are constraints, not types
 
@@ -129,102 +132,48 @@ Note that in these examples neither function is inlined.  The non-static type pa
 
 Object expressions may not be used to implement interfaces that contain static abstract methods.  This is because the only use for such an implementation is to pass as a type argument to a generic construct constrained by the interface.
 
-### Invoking static abstract member implementations directly
+### Self type constraints
 
-Consider:
-```csharp
-namespace StaticsInInterfaces
-{
-    public interface IGetNext<T> where T : IGetNext<T>
-    {
-        static abstract T Next(T other);
-    }
-}
-```
-And then:      
-```fsharp
-type MyRepeatSequence() =
-    interface IGetNext<MyRepeatSequence> with
-        static member Next(other: MyRepeatSequence) : MyRepeatSequence = other 
-```
-
-Under the name resolution rules of F#, interface implementations are not available via the implementing type, so following that principle `MyRepeatSequence.Next` shouldn't resolve. 
-
-However, that begs the question about how we call `MyRepeatSequence.Next` "directly", without using constrained generic code to do it. For instance methods we don't have this problem because the user can always write 
+A new syntax shorthand for self-constraints is added to F#. Specifically 
 
 ```fsharp
-     (someObject :> ISomeInterface).CallInterfaceMethod()
+let f<'T when IStaticProperty<'T>>() =
 ```
+can be used.
 
-to make the interface call explicit. 
+The meaning is identical to 
+```fsharp
+let f<'T when 'T :> IStaticProperty<'T>>() =
+     ...
+```
+The type must be instantiated with a generic type parameter in first position. 
 
-**Option A - expect people to make a call via a type parameter**
+### Abbreviations that name collections of constraints
 
-Option A is to do nothing, and expect users to write constrained generic code to make the call:
+F# already allows the definition of abbreviations that "attach" constraints to types. For example an abbreviation that attaches the operations required for `List.average` can be defined like this.:
 
 ```fsharp
-type MyRepeatSequence() =
-
-    interface IGetNext<MyRepeatSequence> with
-        static member Next(other) = MyRepeatSequence.Next(other)
-...
-let CallNext<'T when 'T : IGetNext<'T>> (str: 'T) =
-    'T.Next(str)
-
-CallNext<MyRepeatSequence>(str)
+type WithAverageOps<^T when ^T: (static member (+): ^T * ^T -> ^T)
+                       and  ^T: (static member DivideByInt : ^T*int -> ^T)
+                       and  ^T: (static member Zero : ^T)> = ^T
 ```
 
-This option is a bit unfortunate as it means extra obfuscating generic helper functions when there is actually no generic code around.  It also means users have no way of manually inlining such a helper function, and it makes another case where you don't get "closure under substitution" for F# generic code (which also happens for some SRTP calls, where generic helpers are also needed).
-
-**Option B - expect the type authors to resolve this by authoring an explicitly accessible method.**
-
-Option B is to expect the type authors to resolve this by authoring an explicitly accessible method:
+In this RFC, we allow using such abbreviations as self-constraints. For example:
 
 ```fsharp
-type MyRepeatSequence() =
-    static member Next(other: MyRepeatSequence) =
-           <the implementation>
+type WithStaticProperty<^T when ^T : (static member StaticProperty: int)> = ^T
+type WithStaticMethod<^T when ^T : (static member StaticMethod: int -> int)> = ^T
+type WithBoth<^T when WithStaticProperty<^T> and WithStaticMethod<^T>> = ^T
 
-    interface IGetNext<MyRepeatSequence> with
-        static member Next(other) = MyRepeatSequence.Next(other)
-...
-MyRepeatSequence.Next(str)
+let inline f<^T when WithBoth<^T>>() =
+    let v1 = ^T.StaticProperty
+    let v2 = ^T.StaticMethod(3)
+    v1 + v2
 ```
 
-Note that C# code using implicit interface impls will automatically have such a method available.  We should check if most of the math stuff in System.* will use explicit or implicit impls - we assume implicit.
+### SRTP adjustments
 
-
-**Option C - make an exception for statics and have those be name-accessible.**
-
-Option C is to make an exception for static abstract implementations and have those be name-accessible.
-
-However ambiguities can arise in the name resolution if several different unrelated interfaces implement that same named method - we could likely resolve those ambiguities but it does expose us to this kind of problem in a different way than currently.
-
-**Option D - give some kind of explicit call syntax**
-
-```fsharp
-    (MyRepeatSequence :> IGenNext<MyRepeatSequence>).Next(str)
-```
-
-This is a bit ugly and undiscoverable. However it has the huge advantage of allow very precise concretization of generic code, e.g. imagine the user writes:
-
-```fsharp
-let GenericMathCode<'T  when 'T : IMath<'T>> ( .... ) =
-   blah //100s of lines
-   'T.Sin(...)
-   'T.Cos(...)
-```
-
-Then wants to accurately make this concrete to some specific type 
-
-```fsharp
-let ConcreteMathCode ( .... ) =
-   blah //100s of lines
-   (Double :> IMath<'T>).Sin(...)
-   (Double :> IMath<'T>).Cos(...)
-```
-
-In this RFC we go with Option A+B, with the possibility of adding Option D at some later point. 
+SRTP constraints now give an error if they declare optional, inref, outref, ParamArray, CallerMemberName or AutoQuote atttributes on parameters.  These were ignored and should never have been allowed.
 
 ## Drawbacks
 [drawbacks]: #drawbacks
@@ -492,7 +441,103 @@ These have pros and cons and can actually be used perfectly well together:
 
 ## Alternatives
 
-Not add anything
+### Invoking static abstract member implementations directly
+
+Consider:
+```csharp
+namespace StaticsInInterfaces
+{
+    public interface IGetNext<T> where T : IGetNext<T>
+    {
+        static abstract T Next(T other);
+    }
+}
+```
+And then:      
+```fsharp
+type MyRepeatSequence() =
+    interface IGetNext<MyRepeatSequence> with
+        static member Next(other: MyRepeatSequence) : MyRepeatSequence = other 
+```
+
+Under the name resolution rules of F#, interface implementations are not available via the implementing type, so following that principle `MyRepeatSequence.Next` shouldn't resolve. 
+
+However, that begs the question about how we call `MyRepeatSequence.Next` "directly", without using constrained generic code to do it. For instance methods we don't have this problem because the user can always write 
+
+```fsharp
+     (someObject :> ISomeInterface).CallInterfaceMethod()
+```
+
+to make the interface call explicit. 
+
+**Option A - expect people to make a call via a type parameter**
+
+Option A is to do nothing, and expect users to write constrained generic code to make the call:
+
+```fsharp
+type MyRepeatSequence() =
+
+    interface IGetNext<MyRepeatSequence> with
+        static member Next(other) = MyRepeatSequence.Next(other)
+...
+let CallNext<'T when 'T : IGetNext<'T>> (str: 'T) =
+    'T.Next(str)
+
+CallNext<MyRepeatSequence>(str)
+```
+
+This option is a bit unfortunate as it means extra obfuscating generic helper functions when there is actually no generic code around.  It also means users have no way of manually inlining such a helper function, and it makes another case where you don't get "closure under substitution" for F# generic code (which also happens for some SRTP calls, where generic helpers are also needed).
+
+**Option B - expect the type authors to resolve this by authoring an explicitly accessible method.**
+
+Option B is to expect the type authors to resolve this by authoring an explicitly accessible method:
+
+```fsharp
+type MyRepeatSequence() =
+    static member Next(other: MyRepeatSequence) =
+           <the implementation>
+
+    interface IGetNext<MyRepeatSequence> with
+        static member Next(other) = MyRepeatSequence.Next(other)
+...
+MyRepeatSequence.Next(str)
+```
+
+Note that C# code using implicit interface impls will automatically have such a method available.  We should check if most of the math stuff in System.* will use explicit or implicit impls - we assume implicit.
+
+
+**Option C - make an exception for statics and have those be name-accessible.**
+
+Option C is to make an exception for static abstract implementations and have those be name-accessible.
+
+However ambiguities can arise in the name resolution if several different unrelated interfaces implement that same named method - we could likely resolve those ambiguities but it does expose us to this kind of problem in a different way than currently.
+
+**Option D - give some kind of explicit call syntax**
+
+```fsharp
+    (MyRepeatSequence :> IGenNext<MyRepeatSequence>).Next(str)
+```
+
+This is a bit ugly and undiscoverable. However it has the huge advantage of allow very precise concretization of generic code, e.g. imagine the user writes:
+
+```fsharp
+let GenericMathCode<'T  when 'T : IMath<'T>> ( .... ) =
+   blah //100s of lines
+   'T.Sin(...)
+   'T.Cos(...)
+```
+
+Then wants to accurately make this concrete to some specific type 
+
+```fsharp
+let ConcreteMathCode ( .... ) =
+   blah //100s of lines
+   (Double :> IMath<'T>).Sin(...)
+   (Double :> IMath<'T>).Cos(...)
+```
+
+In this RFC we go with Option A+B, with the possibility of adding Option D at some later point. 
+
 
 ## Compatibility
 [compatibility]: #compatibility
