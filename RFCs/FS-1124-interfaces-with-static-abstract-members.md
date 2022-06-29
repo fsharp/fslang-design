@@ -432,9 +432,9 @@ let SomeEntryPoint newArg =
     SomeGenericThing<MyType1> arg1 
 ```
 
-**Summary:** IWSAM implementations are not within the parameterizable "core" portion of the langauge. Plumbing parameters to IWASM implementations is not possible without changing IWSAM definitions or adding more generic parameters. Using IWSAMs expose you to the open-ended risk that you will have to remove them should the structure or requirements of your code change.
+**Summary:** IWSAM implementations are not within the parameterizable "core" portion of the langauge. Plumbing parameters to IWASM implementations is not possible without changing IWSAM definitions or adding more generic parameters. Using IWSAMs expose you to the open-ended possibility that you will have to remove them should the structure or requirements of your IWSAM implementations change to depend on more information.
 
-> NOTE: Some types are highly semantically stable, e.g. framework types and numeric types.  In these cases IWSAM implementations like "add two integers" are highly stable and aren't subject to requirements change. This is why these types are so amenable to IWSAMs. However your application code almost certainly isn't like this.
+IWSAMs work best on simple, stable highly types and operations where there is essentially no possibility of requirements changing to invkude new dependencies. Numerics are a good example. Some types and operations are highly semantically stable.  In these cases IWSAM implementations like "add two integers" are highly stable and aren't subject to requirements change. This is why these types are so amenable to IWSAMs. However your application code almost certainly isn't like this.
 
 > ASIDE: A similar class of "it's static" problem applies when using some other C#/F# constructs such as operators, which must have static method implementations.  However it's fairly routine to switch these to methods if necessary.
 
