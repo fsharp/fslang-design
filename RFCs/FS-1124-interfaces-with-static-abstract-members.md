@@ -137,13 +137,13 @@ Object expressions may not be used to implement interfaces that contain static a
 A new syntax shorthand for self-constraints is added to F#. Specifically 
 
 ```fsharp
-let f<'T when IStaticProperty<'T>>() =
+let f<'T when IComparable<'T>>() =
 ```
 can be used.
 
 The meaning is identical to 
 ```fsharp
-let f<'T when 'T :> IStaticProperty<'T>>() =
+let f<'T when 'T :> IComparable<'T>>() =
      ...
 ```
 The type must be instantiated with a generic type parameter in first position. 
@@ -170,6 +170,18 @@ let inline f<^T when WithBoth<^T>>() =
     let v2 = ^T.StaticMethod(3)
     v1 + v2
 ```
+
+The interpretation here is slightly different.  The abbreviation **must** have the form
+
+```fsharp
+type SomeAttachingAbbreviation<^T, ^U ... when constraints> = ^T
+```
+
+Then 
+```
+let inline f<^T, ^U when SomeAttachingAbbreviation<^T, ^U, ...>>() =
+```
+is interpreted as the inlining of `constraints` after substituting. The first actual type parameter must be a type variable.
 
 ### SRTP adjustments
 
