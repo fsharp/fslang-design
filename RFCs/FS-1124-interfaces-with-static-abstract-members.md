@@ -61,7 +61,7 @@ type C() =
 
 Static abstract methods may not be declared in classes.
 
-### Invoking static abstract interface members in generic code
+### Invoking static constrint members in generic code
 
 The syntax of expressions is extended with
 ```fsharp
@@ -69,16 +69,41 @@ The syntax of expressions is extended with
     ^T.<identifier>
 ```
 
-A static abstract interface member `M` may be accessed on a type parameter `'T` using the expression `'T.M` when `'T` is constrained by an interface `I` and `M` is an accessible static abstract member of `I`.
+> NOTE: The status of `^T.<identifier>` is being evaluated.  In some cases, parenthesization may be needed.
 
-```fsharp
-let someFunction<'T when 'T : I<'T>>() =
-    'T.M()
-    let t = 'T.P
-    return t + 'T.P
-```
+`typar.M` is resolved to either
 
-See also https://github.com/fsharp/fslang-design/blob/main/RFCs/FS-1024-simplify-constrained-call-syntax.md.  This syntax will be usable for SRTP invocations in the case that the type parameter has been explicitly constrained with an SRTP constraint. Some limitations may apply.
+* A static abstract method when `'T` is constrained by an interface `I` and `M` is an accessible static abstract member of `I`.
+  These are processed as normal member calls.
+
+
+  ```fsharp
+  let someFunction<'T when 'T : I<'T>>() =
+      'T.M()
+      let t = 'T.P
+      t + 'T.P
+  ```
+
+* A static member trait constraint when `'T` is constrained by an SRTP constraint with name `M`. Constrained calls on SRTP constraints are limited. Property and member calls are allowed:
+
+  ```fsharp
+  let inline f_StaticProperty<^T when ^T : (static member StaticProperty: int) >() : int = ^T.StaticProperty
+
+  let inline f_StaticMethod<^T when ^T : (static member StaticMethod: int -> int) >() : int = ^T.StaticMethod(3)
+  ```
+
+  However indexing, slicing and property-setting are not allowed and explicit forms must be used instead.  This is because SRTP constraints calls are not processed using method overloading rules.
+
+  ```fsharp
+  let inline f_set_StaticProperty<^T when ^T : (static member StaticProperty: int with set) >() =
+      ^T.set_StaticProperty(3)
+
+  let inline f_set_Length<^T when ^T : (member Length: int with set) >(x: ^T) =
+      x.set_Length(3)
+
+  let inline f_Item1<^T when ^T : (member Item: int -> string with get) >(x: ^T) =
+      x.get_Item(3)
+  ```
 
 ### Interfaces with static abstract members are constraints, not types
 
