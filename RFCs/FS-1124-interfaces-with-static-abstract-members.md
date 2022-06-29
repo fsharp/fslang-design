@@ -588,4 +588,23 @@ let addThem (x: #INumeric<'T>) y = x + y
 
 * [ ] Spec name resolution of `^T.Name` when `^T` has both SRTP and IWSAM members with the same name `Name` (SRTP is preferred)
 
+* [ ] We have precedence woes for cases like this:
+
+
+```fsharp
+    let inline f<^T when ^T : (static member StaticMethod: int -> int)>() =
+        ^T.StaticMethod(3)
+        ^T.StaticMethod(3)
+```
+
+Here the `^` on the last line is causing the expression to be interpreted as an infix expression `a^b`. This is unfortunate - while there is a workaround of simply parenthesizing it is non-obvious.
+
+```fsharp
+    let inline f<^T when ^T : (static member StaticMethod: int -> int)>() =
+        (^T.StaticMethod(3))
+        (^T.StaticMethod(3))
+```
+
+
+
 
