@@ -429,11 +429,13 @@ let SomeEntryPoint newArg =
 
 As another example, consider `IParseable<T>`. Let's assume you have a set of 100 domain object classes using `IParseable<T>` and a framework to compose these. Now assume the specification of your parsing implementations changes so that, for example, there are now **two** textual formats you need to parse, and you want a parameter to control which ones are accepted.  In this case, there is literally  no way to communicate that control parameter to your 100 implementations of `IParseable<T>`. This means your composition framework built on `IParseable<T>` may become entirely useless to you, simply due to this one small unexpected change in requirement. You now have to remove all use of `IParseable<T>`, shifting to another technnique.  What's gone wrong?  Perhaps the initial use of `IParseable<T>` should carry a warning, saying "one day you or your users may  regret this, and have to undo everything you've done".
 
-To recap, IWSAM implementations are not within the parameterizable "core" portion of the langauge. Plumbing parameters to IWASM implementations is not possible without changing IWSAM definitions. This means using existing abstractions in your own code exposes you to removal should your requirements change.
+In summary, IWSAM implementations are not within the parameterizable "core" portion of the langauge. Plumbing parameters to IWASM implementations is not possible without changing IWSAM definitions or adding more generic parameters. Using IWSAMs expose you to the open-ended risk that you will have to remove them should the structure or requirements of your code change.
 
 > ASIDE: The same problem applies to a very small extent when using some other C#/F# constructs such as operators, which must have static implementations.  However it is fairly routine to remove the use of these, and they rarely need to capture, and they do not participate in compositional framework design.
 
 > NOTE: Haskell's type classes have this problem.  Scala's 'implicits' do **not** suffer this problem - implicit implementations can be local and can capture, something seen as adding major flexibility and built on long experience. F# SRTPs have this problem but are not widely used in user code.
+
+> NOTE: As [pointed out on twitter](https://twitter.com/Savlambda/status/1542141589551779841) it is possible to plumb "ultimately statically known" information to an IWSAM implementation by passing yet another IWSAM constrained type parameter. This means doubling down on the complexity and more and more type-level parameterization. However any feature which takes away the ability to plumb information from A to B by passing a simple, normal parameter takes you away from the most fundamental way to control complexity in programming. It's saying Lambda is not the Ultimate, but rather TypeLambda or Functor etc. is.
 
 ### Drawback - Three ways to abstract
 
