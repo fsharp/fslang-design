@@ -178,7 +178,7 @@ type SomeAttachingAbbreviation<^T, ^U ... when constraints> = ^T
 ```
 
 Then 
-```
+```fsharp
 let inline f<^T, ^U when SomeAttachingAbbreviation<^T, ^U, ...>>() =
 ```
 is interpreted as the inlining of `constraints` after substituting. The first actual type parameter must be a type variable.
