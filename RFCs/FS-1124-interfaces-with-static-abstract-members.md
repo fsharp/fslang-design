@@ -61,7 +61,7 @@ type C() =
 
 Static abstract methods may not be declared in classes.
 
-### Invoking static constrint members in generic code
+### Invoking constraint members
 
 The syntax of expressions is extended with
 ```fsharp
