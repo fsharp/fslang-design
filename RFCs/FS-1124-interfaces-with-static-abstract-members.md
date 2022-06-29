@@ -630,6 +630,13 @@ Here the `^` on the last line is causing the expression to be interpreted as an 
         (^T.StaticMethod(3))
 ```
 
+A possible resolution is to require the use of `'T' for invocations or to use this as a workaround, e.g.
+```fsharp
+    let inline f<^T when ^T : (static member StaticMethod: int -> int)>() =
+        'T.StaticMethod(3)
+        'T.StaticMethod(3)
+```
+This actually works today (`^T` and `'T` are not considered different names).  
 
 
 
