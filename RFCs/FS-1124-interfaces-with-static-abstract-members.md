@@ -464,14 +464,6 @@ This doesn't make implementing `IParseable<'T>` wrong - it's just very important
 
 Another way of looking at this is that, unlike actual functions and objects, IWSAM implementations live and are composed at a different "level" than the rest of application - the level of static composition with generics - they are immune to regular parameterization. This means using IWSAMs has some of the same characteristics as original Standard ML functors or C++ templates, both of which partition software into two layers - the core language and the composition language. Another way is to note that IWSAMs are not a first class thing - a method can't return an IWSAM implementation.
 
-### Drawbacks - Summary and Guidance 
-
-IWSAM implementations are not within the "core" portion of the langauge: they are not first-class objects, can't be produced by methods and, most importantly, can't be additionally parameterized. Explicitly plumbing parameters to IWSAM implementations is not possible without changing IWSAM definitions. Because of this, using IWSAMs exposes you to the open-ended possibility that you will have to use implicit information plumbing, or remove them.  
-
-IWSAMs work best on highly stable types and operations where there is essentially no possibility of requirements changing to include new dependencies or variations of implementation. You should only implement IWSAMs on types where their implementation is forever "closed" and "incontrovertible". Numerics are a good example: these types and operations are highly semantically stable, require little additional information and have very stable contracts. However your application code almost certainly isn't like this.
-
-You should not write composition frameworks using IWSAMs as the unit of composition. Instead, use regular programming with functions and objects for composition, and write helpers to lift types that have IWSAM definitions into your functional-object composition framework.
-
 > Note: `IParseable` does have an *implicit* way of passing extra information, through the optional `IFormatProvider` argument. However in practice that's unusable for such purposes as propagating information via an explicit format provider is notoriously difficult - it is effectively only for numeric, date and culture formatting data. So in this section we are discussing *explicit* parameterization of additional information that informs the action of parsing domain objects.
 
 > Note: It could be said "`IParseable` is only for parsing numbers, dates and so on, and it's simply not for parsing domain objects where parsing different variations requires significant code". That's fine.
@@ -521,6 +513,18 @@ These have pros and cons and can actually be used perfectly well together:
 | Explicit function/interface passing | No constraints | Find a suitable function/interface | None |
 | IWSAMs | Interfaces with static abstract methods | The interfaces must be defined on the type |  The entire scope of the generic code is subject to the constraint |
 | SRTP | Member trait constraints | Member must be defined on the type ([FS-1043](https://github.com/fsharp/fslang-design/blob/main/RFCs/FS-1043-extension-members-for-operators-and-srtp-constraints.md) proposes to extend these to extension members.) |  SRTP can only be used in inlined F# code |
+
+## Guidance 
+
+A summary of guidance from the above:
+
+* **Using IWSAMs in application code carries a strong risk you or your team will need to remove their use.** IWSAM implementations are not within the "core" portion of the langauge: they are not first-class objects, can't be produced by methods and, most importantly, can't be additionally parameterized. Explicitly plumbing parameters to IWSAM implementations is not possible without changing IWSAM definitions. Because of this, using IWSAMs exposes you to the open-ended possibility that you will have to use implicit information plumbing, or remove them.  
+
+* **Only implement IWSAMs on when implementations are stable, closed, and incontrovertible.** IWSAMs work best on highly stable types and operations where there is essentially no possibility of requirements changing to include new dependencies or variations of implementation. You should only implement IWSAMs on types where their implementation is forever "closed" and "incontrovertible". Numerics are a good example: these types and operations are highly semantically stable, require little additional information and have very stable contracts. However your application code almost certainly isn't like this.
+
+* **Prefer explicit function passing for generic code.** In F# there are now three mechanisms to do type-level abstraction: Explicit function passing, IWSAMs and SRTP. Within F#, explicit function passing should generally be preferred. SRTP and IWSAMs can be used as needed.
+
+* **Do not use IWSAMs as a unit of composition.**  You should not write composition frameworks using IWSAMs as the unit of composition. Instead, use regular programming with functions and objects for composition, and write helpers to lift types that have IWSAM definitions into your functional-object composition framework.
 
 ## Alternatives
 
