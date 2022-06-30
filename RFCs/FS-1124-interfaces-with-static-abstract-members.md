@@ -518,13 +518,21 @@ These have pros and cons and can actually be used perfectly well together:
 
 A summary of guidance from the above:
 
-* **Using IWSAMs in application code carries a strong risk you or your team will need to remove their use.** IWSAM implementations are not within the "core" portion of the langauge: they are not first-class objects, can't be produced by methods and, most importantly, can't be additionally parameterized. Explicitly plumbing parameters to IWSAM implementations is not possible without changing IWSAM definitions. Because of this, using IWSAMs exposes you to the open-ended possibility that you will have to use implicit information plumbing, or remove them.  
+* **Understand the inherent limitations of IWSAMs.** IWSAM implementations are not within the "core" portion of the F# as an expression-oriented and parameter-oriented langauge: they are not first-class objects, can't be produced by methods and, most importantly, can't even be additionally parameterized. This restriction applies to *all* implementations of any IWSAM.
+
+* **Using IWSAMs in application code carries a strong risk you or your team will need to remove their use.** Explicitly plumbing new parameters to IWSAM implementations is not possible without changing IWSAM definitions. Because of this, using IWSAMs exposes you to the open-ended possibility that you will have to use implicit information plumbing, or remove the use of IWSAMs. Given that F# teams generally prefer explicit information plumbing, teams will often remove the use of devices that require implicit information plumbing.  
 
 * **Only implement IWSAMs on types where their implementations are stable, closed-form, and incontrovertible.** IWSAMs work best on highly stable types and operations where there is essentially no future possibility of requirements changing to include new parameters, dependencies or variations of implementation. This means that you should only implement IWSAMs on types where their implementation is forever "closed" and "incontrovertible" - that is, unarguable. Numerics are a good example: these types and operations are highly semantically stable, require little additional information and have very stable contracts. However your application code almost certainly isn't like this.
 
-* **Prefer explicit function passing for generic code.** In F# there are now three mechanisms to do type-level abstraction: Explicit function passing, IWSAMs and SRTP. Within F#, explicit function passing should generally be preferred. SRTP and IWSAMs can be used as needed.
+* **Prefer explicit function passing for generic code.** In F# there are now three mechanisms to do type-level abstraction: Explicit function passing, IWSAMs and SRTP. Within F#, when writing generic code, explicit function passing should generally be preferred. SRTP and IWSAMs can be used as needed. Write helpers to access functions from types that have IWSAM definitions. See examples above.
 
-* **Do not use IWSAMs as a unit of composition.**  You should not write composition frameworks using IWSAMs as the unit of composition. Instead, use regular programming with functions and objects for composition, and write helpers to lift leaf types that have IWSAM definitions into your functional-object composition framework. See examples above.
+* **Do not use IWSAMs as the basis for a composition framework.**  You should not write composition frameworks using IWSAMs as the unit of composition. Instead, use regular programming with functions and objects for composition, and write helpers to lift leaf types that have IWSAM definitions into your functional-object composition framework. See examples above.
+
+* **If defining IWSAMs, put static members in their own interface.**  Do not mix static and non-static interfaces in IWSAMs.
+
+* **Go light on the SRTP.**  Some of the changes in this RFC enable nicer SRTP programming. Some of the above guidance applies to SRTP - for examplem do not use SRTP as a composition framework.
+
+* **For generic math, use SRTP or IWSAM.** Generic math works well with either.  If C#-facing, use IWSAMs generic code.
 
 ## Alternatives
 
