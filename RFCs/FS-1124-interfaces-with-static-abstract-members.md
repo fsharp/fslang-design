@@ -369,7 +369,7 @@ Note that explicit function-passing code is shorter and more general - it works 
 
 For the vast majority of generic coding in F# explicit function-passing is perfectly acceptable, with the massive benefit that the programmer doesn't burn their time trying to create or use a cathedral of perfect abstractions. SRTP handles most other cases.
 
-### Drawback - Implementations of static abstract methods are not parameterizable, they can't close over anything
+### Drawback - Implementations of static abstract methods can't take further explicit parameters
 [drawback---implementations-of-static-abstract-methods-are-not-parameterizable-they-cant-close-over-anything]: #drawback---implementations-of-static-abstract-methods-are-not-parameterizable-they-cant-close-over-anything
 
 F# is driven by explicit parameterization, for example functions:
