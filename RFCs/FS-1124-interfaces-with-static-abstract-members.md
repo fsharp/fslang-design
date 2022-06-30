@@ -106,6 +106,57 @@ The syntax of expressions is extended with
       x.get_Item(3)
   ```
 
+### Self type constraints
+
+A new syntax shorthand for self-constraints is added to F#. Specifically 
+
+```fsharp
+let f<'T when IComparable<'T>>() =
+```
+can be used.
+
+The meaning is identical to 
+```fsharp
+let f<'T when 'T :> IComparable<'T>>() =
+     ...
+```
+The type must be instantiated with a generic type parameter in first position. 
+
+### Abbreviations that name collections of constraints
+
+F# already allows the definition of abbreviations that "attach" constraints to types. For example an abbreviation that attaches the operations required for `List.average` can be defined like this.:
+
+```fsharp
+type WithAverageOps<^T when ^T: (static member (+): ^T * ^T -> ^T)
+                       and  ^T: (static member DivideByInt : ^T*int -> ^T)
+                       and  ^T: (static member Zero : ^T)> = ^T
+```
+
+In this RFC, we allow using such abbreviations as self-constraints. For example:
+
+```fsharp
+type WithStaticProperty<^T when ^T : (static member StaticProperty: int)> = ^T
+type WithStaticMethod<^T when ^T : (static member StaticMethod: int -> int)> = ^T
+type WithBoth<^T when WithStaticProperty<^T> and WithStaticMethod<^T>> = ^T
+
+let inline f<^T when WithBoth<^T>>() =
+    let v1 = 'T.StaticProperty
+    let v2 = 'T.StaticMethod(3)
+    v1 + v2
+```
+
+The interpretation here is slightly different.  The abbreviation **must** have the form
+
+```fsharp
+type SomeAttachingAbbreviation<^T, ^U ... when constraints> = ^T
+```
+
+Then 
+```fsharp
+let inline f<^T, ^U when SomeAttachingAbbreviation<^T, ^U, ...>>() =
+```
+is interpreted as the inlining of `constraints` after substituting. The first actual type parameter must be a type variable.
+
 ### Interfaces with static abstract members are constraints, not types
 
 Interfaces with static abstract members should never generally be used as **types**, but rather as **constraints on generic type parameters**.
@@ -158,56 +209,39 @@ Note that in these examples neither function is inlined.  The non-static type pa
 
 Object expressions may not be used to implement interfaces that contain static abstract methods.  This is because the only use for such an implementation is to pass as a type argument to a generic construct constrained by the interface.
 
-### Self type constraints
+### Interaction with Units of Measure
 
-A new syntax shorthand for self-constraints is added to F#. Specifically 
+* Discussion: https://github.com/dotnet/fsharp/issues/12881#issuecomment-1081269462
 
+* Discussion: https://github.com/dotnet/fsharp/issues/12881#issuecomment-1081292469
+
+If no changes are made, `double<m>` is considered to implement:
 ```fsharp
-let f<'T when IComparable<'T>>() =
-```
-can be used.
-
-The meaning is identical to 
-```fsharp
-let f<'T when 'T :> IComparable<'T>>() =
-     ...
-```
-The type must be instantiated with a generic type parameter in first position. 
-
-### Abbreviations that name collections of constraints
-
-F# already allows the definition of abbreviations that "attach" constraints to types. For example an abbreviation that attaches the operations required for `List.average` can be defined like this.:
-
-```fsharp
-type WithAverageOps<^T when ^T: (static member (+): ^T * ^T -> ^T)
-                       and  ^T: (static member DivideByInt : ^T*int -> ^T)
-                       and  ^T: (static member Zero : ^T)> = ^T
+IAdditionOperators<double<m>, double<m>, double<m>>
+IMultiplyOperators<double<m>, double<m>, double<m>>
 ```
 
-In this RFC, we allow using such abbreviations as self-constraints. For example:
+For addition that's fine, and means 
 
 ```fsharp
-type WithStaticProperty<^T when ^T : (static member StaticProperty: int)> = ^T
-type WithStaticMethod<^T when ^T : (static member StaticMethod: int -> int)> = ^T
-type WithBoth<^T when WithStaticProperty<^T> and WithStaticMethod<^T>> = ^T
+    let f (x: #IAdditionOperators<_,_,_>) = x + x
 
-let inline f<^T when WithBoth<^T>>() =
-    let v1 = 'T.StaticProperty
-    let v2 = 'T.StaticMethod(3)
-    v1 + v2
+    f 3.0<m>
 ```
 
-The interpretation here is slightly different.  The abbreviation **must** have the form
+will return the right thing.  However 
 
 ```fsharp
-type SomeAttachingAbbreviation<^T, ^U ... when constraints> = ^T
+    let f (x: #IMultuplyOperators<_,_,_>) = x + x
+
+    f 3.0<m>
 ```
 
-Then 
-```fsharp
-let inline f<^T, ^U when SomeAttachingAbbreviation<^T, ^U, ...>>() =
-```
-is interpreted as the inlining of `constraints` after substituting. The first actual type parameter must be a type variable.
+will return `9.0<m>` instead of `9.0<m^2>`.
+
+We will adjust the F# compiler so that `double<m>` is considered to implement `IMultiplyOperators<double<m>,double<m>,double<m*m>` for a specific set of interface types. This fits with the existing design of F#, where the constraint solver does specific work so that a specific set of SRTP constraints like `op_Multiply` have their signatures adjust to be correctly unitized.
+
+Other alternatives that were considered are discussed below.
 
 ### SRTP adjustments
 
@@ -657,6 +691,17 @@ Here the `^` on the last line is causing the expression to be interpreted as an 
 ```
 Note that `^T` and `'T` are not considered different names.
 
+### Alternatives for Units of Measure
+
+We have four options:
+
+1. Don't do anything and accept the unsoundness
+2. Give a warning so that each time a unitized type is solves a constraint `'T :> `IMultiplyOperators<_,_,_>` for a specific set of interface types known to have this problem
+3. Adjust the F# compiler so that `double<m>` is considered to implement `IMultiplyOperators<double<m>,double<m>,double<m*m>` for a specific set of interface types
+4. Ask the BCL team to add metadata about the unitization signatures of each of the numeric abstractions.
+
+We decided to do (3).
+
 ## Compatibility
 [compatibility]: #compatibility
 
@@ -683,4 +728,8 @@ let addThem (x: #INumeric<'T>) y = x + y
 
 * [ ] Spec name resolution of `^T.Name` when `^T` has both SRTP and IWSAM members with the same name `Name` (SRTP is preferred)
 
-* [ ] Discuss units of measure - will unitized types be considered to implement any geenric math interfaces?  Most are unsound from a unit perspective, so probably not.
+* [ ] Spec the exact set of transformations applied to unitized interface implementations.
+
+* [ ] Check that `^T` can be changed to `'T` with staticness inferred in all situations we care about and ad testing for these
+
+
