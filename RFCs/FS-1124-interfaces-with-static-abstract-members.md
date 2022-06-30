@@ -445,7 +445,7 @@ module Parsers =
         if version = V1 then SomeClassParser1 else SomeClassParser2
 ```
 
-With this approach you can write and compose parsers happily - the parsers are first-class objects. You can also life `T :> IParseable<T>` into a Parser and then compose happily. For example:
+With this approach you can write and compose parsers happily - the parsers are first-class objects. You can also lift `T :> IParseable<T>` into a Parser and then compose happily. For example:
 
 ```fsharp
 module Parsers =
