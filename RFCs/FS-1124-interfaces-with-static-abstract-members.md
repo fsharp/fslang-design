@@ -747,4 +747,4 @@ let addThem (x: #INumeric<'T>) y = x + y
 
 * [ ] Check that `^T` can be changed to `'T` with staticness inferred in all situations we care about and ad testing for these
 
-
+* [ ] Consider the cases where we create delegates to IWSAM-constrained target methods
