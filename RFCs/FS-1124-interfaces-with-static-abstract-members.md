@@ -400,44 +400,48 @@ type SomeClass(newArg , x) =
 
 This is at the heart of F# programming and all functional programming, and it is powerful and accurate. Additionally, requirements change: what is initially independent may later need to become dependent on something new. In F#, when this happens, 99% of the time you plumb a parameter through: perhaps organising them via tuples, or records, or objects. Either way the adjustments are relatively straight-forward. That's the whole point.
 
-It is obvious-yet-crucial that **implementations of static abstract methods have a fixed signature and are static**. If an implementation of a static abstract method like `IParseable<T>.TryParse` later needs something new - something unavailable from the inputs or global state or implicit thread/task context - you are stuck. Normal static methods can become instance methods in this situation, or take additional parameters.  But implementations of static abstract methods can't become instance, and they can't take additional parameters: since they **must be forever static** and **must always take specific arguments**.  You are stuck: you literally have no way of explicitly plumbing information from A to B. Your options are are switching to a new set of IWSAMs (plus a new framework to compose them), or removing the use of IWSAMs and returning to the land of objects and functions.
+It is obvious-yet-crucial that **implementations of static abstract methods have a fixed signature and are static**. If an implementation of a static abstract method  later needs something new - something unavailable from the inputs or global state or implicit thread/task context - you are stuck. Normal static methods can become instance methods in this situation, or take additional parameters.  But implementations of static abstract methods can't become instance, and they can't take additional explicit parameters: since they **must be forever static** and **must always take specific arguments**.  You are stuck: you literally have no way of explicitly plumbing information from A to B. Your options are are switching to a new set of IWSAMs (plus a new framework to compose them), or removing the use of IWSAMs and returning to the land of objects and functions.
 
-To see why this matters, consider `IParseable<T>.TryParse`. Let's assume you have a set of 100 domain classes implementing `IParseable<T>.TryParse` and you've written a framework to compose these, e.g. extension methods to generically parse arrays and grids of things, read files and so on. Now assume the specification of your parsing changes so that, for two types there are now two textual formats you need to parse - say v1 and v1' - characterised by a user-facing parameter that selects which format (or both) is accepted. In this case, there is no way to explicitly communicate that control parameter to those two implementations of `IParseable<T>`. This means your composition framework built on `IParseable<T>` may become useless to you, due to nothing but this one small (yet predictable) change in requirements. You will now have to remove all use of `IParseable<T>`, shifting to another technnique, or else rely on implicit commication of any additional information.
+To see why this matters, consider a basic `IParseable<T>` (the actual `IParseable<T>` has some additional options, see below).
 
-What's gone wrong? Well, IWSAMs should never have been used for this in your code. You should always have used regular interfaces, objects and functions - the world of normal functional-object programming. For composition you should use explicit composition of functions and objects - parser combinators and similar. All this is standard functional-object programming.
+```fsharp
+type IParseable<'T> =
+    static abstract Parse: string -> 'T
+```
+
+So far so good.  Now let's assume you have a set of 100 domain classes implementing `IParseable<T>` and you've written a framework to compose these, e.g. extension methods to generically parse arrays and grids of things, read files and so on. Each implementation looks like this, and whatever the guidance says you've gone deep, really deep 
+
+```fsharp
+type C =
+    interface IParseable<C> with
+        static abstract Parse(input) = ....
+```
+
+Now assume the specification of your parsing changes so that, for two types C1 and C2 your parsers now need to selectively parse multiple versions at different points in the data stream  - say v1 and v2. You try to write this:
+
+```fsharp
+type C =
+    interface IParseable<C> with
+        static abstract Parse(input) =
+            if version1 then 
+                ....
+            else
+                ....
+```
+
+But how to get `version1` into `Parse`?  In this case, there is literally no way to explicitly communicate that parameter to those two implementations of `IParseable<T>`. This means your composition framework built on the IWASM `IParseable<T>` may become useless to you, due to nothing but this one small (yet predictable) change in requirements. You will now have to remove all use of `IParseable<T>` and shift to another technnique, or else rely on implicit communication of parameters. This is no theoretical exercise - data-format parsers often, by necessity over time, need variations.
+
+What's gone wrong? Well, ok, IWSAMs should never have been used for parsing domain objects. But how were we to know that when we started version one? You should always have used regular interfaces, objects and functions - the world of normal functional-object programming. For composition you should use explicit composition of parser functions and objects. All this is standard functional-object programming.
 
 Another way of looking at this is that IWSAM implementations live and are composed at a different "level" than the rest of application - the level of static composition with generics. This means using IWSAMs have some of the same characteristics as original Standard ML functors or C++ templates, both of which partition software into two layers - the core language and the composition language. Another way is to ask "is a trait implementation a first class thing" - can a method return a IWSAM implementation? The answer is "no", and nothing we have in .NET will likely ever allow that.
 
-In more detail, let's continue the example above and assume `MyType1.DoSomething` needs a new parameter `newArg`.  As expected it now becomes an instance member. When using explicit function passing, the generic code doesn't need to change at all and can simply be reused:
-```fsharp
-type MyType1(newArg) =
-    member _.DoSomething(x) = ...newArg...
-       
-let SomeEntryPoint newArg =
-    ...
-    let ctxt = MyType1(newArg)
-    SomeGenericThing ctxt.DoSomething 1
-    ...
-```
+**Summary:** IWSAM implementations are not within the "core" portion of the langauge: they are not first-class objects, can't be produced by methods and, most importantly, can't be additionally parameterized. Explicitly plumbing parameters to IWASM implementations is not possible without changing IWSAM definitions. Because of this, using IWSAMs exposes you to the open-ended possibility that you will have to remove them should the structure or requirements of your IWSAM implementations change to depend on more information, or else rely on implicit context parameters of mutable global state.
 
-This is simple capture and it is the routine way of propagating and tracking new requirements in F# or any other functional-object language. In contrast, if using IWSAMs, you are stuck (unless you have the ability to adjust `ISomeFunctionality` to become a non-IWSAM)
+IWSAMs work best on highly stable types and operations where there is essentially no possibility of requirements changing to include new dependencies. Numerics are a good example: these types and operations are highly semantically stable, require little additional information and have very stable contracts. However your application code almost certainly isn't like this.
 
-```fsharp
-type MyType1 =
-    interface ISomeFunctionality<MyType1> with
-        static member DoSomething(x) = ...  // It is not possible to plumb `newArg` to `MyType1.DoSomething`
+> Note: `IParseable` does have an *implicit* way of passing extra information, through the optional `IFormatProvider` argument. However in practice that's unusable for such purposes as propagating information via an explicit format provider is notoriously difficult - it is effectively only for numeric, date and culture formatting data. So in this section we are discussing *explicit* parameterization of additional information that informs the action of parsing domain objects.
 
-let SomeEntryPoint newArg =
-    SomeGenericThing<MyType1> arg1 
-```
-
-**Summary:** IWSAM implementations are not within the "core" portion of the langauge: they are not first-class objects, can't be produced by methods and, most importantly, can't be additionally parameterized. Plumbing parameters to IWASM implementations is not possible without changing IWSAM definitions. Because of this, using IWSAMs exposes you to the open-ended possibility that you will have to remove them should the structure or requirements of your IWSAM implementations change to depend on more information, or else rely on implicit context parameters of mutable global state.
-
-IWSAMs work best on highly stable types and operations where there is essentially no possibility of requirements changing to include new dependencies. Numerics are a good example: these types and operations are highly semantically stable and require little additional information. However your application code almost certainly isn't like this.
-
-> Note: `IParseable` does have an *implicit* way of passing extra information, through the optional `IFormatProvider` argument, though in practice that's unusable for such purposes as it is effectively specific to numerics and culture formatting data. In this section we are discussing *explicit* parameterization of additional information that informs the action of parsing domain objects.
-
-> Note: It could be said "`IParseable` is for parsing numbers, dates and so on. It's not for parsing domain objects where parsing different variations requires significant code.". However the above would apply to any attempt to write a domain object parsing framework using IWSAMs.
+> Note: It could be said "`IParseable` is only for parsing numbers, dates and so on, and it's simply not for parsing domain objects where parsing different variations requires significant code". That's fine.
 
 > Note: As [pointed out on twitter](https://twitter.com/Savlambda/status/1542141589551779841) it is possible to plumb "statically known" information to an IWSAM implementation by passing additional IWSAM constrained type parameters. This means doubling down on more type-level parameterization, and any further IWSAMs passed are subject to the same problems.
 
