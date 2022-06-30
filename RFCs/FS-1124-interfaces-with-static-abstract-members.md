@@ -532,7 +532,7 @@ A summary of guidance from the above:
 
 * **Prefer explicit function passing for generic code.** In F# there are now three mechanisms to do type-level abstraction: Explicit function passing, IWSAMs and SRTP. Within F#, when writing generic code, explicit function passing should generally be preferred. SRTP and IWSAMs can be used as needed. Write helpers to access functions from types that have IWSAM definitions. See examples above.
 
-* * **If defining IWSAMs, put static members in their own interface.**  Do not mix static and non-static interfaces in IWSAMs.
+* **If defining IWSAMs, put static members in their own interface.**  Do not mix static and non-static interfaces in IWSAMs.
 
 * **Go light on the SRTP.**  Some of the changes in this RFC enable nicer SRTP programming. Some of the above guidance applies to SRTP - for example do not use SRTP as a composition framework.
 
