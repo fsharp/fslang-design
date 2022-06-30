@@ -445,15 +445,15 @@ module Parsers =
         if version = V1 then SomeClassParser1 else SomeClassParser2
 ```
 
-With this approach you can write and compose parsers happily - the parsers are first-class objects. You can also lift `T :> IParseable<T>` into a Parser and then compose happily. For example:
+With this approach you can write and compose parsers happily - the parsers are first-class objects. You can also lift any value of type `T :> IParseable<T>` into a `Parser` and then compose happily. For example:
 
 ```fsharp
 module Parsers =
-    let IParseableParser<'T when IParseable<'T>> =
+    let LiftParseable<'T when IParseable<'T>> =
         Parser p.Parse
 
-    let IntParser = IParseable_parser<int>
-    let DoubleParser = IParseable_parser<double>
+    let IntParser = LiftParseable<int>
+    let DoubleParser = LiftParseable<double>
     
     let OverallParser = CombineParsers (IntParser, DoubleParser, SomeClassParser1)
 ```
