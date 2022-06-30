@@ -518,7 +518,7 @@ These have pros and cons and can actually be used perfectly well together:
 
 A summary of guidance from the above:
 
-* **Understand the inherent limitations of IWSAMs.** IWSAM implementations are not within the "core" portion of the F#: they are not first-class objects, can't be produced by methods and, most importantly, can't even be additionally parameterized. IWSAM implementations must be intrinsic to the type, they can't be added after-the-fact.
+* **Understand the inherent limitations of IWSAMs.** IWSAM implementations are not within the "core" portion of the F#: they are not first-class objects, can't be produced by methods and, can't be additionally parameterized. IWSAM implementations must be intrinsic to the type, they can't be added after-the-fact.
 
 * **Don't give in to type-categorization impulse.**  With IWSAMs, you can happily waste years of your life carefully categorising all the concepts in your codebase. Don't do it. Throw away the urge to categorise. Forget that you can do it. It almost certainly isn't helpful to categorise the types in your application code using these.
 
