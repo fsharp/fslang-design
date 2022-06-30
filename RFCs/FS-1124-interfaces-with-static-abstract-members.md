@@ -418,7 +418,7 @@ type C =
         static abstract Parse(input) = ....
 ```
 
-Now assume the specification of your parsing changes so that, for two types C1 and C2 your parsers now need to selectively parse multiple versions at different points in the data stream  - say v1 and v2. You try to write this:
+Now assume the specification of your parsing changes so that, for several types your parsers now need to selectively parse multiple versions at different points in the data stream  - say v1 and v2. You try to write this:
 
 ```fsharp
 type C =
