@@ -410,7 +410,7 @@ type IParseable<'T> =
     static abstract Parse: string -> 'T
 ```
 
-So far so good.  Now let's assume you have a set of 100 domain classes implementing `IParseable<T>` and you've written a framework to compose these, e.g. extension methods to generically parse arrays and grids of things, read files and so on. Each implementation looks like this, and whatever the guidance says you've gone deep, really deep 
+So far so good.  Now let's assume you have a set of 100 domain classes implementing `IParseable<T>` and you've written a framework to compose these, e.g. extension methods to generically parse arrays and grids of things, read files and so on - whatever the guidance says you've gone deep, really deep into the whole `IParseable<T>` thing and it feels good, really good. Each implementation looks like this:
 
 ```fsharp
 type C =
@@ -418,7 +418,7 @@ type C =
         static abstract Parse(input) = ....
 ```
 
-Now assume the specification of your parsing changes so that, for several types your parsers now need to selectively parse multiple versions at different points in the data stream  - say v1 and v2. You try to write this:
+Now assume it's the last night of your project - you're submitting your code tomorrow - and the specification of your parsing changes so that, for several types your parsers now need to selectively and dynamically parse multiple versions at different points in the data stream  - say v1 and v2. You try to write this:
 
 ```fsharp
 type C =
@@ -430,9 +430,9 @@ type C =
                 ....
 ```
 
-But how to get `version1` into `Parse`?  In this case, there is literally no way to explicitly communicate that parameter to those two implementations of `IParseable<T>`. This means your composition framework built on the IWASM `IParseable<T>` may become useless to you, due to nothing but this one small (yet predictable) change in requirements. You will now have to remove all use of `IParseable<T>` and shift to another technnique, or else rely on implicit communication of parameters. This is no theoretical exercise - data-format parsers often, by necessity over time, need variations.
+But how to get `version1` into `Parse`?  In this case, there is literally no way to explicitly communicate that parameter to those two implementations of `IParseable<T>`. This means your composition framework built on the IWASM `IParseable<T>` may become useless to you, due to nothing but this one small (yet predictable) change in requirements. You will now have to remove all use of `IParseable<T>` and shift to another technnique, or else rely on implicit communication of parameters (global state, thread locals...). This is no theoretical exercise - format parsers often change, by necessity over time, and need variations.
 
-What's gone wrong? Well, ok, IWSAMs should never have been used for parsing domain objects. And, specifically, IWSAMs like `IParseable<T>` should only be implemented on types where the parsing implementation is forever "closed" and "incontrovertible" - that is, can never depend on external information (beyond culture/date/number formatting, see below), and there are no variations on how it should act.
+What's gone wrong? Well, ok, *IWSAMs should never have been used for parsing domain objects*. But `IParseable<'T>` sounds so, well, compelling to implement, doesn't it? Specifically, **IWSAMs like `IParseable<T>` should only be implemented on types where the parsing implementation is forever "closed" and "incontrovertible"** - that is, their implemententations will never depend on external information (beyond culture/date/number formatting, see below), and there will be no variations on how the implementations should act.
 
 What should you do instead?  Well, you should always have used regular interfaces, objects and functions - the world of normal functional-object programming - that is, parser combinators. For composition you should use explicit composition of parser functions and objects. All this is standard functional-object programming. For example:
 
@@ -450,11 +450,11 @@ module Parsers =
 
 With this approach you can write and compose parsers happily - the parsers are first-class objects.
 
-This doesn't make implementing `IParseable<'T>` wrong - it's  just very important to understand that you should only implement it on types where the parsing implementation is forever "closed" and "incontrovertible" - that is, will never depend on external controls (beyond culture/date/number formatting, see below), and there are not going to be any variations on how it should act.
+This doesn't make implementing `IParseable<'T>` wrong - it's  just very important to understand that you should only implement it on types where the parsing implementation is forever "closed" and "incontrovertible", as defined above.
 
-Another way of looking at this is that, unlike actual functions and objects, IWSAM implementations live and are composed at a different "level" than the rest of application - the level of static composition with generics - they are immune to regular parameterization. This means using IWSAMs have some of the same characteristics as original Standard ML functors or C++ templates, both of which partition software into two layers - the core language and the composition language. Another way is to note that IWSAMs are not a first class thing - a method can't return an IWSAM implementation.
+Another way of looking at this is that, unlike actual functions and objects, IWSAM implementations live and are composed at a different "level" than the rest of application - the level of static composition with generics - they are immune to regular parameterization. This means using IWSAMs has some of the same characteristics as original Standard ML functors or C++ templates, both of which partition software into two layers - the core language and the composition language. Another way is to note that IWSAMs are not a first class thing - a method can't return an IWSAM implementation.
 
-**Summary:** IWSAM implementations are not within the "core" portion of the langauge: they are not first-class objects, can't be produced by methods and, most importantly, can't be additionally parameterized. Explicitly plumbing parameters to IWASM implementations is not possible without changing IWSAM definitions. Because of this, using IWSAMs exposes you to the open-ended possibility that you will have to remove them should the structure or requirements of your IWSAM implementations change to depend on more information, or else rely on implicit context parameters of mutable global state.
+**Summary:** IWSAM implementations are not within the "core" portion of the langauge: they are not first-class objects, can't be produced by methods and, most importantly, can't be additionally parameterized. Explicitly plumbing parameters to IWASM implementations is not possible without changing IWSAM definitions. Because of this, using IWSAMs exposes you to the open-ended possibility that you will have to remove them should the structure or requirements of your IWSAM implementations change to depend on more information, or else rely on implicit context parameters of mutable global state.  You should only implement IWSAMs on types where their implementation is forever "closed" and "incontrovertible", as defined above. You should not write your primary type-composition frameworks using IWSAMs.
 
 IWSAMs work best on highly stable types and operations where there is essentially no possibility of requirements changing to include new dependencies. Numerics are a good example: these types and operations are highly semantically stable, require little additional information and have very stable contracts. However your application code almost certainly isn't like this.
 
