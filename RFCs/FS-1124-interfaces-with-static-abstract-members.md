@@ -536,6 +536,8 @@ A summary of guidance from the above:
 
 * **For generic math, use SRTP or IWSAM.** Generic math works well with either.  F# SRTP code is often quicker to write, requires less thought to make generic and has better performance do to inlining. If C#-facing, use IWSAMs for generic math code.
 
+* **For generic math using units-of-measure, use SRTP.** The .NET support for generic math does not propagate units of measure correctly. Rely on F# SRTP code for these.
+
 * **If defining IWSAMs, put static members in their own interface.**  Do not mix static and non-static interfaces in IWSAMs.
 
 ## Alternatives
@@ -681,3 +683,4 @@ let addThem (x: #INumeric<'T>) y = x + y
 
 * [ ] Spec name resolution of `^T.Name` when `^T` has both SRTP and IWSAM members with the same name `Name` (SRTP is preferred)
 
+* [ ] Discuss units of measure - will unitized types be considered to implement any geenric math interfaces?  Most are unsound from a unit perspective, so probably not.
