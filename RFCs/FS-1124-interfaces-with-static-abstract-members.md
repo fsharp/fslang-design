@@ -520,17 +520,17 @@ A summary of guidance from the above:
 
 * **Understand the inherent limitations of IWSAMs.** IWSAM implementations are not within the "core" portion of the F#: they are not first-class objects, can't be produced by methods and, most importantly, can't even be additionally parameterized. 
 
-* **Using IWSAMs in application code carries a strong risk you or your team will need to remove their use.** Explicitly plumbing new parameters to IWSAM implementations is not possible without changing IWSAM definitions. Because of this, using IWSAMs exposes you to the open-ended possibility that you will have to use implicit information plumbing, or remove the use of IWSAMs. Given that F# teams generally prefer explicit information plumbing, teams will often remove the use of devices that require implicit information plumbing.  
+* **Do not give in to type-categorization impulse.**  With IWSAMs, you can happily waste years of your life carefully categorising all the concepts in your codebase. Don't do it. Throw away the urge to categorise. Forget that you can do it. It almost certainly isn't helpful to categorise your application code using these.
+
+* **Do not give in to max-abstraction impulse.**  With IWSAMs and other generic code, you can happily waste even more years of your life max-abstracting out every common bit of code across your codebase. Don't do it. Throw away the urge to max-abstract just for its own sake. Forget that you can do it, and if you try definitely don't use IWSAMs.
+
+* **Using IWSAMs in application code carries a strong risk you or your team will later remove their use.** Explicitly plumbing new parameters to IWSAM implementations is not possible without changing IWSAM definitions. Because of this, using IWSAMs exposes you to the open-ended possibility that you will have to use implicit information plumbing, or remove the use of IWSAMs. Given that F# teams generally prefer explicit information plumbing, teams will often remove the use of devices that require implicit information plumbing.  
 
 * **Only implement IWSAMs on types where their implementations are stable, closed-form, and incontrovertible.** IWSAMs work best on highly stable types and operations where there is essentially no future possibility of requirements changing to include new parameters, dependencies or variations of implementation. This means that you should only implement IWSAMs on types where their implementation is forever "closed" and "incontrovertible" - that is, unarguable. Numerics are a good example: these types and operations are highly semantically stable, require little additional information and have very stable contracts. However your application code almost certainly isn't like this.
 
 * **Prefer explicit function passing for generic code.** In F# there are now three mechanisms to do type-level abstraction: Explicit function passing, IWSAMs and SRTP. Within F#, when writing generic code, explicit function passing should generally be preferred. SRTP and IWSAMs can be used as needed. Write helpers to access functions from types that have IWSAM definitions. See examples above.
 
 * **Do not use IWSAMs as the basis for a composition framework.**  You should not write composition frameworks using IWSAMs as the unit of composition. Instead, use regular programming with functions and objects for composition, and write helpers to lift leaf types that have IWSAM definitions into your functional-object composition framework. See examples above.
-
-* **Do not give in to type-categorization impulse.**  With IWSAMs, you can happily waste years of your life carefully categorising all the concepts in your codebase. Don't do it. Throw away the urge to categorise. Forget that you can do it. It almost certainly isn't helpful to categorise your application code using these.
-
-* **Do not give in to max-abstraction impulse.**  With IWSAMs and other generic code, you can happily waste even more years of your life max-abstracting out every common bit of code across your codebase. Don't do it. Throw away the urge to max-abstract just for its own sake. Forget that you can do it, and if you try definitely don't use IWSAMs.
 
 * * **If defining IWSAMs, put static members in their own interface.**  Do not mix static and non-static interfaces in IWSAMs.
 
