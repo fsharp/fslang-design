@@ -511,8 +511,8 @@ These have pros and cons and can actually be used perfectly well together:
 |  **Technique** | **What constraints** | **Satisfying constraints** | **Limitations** |
 |:----:|:----:|:----:|:----:|
 | Explicit function/interface passing | No constraints | Find a suitable function/interface | None |
-| IWSAMs | Interfaces with static abstract methods | The interfaces must be defined on the type |  IWSAM implementations are static |
-| SRTP | Member trait constraints | Member must be defined on the type ([FS-1043](https://github.com/fsharp/fslang-design/blob/main/RFCs/FS-1043-extension-members-for-operators-and-srtp-constraints.md) proposes to extend these to extension members.) |  SRTP implementations are static. SRTP can only be used in inlined F# code. |
+| IWSAMs | Interfaces with static abstract methods | The interfaces must be defined on the type |  IWSAM implementations are static, they can't close over ambient context. |
+| SRTP | Member trait constraints | Member must be defined on the type ([FS-1043](https://github.com/fsharp/fslang-design/blob/main/RFCs/FS-1043-extension-members-for-operators-and-srtp-constraints.md) proposes to extend these to extension members.) |  SRTP implementations are static, they can't close over ambient context. SRTP can only be used in inlined F# code. |
 
 ## Guidance 
 
@@ -524,7 +524,7 @@ A summary of guidance from the above:
 
 * **Don't give in to max-abstraction impulse.**  With IWSAMs and other generic code, you can happily waste even more years of your life max-abstracting out every common bit of code across your codebase. Don't do it. Throw away the urge to max-abstract just for its own sake. Forget that you can do it, and if you try don't use IWSAMs, since using explicit function passing will likely result in more reusable generic code (see below).
 
-* **Using IWSAMs in application code carries a strong risk you or your team will later remove their use.** Explicitly plumbing new parameters to IWSAM implementations is not possible without changing IWSAM definitions. Because of this, using IWSAMs exposes you to the open-ended possibility that you will have to use implicit information plumbing, or remove the use of IWSAMs. Given that F# teams generally prefer explicit information plumbing, teams will often remove the use of devices that require implicit information plumbing.  
+* **Using IWSAMs in application code carries a strong risk where you or your team will later remove their use.** Explicitly plumbing new parameters to IWSAM implementations is not possible without changing IWSAM definitions. Because of this, using IWSAMs exposes you to the open-ended possibility that you will have to use implicit information plumbing, or remove the use of IWSAMs, or put a layer of composition that will pick a set of concrete implementation of IWSAMs based on explicit context arguments. Given that F# teams generally prefer explicit information plumbing, teams will often remove the use of devices that require implicit information plumbing.
 
 * **Only implement IWSAMs on types where their implementations are stable, closed-form, and incontrovertible.** IWSAMs work best on highly stable types and operations where there is essentially no future possibility of requirements changing to include new parameters, dependencies or variations of implementation. This means that you should only implement IWSAMs on types where their implementation is forever "closed" and "incontrovertible" - that is, unarguable. Numerics are a good example: these types and operations are highly semantically stable, require little additional information and have very stable contracts. However your application code almost certainly isn't like this.
 
@@ -532,7 +532,7 @@ A summary of guidance from the above:
 
 * **Prefer explicit function passing for generic code.** In F# there are now three mechanisms to do type-level abstraction: Explicit function passing, IWSAMs and SRTP. Within F#, when writing generic code, explicit function passing should generally be preferred. SRTP and IWSAMs can be used as needed. See examples above.
 
-* **Go light on the SRTP.**  Some of the changes in this RFC enable nicer SRTP programming. Some of the above guidance applies to SRTP - for example do not use SRTP as a composition framework.
+* **Go light on the SRTP.**  Some of the changes in this RFC enable nicer SRTP programming. Some of the above guidance applies to SRTP - for example do not use SRTP as a composition framework, albeit SRTP doesn't couple with a specific type, it has same flaws of not allowing extra context to be closed over, when compared to regular functional composition.
 
 * **For generic math, use SRTP or IWSAM.** Generic math works well with either.  F# SRTP code is often quicker to write, requires less thought to make generic and has better performance do to inlining. If C#-facing, use IWSAMs for generic math code.
 
