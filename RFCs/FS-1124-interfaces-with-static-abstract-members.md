@@ -534,7 +534,7 @@ A summary of guidance from the above:
 
 * **Go light on the SRTP.**  Some of the changes in this RFC enable nicer SRTP programming. Some of the above guidance applies to SRTP - for example do not use SRTP as a composition framework.
 
-* **For generic math, use SRTP or IWSAM.** Generic math works well with either.  F# SRTP code is often quicker to write, requires less thought to make generic and has better performance do to inlining. If C#-facing, use IWSAMs for generic math code.
+* **For generic math, use SRTP or IWSAM.** Generic math works well with either.  F# SRTP code is often quicker to write, requires less thought to make generic and has better performance due to inlining. If C#-facing, use IWSAMs for generic math code.
 
 * **For generic math using units-of-measure, use SRTP.** The .NET support for generic math does not propagate units of measure correctly. Rely on F# SRTP code for these.
 
