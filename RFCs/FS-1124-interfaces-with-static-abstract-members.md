@@ -370,6 +370,7 @@ Note that explicit function-passing code is shorter and more general - it works 
 For the vast majority of generic coding in F# explicit function-passing is perfectly acceptable, with the massive benefit that the programmer doesn't burn their time trying to create or use a cathedral of perfect abstractions. SRTP handles most other cases.
 
 ### Drawback - Implementations of static abstract methods are not parameterizable, they can't close over anything
+[drawback---implementations-of-static-abstract-methods-are-not-parameterizable-they-cant-close-over-anything]: #drawback---implementations-of-static-abstract-methods-are-not-parameterizable-they-cant-close-over-anything
 
 F# is driven by explicit parameterization, for example functions:
 
@@ -431,9 +432,27 @@ type C =
 
 But how to get `version1` into `Parse`?  In this case, there is literally no way to explicitly communicate that parameter to those two implementations of `IParseable<T>`. This means your composition framework built on the IWASM `IParseable<T>` may become useless to you, due to nothing but this one small (yet predictable) change in requirements. You will now have to remove all use of `IParseable<T>` and shift to another technnique, or else rely on implicit communication of parameters. This is no theoretical exercise - data-format parsers often, by necessity over time, need variations.
 
-What's gone wrong? Well, ok, IWSAMs should never have been used for parsing domain objects. But how were we to know that when we started version one? You should always have used regular interfaces, objects and functions - the world of normal functional-object programming. For composition you should use explicit composition of parser functions and objects. All this is standard functional-object programming.
+What's gone wrong? Well, ok, IWSAMs should never have been used for parsing domain objects. And, specifically, IWSAMs like `IParseable<T>` should only be implemented on types where the parsing implementation is forever "closed" and "incontrovertible" - that is, can never depend on external information (beyond culture/date/number formatting, see below), and there are no variations on how it should act.
 
-Another way of looking at this is that IWSAM implementations live and are composed at a different "level" than the rest of application - the level of static composition with generics. This means using IWSAMs have some of the same characteristics as original Standard ML functors or C++ templates, both of which partition software into two layers - the core language and the composition language. Another way is to ask "is a trait implementation a first class thing" - can a method return a IWSAM implementation? The answer is "no", and nothing we have in .NET will likely ever allow that.
+What should you do instead?  Well, you should always have used regular interfaces, objects and functions - the world of normal functional-object programming - that is, parser combinators. For composition you should use explicit composition of parser functions and objects. All this is standard functional-object programming. For example:
+
+```fsharp
+type Parser<'T> = Parser of (string -> 'T)
+
+module Parsers =
+    let C_parser1 = Parser (fun s -> ...)
+
+    let C_parser2 = Parser (fun s -> ...)
+    
+    let C_parser version =
+        if version = V1 then C_parser1 else C_parser2
+```
+
+With this approach you can write and compose parsers happily - the parsers are first-class objects.
+
+This doesn't make implementing `IParseable<'T>` wrong - it's  just very important to understand that you should only implement it on types where the parsing implementation is forever "closed" and "incontrovertible" - that is, will never depend on external controls (beyond culture/date/number formatting, see below), and there are not going to be any variations on how it should act.
+
+Another way of looking at this is that, unlike actual functions and objects, IWSAM implementations live and are composed at a different "level" than the rest of application - the level of static composition with generics - they are immune to regular parameterization. This means using IWSAMs have some of the same characteristics as original Standard ML functors or C++ templates, both of which partition software into two layers - the core language and the composition language. Another way is to note that IWSAMs are not a first class thing - a method can't return an IWSAM implementation.
 
 **Summary:** IWSAM implementations are not within the "core" portion of the langauge: they are not first-class objects, can't be produced by methods and, most importantly, can't be additionally parameterized. Explicitly plumbing parameters to IWASM implementations is not possible without changing IWSAM definitions. Because of this, using IWSAMs exposes you to the open-ended possibility that you will have to remove them should the structure or requirements of your IWSAM implementations change to depend on more information, or else rely on implicit context parameters of mutable global state.
 
