@@ -518,7 +518,7 @@ These have pros and cons and can actually be used perfectly well together:
 
 A summary of guidance from the above:
 
-* **Understand the inherent limitations of IWSAMs.** IWSAM implementations are not within the "core" portion of the F# as an expression-oriented and parameter-oriented langauge: they are not first-class objects, can't be produced by methods and, most importantly, can't even be additionally parameterized. This restriction applies to *all* implementations of any IWSAM.
+* **Understand the inherent limitations of IWSAMs.** IWSAM implementations are not within the "core" portion of the F#: they are not first-class objects, can't be produced by methods and, most importantly, can't even be additionally parameterized. 
 
 * **Using IWSAMs in application code carries a strong risk you or your team will need to remove their use.** Explicitly plumbing new parameters to IWSAM implementations is not possible without changing IWSAM definitions. Because of this, using IWSAMs exposes you to the open-ended possibility that you will have to use implicit information plumbing, or remove the use of IWSAMs. Given that F# teams generally prefer explicit information plumbing, teams will often remove the use of devices that require implicit information plumbing.  
 
@@ -528,7 +528,11 @@ A summary of guidance from the above:
 
 * **Do not use IWSAMs as the basis for a composition framework.**  You should not write composition frameworks using IWSAMs as the unit of composition. Instead, use regular programming with functions and objects for composition, and write helpers to lift leaf types that have IWSAM definitions into your functional-object composition framework. See examples above.
 
-* **If defining IWSAMs, put static members in their own interface.**  Do not mix static and non-static interfaces in IWSAMs.
+* **Do not give in to type-categorization impulse.**  With IWSAMs, you can happily waste years of your life carefully categorising all the concepts in your codebase. Don't do it. Throw away the urge to categorise. Forget that you can do it. It almost certainly isn't helpful to categorise your application code using these.
+
+* **Do not give in to max-abstraction impulse.**  With IWSAMs and other generic code, you can happily waste even more years of your life max-abstracting out every common bit of code across your codebase. Don't do it. Throw away the urge to max-abstract just for its own sake. Forget that you can do it, and if you try definitely don't use IWSAMs.
+
+* * **If defining IWSAMs, put static members in their own interface.**  Do not mix static and non-static interfaces in IWSAMs.
 
 * **Go light on the SRTP.**  Some of the changes in this RFC enable nicer SRTP programming. Some of the above guidance applies to SRTP - for examplem do not use SRTP as a composition framework.
 
