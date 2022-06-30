@@ -209,6 +209,45 @@ let inline f<^T, ^U when SomeAttachingAbbreviation<^T, ^U, ...>>() =
 ```
 is interpreted as the inlining of `constraints` after substituting. The first actual type parameter must be a type variable.
 
+### Interaction with Units of Measure
+
+* Discussion: https://github.com/dotnet/fsharp/issues/12881#issuecomment-1081269462
+
+* Discussion: https://github.com/dotnet/fsharp/issues/12881#issuecomment-1081292469
+
+If no changes are made, `double<m>` is considered to implement:
+```fsharp
+IAdditionOperators<double<m>, double<m>, double<m>>
+IMultiplyOperators<double<m>, double<m>, double<m>>
+```
+
+For addition that's fine, and means 
+
+```fsharp
+    let f (x: #IAdditionOperators<_,_,_>) = x + x
+
+    f 3.0<m>
+```
+
+will return the right thing.  However 
+
+```fsharp
+    let f (x: #IMultuplyOperators<_,_,_>) = x + x
+
+    f 3.0<m>
+```
+
+will return `9.0<m>` instead of `9.0<m^2>`.
+
+We have four options
+
+1. Don't do anything and accept the unsoundness
+2. Give a warning so that each time a unitized type is solves a constraint `'T :> `IMultiplyOperators<_,_,_>` for a specific set of interface types known to have this problem
+3. Adjust the F# compiler so that `double<m>` is considered to implement `IMultiplyOperators<double<m>,double<m>,double<m*m>` for a specific set of interface types
+4. Ask the BCL team to add metadata about the unitization signatures of each of the numeric abstractions.
+
+Wwe will do (3) since it fits with the existing design of F#, where the constraint solver does specific work so that a specific set of SRTP constraints like `op_Multiply` have their signatures adjust to be correctly unitized.
+
 ### SRTP adjustments
 
 SRTP constraints now give an error if they declare optional, inref, outref, ParamArray, CallerMemberName or AutoQuote atttributes on parameters.  These were ignored and should never have been allowed.
@@ -683,4 +722,8 @@ let addThem (x: #INumeric<'T>) y = x + y
 
 * [ ] Spec name resolution of `^T.Name` when `^T` has both SRTP and IWSAM members with the same name `Name` (SRTP is preferred)
 
-* [ ] Discuss units of measure - will unitized types be considered to implement any geenric math interfaces?  Most are unsound from a unit perspective, so probably not.
+* [ ] Spec the exact set of transformations applied to unitized interface implementations.
+
+* [ ] Check that `^T` can be changed to `'T` with staticness inferred in all situations we care about and ad testing for these
+
+
