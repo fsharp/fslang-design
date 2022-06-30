@@ -511,8 +511,8 @@ These have pros and cons and can actually be used perfectly well together:
 |  **Technique** | **What constraints** | **Satisfying constraints** | **Limitations** |
 |:----:|:----:|:----:|:----:|
 | Explicit function/interface passing | No constraints | Find a suitable function/interface | None |
-| IWSAMs | Interfaces with static abstract methods | The interfaces must be defined on the type |  The entire scope of the generic code is subject to the constraint |
-| SRTP | Member trait constraints | Member must be defined on the type ([FS-1043](https://github.com/fsharp/fslang-design/blob/main/RFCs/FS-1043-extension-members-for-operators-and-srtp-constraints.md) proposes to extend these to extension members.) |  SRTP can only be used in inlined F# code |
+| IWSAMs | Interfaces with static abstract methods | The interfaces must be defined on the type |  IWSAM implementations are static |
+| SRTP | Member trait constraints | Member must be defined on the type ([FS-1043](https://github.com/fsharp/fslang-design/blob/main/RFCs/FS-1043-extension-members-for-operators-and-srtp-constraints.md) proposes to extend these to extension members.) |  SRTP implementations are static. SRTP can only be used in inlined F# code. |
 
 ## Guidance 
 
