@@ -10,7 +10,6 @@ Two other suggestions/RFCs are effectively incorporated into this RFC:
 * Implementation: [In progress](https://github.com/dotnet/fsharp/pull/13119)
 
 ## Summary
-[summary]: #summary
 
 .NET 7 and C# 11 are [adding the ability to define interfaces with static abstract members](https://github.com/dotnet/csharplang/blob/main/proposals/static-abstracts-in-interfaces.md) and to use these from generic code.  
 
@@ -18,7 +17,6 @@ To match this in F#, we add the capability to specify abstract static members th
 or implicit implementation of. The members can be accessed off of type parameters that are constrained by the interface.
 
 ## Motivation
-[motivation]: #motivation
 
 See motivation at https://github.com/dotnet/csharplang/issues/4436 and https://github.com/dotnet/csharplang/blob/main/proposals/static-abstracts-in-interfaces.md.
 
@@ -369,8 +367,7 @@ Note that explicit function-passing code is shorter and more general - it works 
 
 For the vast majority of generic coding in F# explicit function-passing is perfectly acceptable, with the massive benefit that the programmer doesn't burn their time trying to create or use a cathedral of perfect abstractions. SRTP handles most other cases.
 
-### Drawback - Implementations of static abstract methods can't take further explicit parameters
-[drawback]: #drawback---implementations-of-static-abstract-methods-are-not-parameterizable-they-cant-close-over-anything
+### Drawback - Implementations of static abstract methods are not parameterizable, they can't close over anything
 
 F# is driven by explicit parameterization, for example functions:
 
@@ -430,7 +427,7 @@ type C =
                 ....
 ```
 
-But how to get `version1` into `Parse`?  In this case, there is literally no way to explicitly communicate that parameter to those two implementations of `IParseable<T>`. This means your composition framework built on the IWASM `IParseable<T>` may become useless to you, due to nothing but this one small (yet predictable) change in requirements. You will now have to remove all use of `IParseable<T>` and shift to another technnique, or else rely on implicit communication of parameters (global state, thread locals...). This is no theoretical exercise - format parsers often change, by necessity over time, and need variations.
+But how to get `version1` into `Parse`?  In this case, there is literally no way to explicitly communicate that parameter to those two implementations of `IParseable<T>`. This means your composition framework built on the IWSAM `IParseable<T>` may become useless to you, due to nothing but this one small (yet predictable) change in requirements. You will now have to remove all use of `IParseable<T>` and shift to another technnique, or else rely on implicit communication of parameters (global state, thread locals...). This is no theoretical exercise - format parsers often change, by necessity over time, and need variations.
 
 What's gone wrong? Well, IWSAMs should never have been used for parsing domain objects - and a compositional framework should never use IWSAMs. But `IParseable<'T>` sounded so compelling to implement, didn't it? Specifically, **IWSAMs like `IParseable<T>` should only be implemented on types where the parsing implementation is forever "closed" and "incontrovertible"**. By this we mean that their implemententations will never depend on external information (beyond culture/date/number formatting, see below), and there will be no variations on how the implementations should act.
 
@@ -440,25 +437,40 @@ What should you do instead?  Well, you should always have used regular interface
 type Parser<'T> = Parser of (string -> 'T)
 
 module Parsers =
-    let C_parser1 = Parser (fun s -> ...)
+    let SomeClassParser1 = Parser (fun s -> ...)
 
-    let C_parser2 = Parser (fun s -> ...)
+    let SomeClassParser2 = Parser (fun s -> ...)
     
-    let C_parser version =
-        if version = V1 then C_parser1 else C_parser2
+    let SomeClassParser version =
+        if version = V1 then SomeClassParser1 else SomeClassParser2
 ```
 
-With this approach you can write and compose parsers happily - the parsers are first-class objects.
+With this approach you can write and compose parsers happily - the parsers are first-class objects. You can also life `T :> IParseable<T>` into a Parser and then compose happily. For example:
 
-This doesn't make implementing `IParseable<'T>` wrong - it's  just very important to understand that you should only implement it on types where the parsing implementation is forever "closed" and "incontrovertible", as defined above.
+```fsharp
+module Parsers =
+    let IParseableParser<'T when IParseable<'T>> =
+        Parser p.Parse
+
+    let IntParser = IParseable_parser<int>
+    let DoubleParser = IParseable_parser<double>
+    
+    let OverallParser = CombineParsers (IntParser, DoubleParser, SomeClassParser1)
+```
+
+See [FParsec](https://github.com/stephan-tolksdorf/fparsec) for a full high-performance compositional parser framework.
+
+This doesn't make implementing `IParseable<'T>` wrong - it's just very important to understand that you should only implement it on types where the parsing implementation is forever "closed" and "incontrovertible", as defined above. And it's very important to understand that your composition frameworks should not use IWSAMs as the primary unit of composition.  See "Guidance" below.
 
 Another way of looking at this is that, unlike actual functions and objects, IWSAM implementations live and are composed at a different "level" than the rest of application - the level of static composition with generics - they are immune to regular parameterization. This means using IWSAMs has some of the same characteristics as original Standard ML functors or C++ templates, both of which partition software into two layers - the core language and the composition language. Another way is to note that IWSAMs are not a first class thing - a method can't return an IWSAM implementation.
 
-**Summary:** IWSAM implementations are not within the "core" portion of the langauge: they are not first-class objects, can't be produced by methods and, most importantly, can't be additionally parameterized. Explicitly plumbing parameters to IWASM implementations is not possible without changing IWSAM definitions. Because of this, using IWSAMs exposes you to the open-ended possibility that you will have to use implicit information plumbing, or remove them.  
+### Drawbacks - Summary and Guidance 
 
-IWSAMs work best on highly stable types and operations where there is essentially no possibility of requirements changing to include new dependencies. You should only implement IWSAMs on types where their implementation is forever "closed" and "incontrovertible", as defined above. Numerics are a good example: these types and operations are highly semantically stable, require little additional information and have very stable contracts. However your application code almost certainly isn't like this.
+IWSAM implementations are not within the "core" portion of the langauge: they are not first-class objects, can't be produced by methods and, most importantly, can't be additionally parameterized. Explicitly plumbing parameters to IWSAM implementations is not possible without changing IWSAM definitions. Because of this, using IWSAMs exposes you to the open-ended possibility that you will have to use implicit information plumbing, or remove them.  
 
-You should not write composition frameworks using IWSAMs as the unit of composition. Instead, use regular programming with functions and objects for composition.
+IWSAMs work best on highly stable types and operations where there is essentially no possibility of requirements changing to include new dependencies or variations of implementation. You should only implement IWSAMs on types where their implementation is forever "closed" and "incontrovertible". Numerics are a good example: these types and operations are highly semantically stable, require little additional information and have very stable contracts. However your application code almost certainly isn't like this.
+
+You should not write composition frameworks using IWSAMs as the unit of composition. Instead, use regular programming with functions and objects for composition, and write helpers to lift types that have IWSAM definitions into your functional-object composition framework.
 
 > Note: `IParseable` does have an *implicit* way of passing extra information, through the optional `IFormatProvider` argument. However in practice that's unusable for such purposes as propagating information via an explicit format provider is notoriously difficult - it is effectively only for numeric, date and culture formatting data. So in this section we are discussing *explicit* parameterization of additional information that informs the action of parsing domain objects.
 
