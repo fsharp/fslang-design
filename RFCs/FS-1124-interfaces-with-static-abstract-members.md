@@ -530,13 +530,13 @@ A summary of guidance from the above:
 
 * **Do not use IWSAMs as the basis for a composition framework.**  You should not write composition frameworks using IWSAMs as the unit of composition. Instead, use regular programming with functions and objects for composition, and write helpers to lift leaf types that have IWSAM definitions into your functional-object composition framework. See examples above.
 
-* **Prefer explicit function passing for generic code.** In F# there are now three mechanisms to do type-level abstraction: Explicit function passing, IWSAMs and SRTP. Within F#, when writing generic code, explicit function passing should generally be preferred. SRTP and IWSAMs can be used as needed. Write helpers to access functions from types that have IWSAM definitions. See examples above.
-
-* **If defining IWSAMs, put static members in their own interface.**  Do not mix static and non-static interfaces in IWSAMs.
+* **Prefer explicit function passing for generic code.** In F# there are now three mechanisms to do type-level abstraction: Explicit function passing, IWSAMs and SRTP. Within F#, when writing generic code, explicit function passing should generally be preferred. SRTP and IWSAMs can be used as needed. See examples above.
 
 * **Go light on the SRTP.**  Some of the changes in this RFC enable nicer SRTP programming. Some of the above guidance applies to SRTP - for example do not use SRTP as a composition framework.
 
-* **For generic math, use SRTP or IWSAM.** Generic math works well with either.  If C#-facing, use IWSAMs for generic math code.
+* **For generic math, use SRTP or IWSAM.** Generic math works well with either.  F# SRTP code is often quicker to write, requires less thought to make generic and has better performance do to inlining. If C#-facing, use IWSAMs for generic math code.
+
+* **If defining IWSAMs, put static members in their own interface.**  Do not mix static and non-static interfaces in IWSAMs.
 
 ## Alternatives
 
