@@ -205,6 +205,8 @@ let someFunction2<'T when 'T : IZeroProperty<'T>>() = LanguagePrimitives.Generic
 
 Note that in these examples neither function is inlined.  The non-static type parameter `'T` is considered a type suitable for static resolution of the SRTP constraint.
 
+> TODO: document the adjusted constraint solving rules applied
+
 ### Interaction with object expressions
 
 Object expressions may not be used to implement interfaces that contain static abstract methods.  This is because the only use for such an implementation is to pass as a type argument to a generic construct constrained by the interface.
@@ -261,6 +263,8 @@ Other alternatives that were considered are discussed below.
 ### SRTP adjustments
 
 SRTP constraints now give an error if they declare optional, inref, outref, ParamArray, CallerMemberName or AutoQuote atttributes on parameters.  These were ignored and should never have been allowed.
+
+> TODO: document the fix to SRTP inference for rigid constraints that is part of the implementation of this RFC
 
 ## Drawbacks
 [drawbacks]: #drawbacks
