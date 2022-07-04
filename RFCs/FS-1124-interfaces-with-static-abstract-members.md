@@ -748,3 +748,9 @@ let addThem (x: #INumeric<'T>) y = x + y
 * [ ] Check that `^T` can be changed to `'T` with staticness inferred in all situations we care about and ad testing for these
 
 * [ ] Consider the cases where we create delegates to IWSAM-constrained target methods
+
+* Related suggestions about naming collections of constraints
+
+  * https://github.com/fsharp/fslang-suggestions/issues/456
+  * https://github.com/fsharp/fslang-suggestions/issues/1089
+  * https://github.com/fsharp/fslang-suggestions/issues/641
