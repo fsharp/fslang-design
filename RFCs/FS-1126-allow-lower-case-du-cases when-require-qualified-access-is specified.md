@@ -8,7 +8,7 @@ This RFC covers the detailed proposal for this suggestion.
 - [x] Approved in principle
 - [ ] [Implementation](https://github.com/dotnet/fsharp/pull/FILL-ME-IN)
 - [ ] Design Review Meeting(s) with @dsyme and others invitees
-- [ ] [Discussion](https://github.com/fsharp/fslang-design/discussions/)
+- [X] [Discussion](https://github.com/fsharp/fslang-design/discussions/685)
 
 # Summary
 Allow lower-case DU cases when `[<RequireQualifiedAccess>]` is specified
