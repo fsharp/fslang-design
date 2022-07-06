@@ -233,11 +233,19 @@ Technically, the adjustments to constraint solving are as follows:
 
    Here `tys` may be length 1 or 2. We determine if any of `tys` has a matching constraint `ty :> ISomeInterface` with a static abstract member `Method`. If so, all such available methods are used during overload resolution.
 
-2. If any of `tys` has a matching IWSAM constraint it is considered solved for constraint-resolution purposes. Forther, it does not need static resolution.
+2. If any of `tys` has a matching IWSAM constraint it is considered solved for constraint-resolution purposes. Further, it does not need static resolution.
 
 3. Such a constraint is eligible for so-called "weak resolution" (that is, before all of `tys` are solved), if the first element of `tys` is the one with the matching constraint and static abstract method.
 
 > NOTE: this rule allows IWSAM type information to be applied for the SRTP resolution as soon as the signficant `TSelf` type is determined, which is the common case. This is a practical tradeoff - in practice, `IWSAM` methods are rarely overloaded, and are "biased" towards the `TSelf` type. Allowing weak resolution 
+
+Because of (2), type inference variables now only need static resolution when
+
+1. They are one of the support types of an unsolved static member SRTP constraint, or
+2. They are associated with a `printf` format string placeholder `%s`, `%d`
+3. They are explicitly declared with `^T`
+
+In particular, type inference variables no longer automatically get the "needs static resolution" flag, rather this condition now arises from the constraints they are associated with.  This means some type inference variables are now inferred to be "not needs static resolution". If a signature declares such a type variable to be "needs static resolution" an error is no longer given.
 
 ### Interaction with object expressions
 
