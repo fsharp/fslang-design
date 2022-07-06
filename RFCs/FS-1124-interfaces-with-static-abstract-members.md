@@ -22,7 +22,7 @@ See motivation at https://github.com/dotnet/csharplang/issues/4436 and https://g
 
 Static abstract members allow statically-constrained generic code. This is being utilised heavily in the [generic numeric code](https://visualstudiomagazine.com/articles/2022/03/14/csharp-11-preview-feature.aspx) library feature of .NET 7.
 
-This feature sits uncomfortably in F#.  Its addition to the .NET object model has been driven by C#, and its use in .NET libraries, and thus consuming and, to some extent, authoring IWSAMs is necessary in F#.  However there are many drawbacks to its addition, documented below. Because of this, we will require a special opt-in before new IWSAMs are declared and implemented in F#.
+This feature sits uncomfortably with F# methodology. Its addition to the .NET object model has been driven by C#, and its use in .NET libraries, and thus consuming and, to some extent, authoring IWSAMs is necessary in F#.  However there are many drawbacks to its addition, documented below. Because of this, we will emit a warning when IWSAMs are declared and implemented in F#. This warning can be suppressed.
 
 ## Considerations
 
