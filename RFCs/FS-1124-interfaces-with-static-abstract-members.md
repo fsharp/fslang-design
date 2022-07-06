@@ -163,8 +163,6 @@ is interpreted as the inlining of `constraints` after substituting. The first ac
 
 Interfaces with static abstract members should never generally be used as **types**, but rather as **constraints on generic type parameters**.
 
-TBD: decide if/how extensively we enforce this.
-
 As one concrete instance, when a type parameter `'T` is constrained by an interface that has static abstract members, any instantiation of `'T` must be either a class, struct or constrained type parameter. It may not be an interface.
 
 For instance:
@@ -792,3 +790,6 @@ No.
 * [ ] Decide if the feature must be explicitly enabled before declaring new IWSAMs.
 
 * [ ] We need to look carefully at IWSAM that define op_Implicit and op_Explicit. @dsyme says: I've done "the right thing" in the code but we will need to test it.
+
+* [ ] Decide if/how we warn or enforce "Interfaces with static abstract members are constraints, not types"
+
