@@ -106,6 +106,8 @@ The syntax of expressions is extended with
       x.get_Item(3)
   ```
 
+For `'T.Name`, if `'T` has both SRTP and IWSAM members  `Name` then the SRTP members are preferred.
+
 ### Self type constraints
 
 A new syntax shorthand for self-constraints is added to F#. Specifically 
@@ -755,12 +757,13 @@ Note that `^T` and `'T` are not considered different names.
 
 ### Alternatives for Units of Measure
 
-We have four options:
+We have five options:
 
 1. Don't do anything and accept the unsoundness
 2. Give a warning so that each time a unitized type is solves a constraint `'T :> `IMultiplyOperators<_,_,_>` for a specific set of interface types known to have this problem
-3. Adjust the F# compiler so that `double<m>` is considered to implement `IMultiplyOperators<double<m>,double<m>,double<m*m>` for a specific set of interface types
-4. Ask the BCL team to add metadata about the unitization signatures of each of the numeric abstractions.
+3. Do not report any `System.Numerics.I*` interfaces for unitized types.
+4. Adjust the F# compiler so that `double<m>` is considered to implement `IMultiplyOperators<double<m>,double<m>,double<m*m>` for a specific set of interface types
+5. Erase 4. Ask the BCL team to add metadata about the unitization signatures of each of the numeric abstractions.
 
 We decided to do (3).
 
@@ -774,30 +777,6 @@ No.
 ## Unresolved questions
 [unresolved]: #unresolved-questions
 
-* [ ] Decide the relationship between this and [RFC-1024](https://github.com/fsharp/fslang-design/blob/main/RFCs/FS-1024-simplify-constrained-call-syntax.md)
-
-* [ ] Check carefully against https://github.com/dotnet/csharplang/blob/main/proposals/static-abstracts-in-interfaces.md
-
 * [ ] Decide if the feature must be explicitly enabled before declaring new IWSAMs.
 
-* [ ] We need to look carefully at a few things - e.g. IWSAM that define op_Implicit and op_Explicit. @dsyme says: I've done "the right thing" in the code but we will need to test it.
-
-* [ ] Carefully check this case.  For example, check that we do not apply the "condensation" rule that removes the implied type ariable in this case (we shouldn't)
-
-```fsharp
-let addThem (x: #INumeric<'T>) y = x + y
-```
-
-* [ ] Spec name resolution of `^T.Name` when `^T` has both SRTP and IWSAM members with the same name `Name` (SRTP is preferred)
-
-* [ ] Spec the exact set of transformations applied to unitized interface implementations.
-
-* [ ] Check that `^T` can be changed to `'T` with staticness inferred in all situations we care about and ad testing for these
-
-* [ ] Consider the cases where we create delegates to IWSAM-constrained target methods
-
-* Related suggestions about naming collections of constraints
-
-  * https://github.com/fsharp/fslang-suggestions/issues/456
-  * https://github.com/fsharp/fslang-suggestions/issues/1089
-  * https://github.com/fsharp/fslang-suggestions/issues/641
+* [ ] We need to look carefully at IWSAM that define op_Implicit and op_Explicit. @dsyme says: I've done "the right thing" in the code but we will need to test it.
