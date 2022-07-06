@@ -288,12 +288,12 @@ As a result, four warnings are added, three of which are off by default:
 
 2. FS3389: Type-directed conversion by a built-in numeric conversion (`int --> int64` etc.). This warning is OFF by default.  
 
-3. FS3390: Type-directed conversion by an `op_Implicit` conversion at method-argument position.
+3. FS3395: Type-directed conversion by an `op_Implicit` conversion at method-argument position.
    This warning is OFF by default.  
 
 4. FS3391: Type-directed conversion by an `op_Implicit` conversion at non-method-argument. This warning is ON by default.
 
-The user can enable all these warnings through `--warnon:3386 --warnon:3387 --warnon:3388`. The warnings will contain a link to further documentation.
+The user can enable all these warnings through `--warnon:3388 --warnon:3389 --warnon:3395`. The warnings will contain a link to further documentation.
 
 This policy is chosen because `op_Implicit` is part of .NET library design, but in F# we generally only
 want it applied at method argument position, like other adhoc conversions applied at that point.
