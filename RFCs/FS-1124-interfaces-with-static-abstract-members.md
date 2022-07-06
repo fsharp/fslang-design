@@ -22,9 +22,7 @@ See motivation at https://github.com/dotnet/csharplang/issues/4436 and https://g
 
 Static abstract members allow statically-constrained generic code. This is being utilised heavily in the [generic numeric code](https://visualstudiomagazine.com/articles/2022/03/14/csharp-11-preview-feature.aspx) library feature of .NET 7.
 
-This feature sits uncomfortably in F#.  Its addition to the .NET object model has been driven by C#, and its use in .NET libraries, and thus consuming and, to some extent, authoring IWSAMs is necessary in F#.  However there are many drawbacks to its addition, documented below.
-
-Because of this, we will require a special opt-in before new IWSAMs are declared and implemented in F#. The form of this opt-in is TBD.
+This feature sits uncomfortably in F#.  Its addition to the .NET object model has been driven by C#, and its use in .NET libraries, and thus consuming and, to some extent, authoring IWSAMs is necessary in F#.  However there are many drawbacks to its addition, documented below. Because of this, we will require a special opt-in before new IWSAMs are declared and implemented in F#.
 
 ## Considerations
 
@@ -159,13 +157,17 @@ let inline f<^T, ^U when SomeAttachingAbbreviation<^T, ^U, ...>>() =
 ```
 is interpreted as the inlining of `constraints` after substituting. The first actual type parameter must be a type variable.
 
-### Interfaces with static abstract members are constraints, not types
+### Warning when declaring IWSAMs
 
-Interfaces with static abstract members should never generally be used as **types**, but rather as **constraints on generic type parameters**.
+Because of the drawbacks and considerations concerning IWSAMs (see [Drawbacks](#drawbacks)), declaring an IWSAM will give the following warning:
 
-As one concrete instance, when a type parameter `'T` is constrained by an interface that has static abstract members, any instantiation of `'T` must be either a class, struct or constrained type parameter. It may not be an interface.
+```
+warning FS3535: Declaring "interfaces with static abstract methods" is an advanced feature. See https://aka.ms/fsharp-iwsams for guidance. You can disable this warning by using '#nowarn "3535"' or '--nowarn:3535'.
+```
 
-For instance:
+### Warning when using IWSAMs as types
+
+Interfaces with static abstract members should never generally be used as **types**, but rather as **constraints on generic type parameters**. As one concrete instance, when a type parameter `'T` is constrained by an interface that has static abstract members, any instantiation of `'T` must be either a class, struct or constrained type parameter. It may not be an interface. For instance:
 
 ```fsharp
 type IAdditionOperator<'T> =
@@ -183,6 +185,12 @@ let badFunction(x: IAdditionOperator<C>) = 1   // This is not useful code
 ```
 
 This code is useless as the static addition operator may not be invoked via the object `x`.  However because interfaces may contain both static abstract methods and instance abstract methods, it is likely that we won't specifically rule out writing the code above. Equally, methodologically it is almost certainly wise to distinguish between IWSAMs (constraining types) and interfaces with instance members (constraining types and values).
+
+Because of this, using an IWSAM in a non-generic-constraint position will give the following warning:
+
+```
+warning FS3536: This type is an interface with a static abstract method. These are normally used as type constraints in generic code, e.g. "'T when ISomeInterface<'T>" "'T when ISomeInterface<'T>" or "let f (x: #ISomeInterface<_>)". See https://aka.ms/fsharp-iwsams for guidance. You can disable this warning by using '#nowarn "3536"' or '--nowarn:3536'.
+```
 
 ### Interaction with SRTP constraints
 
