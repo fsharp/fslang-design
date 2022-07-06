@@ -93,7 +93,7 @@ The syntax of expressions is extended with
   let inline f_InstanceMethod<^T when ^T : (member InstanceMethod: int -> int) >(x: ^T) : int = x.InstanceMethod(3)
   ```
 
-  However indexing, slicing and property-setting are not allowed and explicit forms must be used instead.  This is because SRTP constraints calls are not processed using method overloading rules.
+  Indexing, slicing and property-setting are not allowed via SRTP constraints and explicit forms must be used instead.  This is because the syntax of SRTP constraint calls is not processed using method overloading rules.
 
   ```fsharp
   let inline f_set_StaticProperty<^T when ^T : (static member StaticProperty: int with set) >() =
@@ -106,7 +106,7 @@ The syntax of expressions is extended with
       x.get_Item(3)
   ```
 
-For `'T.Name`, if `'T` has both SRTP and IWSAM members  `Name` then the SRTP members are preferred.
+* For `'T.Name`, if `'T` has both SRTP and IWSAM members  `Name` then the SRTP members are preferred.
 
 ### Self type constraints
 
@@ -207,7 +207,21 @@ let someFunction2<'T when 'T : IZeroProperty<'T>>() = LanguagePrimitives.Generic
 
 Note that in these examples neither function is inlined.  The non-static type parameter `'T` is considered a type suitable for static resolution of the SRTP constraint.
 
-> TODO: document the adjusted constraint solving rules applied
+Technically, the adjustments to constraint solving are as follows:
+
+1. consider solving an SRTP constraint:
+
+   ```fsharp
+       ((tys) : static member Method: argty1 * ... * argtyN -> retty)
+   ```
+
+   Here `tys` may be length 1 or 2. We determine if any of `tys` has a matching constraint `ty :> ISomeInterface` with a static abstract member `Method`. If so, all such available methods are used during overload resolution.
+
+2. If any of `tys` has a matching IWSAM constraint it is considered solved for constraint-resolution purposes. Forther, it does not need static resolution.
+
+3. Such a constraint is eligible for so-called "weak resolution" (that is, before all of `tys` are solved), if the first element of `tys` is the one with the matching constraint and static abstract method.
+
+> NOTE: this rule allows IWSAM type information to be applied for the SRTP resolution as soon as the signficant `TSelf` type is determined, which is the common case. This is a practical tradeoff - in practice, `IWSAM` methods are rarely overloaded, and are "biased" towards the `TSelf` type. Allowing weak resolution 
 
 ### Interaction with object expressions
 
@@ -308,8 +322,6 @@ Thus for unitized types we filter any interface that derives from anything in th
 ### SRTP adjustments
 
 SRTP constraints now give an error if they declare optional, inref, outref, ParamArray, CallerMemberName or AutoQuote atttributes on parameters.  These were ignored and should never have been allowed.
-
-> TODO: document the fix to SRTP inference for rigid constraints that is part of the implementation of this RFC
 
 ## Drawbacks
 [drawbacks]: #drawbacks
