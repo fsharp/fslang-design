@@ -249,16 +249,59 @@ For addition that's fine, and means
 will return the right thing.  However 
 
 ```fsharp
-    let f (x: #IMultuplyOperators<_,_,_>) = x + x
+    let f (x: 'T when 'T :> IMultiplyOperators<'T,'T,'T>) = x * x
 
     f 3.0<m>
 ```
 
-will return `9.0<m>` instead of `9.0<m^2>`.
+will return `9.0<m>` instead of `9.0<m^2>`, becuase `op_Multiply` in `IMultiplyOperators<double<m>>` would, without doing anything, have signature
 
-We will adjust the F# compiler so that `double<m>` is considered to implement `IMultiplyOperators<double<m>,double<m>,double<m*m>` for a specific set of interface types. This fits with the existing design of F#, where the constraint solver does specific work so that a specific set of SRTP constraints like `op_Multiply` have their signatures adjust to be correctly unitized.
+```fsharp
+op_Multiply: double<m> * double<m> -> double<m>
+```
 
-Other alternatives that were considered are discussed below.
+To prevent this happening, a feature restriction will be used where unitized types are simply not considered to implement `System.Numerics.I*` interfaces at all.
+
+A previous version of this RFC proposed to use rewriting of the interfaces considered to be supported by unitized types, e.g.
+
+| Type | Interfaces reported |
+|:-----|:-----|
+| `double` | `IAdditionOperators<double,double,double>` |
+|  | `IMultiplyOperators<double,double,double>` |
+|  | etc. |
+| `double<m>` | `IAdditionOperators<double<m>,double<m>,double<m>>` |
+|  |`IMultiplyOperators<double<m>,double<m>,double<m^2>>`  |
+|  | etc. |
+| `double<'u>` | `IAdditionOperators<double<'u>,double<'u>,double<'u>>` |
+|  |`IMultiplyOperators<double<'u>,double<'u>,double<'u^2>>`  |
+|  | etc. |
+
+Note the `m^2` on the `IMultiplyOperators`.  However, this technique is obviouisly flawed, because it only allows `double<m> * double<m>` and not, say `double<m> * double<kg>`.  The links above have further commentary.
+
+[ Aside: This is an example of why nominal concept modelling of the kind used in `System.Numerics.*` is problematic: concepts are fragile as new genericity requirements are placed on them. ]
+
+Note that F# SRTP cosntraints don't have this problem, and it's worth asking why and seeing if the same can be applied to IWSAM.  This is because when solving an SRTP constraint such as:
+
+```fsharp
+double<m> : (static member op_Multiply: '?1 * '?2 -> '?3)
+```
+
+the F# compiler rewrites the potential solution methods for a fixed number of operations, using the following target signature as the basis for a solution:
+
+```fsharp
+type double<m> with
+    static member op_Multiply: double<m> * double<kg> -> double<m * kg>
+```
+
+This is considered a "built in" trait solution. It's worth considering if this could be done for IWSAM constraints, however I don't believe it can, or at least it is well beyond the scope of this RFC to do so.
+
+1. The rewrite is not simple - we would need to rewrite the actual `op_Multiply` signature provided by `IMultiplyOperators<_,_,_>` but establishing the relationship between the original unitized type and the signature is not possible. We'd need a new internal flag or concept here to establish this relationship 
+2. There are many interfaces and methods in `System.Numerics` and they are not necessarily generic enough, e.g. [`IRootFunction::Sqrt` and `IRootFunctions::Cbrt`](https://github.com/dotnet/runtime/blob/main/src/libraries/System.Private.CoreLib/src/System/Numerics/IRootFunctions.cs) have different unitizations.   We would need to go through each signature and establish the correct unitization.  It could be done but probably shouldn't be baked into the compiler, but rather be a new set of unit-friendly interfaces and metadata in FSharp.Core.  
+3. The whole thing would be very fragile to additions and changes in the `Systems.Numeric` methods and hierarchy.  We would have to at least wait until the final release of .NET 7
+
+Overall it is better for this RFC to simply say that unitized types are simply not considered to support the `System.Numeric.*` interfaces at all.  A halfway-house where they support some unit-uniform interfaces like `IAdditionOperators<double<m>, double<m>, double<m>` doesn't seem worth it, as in practice there will be almost no useful generic math code that is constrained only by `T : IAdditionOperators<T,TOther,TReturn>`, so what's the point?
+
+Thus for unitized types we filter any interface that derives from anything in the `System.Numeric` namespace.
 
 ### SRTP adjustments
 
