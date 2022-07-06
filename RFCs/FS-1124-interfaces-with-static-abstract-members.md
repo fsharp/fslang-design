@@ -192,6 +192,16 @@ Because of this, using an IWSAM in a non-generic-constraint position will give t
 warning FS3536: This type is an interface with a static abstract method. These are normally used as type constraints in generic code, e.g. "'T when ISomeInterface<'T>" "'T when ISomeInterface<'T>" or "let f (x: #ISomeInterface<_>)". See https://aka.ms/fsharp-iwsams for guidance. You can disable this warning by using '#nowarn "3536"' or '--nowarn:3536'.
 ```
 
+The syntactic places where this warning is **not** emitted are:
+
+* When declaring implemented interfaces on types
+* When declaring the right-hand-side of a type abbreviation
+* When declaring a constraint `when 'T :> ISomeInterface<...>`
+* When declaring a self-constraint `when ISomeInterface<...>`
+* When declaring a flexible-constraint `#ISomeInterface<...>`
+
+At all other locations the use of an IWSAM constraint results in the warning. Note this includes `typeof<ISomeInterface<...>>` - reflecting over IWSAM csontraints is sufficiently rare that this is not given a special dispensation.
+
 ### Interaction with SRTP constraints
 
 If a generic type parameter is constrained by an IWSAM, then
@@ -795,9 +805,5 @@ No.
 ## Unresolved questions
 [unresolved]: #unresolved-questions
 
-* [ ] Decide if the feature must be explicitly enabled before declaring new IWSAMs.
-
 * [ ] We need to look carefully at IWSAM that define op_Implicit and op_Explicit. @dsyme says: I've done "the right thing" in the code but we will need to test it.
-
-* [ ] Decide if/how we warn or enforce "Interfaces with static abstract members are constraints, not types"
 
