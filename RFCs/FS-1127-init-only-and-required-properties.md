@@ -3,14 +3,14 @@
 The design suggestion [C# record interop (including init only properties of .net 5 and required of .net 7)](https://github.com/fsharp/fslang-suggestions/issues/904) has been approved in principle.  This RFC covers the detailed proposal for `init` and `requried` properties.
 
 - [x] Implementation: [WIP](https://github.com/dotnet/fsharp/pull/13490)
-- [ ] [Discussion](about:blank)
+- [x] [Discussion](https://github.com/fsharp/fslang-design/discussions/695)
 
 ## Summary #
 
 - [Init-only setters](https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/proposals/csharp-9.0/init) is a property setter, which can only be called at the time of object initialization. Currently, F# ignores it and allows caller to call an init-only setter after an object has been created.
   - F# compiler will restrict the call of an init-only setter to the object initialization only.
 
-- "Required members" feature was recently added to C# and is a way of specifying that a property or field is required to be set during object initialization, forcing the callee to provide initial values for all required members at the creation side.
+- [Required members](https://github.com/dotnet/csharplang/blob/main/proposals/required-members.md) feature was recently added to C# and is a way of specifying that a property or field is required to be set during object initialization, forcing the caller to provide initial values for all required members at the creation side.
   - In this RFC, F# support will be limited to consuming classes with required members and enforcing the initialization at the creation side in the compile time.
 
 ## Motivation ##
@@ -37,9 +37,8 @@ public sealed class InitOnly
 And the following F# code:
 
 ```fsharp
-let initOnly = InitOnly(GetInit)
+let initOnly = InitOnly()
 initOnly.GetInit <- 42
-
 ```
 
 **Before the change**, the code above will compile and mutate the property successfully.
