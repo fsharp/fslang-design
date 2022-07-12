@@ -1,10 +1,9 @@
-# F# RFC FS-XXXX - Init-only setters and required properties support in F# #
+# F# RFC FS-1127 - Init-only setters and required properties support in F# #
 
-This RFC covers the detailed proposal.
+The design suggestion [C# record interop (including init only properties of .net 5 and required of .net 7)](https://github.com/fsharp/fslang-suggestions/issues/904) has been approved in principle.  This RFC covers the detailed proposal for `init` and `requried` properties.
 
 - [x] Implementation: [WIP](https://github.com/dotnet/fsharp/pull/13490)
 - [ ] [Discussion](about:blank)
-- [ ] [Suggestion](about:blank)
 
 ## Summary #
 
@@ -12,7 +11,15 @@ This RFC covers the detailed proposal.
   - F# compiler will restrict the call of an init-only setter to the object initialization only.
 
 - "Required members" feature was recently added to C# and is a way of specifying that a property or field is required to be set during object initialization, forcing the callee to provide initial values for all required members at the creation side.
-  - Scope of F# support will be limited to consuming classes with required members and enforcing the initialization at the creation side in the compile time.
+  - In this RFC, F# support will be limited to consuming classes with required members and enforcing the initialization at the creation side in the compile time.
+
+## Motivation ##
+
+F# compiler should support and respect the contracts, which are implied by the CIL and metadata produced by C#.
+
+<sub>C# motivation for adding required members can be found [here](https://github.com/dotnet/csharplang/blob/main/proposals/required-members.md#motivation).</sub>
+
+## Detailed Design ##
 
 ### Init-only property setters ###
 
@@ -130,11 +137,6 @@ And in the following codegen for the custom constructor with `SetsRequiredMember
 }
 ```
 
-## Motivation ##
-
-F# compiler should support and respect the contracts, which are implied by the CIL and metadata produced by C#.
-
-<sub>C# motivation for adding required members can be found [here](https://github.com/dotnet/csharplang/blob/main/proposals/required-members.md#motivation).</sub>
 
 ## Detailed design ##
 
@@ -164,7 +166,7 @@ No alternatives
 
 - Is this a breaking change?
 
-    Yes. In a way. Currently, init-only properties can be set outside the initializer in F#, it will be a compile-time error after this change is introduced.
+    Yes. In a way. Currently, init-only properties can be set outside the initializer in F#, it will be a compile-time error after this change is introduced. However this code should never have been allowed.
 
 - What happens when previous versions of the F# compiler encounter this design addition as source code?
 
@@ -181,6 +183,6 @@ No alternatives
 
 ## Unresolved questions ##
 
-- Shall both of `init-only` setters and `required` members support be under language feature?
-- Shall `required` members support be tied to runtime (technically, it doesn't require any runtime features)?
-g
+* [ ] Shall both of `init-only` setters and `required` members support be under language feature?
+* [ ] Shall `required` members support be tied to runtime (technically, it doesn't require any runtime features)?
+* [ ] What happens if you explicitly declare the properties on F# classes or record fields?  Is that even possible?
