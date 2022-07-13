@@ -82,25 +82,25 @@ The syntax of expressions is extended with
 * A static member trait constraint when `'T` is constrained by an SRTP constraint with name `M`. Constrained calls on SRTP constraints are limited. Property and member calls are allowed:
 
   ```fsharp
-  let inline f_StaticProperty<^T when ^T : (static member StaticProperty: int) >() : int = 'T.StaticProperty
+  let inline f_StaticProperty<'T when 'T : (static member StaticProperty: int) >() : int = 'T.StaticProperty
 
-  let inline f_StaticMethod<^T when ^T : (static member StaticMethod: int -> int) >() : int = 'T.StaticMethod(3)
+  let inline f_StaticMethod<'T when 'T : (static member StaticMethod: int -> int) >() : int = 'T.StaticMethod(3)
 
-  let inline f_InstanceProperty<^T when ^T : (member InstanceMethod: int -> int) >(x: ^T) : int = x.InstanceProperty
+  let inline f_InstanceProperty<'T when 'T : (member InstanceMethod: int -> int) >(x: 'T) : int = x.InstanceProperty
 
-  let inline f_InstanceMethod<^T when ^T : (member InstanceMethod: int -> int) >(x: ^T) : int = x.InstanceMethod(3)
+  let inline f_InstanceMethod<'T when 'T : (member InstanceMethod: int -> int) >(x: 'T) : int = x.InstanceMethod(3)
   ```
 
   Indexing, slicing and property-setting are not allowed via SRTP constraints and explicit forms must be used instead.  This is because the syntax of SRTP constraint calls is not processed using method overloading rules.
 
   ```fsharp
-  let inline f_set_StaticProperty<^T when ^T : (static member StaticProperty: int with set) >() =
+  let inline f_set_StaticProperty<'T when 'T : (static member StaticProperty: int with set) >() =
       'T.set_StaticProperty(3)
 
-  let inline f_set_Length<^T when ^T : (member Length: int with set) >(x: ^T) =
+  let inline f_set_Length<^T when 'T : (member Length: int with set) >(x: 'T) =
       x.set_Length(3)
 
-  let inline f_Item1<^T when ^T : (member Item: int -> string with get) >(x: ^T) =
+  let inline f_Item1<'T when 'T : (member Item: int -> string with get) >(x: 'T) =
       x.get_Item(3)
   ```
 
@@ -122,24 +122,24 @@ let f<'T when 'T :> IComparable<'T>>() =
 ```
 The type must be instantiated with a generic type parameter in first position. 
 
-### Abbreviations that name collections of constraints
+### Constraint Abbreviations
 
 F# already allows the definition of abbreviations that "attach" constraints to types. For example an abbreviation that attaches the operations required for `List.average` can be defined like this.:
 
 ```fsharp
-type WithAverageOps<^T when ^T: (static member (+): ^T * ^T -> ^T)
-                       and  ^T: (static member DivideByInt : ^T*int -> ^T)
-                       and  ^T: (static member Zero : ^T)> = ^T
+type WithAverageOps<'T when 'T: (static member (+): 'T * 'T -> 'T)
+                       and  'T: (static member DivideByInt : 'T * int -> 'T)
+                       and  'T: (static member Zero : 'T)> = 'T
 ```
 
 In this RFC, we allow using such abbreviations as self-constraints. For example:
 
 ```fsharp
-type WithStaticProperty<^T when ^T : (static member StaticProperty: int)> = ^T
-type WithStaticMethod<^T when ^T : (static member StaticMethod: int -> int)> = ^T
-type WithBoth<^T when WithStaticProperty<^T> and WithStaticMethod<^T>> = ^T
+type WithStaticProperty<'T when 'T : (static member StaticProperty: int)> = ^T
+type WithStaticMethod<'T when 'T : (static member StaticMethod: int -> int)> = ^T
+type WithBoth<^T when WithStaticProperty<'T> and WithStaticMethod<'T>> = ^T
 
-let inline f<^T when WithBoth<^T>>() =
+let inline f<'T when WithBoth<'T>>() =
     let v1 = 'T.StaticProperty
     let v2 = 'T.StaticMethod(3)
     v1 + v2
@@ -148,12 +148,12 @@ let inline f<^T when WithBoth<^T>>() =
 The interpretation here is slightly different.  The abbreviation **must** have the form
 
 ```fsharp
-type SomeAttachingAbbreviation<^T, ^U ... when constraints> = ^T
+type SomeAttachingAbbreviation<'T, 'U ... when constraints> = 'T
 ```
 
 Then 
 ```fsharp
-let inline f<^T, ^U when SomeAttachingAbbreviation<^T, ^U, ...>>() =
+let inline f<'T, 'U when SomeAttachingAbbreviation<^T, 'U, ...>>() =
 ```
 is interpreted as the inlining of `constraints` after substituting. The first actual type parameter must be a type variable.
 
@@ -302,46 +302,17 @@ op_Multiply: double<m> * double<m> -> double<m>
 
 To prevent this happening, a feature restriction will be used where unitized types are simply not considered to implement `System.Numerics.I*` interfaces at all.
 
-A previous version of this RFC proposed to use rewriting of the interfaces considered to be supported by unitized types, e.g.
-
 | Type | Interfaces reported |
 |:-----|:-----|
 | `double` | `IAdditionOperators<double,double,double>` |
 |  | `IMultiplyOperators<double,double,double>` |
 |  | etc. |
-| `double<m>` | `IAdditionOperators<double<m>,double<m>,double<m>>` |
-|  |`IMultiplyOperators<double<m>,double<m>,double<m^2>>`  |
-|  | etc. |
-| `double<'u>` | `IAdditionOperators<double<'u>,double<'u>,double<'u>>` |
-|  |`IMultiplyOperators<double<'u>,double<'u>,double<'u^2>>`  |
-|  | etc. |
+| `double<m>` | None from System.Numerics.* |
+|  | |
+| `double<'u>` | None from System.Numerics.* |
+|  |  |
 
-Note the `m^2` on the `IMultiplyOperators`.  However, this technique is obviouisly flawed, because it only allows `double<m> * double<m>` and not, say `double<m> * double<kg>`.  The links above have further commentary.
-
-[ Aside: This is an example of why nominal concept modelling of the kind used in `System.Numerics.*` is problematic: concepts are fragile as new genericity requirements are placed on them. ]
-
-Note that F# SRTP cosntraints don't have this problem, and it's worth asking why and seeing if the same can be applied to IWSAM.  This is because when solving an SRTP constraint such as:
-
-```fsharp
-double<m> : (static member op_Multiply: '?1 * '?2 -> '?3)
-```
-
-the F# compiler rewrites the potential solution methods for a fixed number of operations, using the following target signature as the basis for a solution:
-
-```fsharp
-type double<m> with
-    static member op_Multiply: double<m> * double<kg> -> double<m * kg>
-```
-
-This is considered a "built in" trait solution. It's worth considering if this could be done for IWSAM constraints, however I don't believe it can, or at least it is well beyond the scope of this RFC to do so.
-
-1. The rewrite is not simple - we would need to rewrite the actual `op_Multiply` signature provided by `IMultiplyOperators<_,_,_>` but establishing the relationship between the original unitized type and the signature is not possible. We'd need a new internal flag or concept here to establish this relationship 
-2. There are many interfaces and methods in `System.Numerics` and they are not necessarily generic enough, e.g. [`IRootFunction::Sqrt` and `IRootFunctions::Cbrt`](https://github.com/dotnet/runtime/blob/main/src/libraries/System.Private.CoreLib/src/System/Numerics/IRootFunctions.cs) have different unitizations.   We would need to go through each signature and establish the correct unitization.  It could be done but probably shouldn't be baked into the compiler, but rather be a new set of unit-friendly interfaces and metadata in FSharp.Core.  
-3. The whole thing would be very fragile to additions and changes in the `Systems.Numeric` methods and hierarchy.  We would have to at least wait until the final release of .NET 7
-
-Overall it is better for this RFC to simply say that unitized types are simply not considered to support the `System.Numeric.*` interfaces at all.  A halfway-house where they support some unit-uniform interfaces like `IAdditionOperators<double<m>, double<m>, double<m>` doesn't seem worth it, as in practice there will be almost no useful generic math code that is constrained only by `T : IAdditionOperators<T,TOther,TReturn>`, so what's the point?
-
-Thus for unitized types we filter any interface that derives from anything in the `System.Numeric` namespace.
+See also "Alternatives for Units of Measure" below
 
 ### SRTP adjustments
 
@@ -453,7 +424,7 @@ Fortunately in F# people can just use the simpler SRTP code on most beginner lea
 let inline addThem x y = x + y
 ```
 
-### Drawback - Type-generic code is less succinct and less general than explicit function-passing code
+### Drawback - Type-generic code is less general than explicit function-passing code
 
 Type-generic code relying on IWSAMs (and SRTP) can only be used with types that satisfy the constraints. If the types don't satisfy, you have a lot of trouble.
 
@@ -803,6 +774,141 @@ We have five options:
 
 We decided to do (3).
 
+##### Alternative: Unsound approaches to Units of Measure + IWSAM
+
+A previous version of this RFC proposed to use rewriting of the interfaces considered to be supported by unitized types, e.g.
+
+| Type | Interfaces reported |
+|:-----|:-----|
+| `double` | `IAdditionOperators<double,double,double>` |
+|  | `IMultiplyOperators<double,double,double>` |
+|  | etc. |
+| `double<m>` | `IAdditionOperators<double<m>,double<m>,double<m>>` |
+|  |`IMultiplyOperators<double<m>,double<m>,double<m^2>>`  |
+|  | etc. |
+| `double<'u>` | `IAdditionOperators<double<'u>,double<'u>,double<'u>>` |
+|  |`IMultiplyOperators<double<'u>,double<'u>,double<'u^2>>`  |
+|  | etc. |
+
+Note the `m^2` on the `IMultiplyOperators`.  However, this technique is obviouisly flawed, because it only allows `double<m> * double<m>` and not, say `double<m> * double<kg>`.  The links above have further commentary.
+
+[ Aside: This is an example of why nominal concept modelling of the kind used in `System.Numerics.*` is problematic: concepts are fragile as new genericity requirements are placed on them. ]
+
+
+##### Alternative: Possible future options for Units of Measure + IWSAM generic math code
+
+F# SRTP constraints allow the definition of code the is generic over both numeric type and, eventually, unit of measure.  
+
+First, it's worth noting that the vast majority of .NET math code in .NET libraries is not unitized, e.g. `Math.Sqrt` is not unitized.  Only certain primitive like `*` are automagically given a unitized signature.  
+
+For generic unitized math code, consider the following simple method:
+
+```fsharp
+let inline f x = x * x  + x * x
+```
+
+We can use this as follows:
+
+```fsharp
+> open FSharp.Data.UnitSystems.SI.UnitSymbols;;
+> f 1.0<m>;;
+val it: float<m ^ 2> = 1.0
+
+> let g (x: double<'u>) = f x;;
+val g: x: double<'u> -> float<'u ^ 2>
+```
+
+Let's constrain the types a little for simplicity:
+
+```fsharp
+> let inline f (x: 'T) : 'U =
+    let v1 : 'U = x * x 
+    let v2 : 'U = x * x
+    v1 + v2;;
+```
+
+and examine the inferred types:
+
+```fsharp
+val inline f:
+  x:  ^T ->  ^U
+    when  ^T: (static member (*) :  ^T *  ^T ->  ^U) and
+          ^U: (static member (+) :  ^U *  ^U ->  ^U)
+```
+
+Note that in the generic signature for `f: ^T ->  ^U`, the input and output types are different - yet also related by SRTP constraints:
+The necessary unitized relationship is established when solving these constraints.  That is, when solving an SRTP constraint such as:
+
+```fsharp
+double<m> : (static member (*): '?1 * '?2 -> '?3)
+```
+
+the F# compiler rewrites the potential solution methods for a fixed number of operations, using the following target signature as the basis for a solution:
+
+```fsharp
+type double<m> with
+    static member (*): double<m> * double<'?> -> double<m * '?>
+```
+
+and usually eventually some concrete type, e.g.
+
+```fsharp
+type double<m> with
+    static member op_Multiply: double<m> * double<m> -> double<m ^ 2>
+```
+
+This is considered a "built in" trait solution and only applies to those on well-known primitive types such as `double` and `single`.
+
+All this means SRTP generic math doesn't have the feature interaction described earlier: you can write generic math code that is unit-aware, and the constraints carry sufficient information to establish the necessary unitized relationships at each callsite.
+
+It's worth asking why and seeing if the same can be applied to IWSAM, though it is well beyond the scope of this RFC to do so.  
+
+For the generic case, the starting point is, say
+
+```fsharp
+let f (x: #INumber<'T>) = x * x + x * x;;
+
+val f : 'T -> 'T when 'T :> INumber<'T>
+```
+The problem here is that the input and output types are identical.  Could they be made different-yet-related? That is difficult.
+
+1. The rewrite is not simple - we would need to rewrite the actual `op_Multiply` signature provided by `IMultiplyOperators<_,_,_>` but establishing the relationship between the original unitized type and the signature is not possible. We'd need a new internal flag or concept here to establish this relationship 
+
+2. There are many interfaces and methods in `System.Numerics` and they are not necessarily generic enough, e.g. [`IRootFunction::Sqrt` and `IRootFunctions::Cbrt`](https://github.com/dotnet/runtime/blob/main/src/libraries/System.Private.CoreLib/src/System/Numerics/IRootFunctions.cs) have different unitizations.   We would need to go through each signature and establish the correct unitization.  It could be done but probably shouldn't be baked into the compiler, but rather be a new set of unit-friendly interfaces and metadata in FSharp.Core.  
+
+3. The whole thing would be fragile to additions and changes in the `Systems.Numeric` methods and hierarchy.  We would have to at least wait until the final release of .NET 7
+
+For (1), the possible communication of the extra information might happen as follows:
+
+| Type | Interfaces reported |
+|:-----|:-----|
+| `double` | `IAdditionOperators<double,double,double>` |
+|  | `IMultiplyOperators<double,double,double>` |
+|  | etc. |
+| `double<m>` | `IAdditionOperators<double[m],double['v],double[m*'v]>` |
+|  |`IMultiplyOperators<double[1],double,double>[m]`  |
+|  | etc. |
+| `double<'u>` | `IAdditionOperators<double['u],double['u],double['u]>` |
+|  |`IMultiplyOperators<double['u],double['v],double['u 'v]>` |
+|  | etc. |
+
+Here `[m]` is some kind of soft unit annotation used tracked through inference.  Then, when `IMultiplyOperators<_,_,_>::op_Multiply` is used, the annotations would come into play, rewriting:
+
+```fsharp
+IAdditionOperators<double[m],double['v],double[m 'v]>::op_Multiply: double -> double -> double
+```
+to
+```fsharp
+                                        ......op_Multiply: double<'m> -> double<'v> -> double[m 'v]
+```
+
+A unitizing rewrite would have to be added for each construct in System.Numerics.  Further the utility of this is limited unless it truly allows a way to write  generic math code that is generic both over type an unit.
+
+Given the complexity of this, overall it is better for this RFC to simply say that unitized types are simply not considered to support the `System.Numeric.*` interfaces at all.  A halfway-house where they support some unit-uniform interfaces like `IAdditionOperators<double<m>, double<m>, double<m>` doesn't seem worth it, as in practice there will be almost no useful generic math code that is constrained only by `T : IAdditionOperators<T,TOther,TReturn>`, so what's the point?
+
+Thus for unitized types we filter any interface that derives from anything in the `System.Numeric` namespace.
+
+
 ## Compatibility
 [compatibility]: #compatibility
 
@@ -815,3 +921,6 @@ No.
 
 * [ ] We need to look carefully at IWSAM that define op_Implicit and op_Explicit. @dsyme says: I've done "the right thing" in the code but we will need to test it.
 
+* [ ] Consider whether FSharp.Core should define log2, log2P1 etc.  If it's done it should use SRTP. Note these are based on the IEEE standard and that represents a max point of what we should have.
+
+* [ ] Consider factoring out self constraints and collections-of-constraints into separate RFCs.
