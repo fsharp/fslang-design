@@ -1152,11 +1152,11 @@ This is for state machine compilation of coroutine computation expressions that 
 
 ## Example: task { ... }
 
-See [tasks.fs](https://github.com/dotnet/fsharp/blob/main/src/fsharp/FSharp.Core/tasks.fs).  
+See [tasks.fs](https://github.com/dotnet/fsharp/blob/main/src/FSharp.Core/tasks.fs).  
 
 ## Example: taskSeq { ... }
 
-See [taskSeq.fs](https://github.com/dotnet/fsharp/blob/main/tests/benchmarks/TaskPerf/taskSeq.fs).
+See [taskSeq.fs](https://github.com/dotnet/fsharp/blob/main/tests/benchmarks/CompiledCodeBenchmarks/TaskPerf/TaskPerf/taskSeq.fs).
 
 This is for state machine compilation of computation expressions that generate `IAsyncEnumerable<'T>` values. This is a headline C# 8.0 feature and a very large feature for C#.  It appears to mostly drop out as library code once general-purpose state machine support is available.
 
@@ -1164,9 +1164,9 @@ This is for state machine compilation of computation expressions that generate `
 
 I did a trial re-implementation of F# async (imperfectly and only a subset of the API) using resumable code. You can take a look at the subset that's implemented by looking in the signature file
 
-* Implementation: https://github.com/dotnet/fsharp/blob/main/tests/benchmarks/TaskPerf/async2.fs
+* Implementation: https://github.com/dotnet/fsharp/blob/main/tests/benchmarks/CompiledCodeBenchmarks/TaskPerf/TaskPerf/async2.fs
 
-* Signature fle: https://github.com/dotnet/fsharp/blob/main/tests/benchmarks/TaskPerf/async2.fsi
+* Signature fle: https://github.com/dotnet/fsharp/blob/main/tests/benchmarks/CompiledCodeBenchmarks/TaskPerf/TaskPerf/async2.fsi
 
 Recall how async differs from tasks:
 
