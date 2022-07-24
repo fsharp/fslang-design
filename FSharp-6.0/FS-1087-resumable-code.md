@@ -868,7 +868,7 @@ At high approximation a Coroutine is Task<unit> without async I/O allowed. They 
 > * exceptions get stored away when they happen
 > * you get to return a result `Task<T>` (which makes them more "functional" and type-safe)
 
-See [coroutineBasic.fs](https://github.com/dotnet/fsharp/blob/main/tests/benchmarks/TaskPerf/coroutineBasic.fs).
+See [coroutineBasic.fs](https://github.com/dotnet/fsharp/blob/main/tests/benchmarks/CompiledCodeBenchmarks/TaskPerf/coroutineBasic.fs).
 
 In this example we show how to use resumable code to define a computation expression for a basic form of coroutines. The logical
 properties are:
