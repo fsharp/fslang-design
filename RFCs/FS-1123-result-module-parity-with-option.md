@@ -53,7 +53,7 @@ Interface file:
     val defaultValue: value: 'T -> result: Result<'T, 'Error> -> 'T
 
     [<CompiledName("DefaultWith")>]
-    val defaultWith: defThunk: (unit -> 'T) -> result: Result<'T, 'Error> -> 'T
+    val defaultWith: defThunk: ('Error -> 'T) -> result: Result<'T, 'Error> -> 'T
 
     [<CompiledName("Count")>]
     val count: result: Result<'T, 'Error> -> int
