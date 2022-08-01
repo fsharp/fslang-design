@@ -919,7 +919,27 @@ No.
 ## Unresolved questions
 [unresolved]: #unresolved-questions
 
-* [ ] We need to look carefully at IWSAM that define op_Implicit and op_Explicit. @dsyme says: I've done "the right thing" in the code but we will need to test it.
+* [ ] Document that IWSAMs that define op_Implicit and op_Explicit do not, practiclly speaking, result in implicit conversions being usable, because of F# restrictions on activating implicit conversions in the presence of generic type variables
+* [ ] Document that some code becomes more generic, e.g.
+
+  ```fsharp
+  let inline f0 (x: ^T) = x
+  let g0 (x: 'T) = f0 x
+  ```
+  
+  now gives
+  
+  ```fsharp
+  val g0: x: 'T -> 'T
+  ```
+  
+  instead of
+  
+  ```fsharp
+  val g0: x: obj -> obj
+  ```
+  
+  This may in theory require signature files to be revised.
 
 * [ ] Consider whether FSharp.Core should define log2, log2P1 etc.  If it's done it should use SRTP. Note these are based on the IEEE standard and that represents a max point of what we should have.
 
