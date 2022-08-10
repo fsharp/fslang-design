@@ -18,16 +18,21 @@ Currently is not allowed to define a lower-case DU. This is to prevent ambiguity
 However, this is not an issue if the `[<RequireQualifiedAccess>]` attribute is specified on the DU.
 
 ```fs
+// type with [<RequireQualifiedAccess>] attribute is not allowed to be lower-case
 [<RequireQualifiedAccess>]
 type DU = a // error FS0053: Discriminated union cases and exception labels must be uppercase identifiers
 
+// type without [<RequireQualifiedAccess>] attribute is not allowed to be lower-case
 type DU = a // error FS0053: Discriminated union cases and exception labels must be uppercase identifiers
 
+// type with [<RequireQualifiedAccess>] attribute is not allowed to be lower-case
 [<RequireQualifiedAccess>]
 type DU = | a // error FS0053: Discriminated union cases and exception labels must be uppercase identifiers
 
+// type without [<RequireQualifiedAccess>] attribute is not allowed to be lower-case
 type DU = | a // error FS0053: Discriminated union cases and exception labels must be uppercase identifiers
 ```
+
 type DU = | ``not.allowed`` // error FS0883: Invalid namespace, module, type or union case name
 
 Note: the above example is not a valid type name for .NET, so it will remain as an error.
@@ -42,15 +47,20 @@ The following examples will now be valid :
 Example code:
 
 ```fsharp
+
+// type with [<RequireQualifiedAccess>] attribute is allowed to be lower-case
 [<RequireQualifiedAccess>]
 type DU = a
 
+// type with [<RequireQualifiedAccess>] attribute is allowed to be lower-case
 [<RequireQualifiedAccess>]
 type DU = | a
 
+// type with [<RequireQualifiedAccess>] attribute is allowed to be lower-case
 [<RequireQualifiedAccess>]
 type DU = ``a``
 
+// type with [<RequireQualifiedAccess>] attribute is allowed to be lower-case
 [<RequireQualifiedAccess>]
 type DU =
      | a of int
