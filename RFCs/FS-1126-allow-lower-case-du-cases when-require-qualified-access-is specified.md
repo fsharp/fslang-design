@@ -4,7 +4,7 @@ The design suggestion [Allow lower-case DU cases when `[<RequireQualifiedAccess>
 
 This RFC covers the detailed proposal for this suggestion.
 
-- [x] [Suggestion]((https://github.com/fsharp/fslang-suggestions/issues/131)
+- [x] [Suggestion](https://github.com/fsharp/fslang-suggestions/issues/131)
 - [x] Approved in principle
 - [x] [Implementation](https://github.com/dotnet/fsharp/pull/13432)
 - [ ] Design Review Meeting(s) with @dsyme and others invitees
@@ -35,18 +35,21 @@ Note: the above example is not a valid type name for .NET, so it will remain as 
 # Detailed design
 This RFC will avoid a compiler check for union case names if the `[<RequireQualifiedAccess>]` is used at the type level.
 
+We will reuse error FS0053 with an updated message : "Lowercase discriminated union cases are only allowed when using RequireQualifiedAccess attribute"
+
+The following examples will now be valid :
+
 Example code:
 
 ```fsharp
 [<RequireQualifiedAccess>]
-type DU = a 
-
 type DU = a
 
 [<RequireQualifiedAccess>]
 type DU = | a
 
-type DU = | a
+[<RequireQualifiedAccess>]
+type DU = ``a``
 
 [<RequireQualifiedAccess>]
 type DU =
@@ -55,18 +58,6 @@ type DU =
      | C
      | ``D`` of bool
      | ``d``
-     
- [<RequireQualifiedAccess>]
- type DU = ``a``
-
- [<RequireQualifiedAccess>]
- type DU = ``A``
-
- [<RequireQualifiedAccess>]
- type DU = | ``a``
-
- [<RequireQualifiedAccess>]
- type DU = | ``A``
 ```
 
 # Drawbacks
