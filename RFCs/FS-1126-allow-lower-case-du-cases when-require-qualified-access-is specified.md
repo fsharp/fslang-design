@@ -6,7 +6,7 @@ This RFC covers the detailed proposal for this suggestion.
 
 - [x] [Suggestion]((https://github.com/fsharp/fslang-suggestions/issues/131)
 - [x] Approved in principle
-- [ ] [Implementation](https://github.com/dotnet/fsharp/pull/FILL-ME-IN)
+- [x] [Implementation](https://github.com/dotnet/fsharp/pull/13432)
 - [ ] Design Review Meeting(s) with @dsyme and others invitees
 - [X] [Discussion](https://github.com/fsharp/fslang-design/discussions/685)
 
@@ -28,6 +28,9 @@ type DU = | a // error FS0053: Discriminated union cases and exception labels mu
 
 type DU = | a // error FS0053: Discriminated union cases and exception labels must be uppercase identifiers
 ```
+type DU = | ``not.allowed`` // error FS0883: Invalid namespace, module, type or union case name
+
+Note: the above example is not a valid type name for .NET, so it will remain as an error.
 
 # Detailed design
 This RFC will avoid a compiler check for union case names if the `[<RequireQualifiedAccess>]` is used at the type level.
@@ -44,6 +47,26 @@ type DU = a
 type DU = | a
 
 type DU = | a
+
+[<RequireQualifiedAccess>]
+type DU =
+     | a of int
+     | B of string
+     | C
+     | ``D`` of bool
+     | ``d``
+     
+ [<RequireQualifiedAccess>]
+ type DU = ``a``
+
+ [<RequireQualifiedAccess>]
+ type DU = ``A``
+
+ [<RequireQualifiedAccess>]
+ type DU = | ``a``
+
+ [<RequireQualifiedAccess>]
+ type DU = | ``A``
 ```
 
 # Drawbacks
