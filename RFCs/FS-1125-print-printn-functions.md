@@ -67,14 +67,15 @@ The addition of these functions brings the core library to four different `print
 
 # Unresolved questions
 
-* **Should we provide a `print` function without the trailing newline at all?**
-  * Printing output without a newline is a fairly uncommon need and could make the `print` function surprising for some users who expected it to behave like `println`.
+**Should we provide a `print` function without the trailing newline at all?**
 
-* **Should the `print` functions be generic, and if so what is the specification?**
+Printing output without a newline is a fairly uncommon need and could make the `print` function surprising for some users who expected it to behave like `println`.
 
-  * Ths initial suggestion approved as that `string` be non-generic.  In [the discussion in the initial PR](https://github.com/dotnet/fsharp/pull/13597), a suggestion was made to make the print functions generic.  This is based on a separate motiviation to use the functions to rapidly write code to output any data - rather than the educational scenarios. This is seen as important enough that the suggestion is we shouldn't proceed with adding `print` taking just a string if that would preclude adding the generic one later.
+**Should the `print` functions be generic, and if so what is the specification?**
+
+The initial suggestion approved as that `string` be non-generic.  In [the discussion in the initial PR](https://github.com/dotnet/fsharp/pull/13597), a suggestion was made to make the print functions generic.  This is based on a separate motiviation to use the functions to rapidly write code to output any data - rather than the educational scenarios. This is seen as important enough that the suggestion is we shouldn't proceed with adding `print` taking just a string if that would preclude adding the generic one later.
  
-  * Adding a generic `print` raises many significant design questions and exposes some existing design flaws in F#. For example, a generic print can be implemented today using any of these:
+Adding a generic `print` raises many significant design questions and exposes some existing design flaws in F#. For example, a generic print can be implemented today using any of these:
  
 ```fsharp
 let print x = printfn "%s" (string x)
@@ -88,34 +89,36 @@ let print x = printfn "${x}"
 let print x = printfn "%s" (x.ToString())
 ```
     
-    These all differ.  The basic dimensions are:
-    * safety
-    * locale/culture
-    * multi-line formatting and line width
-    * what structure is revealed in structured multi-line formatting
-    * what happens with large objects
-    * what happens with infinite objects
-    * what happens with nulls and None
+These all differ.  The basic dimensions are:
+
+* safety
+* locale/culture
+* multi-line formatting and line width
+* what structure is revealed in structured multi-line formatting
+* what happens with large objects
+* what happens with infinite objects
+* what happens with nulls and None
  
-  * If we add a generic `print`, it should have a clear specification with regard to culture formatting. Unfortunately, anything relying on unadjusted `%A` formatting is inconsistent with regard to culture formatting - sometimes using invariant culture, and sometimes current culture.  These issues and possible paths forward on it are discussed in https://github.com/fsharp/fslang-suggestions/issues/897
+If we add a generic `print`, it should have a clear specification with regard to culture formatting. Unfortunately, anything relying on unadjusted `%A` formatting is inconsistent with regard to culture formatting - sometimes using invariant culture, and sometimes current culture.  These issues and possible paths forward on it are discussed in https://github.com/fsharp/fslang-suggestions/issues/897
 
-  * If we add a generic `print`, we should restrict it so it can't be used with function types, e.g. some future "warn if instantiated to be a function type" thing:
+If we add a generic `print`, we should restrict it so it can't be used with function types, e.g. some future "warn if instantiated to be a function type" thing:
 
-    ```fsharp
-    let print<[<NotAFunction>] 'T> (x: 'T) = printf $"%$A{x}"
-    let printn<[<NotAFunction>] 'T> (x: 'T) = printfn $"%$A{x}"
-    ```
+```fsharp
+let print<[<NotAFunction>] 'T> (x: 'T) = printf $"%$A{x}"
+let printn<[<NotAFunction>] 'T> (x: 'T) = printfn $"%$A{x}"
+```
 
-    This alleviates the primary safety concern:
-    ```fsharp
-    let f x y = x + y
-    print (f 1)
-    ```
+This alleviates the primary safety concern:
+
+```fsharp
+let f x y = x + y
+print (f 1)
+```
     
-    The same logic should be applied to warn on under-applied interpolatations:
+The same logic should be applied to warn on under-applied interpolatations:
     
-    ```fsharp
-    let f x y = x + y
-    printfn $"result = {f 1}"
-    ```
+```fsharp
+let f x y = x + y
+printfn $"result = {f 1}"
+```
     
