@@ -1,4 +1,4 @@
-# F# RFC FS-1125 - Add `print` and `println` functions to FSharp.Core
+# F# RFC FS-1125 - Add `print` and `printn` functions to FSharp.Core
 
 The design suggestion [print and printn alongside printf and printfn](https://github.com/fsharp/fslang-suggestions/issues/1092) has been marked "approved in principle".
 
@@ -14,17 +14,21 @@ This RFC covers the detailed proposal for this suggestion.
 
 This RFC introduces two new functions:
 - `print : string -> unit`
-- `println : string -> unit`
+- `printn : string -> unit`
 
-`print` writes the exact input to stdout (analogous to `System.Console.Write`) and `println` appends a newline to the string before writing to stdout (analogous to `System.Console.WriteLine`).
+`print` writes the exact input to stdout (analogous to `System.Console.Write`) and `printn` appends a newline to the string before writing to stdout (analogous to `System.Console.WriteLine`).
+
+> NOTE: we've received significant feedback that we should strongly consider generic `print`/`printn` functions. See "unresolved issues" below.
 
 # Motivation
 
 These functions will simplify the user experience when working with non-formatted strings. Currently, beginners to the language are introduced to `printf` and `printfn` as the default method for writing strings to the console. However, truly understanding these functions require understanding the `TextWriterFormat` type, which is generally out-of-scope for people initially learning the language. For example, the error generated from the following snippet would confuse many beginners.
+
 ```fs
 let str = "A string"
 printfn str // Error FS0001: The type 'string' is not compatible with the type 'Printf.TextWriterFormat<'a>'
 ```
+
 Particularly after the introduction of interpolated strings, many users do not need the extra power of format strings. In these cases, `print` and `println` would provide a more user-friendly default for printing strings.
 
 # Detailed design
@@ -36,9 +40,9 @@ Example code:
 ```fsharp
 let str = "A string"
 print str // prints "A string" with no trailing newline
-println str // prints "A string" with a trailing newline
-println $"The value in str is %s{str}" // prints "The value in str is A string" with a trailing newline
-println $"%0.3f{System.Math.PI}" // prints "3.142" with a trailing newline
+printn str // prints "A string" with a trailing newline
+printn $"The value in str is %s{str}" // prints "The value in str is A string" with a trailing newline
+printn $"%0.3f{System.Math.PI}" // prints "3.142" with a trailing newline
 ```
 
 # Drawbacks
@@ -63,7 +67,37 @@ The addition of these functions brings the core library to four different `print
 
 # Unresolved questions
 
-* **Are `print` and `println` the best names for these functions?**
-  * The `print` and `println` names were used in writing this RFC as they seem to be commonly used in other languages, analogous to the `printf` and `printfn` names, and allow for the mnemonic "print line" for `println`. However, the naming is still up for discussion and subject to change. Some of the options discussed in the suggestion thread were: `print`/`printn`, `print`/`printline`, `write`/`writeline`, and `put`/`putln`. One advantage to the `print`/`printn` option is closer consistency with `printf`/`printfn`.
 * **Should we provide a `print` function without the trailing newline at all?**
   * Printing output without a newline is a fairly uncommon need and could make the `print` function surprising for some users who expected it to behave like `println`.
+
+* **Should the `print` functions be generic, and if so what is the specification?**
+
+  * In [the discussion in the initial PR](https://github.com/dotnet/fsharp/pull/13597), a suggestion was made to make the print functions generic.  This is based on a separate motiviation to use the functions to rapidly write code to output any data - rather than the educational scenarios. This is seen as important enough that the suggestion is we shouldn't proceed with adding `print` taking just a string if that would preclude adding the generic one later.
+ 
+  * Adding a generic `print` raises many significant design questions and exposes some existing design flaws in F#. For example, a generic print can be implemented today using any of these:
+ 
+```fsharp
+let print x = printfn "%s" (string x)
+let print x = printfn "%A" x
+let print x = printfn "%0A" x
+let print x = printfn "%80A" x
+let print x = printfn "%+A" x
+let print x = printfn "%-A" x
+let print x = printfn "%O" x
+let print x = printfn "${x}"
+let print x = printfn "%s" (x.ToString())
+```
+    
+    These all differ.  The basic dimensions are:
+    * safety
+    * locale/culture
+    * multi-line formatting and line width
+    * what structure is revealed in structured multi-line formatting
+    * what happens with large objects
+    * what happens with infinite objects
+    * what happens with nulls and None
+ 
+  * If we add a generic `print`, it should have a clear specification with regard to culture formatting. Unfortunately, anything relying on unadjusted `%A` formatting is inconsistent with regard to culture formatting - sometimes using invariant culture, and sometimes current culture.  These issues and possible paths forward on it are discussed in https://github.com/fsharp/fslang-suggestions/issues/897
+
+
+
