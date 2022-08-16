@@ -87,6 +87,10 @@ For example
 
 Testing should particularly check that compilation is linear (or log-linear or similar) along these dimensions.  If quadratic or worse this should ideally be noted in the RFC.
 
+## Culture-aware formatting/parsing
+
+Does the proposed RFC interact with culture-aware formatting and parsing of numbers, dates and currencies? For example, if the RFC includes plaintext outputs, are these outputs specified to be culture-invariant or current-culture.
+
 # Unresolved questions
 
 What parts of the design are still TBD?
