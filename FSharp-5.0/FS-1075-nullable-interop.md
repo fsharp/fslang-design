@@ -163,3 +163,10 @@ During the implementation the question came up:
 
 This is out of scope of this RFC
 
+# Notes on implementation (state as of: 2022-08-22)
+
+- F# 5.0 shipped with the broader implementation being considered in the unresolved questions section; Introducing a value-to-Nullable rule for all method argument positions.
+
+- F# 6.0 added additional type directed conversions ([FS-1093](https://github.com/fsharp/fslang-design/blob/main/FSharp-6.0/FS-1093-additional-conversions.md)) which were allowed to 'stack' with Nullable; This has been lightly formalized to handle any two-step conversions e.g. int -> Nullable<float> that may arise as a result.
+
+- Starting from F# 7.0 passing non nullable arguments to any kind of Nullable method parameter will produce a builtin conversion warning (no: 3389) if sufficient type information is available ('T to Nullable<'T> overload resolutions are excluded for the time being). This was done to better align this feature with the later added [FS-1093 additional conversions](https://github.com/fsharp/fslang-design/blob/main/FSharp-6.0/FS-1093-additional-conversions.md) regarding diagnostics. Reducing unexpected disjointedness between these two RFCs.
