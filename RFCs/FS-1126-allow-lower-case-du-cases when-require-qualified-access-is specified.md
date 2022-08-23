@@ -4,9 +4,9 @@ The design suggestion [Allow lower-case DU cases when `[<RequireQualifiedAccess>
 
 This RFC covers the detailed proposal for this suggestion.
 
-- [x] [Suggestion]((https://github.com/fsharp/fslang-suggestions/issues/131)
+- [x] [Suggestion](https://github.com/fsharp/fslang-suggestions/issues/131)
 - [x] Approved in principle
-- [ ] [Implementation](https://github.com/dotnet/fsharp/pull/FILL-ME-IN)
+- [x] [Implementation](https://github.com/dotnet/fsharp/pull/13432)
 - [ ] Design Review Meeting(s) with @dsyme and others invitees
 - [X] [Discussion](https://github.com/fsharp/fslang-design/discussions/685)
 
@@ -18,32 +18,56 @@ Currently is not allowed to define a lower-case DU. This is to prevent ambiguity
 However, this is not an issue if the `[<RequireQualifiedAccess>]` attribute is specified on the DU.
 
 ```fs
+// type with [<RequireQualifiedAccess>] attribute is not allowed to be lower-case
 [<RequireQualifiedAccess>]
 type DU = a // error FS0053: Discriminated union cases and exception labels must be uppercase identifiers
 
+// type without [<RequireQualifiedAccess>] attribute is not allowed to be lower-case
 type DU = a // error FS0053: Discriminated union cases and exception labels must be uppercase identifiers
 
+// type with [<RequireQualifiedAccess>] attribute is not allowed to be lower-case
 [<RequireQualifiedAccess>]
 type DU = | a // error FS0053: Discriminated union cases and exception labels must be uppercase identifiers
 
+// type without [<RequireQualifiedAccess>] attribute is not allowed to be lower-case
 type DU = | a // error FS0053: Discriminated union cases and exception labels must be uppercase identifiers
 ```
+
+type DU = | ``not.allowed`` // error FS0883: Invalid namespace, module, type or union case name
+
+Note: the above example is not a valid type name for .NET, so it will remain as an error.
 
 # Detailed design
 This RFC will avoid a compiler check for union case names if the `[<RequireQualifiedAccess>]` is used at the type level.
 
+We will reuse error FS0053 with an updated message : "Lowercase discriminated union cases are only allowed when using RequireQualifiedAccess attribute"
+
+The following examples will now be valid :
+
 Example code:
 
 ```fsharp
-[<RequireQualifiedAccess>]
-type DU = a 
 
+// type with [<RequireQualifiedAccess>] attribute is allowed to be lower-case
+[<RequireQualifiedAccess>]
 type DU = a
 
+// type with [<RequireQualifiedAccess>] attribute is allowed to be lower-case
 [<RequireQualifiedAccess>]
 type DU = | a
 
-type DU = | a
+// type with [<RequireQualifiedAccess>] attribute is allowed to be lower-case
+[<RequireQualifiedAccess>]
+type DU = ``a``
+
+// type with [<RequireQualifiedAccess>] attribute is allowed to be lower-case
+[<RequireQualifiedAccess>]
+type DU =
+     | a of int
+     | B of string
+     | C
+     | ``D`` of bool
+     | ``d``
 ```
 
 # Drawbacks
