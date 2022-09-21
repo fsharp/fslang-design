@@ -94,8 +94,12 @@ What other designs have been considered? What is the impact of not doing this?
 Please address all necessary compatibility questions:
 
 * Is this a breaking change?
+  * No
 * What happens when previous versions of the F# compiler encounter this design addition as source code?
+  * Parser errors
+  * TODO: Check this would always be the case
 * What happens when previous versions of the F# compiler encounter this design addition in compiled binaries?
+  * TODO: investigate
 * If this is a change or extension to FSharp.Core, what happens when previous versions of the F# compiler encounter this construct?
 
 # Pragmatics
@@ -115,24 +119,39 @@ Please list the reasonable expectations for diagnostics for misuse of this featu
 
 ### Debugging
 
-Please list the reasonable expectations for tooling for this feature, including any of these:
+In summary, all language server features directed at the underscore should behave as if directed at the arg and/or reference of the equivalent elaborated form. All language features directed at anything after the dot should similarly behave as if directed at the body of the equivalent function.
 
 * Debugging
   * Breakpoints/stepping
+    * This should behave in the same way as the equivalent elaborated form: a breakpoint covering a line with the shorthand should break at least once each time the function is called. Similarly, stepping into the function should behave as if it had been written in the elaborated form.
   * Expression evaluator
+    * TODO
   * Data displays for locals and hover tips
+    * The debugger should show the value of the synthetic local variable storing the argument when stopped inside the function call
+    * When inside the scope of multiple nested versions of this shorthand the variables should have unique (and somehow clear) names
+    * The current synthetic variable value should be displayed when hovering over the underscore part of the shorthand.
+      * Not any underscore, and the correct value for the correct function when nested
+    * Other data displays and hover should be equivalent to the elaborated form
 * Auto-complete
+  * Completion after `_.` should be equivalent to completion after `(fun x -> x.` in the same context.
+  * TODO: Check there aren't any snippets or other oddities
 * Tooltips
+  * On hovering over the underscore a tooltip should be shown the the type of the anonymous function, and any other context that would normally be shown for a function arg.
+  * TODO: Does the rhs `x` ever show something different to the lhs `x`?
 * Navigation and Go To Definition
+  * None? No document symbols are created by this construct.
 * Colorization
+  * TODO
 * Brace/parenthesis matching
+  * TODO
 
 ## Performance
 
-Please list any notable concerns for impact on the performance of compilation and/or generated code
+TODO, but I can't see how this could cause any impact on the performance of generated code as the construct should be entirely erased.
 
-* For existing code
-* For the new features
+This adds rules to the parser which could cause more backtracking.
+
+This adds extra work between parsing and checking which requires walking the syntax tree.
 
 ## Scaling
 
@@ -147,8 +166,14 @@ Testing should particularly check that compilation is linear (or log-linear or s
 
 ## Culture-aware formatting/parsing
 
+TODO, but no
+
 Does the proposed RFC interact with culture-aware formatting and parsing of numbers, dates and currencies? For example, if the RFC includes plaintext outputs, are these outputs specified to be culture-invariant or current-culture.
 
 # Unresolved questions
+
+1. Is underscore definitely the appropriate symbol?
+2. Is there a good name for this feature?
+3. What happens when you nest this?
 
 What parts of the design are still TBD?
