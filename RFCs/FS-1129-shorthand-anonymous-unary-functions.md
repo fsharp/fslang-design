@@ -59,13 +59,11 @@ This transformation should take place after the SyntaxTree is created, during th
 
 Given an application expression where the first part of the long ident in the leading expression is an underscore, the elaborated form of `_.expr` should be `fun x -> x.expr` where `x` is a synthetic variable.
 
-And allowing things like (_ + 5) is massively increasing the scope of this extension, without providing much benefit.
+Or in other words: "`_.` binds only to dot-lookups and atomic function application."
 
-Or in other words: "_. binds only to dot-lookups and atomic function application."
+> We should consider the interaction with property extraction in pattern matching, e.g.
 
-We should consider the interaction with property extraction in pattern matching, e.g.
-
-match x with
+> match x with
 | _.Length as 0 -> ....
 
 
@@ -87,6 +85,14 @@ let add x y = x + y
 
 # Alternatives
 
+An alternative would be to extend the feature to allow anonymous functions with "captures" such as in [Clojure](https://clojure.org/guides/learn/functions#_anonymous_function_syntax) or [Elixir](https://hexdocs.pm/elixir/Kernel.SpecialForms.html#&/1-anonymous-functions), with something like:
+
+```fsharp
+&(& * 2) => (fun x -> x * 2)
+```
+
+TODO: why is this not worth it
+
 What other designs have been considered? What is the impact of not doing this?
 
 # Compatibility
@@ -106,12 +112,33 @@ Please address all necessary compatibility questions:
 
 ## Diagnostics
 
-the use of this feature should really be disallowed or give a warning in cases such as [this]
-(Allow _.Property shorthand for accessor functions #506 (comment)) e.g. at least if_ is used as a fun _-> ... wildcard pattern somewhere in the enclosing expression . I'm not sure what the exact limitation should be though, since you might reasonably use_ as a nested pattern in a match statement wildcard. But some kind of limitation would seem sensible.
+### Discard/wildcard confusion
+
+It may be confusing to allow the use of this shorthand when a discard has already been used in the same context.
+
+#### Wildcard `fun` binding
 
 ```fsharp
-let h : string array array -> (string -> int) array = Array.map (fun _->_.Length) // return tuple from array length and function that ignores argument and returns array length
+let a : string -> string = (fun _ -> 5 |> _.ToString())
 ```
+
+The use of this shorthand inside a `fun` with a wildcard pattern should emit a warning.
+
+#### Discard pattern
+
+```fsharp
+let b : int -> int -> string = function |5 -> (fun _ -> "Five") |_ -> _.ToString()
+```
+
+The use of this shorthand inside a pattern match with a discard should not warn.
+
+#### Discarded local variable
+
+```fsharp
+let c : string = let _ = "test" in "asd" |> _.ToString()
+```
+
+TODO: Should this be OK?
 
 Please list the reasonable expectations for diagnostics for misuse of this feature.
 
@@ -175,5 +202,7 @@ Does the proposed RFC interact with culture-aware formatting and parsing of numb
 1. Is underscore definitely the appropriate symbol?
 2. Is there a good name for this feature?
 3. What happens when you nest this?
+4. Are you allowed inline comments between `_` and `.` or between `.` and `expr`?
+5. In what contexts should uses of discards/wildcards conflict and raise a warning?
 
 What parts of the design are still TBD?
