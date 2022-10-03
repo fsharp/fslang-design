@@ -8,7 +8,7 @@ This RFC covers the detailed proposal for this suggestion.
 - [x] Approved in principle
 - [ ] Implementation
 - [ ] Design Review Meeting(s) with @dsyme and others invitees ???
-- [ ] Discussion ???
+- [ ] [Discussion](https://github.com/fsharp/fslang-design/discussions/713)
 
 # Summary
 Allow static members in interfaces
