@@ -1,7 +1,12 @@
 # F# RFC FS-1083 - Don't require a spaces around `>` or `<`
 
 The design suggestion [Don't require a space before SRTP type parameter](https://github.com/fsharp/fslang-suggestions/issues/668) has been marked "approved in principle".
-This RFC covers the detailed proposal for this suggestion and some related design relaxations.
+
+This RFC covers the detailed proposal for this suggestion.
+
+* [x] [Approved in principle](https://github.com/fsharp/fslang-suggestions/issues/668#issuecomment-443213791)
+* [x] Discussion thread: absent, was resolved as part of [PR #1151](https://github.com/fsharp/fslang-suggestions/issues/1151)
+* [x] Implementation: [completed](https://github.com/fsharp/fslang-suggestions/issues/1151)
 
 ## Summary
 
