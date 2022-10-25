@@ -73,13 +73,14 @@ Please address all necessary compatibility questions:
 * What happens when previous versions of the F# compiler encounter this design addition in compiled binaries?
 *AFAICT it should work, changes will hopefully be limited to lexing stage*
 * If this is a change or extension to FSharp.Core, what happens when previous versions of the F# compiler encounter this construct?
-*AFAICT it is not a change/extension to FSharp.Core*
+*It is not a change/extension to FSharp.Core*
 
 # Pragmatics
 
 ## Diagnostics
 
-Please list the reasonable expectations for diagnostics for misuse of this feature.
+* New compiler error for interpolated string literals with too many consecutive `{` or `}` characters.
+* Otherwise, same compiler errors as for regular (single-`$`) interpolated strings.
 
 ## Tooling
 
