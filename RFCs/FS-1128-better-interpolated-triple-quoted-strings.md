@@ -57,11 +57,16 @@ Example:
 
 ```
 let text = "3 curly braces delimit interpolation expression"
-$$$"""
-In a string literal with 3x$, { or {{ are simply treated as content
-whereas {{{text}}}.
-It is also allowed to have {, {{, } or }} adjacent to the interpolation delimiters as so:
-{{{{41+1}}}} = {42}
+
+$$$"""In a string literal with 3x$, { or {{ are simply treated as content..."""
+// val it: string = "In a string literal with 3x$, { or {{ are simply treated as content..."
+
+$$$"""...whereas {{{text}}}."""
+// val it: string = "...whereas 3 curly braces delimit interpolation expression."
+
+// It is also allowed to have {, {{, } or }} adjacent to the interpolation delimiters like so:
+$$$"""{{{{41+1}}}} = {42}"""
+// val it: string = "{42} = {42}"
 """
 ```
 
