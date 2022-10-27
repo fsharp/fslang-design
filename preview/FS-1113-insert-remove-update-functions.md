@@ -1,1 +1,0 @@
-Moved to https://github.com/fsharp/fslang-design/tree/main/FSharp-6.0/FS-1113-insert-remove-update-functions.md
