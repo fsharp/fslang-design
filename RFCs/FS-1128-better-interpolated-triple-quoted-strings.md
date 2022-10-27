@@ -36,7 +36,7 @@ The motivation is not to enable any novel use cases, but to make working with in
 This change should:
 
 1. be backwards compatible with existing support for triple quoted strings
-2. align with C# raw string literals reasonably well
+2. align with C# [raw string literals](https://github.com/dotnet/csharplang/blob/main/proposals/csharp-11.0/raw-string-literal.md) reasonably well
 
 # Detailed design
 
@@ -68,7 +68,8 @@ It is also allowed to have {, {{, } or }} adjacent to the interpolation delimite
 # Drawbacks
 
 Even though this only extends already existing syntax, it still can be considered yet another way of doing string interpolation.
-Moreover, it can't be fully aligned with analogous C# feature (raw string literals) and stay backward compatible at the same time, so this could be a source of confusion (but note that triple quoted string literals are already similar but not really aligned with C#'s raw string literals anyway).
+Moreover, it can't be fully aligned with analogous C# feature (raw string literals - [docs](https://learn.microsoft.com/en-us/dotnet/csharp/whats-new/csharp-11#raw-string-literals)) and stay backward compatible at the same time, so this could be a source of confusion
+(but note that triple quoted string literals are already similar but not really aligned with C#'s raw string literals anyway - see [spec](https://github.com/dotnet/csharplang/blob/main/proposals/csharp-11.0/raw-string-literal.md)).
 
 # Alternatives
 
