@@ -5,8 +5,7 @@ This RFC covers the detailed proposal for this suggestion.
 
 * [x] Approved in principle
 * [x] [Suggestion](https://github.com/fsharp/fslang-suggestions/issues/1123)
-* [ ] Details: [under discussion](FILL-ME-IN)
-* [ ] Implementation: [In progress](FILL-ME-IN)
+* [x] Implementation: [Completed](https://github.com/dotnet/fsharp/pull/13326)
 
 # Summary
 [summary]: #summary
