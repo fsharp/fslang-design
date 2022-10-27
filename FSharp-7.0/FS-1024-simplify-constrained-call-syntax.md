@@ -3,10 +3,7 @@
 The design suggestion [Simplify call syntax for statically resolved member constraints](https://github.com/fsharp/fslang-suggestions/issues/440) has been marked "approved in principle".
 This RFC covers the detailed proposal for this suggestion.
 
-* [x] Approved in principle
-* [x] [User Voice Request](https://github.com/fsharp/fslang-suggestions/issues/440)
-* [ ] Details: [under discussion](https://github.com/fsharp/fslang-design/issues/162)
-* [x] Implementation: [started](https://github.com/dotnet/fsharp/pull/4726)
+* Replaced by https://github.com/fsharp/fslang-design/blob/main/FSharp-7.0/FS-1124-interfaces-with-static-abstract-members.md
 
 
 # Summary
