@@ -4,7 +4,7 @@ The issue [ValueTuple Item1,Item2,.. fields and ITuple interface are not visible
 This RFC covers the detailed proposal for this suggestion.
 
 * [x] [Bug report](https://github.com/dotnet/fsharp/issues/5654)
-* [ ] Details: [under discussion](https://github.com/fsharp/fslang-design/issues/FILL-ME-IN)
+* [ ] Details: TBD
 * [ ] Implementation: N/A
 
 
