@@ -43,15 +43,19 @@ This change should:
 The existing form of interpolated triple quoted strings: `$"""...{}..."""` is extended to allow multiple dollar signs at the begining of the string literal.
 The count of these initiatory `$` characters indicates how many `{` and `}` characters are used to delimit interpolation expression within the content of the literal.
 
-Important note: To maintain backward compatibility, there are no changes in semantics for a single-`$` case - in particular, curly braces can still be escaped by doubling them.
-This means that it is an edge case in terms of how this feature behaves.
-It would be nice to have a clean design that covers all cases, but it is not worth breaking backward compatibility for.
-Therefore the below description applies to the literals starting with 2 or more `$`.
+Behavior of triple quoted string literals starting with a single `$` remains unchanged.
 
-Triple quoted string literals starting with 2 or more `$` characters have no escaping mechanism for `{` or `}`.
-Instead, the literal can always be constructed in such a way as to ensure that interpolation delimiters will not collide with other curly braces in the content.
-In a literal that starts with `N` `$` characters, a sequence of consecutive `{` can be at most `2*N-1` characters long and for any sequence of more than `N`, the innermost `N` `{` characters delimit the interpolation, while the outter up to `N-1` are treated as content (analogously for `}`).
-A sequence of `2*N` or more `{` (or `}`) will result in a compilation error.
+Triple quoted string literals starting with `N` `$` (where `N` > 1) behave as follows:
+- No escaping mechanism for any characters.
+- A sequence of `N` `{` indicates the beginning of an interpolation expression and a sequence of `N` `}` indicates the end of interpolation expression.
+- A sequence of `2*N` or more `{` or `}` is not allowed and will result in a compilation error.
+- In any sequence of more than `N` `{`, the outter braces are treated as content of the string, while the innermost `N` delimit the interpolation (and analogously for `}`).
+
+Note: This design is taken from C#'s [raw string literals](https://github.com/dotnet/csharplang/blob/main/proposals/csharp-11.0/raw-string-literal.md).
+It is an elegant solution that will already be familiar to a portion of dotnet developers.
+However, there is one significant difference - in raw strings, these rules also extend to literals with single `$`.
+Unfortunately, in F# that would be a breaking change,
+so single `$` case remains an exception in terms of alignment with C#.
 
 Example:
 
@@ -73,8 +77,9 @@ $$$"""{{{{41+1}}}} = {42}"""
 # Drawbacks
 
 Even though this only extends already existing syntax, it still can be considered yet another way of doing string interpolation.
-Moreover, it can't be fully aligned with analogous C# feature (raw string literals - [docs](https://learn.microsoft.com/en-us/dotnet/csharp/whats-new/csharp-11#raw-string-literals)) and stay backward compatible at the same time, so this could be a source of confusion
-(but note that triple quoted string literals are already similar but not really aligned with C#'s raw string literals anyway - see [spec](https://github.com/dotnet/csharplang/blob/main/proposals/csharp-11.0/raw-string-literal.md)).
+
+Moreover, as mentioned in [Detailed design section](#detailed-design) it can't be fully aligned with analogous C# feature (raw string literals - [docs](https://learn.microsoft.com/en-us/dotnet/csharp/whats-new/csharp-11#raw-string-literals)) and stay backward compatible at the same time, so this could be a source of confusion
+(note that triple quoted string literals are already not fully aligned with C#'s raw string literals anyway - see [detailed spec for raw strings](https://github.com/dotnet/csharplang/blob/main/proposals/csharp-11.0/raw-string-literal.md)).
 
 # Alternatives
 
@@ -114,7 +119,7 @@ This feature should have no impact on performance.
 
 ## Scaling
 
-We do not set an explicit limit on the number of `$` signs allowed at the beginning of a string literal.
+We do not set an explicit limit on the number of `$` characters allowed at the beginning of a string literal.
 In a hand-written code it will typically not exceed 3.
 
 ## Culture-aware formatting/parsing
