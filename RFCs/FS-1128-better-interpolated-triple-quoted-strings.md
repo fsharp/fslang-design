@@ -110,26 +110,16 @@ This includes colorization, autocompletion, and navigational features in an inte
 
 ## Performance
 
-AFAICT there should be no impact on performance (although there might be if using certain constructs in regexes within .fsl files can have a big impact `XXX TODO`)
+This feature should have no impact on performance.
 
 ## Scaling
 
-Please list the dimensions that describe the inputs for this new feature, e.g. "number of widgets" etc.  For each, estimate a reasonable upper bound for the expected size in human-written code and machine-generated code that the compiler will accept.
-
-For example
-
-- Expected maximum number of widgets in reasonable hand-written code: 100
-- Expected reasonable upper bound for number of widgets accepted: 500
-
-Testing should particularly check that compilation is linear (or log-linear or similar) along these dimensions.  If quadratic or worse this should ideally be noted in the RFC.
-
-`TODO` *No clue really, but I expect more than 3x$ will be very rarely used though*
+We do not set an explicit limit on the number of `$` signs allowed at the beginning of a string literal.
+In a hand-written code it will typically not exceed 3.
 
 ## Culture-aware formatting/parsing
 
-Does the proposed RFC interact with culture-aware formatting and parsing of numbers, dates and currencies? For example, if the RFC includes plaintext outputs, are these outputs specified to be culture-invariant or current-culture.
-
-*No* `TODO: remove this section?`
+N/A
 
 # Unresolved questions
 
