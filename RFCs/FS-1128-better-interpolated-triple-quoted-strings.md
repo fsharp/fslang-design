@@ -8,7 +8,7 @@ This RFC covers the detailed proposal for this suggestion.
 - [x] Approved in principle
 - [ ] [Implementation]() (no implementation yet, but a proof of concept [here](https://github.com/dotnet/fsharp/compare/main...abonie:fsharp:poc_improved_interpolation))
 - [ ] Design Review Meeting(s) with @dsyme and others invitees
-- [Discussion]()
+- [Discussion](https://github.com/fsharp/fslang-design/discussions/716)
 
 # Summary
 
