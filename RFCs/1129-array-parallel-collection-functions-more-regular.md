@@ -162,8 +162,8 @@ Proposed approach:
 |Map|1|1|1|1|
 |Map2|1|1|1| |
 |Map3|1|1|1| |
-|MapFold|1|1|1| |
-|MapFoldBack|1|1|1| |
+|MapFold|1|1|1|Must be sequential |
+|MapFoldBack|1|1|1| Must be sequential|
 |MapIndexed|1|1|1|1|
 |MapIndexed2|1|1|1| |
 |Max|1|1|1| |
