@@ -136,10 +136,10 @@ Proposed approach:
 |FindBack|1|1|1| |
 |FindIndex|1|1|1| |
 |FindIndexBack|1|1|1| |
-|Fold|1|1|1| |
-|Fold2|1|1|1| |
-|FoldBack|1|1|1| |
-|FoldBack2|1|1|1| |
+|Fold|1|1|1| Must be sequential|
+|Fold2|1|1|1| Must be sequential|
+|FoldBack|1|1|1| Must be sequential|
+|FoldBack2|1|1|1| Must be sequential|
 |ForAll|1|1|1|ADD|
 |ForAll2|1|1|1| |
 |Get|1|1|1|Not needed (fast anyway)|
