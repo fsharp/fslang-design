@@ -24,7 +24,7 @@ Enabling a parallel version of them will offer a performance boost to applicatio
 # Detailed design
 
 There is unlikely to be a one-size fits all design, so let me rather write some design assumptions and principles:
-- Until Fsharp.Core is a FrameworkReference, this should work under **netstandard2.0** as well ( = not using Span or ReadOnlySpan)
+- Until Fsharp.Core is a FrameworkReference, this should work under netstandard2.0
 - Parallelism brought in by TPL primitives, especially Parallel.For
 - Avoided for O(1) operations, where existing Array module is already good
     - (Head,Last,IsEmpty,Length,etc.)
