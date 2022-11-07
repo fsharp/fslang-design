@@ -53,7 +53,7 @@ Using both `inline` and `NoCompilerInliningAttribute` should result in a compila
 
 # Drawbacks
 
-Having 2 attributes and a keyword that control inlining in different ways might be confusing, especially when `NoCompilerInliningAttribute` and `MethodImplAttribute(MethodImplOptions.AggressiveInlining)` are combined. However, the target audience of both `MethImplAttribute` and `NoCompilerInliningAttribute` are advanced users and experts, so this is not a major concern. Run-of-the-mill applications will at most make use of `inline`.
+Having 2 attributes and a keyword that control inlining in different ways might be confusing, especially when `NoCompilerInliningAttribute` and `MethodImplAttribute(MethodImplOptions.AggressiveInlining)` are combined. However, the target audience of these attributes are advanced users and experts, so this is not a major concern. Run-of-the-mill applications will at most make use of `inline`.
 
 # Alternatives
 
