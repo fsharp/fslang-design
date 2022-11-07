@@ -14,7 +14,7 @@ This RFC covers the detailed proposal for this suggestion.
 
 # Summary
 
-The F# compiler has the ability to decide whether to inline user-defined values, functions and instance members (henceforth referred to collectively as 'values'). Users can enforce this behavior with the `inline` keyword. Additionally, the JIT compiler can also decide to inline methods at run-time.
+The F# compiler has the ability to decide whether to inline user-defined values, functions and members (henceforth referred to collectively as 'values'). Users can enforce this behavior with the `inline` keyword. Additionally, the JIT compiler can also decide to inline methods at run-time.
 
 `MethodImplAttribute(MethodImplOptions.NoInlining)` is a means of forcing both compilers **not** to inline. However, there is currently no way to tell the F# compiler not to inline, while leaving the JIT compiler free to do so. The proposed `NoCompilerInliningAttribute` remedies this situation.
 
