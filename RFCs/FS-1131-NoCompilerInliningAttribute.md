@@ -14,17 +14,17 @@ This RFC covers the detailed proposal for this suggestion.
 
 # Summary
 
-The F# compiler has the ability to decide whether to inline user-defined values and functions. Users can enforce this behavior with the `inline` keyword. Additionally, the JIT compiler can also decide to inline methods at run-time.
+The F# compiler has the ability to decide whether to inline user-defined values, functions and instance members (henceforth referred to collectively as 'values'). Users can enforce this behavior with the `inline` keyword. Additionally, the JIT compiler can also decide to inline methods at run-time.
 
-`MethodImplAttribute(MethodImplOptions.NoInlining)` is a means of forcing both compilers **not** to inline. However, there is currently no way to tell the F# compiler not to inline something, while leaving the JIT compiler free to do so. The proposed `NoCompilerInliningAttribute` remedies this situation.
+`MethodImplAttribute(MethodImplOptions.NoInlining)` is a means of forcing both compilers **not** to inline. However, there is currently no way to tell the F# compiler not to inline, while leaving the JIT compiler free to do so. The proposed `NoCompilerInliningAttribute` remedies this situation.
 
 # Motivation
 
-Having the F# compiler inline functions can result in performance degradation in [some scenarios](https://github.com/dotnet/fsharp/issues/5178#issuecomment-398563190) where the JIT compiler would have produced superior machine code by inlining on its own.
+Having the F# compiler inline values can result in performance degradation in [some scenarios](https://github.com/dotnet/fsharp/issues/5178#issuecomment-398563190) where the JIT compiler would have produced superior machine code by inlining on its own.
 
 # Detailed design
 
-We add `NoCompilerInliningAttribute` to FSharp.Core. The attribute can be applied to both let-bound values, functions and instance methods, which the F# compiler then guarantees not to inline:
+We add `NoCompilerInliningAttribute` to FSharp.Core. The attribute can be applied to a value, which the F# compiler then guarantees not to inline:
 
 ```fsharp
 let functionInlined () = 3
