@@ -1,4 +1,4 @@
-# F# RFC 1129 - (Additions to collection functions in Array.Parallel )
+# F# RFC 1130 - (Additions to collection functions in Array.Parallel )
 
 
 The design suggestion [Make FSharp.Core collection functions for Array.Parallel more regular](https://github.com/fsharp/fslang-suggestions/issues/187) has been marked "approved in principle".
