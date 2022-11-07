@@ -24,7 +24,7 @@ Having the F# compiler inline functions can result in performance degradation in
 
 # Detailed design
 
-We add `NoCompilerInliningAttribute` to FSharp.Core. The attribute can be applied to both let-bound values and functions, which the F# compiler then guarantees not to inline:
+We add `NoCompilerInliningAttribute` to FSharp.Core. The attribute can be applied to both let-bound values, functions and instance methods, which the F# compiler then guarantees not to inline:
 
 ```fsharp
 let functionInlined () = 3
