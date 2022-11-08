@@ -129,6 +129,7 @@ N/A
 # Unresolved questions
 
 1. Do we want to also provide a way to easily input percent signs in interpolated string literals?
+2. Should we extend this feature to regular (single-quoted) string literals as well in addition to triple quoted strings?
 
 # Links
 
