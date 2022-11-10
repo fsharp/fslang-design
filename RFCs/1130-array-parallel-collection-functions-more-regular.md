@@ -104,127 +104,121 @@ Proposed approach:
 - If current cell has a value and you disagree or are not sure, use the conversation feature to start a thread.
 
 
-|Function|ArrayModule|ListModule|SeqModule|Array.Parallel|
-|:----|:----|:----|:----|:----|
-|AllPairs|1|1|1| |
-|Append|1|1|1|Not considered|
-|Average|1|1|1| |
-|AverageBy|1|1|1| |
-|Cache| | |1|Not relevant|
-|Cast| | |1|Not relevant|
-|Choose|1|1|1|1|
-|ChunkBySize|1|1|1| |
-|Collect|1|1|1|1|
-|CompareWith|1|1|1| |
-|Concat|1|1|1|Not considered|
-|Contains|1|1|1| |
-|Copy|1| | |Not considered|
-|CopyTo|1| | |Not considered|
-|CountBy|1|1|1| |
-|Create|1| | |Not considered|
-|Delay| | |1|Not relevant|
-|Distinct|1|1|1| |
-|DistinctBy|1|1|1| |
-|Empty|1|1|1|Not needed (fast anyway)|
-|ExactlyOne|1|1|1| |
-|Except|1|1|1| |
-|Exists|1|1|1|ADD|
-|Exists2|1|1|1| |
-|Fill|1| | |Not considered|
-|Filter|1|1|1|ADD|
-|Find|1|1|1| |
-|FindBack|1|1|1| |
-|FindIndex|1|1|1| |
-|FindIndexBack|1|1|1| |
-|Fold|1|1|1| Must be sequential|
-|Fold2|1|1|1| Must be sequential|
-|FoldBack|1|1|1| Must be sequential|
-|FoldBack2|1|1|1| Must be sequential|
-|ForAll|1|1|1|ADD|
-|ForAll2|1|1|1| |
-|Get|1|1|1|Not needed (fast anyway)|
-|GetSubArray|1| | |Not needed (fast anyway)|
-|GroupBy|1|1|1| |
-|Head|1|1|1|Not needed (fast anyway)|
-|Indexed|1|1|1| |
-|Initialize|1|1|1|1|
-|InitializeInfinite| | |1|Not relevant|
-|InsertAt|1|1|1|Not considered|
-|InsertManyAt|1|1|1|Not considered|
-|IsEmpty|1|1|1|Not needed (fast anyway)|
-|Item|1|1|1|Not needed (fast anyway)|
-|Iterate|1|1|1|1|
-|Iterate2|1|1|1| |
-|IterateIndexed|1|1|1|1|
-|IterateIndexed2|1|1|1| |
-|Last|1|1|1|Not needed (fast anyway)|
-|Length|1|1|1|Not needed (fast anyway)|
-|Map|1|1|1|1|
-|Map2|1|1|1| |
-|Map3|1|1|1| |
-|MapFold|1|1|1|Must be sequential |
-|MapFoldBack|1|1|1| Must be sequential|
-|MapIndexed|1|1|1|1|
-|MapIndexed2|1|1|1| |
-|Max|1|1|1| |
-|MaxBy|1|1|1|ADD|
-|Min|1|1|1| |
-|MinBy|1|1|1|ADD|
-|OfArray| |1|1|Not relevant|
-|OfList|1| |1| |
-|OfSeq|1|1| |Not considered|
-|Pairwise|1|1|1| |
-|Partition|1|1| |1|
-|Permute|1|1|1| |
-|Pick|1|1|1| |
-|ReadOnly| | |1|Not relevant|
-|Reduce|1|1|1|ADD|
-|ReduceBack|1|1|1| |
-|RemoveAt|1|1|1|Not considered|
-|RemoveManyAt|1|1|1|Not considered|
-|Replicate|1|1|1| |
-|Reverse|1|1|1| |
-|Scan|1|1|1| |
-|ScanBack|1|1|1| |
-|Set|1| | |Not considered|
-|Singleton|1|1|1|Not needed (fast anyway)|
-|Skip|1|1|1| |
-|SkipWhile|1|1|1| |
-|Sort|1|1|1| |
-|SortBy|1|1|1| |
-|SortByDescending|1|1|1| |
-|SortDescending|1|1|1| |
-|SortInPlace|1| | | |
-|SortInPlaceBy|1| | | |
-|SortInPlaceWith|1| | | |
-|SortWith|1|1|1| |
-|SplitAt|1|1| | |
-|SplitInto|1|1|1| |
-|Sum|1|1|1| |
-|SumBy|1|1|1| |
-|Tail|1|1|1| |
-|Take|1|1|1| |
-|TakeWhile|1|1|1| |
-|ToArray| |1|1|Not relevant|
-|ToList|1| |1|Not considered|
-|ToSeq|1|1| |Not considered|
-|Transpose|1|1|1| |
-|Truncate|1|1|1| |
-|TryExactlyOne|1|1|1|Not needed (fast anyway)|
-|TryFind|1|1|1|ADD|
-|TryFindBack|1|1|1| |
-|TryFindIndex|1|1|1|ADD|
-|TryFindIndexBack|1|1|1| |
-|TryHead|1|1|1|Not needed (fast anyway)|
-|TryItem|1|1|1|Not needed (fast anyway)|
-|TryLast|1|1|1|Not needed (fast anyway)|
-|TryPick|1|1|1|ADD|
-|Unfold|1|1|1| |
-|Unzip|1|1| | |
-|Unzip3|1|1| | |
-|UpdateAt|1|1|1| |
-|Where|1|1|1| |
-|Windowed|1|1|1| |
-|ZeroCreate|1| | |Not considered|
-|Zip|1|1|1| |
-|Zip3|1|1|1| |
+|Function|Signature(array.fsi)|ArrayModule|ListModule|SeqModule|Array.Parallel|
+|:----|:----|:----|:----|:----|:----|
+|AllPairs|  array1:'T1[] -> array2:'T2[] -> ('T1 * 'T2)[]|1|1|1| |
+|Append|  array1:'T[] -> array2:'T[] -> 'T[]|1|1|1|Not considered|
+|Average|  array:^T[] -> ^T   |1|1|1| |
+|AverageBy|  projection:('T -> ^U) -> array:'T[] -> ^U   |1|1|1| |
+|Choose|  chooser:('T -> 'U option) -> array:'T[] -> 'U[]|1|1|1|1|
+|ChunkBySize|  chunkSize:int -> array:'T[] -> 'T[][]|1|1|1| |
+|Collect|  mapping:('T -> 'U[]) -> array:'T[] -> 'U[]|1|1|1|1|
+|CompareWith|  comparer:('T -> 'T -> int) -> array1:'T[] -> array2:'T[] -> int|1|1|1| |
+|Concat|  arrays:seq<'T[]> -> 'T[]|1|1|1|Not considered|
+|Contains|  value:'T -> array:'T[] -> bool when 'T : equality|1|1|1| |
+|Copy|  array:'T[] -> 'T[]|1| | |Not considered|
+|CopyTo|  source:'T[] -> sourceIndex:int -> target:'T[] -> targetIndex:int -> count:int -> unit|1| | |Not considered|
+|CountBy|  projection:('T -> 'Key) -> array:'T[] -> ('Key * int)[] when 'Key : equality|1|1|1| |
+|Create|  count:int -> value:'T -> 'T[]|1| | |Not considered|
+|Distinct|  array:'T[] -> 'T[] when 'T : equality|1|1|1| |
+|DistinctBy|  projection:('T -> 'Key) -> array:'T[] -> 'T[] when 'Key : equality|1|1|1| |
+|Empty|  'T[]|1|1|1|Not needed (fast anyway)|
+|ExactlyOne|  array:'T[] -> 'T|1|1|1| |
+|Except|  itemsToExclude:seq<'T> -> array:'T[] -> 'T[] when 'T : equality|1|1|1| |
+|Exists|  predicate:('T -> bool) -> array:'T[] -> bool|1|1|1|ADD|
+|Exists2|  predicate:('T1 -> 'T2 -> bool) -> array1:'T1[] -> array2:'T2[] -> bool|1|1|1| |
+|Fill|  target:'T[] -> targetIndex:int -> count:int -> value:'T -> unit|1| | |Not considered|
+|Filter|  predicate:('T -> bool) -> array:'T[] -> 'T[]|1|1|1|ADD|
+|Find|  predicate:('T -> bool) -> array:'T[] -> 'T|1|1|1| |
+|FindBack|  predicate:('T -> bool) -> array:'T[] -> 'T|1|1|1| |
+|FindIndex|  predicate:('T -> bool) -> array:'T[] -> int|1|1|1| |
+|FindIndexBack|  predicate:('T -> bool) -> array:'T[] -> int|1|1|1| |
+|Fold|  folder:('State -> 'T -> 'State) -> state:'State -> array: 'T[] -> 'State|1|1|1|Must be sequential|
+|Fold2|  folder:('State -> 'T1 -> 'T2 -> 'State) -> state:'State -> array1:'T1[] -> array2:'T2[] -> 'State|1|1|1|Must be sequential|
+|FoldBack|  folder:('T -> 'State -> 'State) -> array:'T[] -> state:'State -> 'State|1|1|1|Must be sequential|
+|FoldBack2|  folder:('T1 -> 'T2 -> 'State -> 'State) -> array1:'T1[] -> array2:'T2[] -> state:'State -> 'State|1|1|1|Must be sequential|
+|ForAll|  predicate:('T -> bool) -> array:'T[] -> bool|1|1|1|ADD|
+|ForAll2|  predicate:('T1 -> 'T2 -> bool) -> array1:'T1[] -> array2:'T2[] -> bool|1|1|1| |
+|Get|  array:'T[] -> index:int -> 'T|1|1|1|Not needed (fast anyway)|
+|GetSubArray|  array:'T[] -> startIndex:int -> count:int -> 'T[]|1| | |Not needed (fast anyway)|
+|GroupBy|  projection:('T -> 'Key) -> array:'T[] -> ('Key * 'T[])[]  when 'Key : equality|1|1|1| |
+|Head|  array:'T[] -> 'T|1|1|1|Not needed (fast anyway)|
+|Indexed|  array:'T[] -> (int * 'T)[]|1|1|1| |
+|Initialize|  count:int -> initializer:(int -> 'T) -> 'T[]|1|1|1|1|
+|InsertAt|  index: int -> value: 'T -> source: 'T[] -> 'T[]|1|1|1|Not considered|
+|InsertManyAt|  index: int -> values: seq<'T> -> source: 'T[] -> 'T[]|1|1|1|Not considered|
+|IsEmpty|  array:'T[] -> bool|1|1|1|Not needed (fast anyway)|
+|Item|  index:int -> array:'T[] -> 'T|1|1|1|Not needed (fast anyway)|
+|Iterate|  action:('T -> unit) -> array:'T[] -> unit|1|1|1|1|
+|Iterate2|  action:('T1 -> 'T2 -> unit) -> array1:'T1[] -> array2:'T2[] -> unit|1|1|1| |
+|IterateIndexed|  action:(int -> 'T -> unit) -> array:'T[] -> unit|1|1|1|1|
+|IterateIndexed2|  action:(int -> 'T1 -> 'T2 -> unit) -> array1:'T1[] -> array2:'T2[] -> unit|1|1|1| |
+|Last|  array:'T[] -> 'T|1|1|1|Not needed (fast anyway)|
+|Length|  array:'T[] -> int|1|1|1|Not needed (fast anyway)|
+|Map|  mapping:('T -> 'U) -> array:'T[] -> 'U[]|1|1|1|1|
+|Map2|  mapping:('T1 -> 'T2 -> 'U) -> array1:'T1[] -> array2:'T2[] -> 'U[]|1|1|1| |
+|Map3|  mapping:('T1 -> 'T2 -> 'T3 -> 'U) -> array1:'T1[] -> array2:'T2[] -> array3:'T3[] -> 'U[]|1|1|1| |
+|MapFold|  mapping:('State -> 'T -> 'Result * 'State) -> state:'State -> array:'T[] -> 'Result[] * 'State|1|1|1|Must be sequential|
+|MapFoldBack|  mapping:('T -> 'State -> 'Result * 'State) -> array:'T[] -> state:'State -> 'Result[] * 'State|1|1|1|Must be sequential|
+|MapIndexed|  mapping:(int -> 'T -> 'U) -> array:'T[] -> 'U[]|1|1|1|1|
+|MapIndexed2|  mapping:(int -> 'T1 -> 'T2 -> 'U) -> array1:'T1[] -> array2:'T2[] -> 'U[]|1|1|1| |
+|Max|  array:'T[] -> 'T  when 'T : comparison |1|1|1| |
+|MaxBy|  projection:('T -> 'U) -> array:'T[] -> 'T when 'U : comparison |1|1|1|ADD|
+|Min|  array:'T[] -> 'T  when 'T : comparison |1|1|1| |
+|MinBy|  projection:('T -> 'U) -> array:'T[] -> 'T when 'U : comparison |1|1|1|ADD|
+|OfList|  list:'T list -> 'T[]|1| |1| |
+|OfSeq|  source:seq<'T> -> 'T[]|1|1| |Not considered|
+|Pairwise|  array:'T[] -> ('T * 'T)[]|1|1|1| |
+|Partition|  predicate:('T -> bool) -> array:'T[] -> 'T[] * 'T[]|1|1| |1|
+|Permute|  indexMap:(int -> int) -> array:'T[] -> 'T[]|1|1|1| |
+|Pick|  chooser:('T -> 'U option) -> array:'T[] -> 'U |1|1|1| |
+|Reduce|  reduction:('T -> 'T -> 'T) -> array:'T[] -> 'T|1|1|1|ADD|
+|ReduceBack|  reduction:('T -> 'T -> 'T) -> array:'T[] -> 'T|1|1|1| |
+|RemoveAt|  index: int -> source: 'T[] -> 'T[]|1|1|1|Not considered|
+|RemoveManyAt|  index: int -> count: int -> source: 'T[] -> 'T[]|1|1|1|Not considered|
+|Replicate|  count:int -> initial:'T -> 'T[]|1|1|1| |
+|Reverse|  array:'T[] -> 'T[]|1|1|1| |
+|Scan|  folder:('State -> 'T -> 'State) -> state:'State -> array:'T[] -> 'State[]|1|1|1| |
+|ScanBack|  folder:('T -> 'State -> 'State) -> array:'T[] -> state:'State -> 'State[]|1|1|1| |
+|Set|  array:'T[] -> index:int -> value:'T -> unit|1| | |Not considered|
+|Singleton|  value:'T -> 'T[]|1|1|1|Not needed (fast anyway)|
+|Skip|  count:int -> array:'T[] -> 'T[]|1|1|1| |
+|SkipWhile|  predicate:('T -> bool) -> array:'T[] -> 'T[]|1|1|1| |
+|Sort|  array:'T[] -> 'T[] when 'T : comparison |1|1|1| |
+|SortBy|  projection:('T -> 'Key) -> array:'T[] -> 'T[] when 'Key : comparison |1|1|1| |
+|SortByDescending|  projection:('T -> 'Key) -> array:'T[] -> 'T[] when 'Key : comparison|1|1|1| |
+|SortDescending|  array:'T[] -> 'T[] when 'T : comparison|1|1|1| |
+|SortInPlace|  array:'T[] -> unit when 'T : comparison |1| | | |
+|SortInPlaceBy|  projection:('T -> 'Key) -> array:'T[] -> unit when 'Key : comparison |1| | | |
+|SortInPlaceWith|  comparer:('T -> 'T -> int) -> array:'T[] -> unit|1| | | |
+|SortWith|  comparer:('T -> 'T -> int) -> array:'T[] -> 'T[]|1|1|1| |
+|SplitAt|  index:int -> array:'T[] -> ('T[] * 'T[])|1|1| | |
+|SplitInto|  count:int -> array:'T[] -> 'T[][]|1|1|1| |
+|Sum|  array: ^T[] -> ^T |1|1|1| |
+|SumBy|  projection:('T -> ^U) -> array:'T[] -> ^U |1|1|1| |
+|Tail|  array:'T[] -> 'T[]|1|1|1| |
+|Take|  count:int -> array:'T[] -> 'T[]|1|1|1| |
+|TakeWhile|  predicate:('T -> bool) -> array:'T[] -> 'T[]|1|1|1| |
+|ToList|  array:'T[] -> 'T list|1| |1|Not considered|
+|ToSeq|  array:'T[] -> seq<'T>|1|1| |Not considered|
+|Transpose|  arrays:seq<'T[]> -> 'T[][]|1|1|1| |
+|Truncate|  count:int -> array:'T[] -> 'T[]|1|1|1| |
+|TryExactlyOne|  array:'T[] -> 'T option|1|1|1|Not needed (fast anyway)|
+|TryFind|  predicate:('T -> bool) -> array:'T[] -> 'T option|1|1|1|ADD|
+|TryFindBack|  predicate:('T -> bool) -> array:'T[] -> 'T option|1|1|1| |
+|TryFindIndex|  predicate:('T -> bool) -> array:'T[] -> int option|1|1|1|ADD|
+|TryFindIndexBack|  predicate:('T -> bool) -> array:'T[] -> int option|1|1|1| |
+|TryHead|  array:'T[] -> 'T option|1|1|1|Not needed (fast anyway)|
+|TryItem|  index:int -> array:'T[] -> 'T option|1|1|1|Not needed (fast anyway)|
+|TryLast|  array:'T[] -> 'T option|1|1|1|Not needed (fast anyway)|
+|TryPick|  chooser:('T -> 'U option) -> array:'T[] -> 'U option|1|1|1|ADD|
+|Unfold|  generator:('State -> ('T * 'State) option) -> state:'State -> 'T[]|1|1|1| |
+|Unzip|  array:('T1 * 'T2)[] -> ('T1[] * 'T2[])|1|1| | |
+|Unzip3|  array:('T1 * 'T2 * 'T3)[] -> ('T1[] * 'T2[] * 'T3[])|1|1| | |
+|UpdateAt|  index: int -> value: 'T -> source: 'T[] -> 'T[]|1|1|1| |
+|Where|  predicate:('T -> bool) -> array:'T[] -> 'T[]|1|1|1| |
+|Windowed|  windowSize:int -> array:'T[] -> 'T[][]|1|1|1| |
+|ZeroCreate|  count:int -> 'T[]|1| | |Not considered|
+|Zip|  array1:'T1[] -> array2:'T2[] -> ('T1 * 'T2)[]|1|1|1| |
+|Zip3|  array1:'T1[] -> array2:'T2[] -> array3:'T3[] -> ('T1 * 'T2 * 'T3)[]|1|1|1| |
+
