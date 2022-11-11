@@ -86,8 +86,12 @@ Moreover, as mentioned in [Detailed design section](#detailed-design) it can't b
 Alternatives:
 
 1. Try to fully align with C#'s raw string literals at the cost of backward compatiblity.
+
+  Such change would break any code that has at least one escaped `{` or `}` in an interpolated (triple quoted) string literal. This feature does not warrant such a breaking change.
+
 2. Introduce alternative syntax for delimiting expression fills that does not clash with `{` and `}` which are common in JSON and certain other contexts.
-Discussed [here](https://github.com/fsharp/fslang-design/discussions/716#discussioncomment-4039580).
+
+  Discussed [here](https://github.com/fsharp/fslang-design/discussions/716#discussioncomment-4039580).
 
 # Compatibility
 
