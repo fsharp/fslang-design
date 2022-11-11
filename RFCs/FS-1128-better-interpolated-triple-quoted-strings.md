@@ -87,6 +87,7 @@ Alternatives:
 
 1. Try to fully align with C#'s raw string literals at the cost of backward compatiblity.
 2. Introduce alternative syntax for delimiting expression fills that does not clash with `{` and `}` which are common in JSON and certain other contexts.
+Discussed [here](https://github.com/fsharp/fslang-design/discussions/716#discussioncomment-4039580).
 
 # Compatibility
 
@@ -129,7 +130,9 @@ N/A
 # Unresolved questions
 
 1. Do we want to also provide a way to easily input percent signs in interpolated string literals?
+Relevant [discussion thread](https://github.com/fsharp/fslang-design/discussions/716#discussioncomment-4022757)
 2. Should we extend this feature to regular (single-quoted) string literals as well in addition to triple quoted strings?
+Relevant [discussion thread](https://github.com/fsharp/fslang-design/discussions/716#discussioncomment-4089195)
 
 # Links
 
