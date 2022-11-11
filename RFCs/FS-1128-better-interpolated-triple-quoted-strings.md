@@ -81,7 +81,43 @@ $$$"""{{{{{41+1}}}} = {{42}"""
 Even though this only extends already existing syntax, it still can be considered yet another way of doing string interpolation.
 
 Moreover, as mentioned in [Detailed design section](#detailed-design) it can't be fully aligned with analogous C# feature (raw string literals - [docs](https://learn.microsoft.com/en-us/dotnet/csharp/whats-new/csharp-11#raw-string-literals)) and stay backward compatible at the same time, so this could be a source of confusion
-(note that triple quoted string literals are already not fully aligned with C#'s raw string literals anyway - see [detailed spec for raw strings](https://github.com/dotnet/csharplang/blob/main/proposals/csharp-11.0/raw-string-literal.md)).
+(note that triple quoted string literals are already not fully aligned with C#'s raw string literals anyway - see [next section](#comparison-with-raw-strings).
+
+# Comparison with raw strings
+
+Raw string literals is a feature in C# corresponding to this proposal see - [detailed spec for raw strings](https://github.com/dotnet/csharplang/blob/main/proposals/csharp-11.0/raw-string-literal.md)).
+
+For convenience, here is a list of features that raw strings support and that are missing/different from triple quoted strings:
+- Multi-line raw string literals in C# must start with a new line. They ignore the first and last new line, so the below literal will be 2 lines in C#, but 4 lines (including two "empty" lines) in F#:
+```
+"""
+This is the first line in C#, but second line in F#.
+This is the second and last line in C#, but third and second-to-last line in F#.
+"""
+```
+- Raw strings in C# de-indent its content based on the indentation of the last line. This is to make literals in code more readable. For example:
+```
+var xml = """
+          <element attr="content">
+            <body>
+            </body>
+          </element>
+          """;
+```
+Since last line in the literal is indented by 10 spaces, each line in the contents gets de-indented by that much, resulting in:
+```
+<element attr="content">
+  <body>
+  </body>
+</element>
+```
+- Raw string in C# can start with more than three `"` characters. It allows for sequences of more `"` in the contents of the string (similarly to `$` and curly braces):
+```
+""""
+This literal starts with 4x" so it can have """ in its contents.
+It has to end with 4x" to match the opening.
+""""
+```
 
 # Alternatives
 
