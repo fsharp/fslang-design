@@ -115,6 +115,16 @@ Please address all necessary compatibility questions:
 - New compiler error for interpolated string literals with too many consecutive `{` or `}` characters.
 - Otherwise, same compiler errors as for regular (single-`$`) interpolated strings.
 
+Example of the new compiler error (error number still subject to change):
+```
+> $$"""{{{{hello""";;
+
+  $$"""{{{{hello""";;
+  -----^^^^
+
+stdin(1,6): error FS3375: The interpolated triple quoted string literal does not start with enough '$' characters to allow this many consecutive opening braces as content.
+```
+
 ## Tooling
 
 Compiler tooling should offer the same support for the extended form of interpolated string literals as it currently does for interpolated triple quoted literals.
