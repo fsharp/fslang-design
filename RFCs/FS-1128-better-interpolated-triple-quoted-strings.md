@@ -49,7 +49,7 @@ Triple quoted string literals starting with `N` `$` (where `N` > 1) behave as fo
 - No escaping mechanism for any characters.
 - A sequence of `N` `{` indicates the beginning of an interpolation expression and a sequence of `N` `}` indicates the end of interpolation expression.
 - A sequence of `2*N` or more `{` or `}` is not allowed and will result in a compilation error.
-- In any sequence of more than `N` `{`, the outter braces are treated as content of the string, while the innermost `N` delimit the interpolation (and analogously for `}`).
+- In any sequence of more than `N` `{`, the outer braces are treated as content of the string, while the innermost `N` delimit the interpolation (and analogously for `}`).
 
 Note: This design is taken from C#'s [raw string literals](https://github.com/dotnet/csharplang/blob/main/proposals/csharp-11.0/raw-string-literal.md).
 It is an elegant solution that will already be familiar to a portion of dotnet developers.
@@ -97,7 +97,7 @@ Please address all necessary compatibility questions:
 - What happens when previous versions of the F# compiler encounter this design addition as source code?
 *A compiler error*
 - What happens when previous versions of the F# compiler encounter this design addition in compiled binaries?
-*It should work, changes will hopefully be limited to lexing stage*
+*It just works, changes are only limited to lexing/parsing but compile into the same classes used for interpolated strings as before.*
 - If this is a change or extension to FSharp.Core, what happens when previous versions of the F# compiler encounter this construct?
 *It is not a change/extension to FSharp.Core*
 
@@ -115,7 +115,7 @@ This includes colorization, autocompletion, and navigational features in an inte
 
 ## Performance
 
-This feature should have no impact on performance.
+This feature has no impact on performance.
 
 ## Scaling
 
