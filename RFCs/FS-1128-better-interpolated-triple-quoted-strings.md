@@ -41,7 +41,7 @@ This change should:
 # Detailed design
 
 The existing form of interpolated triple quoted strings: `$"""...{}..."""` is extended to allow multiple dollar signs at the begining of the string literal.
-The count of these initiatory `$` characters indicates how many `{` and `}` characters are used to delimit interpolation expression within the content of the literal.
+The count of these `$` characters indicates how many `{` and `}` characters are used to delimit interpolation expression within the content of the literal.
 
 Behavior of triple quoted string literals starting with a single `$` remains unchanged.
 
@@ -49,7 +49,7 @@ Triple quoted string literals starting with `N` `$` (where `N` > 1) behave as fo
 - No escaping mechanism for any characters.
 - A sequence of `N` `{` indicates the beginning of an interpolation expression and a sequence of `N` `}` indicates the end of interpolation expression.
 - A sequence of `2*N` or more `{` or `}` is not allowed and will result in a compilation error.
-- In any sequence of more than `N` `{`, the outer braces are treated as content of the string, while the innermost `N` delimit the interpolation (and analogously for `}`).
+- In any sequence of more than `N` `{`, the outer braces are treated as content of the string, while the innermost `N` delimit the interpolation (and analogously for `}`). In that case, the outer braces don't have to be balanced, as they are just content of the string.
 
 Note: This design is taken from C#'s [raw string literals](https://github.com/dotnet/csharplang/blob/main/proposals/csharp-11.0/raw-string-literal.md).
 It is an elegant solution that will already be familiar to a portion of dotnet developers.
@@ -68,9 +68,11 @@ $$$"""In a string literal with 3x$, { or {{ are simply treated as content..."""
 $$$"""...whereas {{{text}}}."""
 // val it: string = "...whereas 3 curly braces delimit interpolation expression."
 
-// It is also allowed to have {, {{, } or }} adjacent to the interpolation delimiters like so:
-$$$"""{{{{41+1}}}} = {42}"""
-// val it: string = "{42} = {42}"
+// It is also allowed to have {, {{, } or }} adjacent to the interpolation delimiters
+// In the string below, these inner braces delimit interpolation, while others are just content
+//      vvv    vvv
+$$$"""{{{{{41+1}}}} = {{42}"""
+// val it: string = "{{42} = {{42}"
 """
 ```
 
