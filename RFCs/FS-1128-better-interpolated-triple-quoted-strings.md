@@ -95,7 +95,7 @@ This is the first line in C#, but second line in F#.
 This is the second and last line in C#, but third and second-to-last line in F#.
 """
 ```
-- Raw strings in C# de-indent its content based on the indentation of the last line. This is to make literals in code more readable. For example:
+- Raw strings in C# de-indent their content based on the indentation of the last line. This is done to make literals in code more readable. For example:
 ```
 var xml = """
           <element attr="content">
@@ -111,7 +111,10 @@ Since last line in the literal is indented by 10 spaces, each line in the conten
   </body>
 </element>
 ```
-- Raw string in C# can start with more than three `"` characters. It allows for sequences of more `"` in the contents of the string (similarly to `$` and curly braces):
+
+In F#, the indentation remains in place, that is, the compiler will not remove it.
+
+- Raw strings in C# can start with more than three `"` characters. It allows for sequences of more `"` in the contents of the string (similarly to `$` and curly braces), which isn't allowed in F#:
 ```
 """"
 This literal starts with 4x" so it can have """ in its contents.
