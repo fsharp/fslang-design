@@ -1,4 +1,4 @@
-# F# RFC FS-1128 - Extended interpolation syntax for triple quoted string literals
+# F# RFC FS-1131 - Extended interpolation syntax for triple quoted string literals
 
 The design suggestion [Allow double dollar signs for interpolated strings as in C# 11](https://github.com/fsharp/fslang-suggestions/issues/1150) has been marked "approved in principle".
 
