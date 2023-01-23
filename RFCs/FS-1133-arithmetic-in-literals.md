@@ -1,4 +1,4 @@
-# F# RFC FS-1133 - Arithmetics in Literals
+# F# RFC FS-1133 - Arithmetic in Literals
 
 [The design suggestion](https://github.com/fsharp/fslang-suggestions/issues/539) has been marked "approved in principle".
 
@@ -32,7 +32,7 @@ let [<Literal>] c = 3
 
 The foremost drawback of the existing approach is lack of safety and poor ergonomics when defining and refactoring such chains of literals. Should we decide to change the value of `a`, we must not forget to manually adjust other literals that directly or transitively depend on `a`.
 
-Another pain point is the inability to offload simple arithmetics to the compiler:
+Another pain point is the inability to offload simple arithmetic to the compiler:
 
 ```fsharp
 // proposed way of defining literal
@@ -60,13 +60,30 @@ We allow the use of the following arithmetic operations on integers (`byte`, `sb
 - Bit shift right
 - Unary plus
 
-In addition to the operations above, we allow the use of the following arithmetic operations on signed integers (`sbyte`, `int16`, `int32`, `int64`) in literals and attributes:
+In addition to all of the operations above, we allow the use of the following arithmetic operations on signed integers (`sbyte`, `int16`, `int32`, `int64`) in literals and attributes:
 
 - Unary minus (negation)
 
 We allow the use of the following operations on booleans in literals and attributes:
 
 - `not` (negation)
+- Logical AND
+- Logical OR
+
+We allow the use of the following operations on `char` in literals and attributes:
+
+- Addition
+- Subtraction
+
+We allow the use of the following operations on `float32` and `float` in literals and attributes:
+
+- Addition
+- Substraction
+- Multiplication
+- Division
+- Modulo
+- Unary plus
+- Unary minus (negation)
 
 An arbitrary number of operations should be supported, as long as each part of the expression comprises only the supported operators and operands:
 
