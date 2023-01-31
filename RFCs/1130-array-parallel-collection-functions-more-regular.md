@@ -23,8 +23,8 @@ Enabling a parallel version of them will offer a performance boost to applicatio
 
 # Detailed design
 
-There is unlikely to be a one-size fits all design, so let me rather write some design assumptions and principles:
-- Until Fsharp.Core is a FrameworkReference, this should work under netstandard2.0
+There is unlikely to be a one-size fits all design, so let me  write some design assumptions and principles:
+- Should work under netstandard2.0
 - Parallelism brought in by TPL primitives, especially Parallel.For
 - Avoided for O(1) operations, where existing Array module is already good
     - (Head,Last,IsEmpty,Length,etc.)
@@ -141,7 +141,7 @@ Proposed approach:
 |ForAll2|  predicate:('T1 -> 'T2 -> bool) -> array1:'T1[] -> array2:'T2[] -> bool|1|1|1| |
 |Get|  array:'T[] -> index:int -> 'T|1|1|1|Not needed (fast anyway)|
 |GetSubArray|  array:'T[] -> startIndex:int -> count:int -> 'T[]|1| | |Not needed (fast anyway)|
-|GroupBy|  projection:('T -> 'Key) -> array:'T[] -> ('Key * 'T[])[]  when 'Key : equality|1|1|1| |
+|GroupBy|  projection:('T -> 'Key) -> array:'T[] -> ('Key * 'T[])[]  when 'Key : equality|1|1|1|ADD|
 |Head|  array:'T[] -> 'T|1|1|1|Not needed (fast anyway)|
 |Indexed|  array:'T[] -> (int * 'T)[]|1|1|1| |
 |Initialize|  count:int -> initializer:(int -> 'T) -> 'T[]|1|1|1|1|
@@ -184,17 +184,17 @@ Proposed approach:
 |Singleton|  value:'T -> 'T[]|1|1|1|Not needed (fast anyway)|
 |Skip|  count:int -> array:'T[] -> 'T[]|1|1|1| |
 |SkipWhile|  predicate:('T -> bool) -> array:'T[] -> 'T[]|1|1|1| |
-|Sort|  array:'T[] -> 'T[] when 'T : comparison |1|1|1| |
-|SortBy|  projection:('T -> 'Key) -> array:'T[] -> 'T[] when 'Key : comparison |1|1|1| |
-|SortByDescending|  projection:('T -> 'Key) -> array:'T[] -> 'T[] when 'Key : comparison|1|1|1| |
-|SortDescending|  array:'T[] -> 'T[] when 'T : comparison|1|1|1| |
+|Sort|  array:'T[] -> 'T[] when 'T : comparison |1|1|1|ADD|
+|SortBy|  projection:('T -> 'Key) -> array:'T[] -> 'T[] when 'Key : comparison |1|1|1|ADD|
+|SortByDescending|  projection:('T -> 'Key) -> array:'T[] -> 'T[] when 'Key : comparison|1|1|1|ADD|
+|SortDescending|  array:'T[] -> 'T[] when 'T : comparison|1|1|1|ADD|
 |SortInPlace|  array:'T[] -> unit when 'T : comparison |1| | | |
 |SortInPlaceBy|  projection:('T -> 'Key) -> array:'T[] -> unit when 'Key : comparison |1| | | |
 |SortInPlaceWith|  comparer:('T -> 'T -> int) -> array:'T[] -> unit|1| | | |
 |SortWith|  comparer:('T -> 'T -> int) -> array:'T[] -> 'T[]|1|1|1| |
 |SplitAt|  index:int -> array:'T[] -> ('T[] * 'T[])|1|1| | |
 |SplitInto|  count:int -> array:'T[] -> 'T[][]|1|1|1| |
-|Sum|  array: ^T[] -> ^T |1|1|1| |
+|Sum|  array: ^T[] -> ^T |1|1|1|ADD|
 |SumBy|  projection:('T -> ^U) -> array:'T[] -> ^U |1|1|1| |
 |Tail|  array:'T[] -> 'T[]|1|1|1| |
 |Take|  count:int -> array:'T[] -> 'T[]|1|1|1| |
@@ -219,6 +219,6 @@ Proposed approach:
 |Where|  predicate:('T -> bool) -> array:'T[] -> 'T[]|1|1|1| |
 |Windowed|  windowSize:int -> array:'T[] -> 'T[][]|1|1|1| |
 |ZeroCreate|  count:int -> 'T[]|1| | |Not considered|
-|Zip|  array1:'T1[] -> array2:'T2[] -> ('T1 * 'T2)[]|1|1|1| |
+|Zip|  array1:'T1[] -> array2:'T2[] -> ('T1 * 'T2)[]|1|1|1|ADD|
 |Zip3|  array1:'T1[] -> array2:'T2[] -> array3:'T3[] -> ('T1 * 'T2 * 'T3)[]|1|1|1| |
 
