@@ -16,8 +16,8 @@ In order to be able to write code that you can easily consume that does not thro
 it's useful to have a fsharp type who contains the result on success or the error on failure
 
 ```fsharp
-type Result<'TSuccess,'TError> = 
-     | Success of 'TSuccess 
+type Result<'TOk,'TError> = 
+     | Ok of 'TSuccess 
      | Error of 'TError
 ```
 
