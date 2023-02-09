@@ -17,7 +17,7 @@ it's useful to have a fsharp type who contains the result on success or the erro
 
 ```fsharp
 type Result<'TOk,'TError> = 
-     | Ok of 'TSuccess 
+     | Ok of 'TOk 
      | Error of 'TError
 ```
 
