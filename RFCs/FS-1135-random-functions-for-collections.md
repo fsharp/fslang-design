@@ -153,7 +153,7 @@ Use online snippets, or provide a nuget package.
 
 Please address all necessary compatibility questions:
 
-* Is this a breaking change? **No, unless user defined those extensions himself**
+* Is this a breaking change? **No, unless user defined those extensions themselves**
 * What happens when previous versions of the F# compiler encounter this design addition as source code? **Should be fine**
 * What happens when previous versions of the F# compiler encounter this design addition in compiled binaries? **Should be fine**
 * If this is a change or extension to FSharp.Core, what happens when previous versions of the F# compiler encounter this construct? **Will work as usual**
