@@ -29,7 +29,7 @@ The following general rules are applied to all functions
  - New function should be implemented in List, Array, Seq modules
  - All functions should not mutate the input collection
  - All functions should have a variant with a [Random](https://learn.microsoft.com/en-us/dotnet/api/system.random) parameter
- - Shared Random instance will be used for all basic functions. In .NET 6 and hire [Random.Shared](https://learn.microsoft.com/en-us/dotnet/api/system.random.shared) will be used, otherwise Fsharp.Core defined shared instance.
+ - Shared Random instance will be used for all basic functions. In .NET 6 and higher [Random.Shared](https://learn.microsoft.com/en-us/dotnet/api/system.random.shared) will be used, otherwise Fsharp.Core defined shared instance.
 
 ### Shuffle
 
@@ -83,7 +83,7 @@ val choicesRand: Random -> int -> CollectionType<'T> -> CollectionType<'T>
 ```
 [ArgumentNullException](https://learn.microsoft.com/en-us/dotnet/api/system.argumentnullexception) should be raised if collection is null
 
-[InvalidOperationException](https://learn.microsoft.com/en-us/dotnet/api/system.invalidoperationexception) should be raised if collection is empty
+[ArgumentOutOfRangeException](https://learn.microsoft.com/en-us/dotnet/api/system.argumentoutofrangeexception) should be raised if N is negative
 
 Example:
 ```fsharp
@@ -103,7 +103,7 @@ val sampleRand: Random -> int -> CollectionType<'T> -> CollectionType<'T>
 ```
 [ArgumentNullException](https://learn.microsoft.com/en-us/dotnet/api/system.argumentnullexception) should be raised if collection is null
 
-[ArgumentOutOfRangeException](https://learn.microsoft.com/en-us/dotnet/api/system.argumentoutofrangeexception) should be raised if N is greater than collection length
+[ArgumentOutOfRangeException](https://learn.microsoft.com/en-us/dotnet/api/system.argumentoutofrangeexception) should be raised if N is greater than collection length or negative
 
 Example:
 ```fsharp
