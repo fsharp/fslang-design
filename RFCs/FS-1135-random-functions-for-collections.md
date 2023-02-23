@@ -30,6 +30,7 @@ The following general rules are applied to all functions
  - All functions should not mutate the input collection
  - All functions should have a variant with a [Random](https://learn.microsoft.com/en-us/dotnet/api/system.random) parameter
  - Shared Random instance will be used for all basic functions. In .NET 6 and higher [Random.Shared](https://learn.microsoft.com/en-us/dotnet/api/system.random.shared) will be used, otherwise Fsharp.Core defined shared instance.
+ - There are new methods in [Random in .NET 8](https://learn.microsoft.com/en-us/dotnet/core/whats-new/dotnet-8#methods-for-working-with-randomness), they can be conditionally used when implementing this RFC
 
 ### Shuffle
 
@@ -113,7 +114,7 @@ let round1Order = allPlayers |> List.sample 3 // ["Charlie", "Dave", "Alice"]
 
 # Drawbacks
 
-If implemented before this appears in Linq, the naming can be different
+System.Random interface has added some new methods in [.NET 8](https://learn.microsoft.com/en-us/dotnet/core/whats-new/dotnet-8#methods-for-working-with-randomness), where naming is a bit different. More new methods can eventually be added in future .NET versions.
 
 # Alternatives
 
