@@ -29,8 +29,7 @@ The following general rules are applied to all functions
  - New function should be implemented in List, Array, Seq modules
  - All functions should not mutate the input collection
  - All functions should have a variant with a [Random](https://learn.microsoft.com/en-us/dotnet/api/system.random) parameter
- - Shared Random instance will be used for all basic functions. In .NET 6 and higher [Random.Shared](https://learn.microsoft.com/en-us/dotnet/api/system.random.shared) will be used, otherwise Fsharp.Core defined shared instance.
- - There are new methods in [Random in .NET 8](https://learn.microsoft.com/en-us/dotnet/core/whats-new/dotnet-8#methods-for-working-with-randomness), they can be conditionally used when implementing this RFC
+ - Shared thread-safe Random instance should be used for all basic functions.
 
 ### Shuffle
 
@@ -171,3 +170,6 @@ N/A
 It's unclear, if more sophisticated overloads should be added:
  - Weights parameter for choices function
  - Counts parameter for sample function
+
+In .NET 6 and higher [Random.Shared](https://learn.microsoft.com/en-us/dotnet/api/system.random.shared) is available, but as soon as F# Core only targets standard, it can't use it. Is targeting higher .NET possible (not just for this feature, maybe some others need it)?
+Same question about new [.NET 8 apis](https://learn.microsoft.com/en-us/dotnet/core/whats-new/dotnet-8#methods-for-working-with-randomness), they could be reused in theory
