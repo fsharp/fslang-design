@@ -38,8 +38,15 @@ Shuffle function should returned a new shuffled collection of the same collectio
 Two functions should be added to each module.
 
 ```fsharp
-val shuffle: CollectionType<'T> -> CollectionType<'T>
-val shuffleRand: Random -> CollectionType<'T> -> CollectionType<'T>
+// Array module
+val shuffle: 'T[] -> 'T[]
+val shuffleRand: Random -> 'T[] -> 'T[]
+// List module
+val shuffle: 'T list -> 'T list
+val shuffleRand: Random -> 'T list -> 'T list
+// Seq module
+val shuffle: 'T seq -> 'T seq
+val shuffleRand: Random -> 'T seq -> 'T seq
 ```
 [ArgumentNullException](https://learn.microsoft.com/en-us/dotnet/api/system.argumentnullexception) should be raised if collection is null
 
@@ -49,7 +56,6 @@ let allPlayers = [ "Alice"; "Bob"; "Charlie"; "Dave" ]
 let round1Order = allPlayers |> List.shuffle // [ "Charlie"; "Dave"; "Alice"; "Bob" ]
 ```
 
-
 ### Choice
 
 Choice function should returned a random element from the collection.
@@ -57,8 +63,15 @@ Choice function should returned a random element from the collection.
 Two functions should be added to each module.
 
 ```fsharp
-val choice: CollectionType<'T> -> 'T
-val choiceRand: Random -> CollectionType<'T> -> 'T
+// Array module
+val choice: 'T[] -> 'T
+val choiceRand: Random -> 'T[] -> 'T
+// List module
+val choice: 'T list -> 'T
+val choiceRand: Random -> 'T list -> 'T
+// Seq module
+val choice: 'T seq -> 'T
+val choiceRand: Random -> 'T seq -> 'T
 ```
 [ArgumentNullException](https://learn.microsoft.com/en-us/dotnet/api/system.argumentnullexception) should be raised if collection is null
 
@@ -70,7 +83,6 @@ let allPlayers = [ "Alice"; "Bob"; "Charlie"; "Dave" ]
 let round1Order = allPlayers |> List.choice // "Charlie"
 ```
 
-
 ### Choices
 
 Choices should select N elements from input collection in random order, once element is taken it can be selected again.
@@ -78,12 +90,21 @@ Choices should select N elements from input collection in random order, once ele
 Two functions should be added to each module.
 
 ```fsharp
-val choices: int -> CollectionType<'T> -> CollectionType<'T>
-val choicesRand: Random -> int -> CollectionType<'T> -> CollectionType<'T>
+// Array module
+val choices: int -> 'T[] -> 'T[]
+val choicesRand: Random -> int -> 'T[] -> 'T[]
+// List module
+val choices: int -> 'T list -> 'T list
+val choicesRand: Random -> int -> 'T list -> 'T list
+// Seq module
+val choices: int -> 'T seq -> 'T seq
+val choicesRand: Random -> int -> 'T seq -> 'T seq
 ```
 [ArgumentNullException](https://learn.microsoft.com/en-us/dotnet/api/system.argumentnullexception) should be raised if collection is null
 
 [ArgumentOutOfRangeException](https://learn.microsoft.com/en-us/dotnet/api/system.argumentoutofrangeexception) should be raised if N is negative
+
+[InvalidOperationException](https://learn.microsoft.com/en-us/dotnet/api/system.invalidoperationexception) should be raised if collection is empty
 
 Example:
 ```fsharp
@@ -98,12 +119,21 @@ Sample should select N elements from input collection in random order, once elem
 Two functions should be added to each module.
 
 ```fsharp
-val sample: int -> CollectionType<'T> -> CollectionType<'T>
-val sampleRand: Random -> int -> CollectionType<'T> -> CollectionType<'T>
+// Array module
+val sample: int -> 'T[] -> 'T[]
+val sampleRand: Random -> int -> 'T[] -> 'T[]
+// List module
+val sample: int -> 'T list -> 'T list
+val sampleRand: Random -> int -> 'T list -> 'T list
+// Seq module
+val sample: int -> 'T seq -> 'T seq
+val sampleRand: Random -> int -> 'T seq -> 'T seq
 ```
 [ArgumentNullException](https://learn.microsoft.com/en-us/dotnet/api/system.argumentnullexception) should be raised if collection is null
 
 [ArgumentOutOfRangeException](https://learn.microsoft.com/en-us/dotnet/api/system.argumentoutofrangeexception) should be raised if N is greater than collection length or negative
+
+[InvalidOperationException](https://learn.microsoft.com/en-us/dotnet/api/system.invalidoperationexception) should be raised if collection is empty
 
 Example:
 ```fsharp
@@ -171,5 +201,5 @@ It's unclear, if more sophisticated overloads should be added:
  - Weights parameter for choices function
  - Counts parameter for sample function
 
-In .NET 6 and higher [Random.Shared](https://learn.microsoft.com/en-us/dotnet/api/system.random.shared) is available, but as soon as F# Core only targets standard, it can't use it. Is targeting higher .NET possible (not just for this feature, maybe some others need it)?
-Same question about new [.NET 8 apis](https://learn.microsoft.com/en-us/dotnet/core/whats-new/dotnet-8#methods-for-working-with-randomness), they could be reused in theory
+~~In .NET 6 and higher [Random.Shared](https://learn.microsoft.com/en-us/dotnet/api/system.random.shared) is available, but as soon as F# Core only targets standard, it can't use it. Is targeting higher .NET possible (not just for this feature, maybe some others need it)?
+Same question about new [.NET 8 apis](https://learn.microsoft.com/en-us/dotnet/core/whats-new/dotnet-8#methods-for-working-with-randomness), they could be reused in theory~~
