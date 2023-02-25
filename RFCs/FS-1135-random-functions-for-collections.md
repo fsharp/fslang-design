@@ -131,9 +131,7 @@ val sampleRand: Random -> int -> 'T seq -> 'T seq
 ```
 [ArgumentNullException](https://learn.microsoft.com/en-us/dotnet/api/system.argumentnullexception) should be raised if collection is null
 
-[ArgumentOutOfRangeException](https://learn.microsoft.com/en-us/dotnet/api/system.argumentoutofrangeexception) should be raised if N is greater than collection length
-
-[ArgumentException](https://learn.microsoft.com/en-us/dotnet/api/system.argumentoutofrangeexception) should be raised if N is negative
+[ArgumentException](https://learn.microsoft.com/en-us/dotnet/api/system.argumentoutofrangeexception) should be raised if N is greater than collection length or is negative
 
 [ArgumentException](https://learn.microsoft.com/en-us/dotnet/api/system.argumentexception) should be raised if collection is empty
 
