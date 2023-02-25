@@ -75,7 +75,7 @@ val choiceRand: Random -> 'T seq -> 'T
 ```
 [ArgumentNullException](https://learn.microsoft.com/en-us/dotnet/api/system.argumentnullexception) should be raised if collection is null
 
-[InvalidOperationException](https://learn.microsoft.com/en-us/dotnet/api/system.invalidoperationexception) should be raised if collection is empty
+[ArgumentException](https://learn.microsoft.com/en-us/dotnet/api/system.argumentexception) should be raised if collection is empty
 
 Example:
 ```fsharp
@@ -102,9 +102,9 @@ val choicesRand: Random -> int -> 'T seq -> 'T seq
 ```
 [ArgumentNullException](https://learn.microsoft.com/en-us/dotnet/api/system.argumentnullexception) should be raised if collection is null
 
-[ArgumentOutOfRangeException](https://learn.microsoft.com/en-us/dotnet/api/system.argumentoutofrangeexception) should be raised if N is negative
+[ArgumentException](https://learn.microsoft.com/en-us/dotnet/api/system.argumentoutofrangeexception) should be raised if N is negative
 
-[InvalidOperationException](https://learn.microsoft.com/en-us/dotnet/api/system.invalidoperationexception) should be raised if collection is empty
+[ArgumentException](https://learn.microsoft.com/en-us/dotnet/api/system.argumentexception) should be raised if collection is empty
 
 Example:
 ```fsharp
@@ -131,9 +131,11 @@ val sampleRand: Random -> int -> 'T seq -> 'T seq
 ```
 [ArgumentNullException](https://learn.microsoft.com/en-us/dotnet/api/system.argumentnullexception) should be raised if collection is null
 
-[ArgumentOutOfRangeException](https://learn.microsoft.com/en-us/dotnet/api/system.argumentoutofrangeexception) should be raised if N is greater than collection length or negative
+[ArgumentOutOfRangeException](https://learn.microsoft.com/en-us/dotnet/api/system.argumentoutofrangeexception) should be raised if N is greater than collection length
 
-[InvalidOperationException](https://learn.microsoft.com/en-us/dotnet/api/system.invalidoperationexception) should be raised if collection is empty
+[ArgumentException](https://learn.microsoft.com/en-us/dotnet/api/system.argumentoutofrangeexception) should be raised if N is negative
+
+[ArgumentException](https://learn.microsoft.com/en-us/dotnet/api/system.argumentexception) should be raised if collection is empty
 
 Example:
 ```fsharp
