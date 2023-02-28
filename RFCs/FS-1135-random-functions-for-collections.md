@@ -26,10 +26,9 @@ This feature is motivated by the following use cases:
 ### General
 
 The following general rules are applied to all functions
- - New function should be implemented in List, Array, Seq modules
- - All functions should not mutate the input collection
+ - New functions should be implemented in List, Array, Seq modules
  - All functions should have a variant with a [Random](https://learn.microsoft.com/en-us/dotnet/api/system.random) parameter
- - Shared thread-safe Random instance should be used for all basic functions.
+ - Shared thread-safe Random instance should be used for all basic functions
 
 ### Shuffle
 
@@ -41,6 +40,8 @@ Two functions should be added to each module.
 // Array module
 val shuffle: 'T[] -> 'T[]
 val shuffleRand: Random -> 'T[] -> 'T[]
+val shuffleInPlace: 'T[] -> 'T[]
+val shuffleInPlaceRand: Random -> 'T[] -> 'T[]
 // List module
 val shuffle: 'T list -> 'T list
 val shuffleRand: Random -> 'T list -> 'T list
