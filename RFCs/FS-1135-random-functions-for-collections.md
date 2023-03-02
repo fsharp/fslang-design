@@ -38,16 +38,16 @@ Two functions should be added to each module.
 
 ```fsharp
 // Array module
-val shuffle: 'T[] -> 'T[]
-val shuffleRand: Random -> 'T[] -> 'T[]
-val shuffleInPlace: 'T[] -> 'T[]
-val shuffleInPlaceRand: Random -> 'T[] -> 'T[]
+val shuffle: array:'T[] -> 'T[]
+val shuffleWith: random:Random -> array:'T[] -> 'T[]
+val shuffleInPlace: array:'T[] -> 'T[]
+val shuffleInPlaceWith: random:Random -> array:'T[] -> 'T[]
 // List module
-val shuffle: 'T list -> 'T list
-val shuffleRand: Random -> 'T list -> 'T list
+val shuffle: list:'T list -> 'T list
+val shuffleWith: random:Random -> list:'T list -> 'T list
 // Seq module
-val shuffle: 'T seq -> 'T seq
-val shuffleRand: Random -> 'T seq -> 'T seq
+val shuffle: source:'T seq -> 'T seq
+val shuffleWith: random:Random -> source:'T seq -> 'T seq
 ```
 [ArgumentNullException](https://learn.microsoft.com/en-us/dotnet/api/system.argumentnullexception) should be raised if collection is null
 
@@ -65,14 +65,14 @@ Two functions should be added to each module.
 
 ```fsharp
 // Array module
-val choice: 'T[] -> 'T
-val choiceRand: Random -> 'T[] -> 'T
+val choice: array:'T[] -> 'T
+val choiceWith: random:Random -> array:'T[] -> 'T
 // List module
-val choice: 'T list -> 'T
-val choiceRand: Random -> 'T list -> 'T
+val choice: list:'T list -> 'T
+val choiceWith: random:Random -> list:'T list -> 'T
 // Seq module
-val choice: 'T seq -> 'T
-val choiceRand: Random -> 'T seq -> 'T
+val choice: source:'T seq -> 'T
+val choiceWith: random:Random -> source:'T seq -> 'T
 ```
 [ArgumentNullException](https://learn.microsoft.com/en-us/dotnet/api/system.argumentnullexception) should be raised if collection is null
 
@@ -92,14 +92,14 @@ Two functions should be added to each module.
 
 ```fsharp
 // Array module
-val choices: int -> 'T[] -> 'T[]
-val choicesRand: Random -> int -> 'T[] -> 'T[]
+val choices: count:int -> array:'T[] -> 'T[]
+val choicesWith: random:Random -> count:int -> array:'T[] -> 'T[]
 // List module
-val choices: int -> 'T list -> 'T list
-val choicesRand: Random -> int -> 'T list -> 'T list
+val choices: count:int -> list:'T list -> 'T list
+val choicesWith: random:Random -> count:int -> list:'T list -> 'T list
 // Seq module
-val choices: int -> 'T seq -> 'T seq
-val choicesRand: Random -> int -> 'T seq -> 'T seq
+val choices: count:int -> source:'T seq -> 'T seq
+val choicesWith: random:Random -> count:int -> source:'T seq -> 'T seq
 ```
 [ArgumentNullException](https://learn.microsoft.com/en-us/dotnet/api/system.argumentnullexception) should be raised if collection is null
 
@@ -121,14 +121,14 @@ Two functions should be added to each module.
 
 ```fsharp
 // Array module
-val sample: int -> 'T[] -> 'T[]
-val sampleRand: Random -> int -> 'T[] -> 'T[]
+val sample: count:int -> array:'T[] -> 'T[]
+val sampleWith: random:Random -> count:int -> array:'T[] -> 'T[]
 // List module
-val sample: int -> 'T list -> 'T list
-val sampleRand: Random -> int -> 'T list -> 'T list
+val sample: count:int -> list:'T list -> 'T list
+val sampleWith: random:Random -> count:int -> list:'T list -> 'T list
 // Seq module
-val sample: int -> 'T seq -> 'T seq
-val sampleRand: Random -> int -> 'T seq -> 'T seq
+val sample: count:int -> source:'T seq -> 'T seq
+val sampleWith: random:Random -> count:int -> source:'T seq -> 'T seq
 ```
 [ArgumentNullException](https://learn.microsoft.com/en-us/dotnet/api/system.argumentnullexception) should be raised if collection is null
 
