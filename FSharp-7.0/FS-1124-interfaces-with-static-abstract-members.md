@@ -742,6 +742,8 @@ let ConcreteMathCode ( .... ) =
    (Double :> IMath<'T>).Cos(...)
 ```
 
+#### Conclusion
+
 In this RFC we go with Option A+B, with the possibility of adding Option D at some later point. 
 
 ### Alternatives for Invocation Syntax
