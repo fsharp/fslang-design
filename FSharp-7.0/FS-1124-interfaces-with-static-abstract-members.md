@@ -718,7 +718,7 @@ Option C is to make an exception for static abstract implementations and have th
 
 However ambiguities can arise in the name resolution if several different unrelated interfaces implement that same named method - we could likely resolve those ambiguities but it does expose us to this kind of problem in a different way than currently.
 
-####Option D - give some kind of explicit call syntax
+#### Option D - give some kind of explicit call syntax
 
 ```fsharp
     (MyRepeatSequence :> IGenNext<MyRepeatSequence>).Next(str)
