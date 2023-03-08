@@ -676,7 +676,7 @@ However, that begs the question about how we call `MyRepeatSequence.Next` "direc
 
 to make the interface call explicit. 
 
-**Option A - expect people to make a call via a type parameter**
+#### Option A - expect people to make a call via a type parameter
 
 Option A is to do nothing, and expect users to write constrained generic code to make the call:
 
@@ -694,7 +694,7 @@ CallNext<MyRepeatSequence>(str)
 
 This option is a bit unfortunate as it means extra obfuscating generic helper functions when there is actually no generic code around.  It also means users have no way of manually inlining such a helper function, and it makes another case where you don't get "closure under substitution" for F# generic code (which also happens for some SRTP calls, where generic helpers are also needed).
 
-**Option B - expect the type authors to resolve this by authoring an explicitly accessible method.**
+#### Option B - expect the type authors to resolve this by authoring an explicitly accessible method.
 
 Option B is to expect the type authors to resolve this by authoring an explicitly accessible method:
 
@@ -712,13 +712,13 @@ MyRepeatSequence.Next(str)
 Note that C# code using implicit interface impls will automatically have such a method available.  We should check if most of the math stuff in System.* will use explicit or implicit impls - we assume implicit.
 
 
-**Option C - make an exception for statics and have those be name-accessible.**
+#### Option C - make an exception for statics and have those be name-accessible.
 
 Option C is to make an exception for static abstract implementations and have those be name-accessible.
 
 However ambiguities can arise in the name resolution if several different unrelated interfaces implement that same named method - we could likely resolve those ambiguities but it does expose us to this kind of problem in a different way than currently.
 
-**Option D - give some kind of explicit call syntax**
+####Option D - give some kind of explicit call syntax
 
 ```fsharp
     (MyRepeatSequence :> IGenNext<MyRepeatSequence>).Next(str)
