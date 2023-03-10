@@ -38,23 +38,23 @@ Two functions should be added to each module.
 
 ```fsharp
 // Array module
-val shuffle: array:'T[] -> 'T[]
-val shuffleWith: random:Random -> array:'T[] -> 'T[]
-val shuffleInPlace: array:'T[] -> 'T[]
-val shuffleInPlaceWith: random:Random -> array:'T[] -> 'T[]
+val randomShuffle: array:'T[] -> 'T[]
+val randomShuffleWith: random:Random -> array:'T[] -> 'T[]
+val randomShuffleInPlace: array:'T[] -> 'T[]
+val randomShuffleInPlaceWith: random:Random -> array:'T[] -> 'T[]
 // List module
-val shuffle: list:'T list -> 'T list
-val shuffleWith: random:Random -> list:'T list -> 'T list
+val randomShuffle: list:'T list -> 'T list
+val randomShuffleWith: random:Random -> list:'T list -> 'T list
 // Seq module
-val shuffle: source:'T seq -> 'T seq
-val shuffleWith: random:Random -> source:'T seq -> 'T seq
+val randomShuffle: source:'T seq -> 'T seq
+val randomShuffleWith: random:Random -> source:'T seq -> 'T seq
 ```
 [ArgumentNullException](https://learn.microsoft.com/en-us/dotnet/api/system.argumentnullexception) should be raised if collection is null
 
 Example:
 ```fsharp
 let allPlayers = [ "Alice"; "Bob"; "Charlie"; "Dave" ]
-let round1Order = allPlayers |> List.shuffle // [ "Charlie"; "Dave"; "Alice"; "Bob" ]
+let round1Order = allPlayers |> List.randomShuffle // [ "Charlie"; "Dave"; "Alice"; "Bob" ]
 ```
 
 ### Choice
@@ -65,14 +65,14 @@ Two functions should be added to each module.
 
 ```fsharp
 // Array module
-val choice: array:'T[] -> 'T
-val choiceWith: random:Random -> array:'T[] -> 'T
+val randomChoice: array:'T[] -> 'T
+val randomChoiceWith: random:Random -> array:'T[] -> 'T
 // List module
-val choice: list:'T list -> 'T
-val choiceWith: random:Random -> list:'T list -> 'T
+val randomChoice: list:'T list -> 'T
+val randomChoiceWith: random:Random -> list:'T list -> 'T
 // Seq module
-val choice: source:'T seq -> 'T
-val choiceWith: random:Random -> source:'T seq -> 'T
+val randomChoice: source:'T seq -> 'T
+val randomChoiceWith: random:Random -> source:'T seq -> 'T
 ```
 [ArgumentNullException](https://learn.microsoft.com/en-us/dotnet/api/system.argumentnullexception) should be raised if collection is null
 
@@ -81,7 +81,7 @@ val choiceWith: random:Random -> source:'T seq -> 'T
 Example:
 ```fsharp
 let allPlayers = [ "Alice"; "Bob"; "Charlie"; "Dave" ]
-let round1Order = allPlayers |> List.choice // "Charlie"
+let round1Order = allPlayers |> List.randomChoice // "Charlie"
 ```
 
 ### Choices
@@ -92,14 +92,14 @@ Two functions should be added to each module.
 
 ```fsharp
 // Array module
-val choices: count:int -> array:'T[] -> 'T[]
-val choicesWith: random:Random -> count:int -> array:'T[] -> 'T[]
+val randomChoices: count:int -> array:'T[] -> 'T[]
+val randomChoicesWith: random:Random -> count:int -> array:'T[] -> 'T[]
 // List module
-val choices: count:int -> list:'T list -> 'T list
-val choicesWith: random:Random -> count:int -> list:'T list -> 'T list
+val randomChoices: count:int -> list:'T list -> 'T list
+val randomChoicesWith: random:Random -> count:int -> list:'T list -> 'T list
 // Seq module
-val choices: count:int -> source:'T seq -> 'T seq
-val choicesWith: random:Random -> count:int -> source:'T seq -> 'T seq
+val randomChoices: count:int -> source:'T seq -> 'T seq
+val randomChoicesWith: random:Random -> count:int -> source:'T seq -> 'T seq
 ```
 [ArgumentNullException](https://learn.microsoft.com/en-us/dotnet/api/system.argumentnullexception) should be raised if collection is null
 
@@ -110,7 +110,7 @@ val choicesWith: random:Random -> count:int -> source:'T seq -> 'T seq
 Example:
 ```fsharp
 let allPlayers = [ "Alice"; "Bob"; "Charlie"; "Dave" ]
-let round1Order = allPlayers |> List.choices 3 // ["Bob", "Dave", "Bob"]
+let round1Order = allPlayers |> List.randomChoices 3 // ["Bob", "Dave", "Bob"]
 ```
 
 ### Sample
@@ -121,14 +121,14 @@ Two functions should be added to each module.
 
 ```fsharp
 // Array module
-val sample: count:int -> array:'T[] -> 'T[]
-val sampleWith: random:Random -> count:int -> array:'T[] -> 'T[]
+val randomSample: count:int -> array:'T[] -> 'T[]
+val randomSampleWith: random:Random -> count:int -> array:'T[] -> 'T[]
 // List module
-val sample: count:int -> list:'T list -> 'T list
-val sampleWith: random:Random -> count:int -> list:'T list -> 'T list
+val randomSample: count:int -> list:'T list -> 'T list
+val randomSampleWith: random:Random -> count:int -> list:'T list -> 'T list
 // Seq module
-val sample: count:int -> source:'T seq -> 'T seq
-val sampleWith: random:Random -> count:int -> source:'T seq -> 'T seq
+val randomSample: count:int -> source:'T seq -> 'T seq
+val randomSampleWith: random:Random -> count:int -> source:'T seq -> 'T seq
 ```
 [ArgumentNullException](https://learn.microsoft.com/en-us/dotnet/api/system.argumentnullexception) should be raised if collection is null
 
@@ -139,7 +139,7 @@ val sampleWith: random:Random -> count:int -> source:'T seq -> 'T seq
 Example:
 ```fsharp
 let allPlayers = [ "Alice"; "Bob"; "Charlie"; "Dave" ]
-let round1Order = allPlayers |> List.sample 3 // ["Charlie", "Dave", "Alice"]
+let round1Order = allPlayers |> List.randomSample 3 // ["Charlie", "Dave", "Alice"]
 ```
 
 # Drawbacks
@@ -199,8 +199,8 @@ N/A
 # Unresolved questions
 
 It's unclear, if more sophisticated overloads should be added:
- - Weights parameter for choices function
- - Counts parameter for sample function
+ - Weights parameter for randomChoices function
+ - Counts parameter for randomSample function
 
 ~~In .NET 6 and higher [Random.Shared](https://learn.microsoft.com/en-us/dotnet/api/system.random.shared) is available, but as soon as F# Core only targets standard, it can't use it. Is targeting higher .NET possible (not just for this feature, maybe some others need it)?
 Same question about new [.NET 8 apis](https://learn.microsoft.com/en-us/dotnet/core/whats-new/dotnet-8#methods-for-working-with-randomness), they could be reused in theory~~
