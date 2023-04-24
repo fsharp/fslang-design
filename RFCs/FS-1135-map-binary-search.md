@@ -30,14 +30,12 @@ Currently, the only way to accomplish something similar is to iterate through `M
 
 # Detailed design
 
-This is the bulk of the RFC. Explain the design in enough detail for somebody familiar
-with the language to understand, and for somebody familiar with the compiler to implement.
-This should get into specifics and corner-cases, and include examples of how the feature is used.
-
 The function currently has the shape:
 ```fsharp
 Map.binarySearch : 'Key -> Map<'Key, 'Value> -> ('Key, 'Value) option * ('Key, 'Value) option * ('Key, 'Value) option
 ```
+
+The function is implemented in Map.fs in FSharp.Core. It should not throw any additional exceptions except `StackOverflowException` and `OutOfMemoryException`, including in the case where the Map is empty.
 
 Example use in a hypothetical Elmish/Feliz view:
 
@@ -104,7 +102,7 @@ albeit with the need for some additional massaging on the part of the consumer.
 For the convenience and simplicity of implementation that `Map.binarySearch` would offer over `Map.splitAt`,
 it may make sense to implement both functions eventually.
 
-# Compatibility, Performance Culture-aware formatting
+# Compatibility, Performance and Culture-aware formatting
 
 As this is a change to FSharp.Core, there should not be any breaking changes.
 There are no dependencies outside of FSharp.Core/map.fs itself.
