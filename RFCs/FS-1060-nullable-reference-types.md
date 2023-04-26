@@ -646,7 +646,7 @@ namespace System.Runtime.CompilerServices
 }
 ```
 
-Note: the `bool[]` is used to represent nested types. So `ResizeArray<string | null>` would be represented with `[| false; true |]`, where `ResizeArray` is non-null, but `string?` is `null`.
+Note: the `bool[]` is used to represent nested types. So `ResizeArray<string | null>` would be represented with `[| false; true |]`, where `ResizeArray` is non-null, but `string` is `null`.
 
 For example, the following code:
 
@@ -708,7 +708,7 @@ Note that both the `NonNullTypesAttribute` and `NonNullAttribute` can be abused.
 
 The following details how an F# compiler with nullable reference types will behave when interacting with different kinds of components.
 
-#### F# 5.0 consuming non-F# assemblies that do not have nullability
+#### F# consuming non-F# assemblies that do not have nullability
 
 All non-F# assemblies built with a compiler that does not understand nullability are treated such that all of their reference types are nullable.
 
@@ -716,7 +716,7 @@ Example: a `.dll` coming from a NuGet package built with C# 7.1 will be interpre
 
 This means that warnings will be emitted when `null` is not properly accounted for.
 
-#### F# 5.0 consuming F# assemblies that do not have nullability
+#### F# consuming F# assemblies that do not have nullability
 
 All F# assemblies built with a previous F# compiler will be treated as such:
 
@@ -802,7 +802,7 @@ To remain in line our first principle:
 We'll consider careful suppression of nullability in F# tooling so that the extra information doesn't appear overwhelming. For example, imagine the following signature in tooltips:
 
 ```fsharp
-member Join : source2: (Expression<seq<string?>?>?) * key1:(Expression<Func<string?, T?>?>?)) * key2:(Expression<Func<string?, T?>?>?))
+member Join : source2: (Expression<seq<string | null> | null> | null) * key1:(Expression<Func<string | null, T | null> | null> | null)) * key2:(Expression<Func<string | null, T | null> | null> | null))
 ```
 
 This signature is challenging enough already, but now nullability has made it significantly worse.
@@ -828,7 +828,7 @@ In Signature Help tooltips today, we embed the concrete type for a generic type 
 ```
 List(System.Collections.Generics.IEnumerable<'T>)
 
-    where 'T is string?
+    where 'T is string | null
 
 Initializes an instance of a [...]
 ```
@@ -1068,7 +1068,7 @@ Where `notnull` returns the type of `expr`. But this may be viewed as too compli
 ##### Alternative: Pattern matching with wildcard
 
 ```fsharp
-let len (str: string?) =
+let len (str: string | null) =
     match str with
     | null -> -1
     | _ -> str.Length // OK - 'str' is string
@@ -1096,22 +1096,6 @@ Breaking this rule for F# would be inconsistent with behavior that already exist
 
 TBD: we will consider offering a warning that suggests giving the type a new name. This would improve the existing error message today, so it's probably worth doing with this feature.
 
-### Alternative: nested functions accessing outer scopes
-
-```fsharp
-let len (str: string?) =
-    let doWork() =
-        str.Length // WARNING: maybe too complicated? Doesn't feel natural to F#?
-
-    match str with
-    | null -> -1
-    | _ -> doWork() // But after this line is written it's fine? Not natural to F# though.
-```
-
-Although `doWork()` is called only in a scope where `str` would be non-null, this may too complex to implement properly.
-
-**Note:** C# supports the equivalent of this with local functions. TypeScript does not support this. There is no precedent for this kind of support to further motivate the work.
-
 #### Alternative: boolean-based checks for null that lack an appropriate well-known attribute
 
 No type-relevant information is gained via an arbitrary check using user-defined code. Consider the following:
@@ -1119,7 +1103,7 @@ No type-relevant information is gained via an arbitrary check using user-defined
 ```fsharp
 let myIsNull item = isNull item
 
-let len (str: string?) =
+let len (str: string | null) =
     if myIsNull str then
         -1
     else
@@ -1144,7 +1128,7 @@ It is worth noting that these attributes can be abused and accidentally misused 
 #### Alternative: isNull and others using null-handling decoration
 
 ```fsharp
-let len (str: string?) =
+let len (str: string | null) =
     if isNull str then
         -1
     else
@@ -1158,7 +1142,7 @@ Similarly, CoreFX will annotate methods like `String.IsNullOrEmpty` as handling 
 #### Alternative: If check
 
 ```fsharp
-let len (str: string?) =
+let len (str: string | null) =
     if str = null then
         -1
     else
@@ -1170,7 +1154,7 @@ More generally, `value = null` or `value <> null`, where `value` is an F# expres
 #### Alternative: After null check within boolean expression
 
 ```fsharp
-let len (str: string?) =
+let len (str: string | null) =
     if (str <> null && str.Length > 0) then // OK - `str` must be non-null
         str.Length // OK here too
     else
@@ -1241,7 +1225,7 @@ It is very likely that `StringVal` can be given a `null` value. But with this fe
 
 We will continue to respect the fact that `[<CLIMutable>]` can result in `null` values.
 
-**Recommendation:** Make no change for F# 5.0. The types are interpreted as written in the code and the user must explicitly annotate with `string?` if the ORM may leave a `null` value in the construct.
+**Recommendation:** Make no change. The types are interpreted as written in the code and the user must explicitly annotate with `string | null` if the ORM may leave a `null` value in the construct.
 
 
 ### Notes
@@ -1375,9 +1359,9 @@ Here's something tricky.  For an F# type C consider
 
 2. `unbox<string>(s)`
 
-3. `unbox<C?>(s)`
+3. `unbox<C | null>(s)`
 
-4. `unbox<string?>(s)`
+4. `unbox<string | null>(s)`
 
 There are two unbox helpers - [`UnboxGeneric`](https://github.com/dotnet/fsharp/blob/92247b886e4c3f8e637948de84b6d10f97b2b894/src/fsharp/FSharp.Core/prim-types.fs#L613) and [`UnboxFast`](https://github.com/dotnet/fsharp/blob/92247b886e4c3f8e637948de84b6d10f97b2b894/src/fsharp/FSharp.Core/prim-types.fs#L620). Normally `unbox(s)` just gets inlined to become `UnboxGeneric`, e.g. this is what (1) becomes.  However the F# optimizer converts calls to `UnboxFast` for (2), see [here](https://github.com/dotnet/fsharp/blob/99c667b0ee24f18775d4250a909ee5fdb58e2fae/src/fsharp/Optimizer.fs#L2576)
 
@@ -1385,7 +1369,7 @@ There are two unbox helpers - [`UnboxGeneric`](https://github.com/dotnet/fsharp/
 
 That is, the meaning of `unbox` in F# depends on whether the type carries a null value or not.  If the target type *doesn't* carry null and is not a value type (i.e. is an F# reference type), the *slower* helper is used to do an early guard against a null value leaking in.  If the target type *does* carry null, the *fast* helper is used (since null can leak through ok).  For generic code the slow helper is used
 
-The problem of course is that once (3) is allowed we have an issue - using the slow helper is now no longer correct and will raise an exception, i.e. `unbox<C?>(null)` will raise an exception.
+The problem of course is that once (3) is allowed we have an issue - using the slow helper is now no longer correct and will raise an exception, i.e. `unbox<C | null>(null)` will raise an exception.
 
 ### Option.ofObj and friends
 
@@ -1396,8 +1380,8 @@ Today `Option.ofObj` has this type:
 
 Ideally we want to change these to:
 
-    val ofObj: value: 'T? -> 'T option  when 'T : not struct and 'T : not null
-    val toObj: value: 'T option -> 'T? when 'T : not struct and 'T : not null
+    val ofObj: value: ('T | null) -> 'T option  when 'T : not struct and 'T : not null
+    val toObj: value: 'T option -> ('T | null) when 'T : not struct and 'T : not null
 
 This is a not a .NET binary breaking change and very little code is affected by it, but it does change some F# code, e.g. this code no longer compiles in the PR branch after this change (regardless of whether null checking is on or not)
 
