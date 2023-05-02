@@ -6,7 +6,7 @@ This RFC covers the detailed proposal for this suggestion.
 
 - [x] [Suggestion](https://github.com/fsharp/fslang-suggestions/issues/1150)
 - [x] Approved in principle
-- [ ] [Implementation]() (no implementation yet, but a proof of concept [here](https://github.com/dotnet/fsharp/compare/main...abonie:fsharp:poc_improved_interpolation))
+- [x] [Implementation](https://github.com/dotnet/fsharp/pull/14640)
 - [ ] Design Review Meeting(s) with @dsyme and others invitees
 - [Discussion](https://github.com/fsharp/fslang-design/discussions/716)
 
@@ -74,6 +74,23 @@ $$$"""...whereas {{{text}}}."""
 $$$"""{{{{{41+1}}}} = {{42}"""
 // val it: string = "{{42} = {{42}"
 """
+```
+
+In addition, `%` characters, specifically with regards to format specifiers, will follow analogous rules. For example:
+
+```
+let successRate = 0.6m
+
+// With single dollar, a single `%` character is reserved for format specifiers, and to add `%` in content, it has to be doubled.
+
+$"""%.1f{successRate*100.0m}%% of the time, it works every time."""
+// val it: string = "60.0% of the time, it works every time."
+
+// Adding more dollars, format specifiers need to match with that many `%` characters, but `%` in content don't need escaping.
+
+$$"""%%.1f{{successRate*100.0m}}% of the time, it works every time."""
+// val it: string = "60.0% of the time, it works every time."
+
 ```
 
 # Drawbacks
@@ -152,6 +169,7 @@ Please address all necessary compatibility questions:
 ## Diagnostics
 
 - New compiler error for interpolated string literals with too many consecutive `{` or `}` characters.
+- New compiler error for interpolated string literals with too many consecutive `%` characters.
 - Otherwise, same compiler errors as for regular (single-`$`) interpolated strings.
 
 Example of the new compiler error (error number still subject to change):
@@ -162,6 +180,13 @@ Example of the new compiler error (error number still subject to change):
   -----^^^^
 
 stdin(1,6): error FS3375: The interpolated triple quoted string literal does not start with enough '$' characters to allow this many consecutive opening braces as content.
+
+> $$"""42 %%%%""";;
+
+  $$"""42 %%%%""";;
+  --------^^^^
+
+stdin(16,9): error FS1250: The interpolated triple quoted string literal does not start with enough '$' characters to allow this many consecutive '%' characters.
 ```
 
 ## Tooling
@@ -182,11 +207,16 @@ In a hand-written code it will typically not exceed 3.
 
 N/A
 
-# Unresolved questions
+# Resolved questions
 
 1. Do we want to also provide a way to easily input percent signs in interpolated string literals?
+
+Yes, that is inline with the goal of having a string literal that does not require escaping.
 Relevant [discussion thread](https://github.com/fsharp/fslang-design/discussions/716#discussioncomment-4022757)
+
 2. Should we extend this feature to regular (single-quoted) string literals as well in addition to triple quoted strings?
+
+No, for single-quoted string literals, verbatim strings are enough.
 Relevant [discussion thread](https://github.com/fsharp/fslang-design/discussions/716#discussioncomment-4089195)
 
 # Links
