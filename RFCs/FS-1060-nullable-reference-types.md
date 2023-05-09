@@ -1249,6 +1249,26 @@ let xs2: string? option list = [ Some null; Some "a" ] // no warning
 ### Unresolved questions
 [unresolved]: #unresolved-questions
 
+
+#### Library naming
+
+* `nonNull` is awkward.  It is a point of failure, perhaps `failIfNull` is better, but then sounds like an assertion with return type unit.  Not obvious it's used to promote.
+
+#### Null elimination
+
+`expr ?? expr` is a much liked and used construct in JS/TS/C# and a perfectly safe way of eliminating null in favour of another value.  Why not support this? 
+
+* Left may be `T option`, right must be `T`
+* Left may be `T voption`, right must be `T`
+* Left may be `T | null`, right must be `T`
+* Left may be `Nullable<T>`, right must be `T`
+* Left can be `(string | null) option`, right must be `string | null`
+
+We would not however add the JS notion of truthiness e.g. in constructs such as `expr || expr` (for non-boolean types) of `if expr then` for non-boolean types. 
+
+If we added this could we remove `nonNull`?  Yes.
+
+
 #### Handling warnings
 
 What about the ability to turn off nullability warnings when annotations are coming from a particular file? Or only have nullability warnings on a per-file basis? Answer: that would be weird.
