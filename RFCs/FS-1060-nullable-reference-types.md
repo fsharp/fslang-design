@@ -1274,6 +1274,8 @@ This behavior is quite similar to nullable reference types, but is unfortunately
 
 **Recommendation**: Relax the restriction where F#-declared reference types cannot have `null` as a proper value from an error to a warning. Conceptually, any reference to type decorated with `[<AllowNullLiteral>]` will be seen as equivalent to a nullable reference type. This is not a breaking change, but it does mean that F#-declared reference types are now a bit different once this feature is in place.
 
+**NOTE** - this doesn't seem right. It would mean that if `--checknulls` is off but the feature is activated then no warnings or errors are given at all when using `null` with F# types.  This doesn't seem the right setting overall and weakens regular F# coding too much.
+
 #### Unchecked.defaultOf<'T>
 
 Today, `Unchecked.defaultof<'T>` will generate `null` when `'T` is a reference type. However, `'T` means non-null, and it's obvious that this will return `null` when parameterized with a .NET reference type such as `string`. We have some options:
@@ -1302,7 +1304,16 @@ Today, the following specifiers work with reference types:
 
 Making these work with non-nullable reference types would be a breaking change, so it's likely that the underlying type be the appropriate `T | null` for each specifier. For example, `%s` would work with `string | null`.
 
-**TBD:** These imply a nullability inference variable to allow to work with either kind
+**NOTE**: We looked at this again and the current implementation forces `%s` to always be non-null (a warning is emitted). THis actually feels pretty decent - F# programmers using `%s` will normally expect only non-null strings to flow to this point - and giving the warning forces them to think what text they would like produced for `null` values, e.g. `<null>` or empty-string or whatever.
+
+**NOTE**: We saw a test case when looking into this that looks like it needs a better diagnostic (this relates to "print two types" logic in compiler diagnostics).
+
+```fsharp
+  $"...%s{(null: string __withnull)}...";;
+  ---------^^^^^^^^^^^^^^^^^^^^^^^
+
+stdin(21,10): warning FS3261: Nullness warning: The types 'Microsoft.FSharp.Core.string (FSharp.Core, Version=7.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a)' and 'Microsoft.FSharp.Core.string (FSharp.Core, Version=7.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a)' do not have equivalent nullability 'WithoutNull' and 'WithNull'.
+```
 
 ### Interaction with `UseNullAsTrueValue`
 
