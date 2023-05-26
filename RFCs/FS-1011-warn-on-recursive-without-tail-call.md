@@ -62,8 +62,7 @@ let rec bar x =
         printfn "0x%08x" x
         bar (x - 1)     // OK: tail-recursive call.
         
-[<TailCall>]
-and baz x =
+and [<TailCall>] baz x =
     printfn "Baz!"
     bar (x - 1)         // OK: tail-recursive call.
 ```
