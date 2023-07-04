@@ -41,11 +41,17 @@ When RFCs are implemented and a version of F# is revved, the RFCs which correspo
 
 4. New releases of F# typically align with a .NET and/or Visual Studio version.
 
+### Who is in Charge?
+
+Historically the designer of F# has been Don Syme (@dsyme). Practically speaking, today most of the design process operates through the efforts of contributors, overseen by those with commit rights on this repository, who are curently @vzarytovskii, @dsyme, @cartermp, @baronfel, @cartermp and @abelbraaksma. Much of the work happens by contributions via RFCs and most features now proceed from initial approval all the way to implementation through community and enterprise contributions. THe planning and progress process for features is intended to be transparent and participative.
+
+Throughout feature development the needs of all stakeholders can be taken into account, e.g. the needs of those delivering tooling or long-term support for F#. Together with the F# community, the overseers of the design process will continue to refine this process based on community and delivery needs.
+
 ### Roadmap and Areas of Priority Work
 
 Any or all of the [approved-in-principle](https://github.com/fsharp/fslang-suggestions/labels/approved-in-principle) items are eligible to catch a release train. That is as good as it gets for a "roadmap" for the language design.
 
-The BDFL (@dsyme) has put together a list of "proposed priority" approved language design items which he plans to focus on or which other people have taken past RFC stage.  This is _not_ a roadmap, because other people will choose to prioritize other approved items (e.g. match! - which is not a priority item for me), and is also subject to change and edit.. It is an informal list.  You can find that list here: https://github.com/fsharp/fslang-suggestions/labels/proposed-priority
+There is a list of "proposed priority" approved language design items.  This is _not_ a roadmap, because other people will choose to prioritize other approved items, and is also subject to change and edit. You can find that list here: https://github.com/fsharp/fslang-suggestions/labels/proposed-priority.
 
 ## Style Guide
 
