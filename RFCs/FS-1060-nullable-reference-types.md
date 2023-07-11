@@ -165,6 +165,7 @@ The `null` literal can be used for nullable reference types in expressions:
 ```fsharp
 let ns1: string | null = "hello"
 let ns2: string | null = null
+```
 
 #### Pattern matching
 
