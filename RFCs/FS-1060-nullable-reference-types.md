@@ -984,7 +984,7 @@ All of this means that this feature is entrusting acting in good faith on the gr
 
 The primary alternative is to simply not do this.
 
-That said, it will become quite evident that this feature is necessary to continue advancing on the .NET platform. Despite originating as a C# feature, this is fundamentally a **platform-level shift** for .NET, and in the medium term, will result in .NET looking very different than it is today.
+That said, it will become quite evident that this feature is necessary to continue advancing on the .NET platform. Despite originating as a C# feature, this is fundamentally a **platform-level shift** for .NET, and in last few years, .NET is looking different than it was.
 
 ### Alternative: Overall approach to nullability
 
