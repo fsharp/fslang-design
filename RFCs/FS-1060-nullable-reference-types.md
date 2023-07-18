@@ -984,7 +984,7 @@ All of this means that this feature is entrusting acting in good faith on the gr
 
 The primary alternative is to simply not do this.
 
-That said, it will become quite evident that this feature is necessary if F# is to continue advancing on the .NET platform. Despite originating as a C# feature, this is fundamentally a **platform-level shift** for .NET, and in a few years, will result in .NET looking very different than it is today.
+That said, it will become quite evident that this feature is necessary to continue advancing on the .NET platform. Despite originating as a C# feature, this is fundamentally a **platform-level shift** for .NET, and in last few years, .NET is looking different than it was.
 
 ### Alternative: Overall approach to nullability
 
@@ -1007,7 +1007,7 @@ let ns1: string? = "hello"
 let ns2: string? = null
 ```
 
-However, this overly normalizes the use of the feature in F# and is confusing in combination with optional argumwents.
+However, this overly normalizes the use of the feature in F# and is confusing in combination with optional arguments.
 
 #### Alternative: Other union-like representations
 
