@@ -5,8 +5,8 @@ The design suggestion [Extend fixed expressions to support more types](https://g
 This RFC covers the detailed proposal for this suggestion.
 
 * [x] Approved in principle
-* [ ] [Suggestion](https://github.com/fsharp/fslang-suggestions/issues/761)
-* [ ] Details: [under discussion](https://github.com/fsharp/fslang-design/issues/421)
+* [x] [Suggestion](https://github.com/fsharp/fslang-suggestions/issues/761)
+* [x] Details: [under discussion](https://github.com/fsharp/fslang-design/issues/421)
 * [ ] Implementation: [Not started]
 
 
@@ -29,9 +29,12 @@ Currently, statements of the following form: `use ptr = fixed expr` are allowed 
 * Address of an array element
 * Address of a field
 
-FS-1081 adds the following to the list of allowed types for `expr`:
-* byref
-* any 'a when 'a implements `GetPinnableReference() : unit -> byref<'t>`
+FS-1081 adds the following to the list of allowed types for `expr`
+* byref<'t>
+* inref<'t>
+* outref<'t>
+* any 'a when 'a has a method `GetPinnableReference : unit -> byref<'t>`
+* any 'a when 'a has a method `GetPinnableReference : unit -> inref<'t>`
 
 The code generator will need to generate code that pins these references and takes their addresses. For reference, here is the C# proposal: https://github.com/dotnet/csharplang/blob/master/proposals/csharp-7.3/pattern-based-fixed.md.
 
@@ -43,8 +46,8 @@ This feature would introduce more special rules into the language.
 # Alternatives
 [alternatives]: #alternatives
 
-- Don't do this, providing no alternative for those who want to use Span<'T> and friends with native code from F#
-- Only extend `fixed` to support `byref<'a>` types
+- Don't do this, providing no alternative for those who want to use `Span<'T>` and friends with native code from F#, and cannot use `Memory<'T>`
+- Only extend `fixed` to support `byref<'a>`, `inref<'a>`, and `outref<'a>` types
 - Only extend `fixed` to support `GetPinnableReference()`
   
 # Compatibility
