@@ -56,6 +56,8 @@ We allow the use of the following arithmetic operations on integers (`byte`, `sb
 - Modulo
 - Bitwise AND
 - Bitwise OR
+- Bitwise XOR
+- Bitwise unary negation
 - Bit shift left
 - Bit shift right
 - Unary plus
@@ -84,6 +86,7 @@ We allow the use of the following operations on `float32` and `float` in literal
 - Modulo
 - Unary plus
 - Unary minus (negation)
+- Exponentiation
 
 An arbitrary number of operations should be supported, as long as each part of the expression comprises only the supported operators and operands:
 
