@@ -1,4 +1,4 @@
-# F# RFC FS-1081 - Extend fixed expressions to support byref types and types implementing GetPinnableReference()
+# F# RFC FS-1081 - Extended fixed bindings
 
 
 The design suggestion [Extend fixed expressions to support more types](https://github.com/fsharp/fslang-suggestions/issues/761) has been marked "approved in principle".
