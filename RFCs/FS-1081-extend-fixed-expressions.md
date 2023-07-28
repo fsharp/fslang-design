@@ -33,10 +33,12 @@ FS-1081 adds the following to the list of allowed types for `expr`
 * byref<'t>
 * inref<'t>
 * outref<'t>
-* any 'a when 'a has a method `GetPinnableReference : unit -> byref<'t>`
-* any 'a when 'a has a method `GetPinnableReference : unit -> inref<'t>`
+* any 'a when 'a has an instance method `GetPinnableReference : unit -> byref<'t>` (extension methods should be considered)
+* any 'a when 'a has an instance method `GetPinnableReference : unit -> inref<'t>` (extension methods should be considered)
 
 The code generator will need to generate code that pins these references and takes their addresses. For reference, here is the C# proposal: https://github.com/dotnet/csharplang/blob/master/proposals/csharp-7.3/pattern-based-fixed.md.
+
+An implication is that pinning a field address is no longer a special case, since `&myField` is itself a `byref`- or `inref`-typed expression.
 
 # Drawbacks
 [drawbacks]: #drawbacks
@@ -46,9 +48,10 @@ This feature would introduce more special rules into the language.
 # Alternatives
 [alternatives]: #alternatives
 
-- Don't do this, providing no alternative for those who want to use `Span<'T>` and friends with native code from F#, and cannot use `Memory<'T>`
-- Only extend `fixed` to support `byref<'a>`, `inref<'a>`, and `outref<'a>` types
-- Only extend `fixed` to support `GetPinnableReference()`
+* Don't do this, providing no alternative for those who want to use `Span<'T>` and friends with native code from F#, and cannot use `Memory<'T>`
+* Only extend `fixed` to support `byref<'a>`, `inref<'a>`, and `outref<'a>` types
+  * This would provide a decent workaround: `use ptr = fixed &thing.GetPinnableReference()`
+* Only extend `fixed` to support `GetPinnableReference()`
   
 # Compatibility
 [compatibility]: #compatibility
