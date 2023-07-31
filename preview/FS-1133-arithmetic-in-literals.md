@@ -57,7 +57,7 @@ We allow the use of the following arithmetic operations on integers (`byte`, `sb
 - Bitwise AND
 - Bitwise OR
 - Bitwise XOR
-- Bitwise unary negation
+- Bitwise one's complement
 - Bit shift left
 - Bit shift right
 - Unary plus
