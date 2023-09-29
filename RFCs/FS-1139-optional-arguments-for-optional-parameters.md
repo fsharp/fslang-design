@@ -6,16 +6,16 @@ This RFC covers the detailed proposal for this suggestion.
 
 - [x] [Suggestion](https://github.com/fsharp/fslang-suggestions/issues/1167)
 - [x] Approved in principle
-- [ ] [Implementation](not started)
+- [ ] Implementation(not started)
 - [ ] Design Review Meeting(s) with @dsyme and others invitees
 
 # Summary
 
-We introduce easy to use default values to optional arguments in class methods.
+We introduce easy-to-use default values to optional arguments in class methods.
 
 # Motivation
 
-Current way of doing it requires 2 attributes (Optional/OptionalArgument and DefaultValue) which comes as a surprise for both new and seasoned F# developers. To make it more easy to read and use F#, this syntax should be simplified the way it works across the industry.
+The current way of doing it requires 2 attributes (Optional/OptionalArgument and DefaultValue) which comes as a surprise for both new and seasoned F# developers. To make it more easy to read and use F#, this syntax should be simplified the way it works across the industry.
 
 This will also simplify interop code a lot.
 
@@ -34,17 +34,17 @@ Foo.Bar() // 42
 Foo.Baz() // 43
 ```
 
-First of all, this looks unnecessarly verbose, and second there are two attributes both capabale of making it work.
+First of all, this looks unnecessarily verbose, and second, there are two attributes both capable of making it work.
 Also attribute `DefaultParameterValue` accepts object type as generic attributes are not implemented in F# yet.
 
 # Detailed design
 
-Proposal makes syntax much more succint and close to what developer could expect.
+The proposal makes syntax much more succinct and close to what developers could expect.
 The default value must be one of the following
 - a literal
 - enum or struct (but not a GENERIC struct)
 
-This should work only for non optional arguments as optional arguments in F# are compiled as ref type `FSharp.Core.Option<T>`
+This should work only for non-optional arguments as optional arguments in F# are compiled as ref type `FSharp.Core.Option<T>`
 
 Example code:
 
@@ -75,7 +75,7 @@ Foo.Struct()       // CustomStruct
 Foo.Opt()          // None
 ```
 
-Produced binaries with new syntax should be compiled the same way as the current solution with attributes for binary compatability.
+Produced binaries with new syntax should be compiled the same way as the current solution with attributes for binary compatibility.
 Therefore it should be compiled with both attributes
 - `System.Runtime.InteropServices.OptionalArgumentAttribute`
 - `System.Runtime.InteropServices.DefaultParameterValueAttribute`
@@ -106,11 +106,11 @@ type Foo =
 We should not allow non-constant values to be passed as default values as it could break on interop.
 There is an existing error FS0267:
 `This is not a valid constant expression or custom attribute value`
-which is kind of correct, but could give mixed feeling if we'll reuse it for default values of optional arguments (as user doesn't know it will be compiled to attributes). Therefore we'll introduce a new error
+which is kind of correct, but could give a mixed feeling if we reuse it for default values of optional arguments (as a user doesn't know it will be compiled into attributes). Therefore we'll introduce a new error
 ```fsharp
 type Foo =
-    // All above should produce compilation error
-    // error FSXXXX: This is not a valid constant expression or struct value to pass as default argument value. Make sure your argument is non-optional
+    // All above should produce a compilation error
+    // error FSXXXX: This is not a valid constant expression or struct value to pass as the default argument value. Make sure your argument is non-optional
 
     // ref type
     static member Array(arg: int list = [1;2;3]) = arg
@@ -124,7 +124,7 @@ type Foo =
 
 Another way of doing the same.
 
-Also, some interop issues and backward compatability issues prevents us from properly utilizing it
+Also, some interop issues and backward compatibility issues prevent us from properly utilizing it
  - Attribute values are expected to be constants or structs by both C# and F# specs
 
 # Alternatives
@@ -146,14 +146,14 @@ type Foo =
     static member Bar(?arg2: int) = Foo.Bar(arg1 = 42, ?arg2 = arg2) // we pass 42 as arg1 default value
 
     // this method suppose to assign default value to arg2 ONLY, therefore arg1 is still there
-    // but this produces compilation error
+    // but this produces a compilation error
     // error FS0438: Duplicate method. The method 'Bar' has the same name and signature as another method in type 'Foo'.
     static member Bar(?arg1: int) = Foo.Bar(?arg1 = arg1, arg2 = 43) // we pass 43 as arg2 default value
 
 Foo.Bar() // Some 42
 ```
 
-Also the number of such overloads explodes non-linearly with amount of optional arguments increases.
+Also, the number of such overloads explodes non-linearly with the amount of optional arguments increases.
 
 # Compatibility
 
@@ -187,7 +187,7 @@ N/A
 
 ## Performance
 
-Should not be noticable
+Should not be noticeable
 
 ## Scaling
 
@@ -198,4 +198,3 @@ N/A
 N/A
 
 # Unresolved questions
-
