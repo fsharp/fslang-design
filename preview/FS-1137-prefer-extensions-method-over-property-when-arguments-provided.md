@@ -14,6 +14,18 @@ This RFC defines the support for extension method and type extension in overload
 
 F# 8.0 doesn't support calling the extension method or type extensions in such cases, forcing the use of work arounds when consuming C# libraries leveraging this idiom.
 
+This will enable support for Linq members such as Count on types that have a Count property:
+
+```fsharp
+open System.Linq
+let r = ResizeArray<int>()
+// val r: ResizeArray<int>
+r.Count
+// val it: int = 0
+r.Count(fun _ -> true)
+// val it: int = 0
+```
+
 # Detailed design
 
 ```fsharp
