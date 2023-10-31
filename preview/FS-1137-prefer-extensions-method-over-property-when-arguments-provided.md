@@ -51,7 +51,13 @@ t.X(2).X(3).X(4) // fluent calls to the extension method
 t.X // 4
 ```
 
+## Properties that cannot be shadowed
+
 The feature won't enable resolving those extension methods / type extensions in case the properties that supports indexer(s), or the type of the property is a function (`a -> b`, etc.).
+
+## Support for type extension
+
+The reasonning for also supporting type extensions (which C# does not support/are F# specific) is to keep extension methods and methods defined in a type extension conceptually identical from standpoint of F# consumer.
 
 ## Implementation details
 
@@ -63,7 +69,21 @@ Documentation around extension methods and type extension may be updated to refl
 
 # Drawbacks
 
-Due to the idiom of indexed property not being possible to express in C#, and the ambiguity with delayed application of expressions in case of properties having indexers, or being of a function type, there is no plan to support resolution of extension methods / type extensions whenever those case apply.
+## Properties that cannot be shadowed
+
+Due to the idiom of indexed property not being possible to express in C#, and the ambiguity with delayed application of expressions in case of properties having indexers, or being of a function type, there is no plan to support resolution of extension methods / type extensions whenever those case apply. This introduce a subtle inconsistency among properties that can be defined on F# types.
+
+## The features renders obsolete the lack of support for intrinsic methods of same name as a property
+
+In terms of language design, beside subtleties in overload resolution pertaining to methods, there is little reasons to distinguish intrinsic methods versus extension methods or methods defined in type extensions. Yet, C#, VB.NET and F# still preclude for methods to be defined with the same name as a property, despite:
+* they can't bear the same name in the IL (properties have a `get_` or `set_` prefix addorned to the IL methods implementation of getter and setter)
+* they can be defined as extension methods in C# & VB.NET, and in F# with this feature, as method in type extension and extension methods
+
+It may make sense to lift this restriction in case C# moves in this direction.
+
+In meantime, attempting to define such intrinsic methods still results in 
+
+>  error FS0434: The property '{property name}' has the same name as a method in type '{type name}'.
 
 # Alternatives
 
