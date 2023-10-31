@@ -67,6 +67,16 @@ When there is a "delayed application" expression adjacent to the identifier whic
 
 Documentation around extension methods and type extension may be updated to reflect what this RFC enables.
 
+## Tooling
+
+Editors have to decide how they want to list the members, the `DeclarationListInfo` type of FCS is being updated to not merge extension methods that may bear the same name as properties anymore in order to make the support look the same as what C# editor in VS does (property and extension methods having the same name are listed as separate intellisense entries).
+
+The implementation detail for this change carries a slight risk of having separate entries for unexpected members (in presence of methods defined in type extension or extension method) while before the feature, only the first entry by name would show.
+
+Non-regression tests can be added and the implementation detail adjusted, in case such an issue surfaces.
+
+Such an issue isn't expected to be disastrous to the user experience, while not having the separate entries make the feature much less discoverable.
+
 # Drawbacks
 
 ## Properties that cannot be shadowed
