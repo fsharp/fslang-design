@@ -99,7 +99,7 @@ In meantime, attempting to define such intrinsic methods still results in
 
 >  error FS0434: The property '{property name}' has the same name as a method in type '{type name}'.
 
-## FCS breaking change in items returned `DeclarationListInfo`
+## FCS behaviour change in items returned `DeclarationListInfo`
 
 * Code consuming FCS, that expect the list returned by `DeclarationListInfo` to never contain entries with the same name, will have such assumption being broken
 * IDE that rely on `DeclarationListInfo` and intend to behave a certain way that makes the feature non discoverable, will require extra logic
