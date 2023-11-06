@@ -6,7 +6,7 @@ This RFC covers the detailed proposal for this suggestion.
 
 - [x] [Suggestion](https://github.com/fsharp/fslang-suggestions/issues/506)
 - [x] Approved in principle
-- [ ] [Implementation](https://github.com/dotnet/fsharp/pull/13907)
+- [x] [Implementation](https://github.com/dotnet/fsharp/pull/13907)
 - [ ] Design Review Meeting(s) with @dsyme and others invitees
 - [Discussion](https://github.com/fsharp/fslang-design/discussions/FILL-ME-IN)
 
@@ -50,7 +50,7 @@ And the following things should be valid:
 
 ```fsharp
 _.Foo.Bar  => fun o -> o.Foo.Bar
-_.Foo.[5]  => fun o -> o.Foo.[5]
+_.Foo.[5]  => fun o -> o.Foo[5]
 _.Foo()    => fun o -> o.Foo()
 _.Foo(5).X => fun o -> o.Foo(5).X
 ```
