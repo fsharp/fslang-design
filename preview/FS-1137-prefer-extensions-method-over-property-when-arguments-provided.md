@@ -85,7 +85,7 @@ Such an issue isn't expected to be disastrous to the user experience, while not 
 
 ## Properties that cannot be shadowed
 
-Due to the idiom of indexed property not being possible to express in C#, and the ambiguity with delayed application of expressions in case of properties having indexers, or being of a function type, there is no plan to support resolution of extension methods / type extensions whenever those case apply. This introduce a subtle inconsistency among properties that can be defined on F# types.
+Due to the idiom of indexed property not being possible to express in C#, and the ambiguity with delayed application of expressions in case of properties having indexers, or being of a function type, there is no plan to support resolution of extension methods / type extensions whenever those cases apply. This introduces a subtle inconsistency among properties that can be defined on F# types.
 
 ## The features renders obsolete the lack of support for intrinsic methods of same name as a property
 
