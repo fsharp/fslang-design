@@ -41,36 +41,63 @@ usingAP ((=) "A")
 2. As bool will only bring "matched" or "not matched" results, the following cases will be disallowed:
 
 ```fsharp
-// inferred as `string -> 'a option`, where `result` is the result of of (|IsA|_| "A")
+// ----------- AP pass by parameter 
+
+// current allowed: inferred as `string -> 'a option`, where `result` is the result of 
+// (|IsA|_| "A")
 let usingAP ((|IsA|_|): _ -> _) = 
   match "A" with 
   | IsA result -> "A" 
   | _ -> "Not A"
 
-// disallowed, as `bool` will not wrap a result
+// disallowed, since `bool` will not wrap a result
 let usingAP ((|IsA|_|): _ -> bool) = 
   match "A" with 
   | IsA result -> "A" 
   | _ -> "Not A"
 
-// inferred as `string -> string option`, where `"to match return value"` will be used
-// to compare with the result of (|IsA|_| "A")
+// disallowed, special case of the previous one
+let usingAP ((|IsA|_|): _ -> bool) = 
+  match "A" with 
+  | IsA result -> result
+  | _ -> "Not A"
+
+// current allowed: inferred as `string -> string option`, where `"to match return value"` 
+// will be used to compare with the result of (|IsA|_| "A")
 let usingAP ((|IsA|_|): _ -> _) = 
   match "A" with 
   | IsA "to match return value" -> "Matched"
   | _ -> "not Matched"
 
-// disallowed, as `bool` will not wrap a result
+// disallowed, since `bool` will not wrap a result
 let usingAP ((|IsA|_|): _ -> bool) = 
   match "A" with 
   | IsA "to match return value" -> "Matched"
   | _ -> "not Matched"
+
+// ----------- AP using directly
+
+let (|IsA|_|) x = x = "A"
+// disallowed, same as above
+match "A" with 
+| IsA result -> "A" 
+| _ -> "Not A"
+
+// disallowed, same as above
+match "A" with 
+| IsA result -> result
+| _ -> "Not A"
+
+// disallowed, same as above
+match "A" with 
+| IsA "to match return value" -> "Matched"
+| _ -> "not Matched"
 ```
 
 The new following cases will be allowed:
 
 ```fsharp
-// currently will raise a compiler error
+// current not allowed: will raise a compiler error
 let usingAP ((|IsA|_|): _ -> _ -> _) = 
   match "A" with
   | IsA "argument" -> "A"
