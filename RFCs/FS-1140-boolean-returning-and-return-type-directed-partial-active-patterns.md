@@ -1,4 +1,4 @@
-# F# RFC FS-1140 - Bool representation for partial active pattern
+# F# RFC FS-1140 - Boolean-returning and return-type-directed partial active patterns
 
 The design suggestion [Allow returning bool instead of unit option for partial active patterns](https://github.com/fsharp/fslang-suggestions/issues/1041) has been marked "approved in principle".
 
@@ -13,7 +13,9 @@ This RFC covers the detailed proposal for this suggestion.
 
 # Summary
 
-Allow returning bool instead of unit option for partial active patterns. Additionaly, allow omiting the `[<return: Struct>]` when writing voption-returning active patterns.
+Allow returning `bool` instead of `unit option` for partial active patterns.
+
+Allow omiting the `[<return: Struct>]` when writing voption-returning active patterns.
 
 # Motivation
 
