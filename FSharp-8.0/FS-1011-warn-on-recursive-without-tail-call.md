@@ -4,13 +4,13 @@ The design suggestion [Enable a compiler-warning when a recursive algorithm is n
 This RFC covers the detailed proposal for this suggestion.
 
 * [x] Approved in principle
-* [ ] [User Voice Request][UserVoice]
-* [ ] Details: [under discussion][Details]
-* [ ] Implementation: [in progress][Implementation]
+* [x] [Suggestion][Suggestion]
+* [x] Details: [under discussion][Details]
+* [x] [Implementation][Implementation]
 
-  [UserVoice]:https://fslang.uservoice.com/forums/245727-f-language/suggestions/5663074-enable-a-compiler-warning-when-a-recursive-algorit
-  [Details]:https://github.com/fsharp/FSharpLangDesign/issues/82
-  [Implementation]:https://github.com/dotnet/fsharp/pull/1976
+  [Suggestion]:https://github.com/fsharp/fslang-suggestions/issues/721
+  [Details]:https://github.com/fsharp/fslang-design/discussions/82
+  [Implementation]:https://github.com/dotnet/fsharp/pull/15503
 
 # Summary
 [summary]: #summary
