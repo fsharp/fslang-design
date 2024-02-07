@@ -101,6 +101,7 @@ type Example =
    private to Foo and Bar.
 
 2. If a union type is in a file with a signature, that signature can entirely hide the representation of the union type, and yet still individually reveal the individual IsFoo, IsBar members.  (Other generated members not covered by this RFC can't be individually revealed like this.)
+   When using signature files, the individual IsFoo,IsBar members are automatically exposed and available on IL level (as before) as well as for F# code (addition).
 
 # Drawbacks
 
