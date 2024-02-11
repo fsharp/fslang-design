@@ -20,7 +20,19 @@ To simplify the syntax of defining a private-settable-read-only properties.
 
 # Detailed design
 
-Before this RFC, the access modifier (`public`, `internal`, `private`) can only be placed before the property name. This RFC introduces the possibility of placing the access modifier before the getter and setter.
+Before this RFC, in a class type, the access modifier (`public`, `internal`, `private`) can only be placed before the property name. This RFC introduces the possibility of placing the access modifier before the getter and setter.
+
+This will not work for abstract properties, because abstract members are not allowed to have access modifiers.,
+
+This will also not work within signature files, a property containing not the same access modifier should be written separately like:
+
+```fsharp
+type MyClass =
+    member Property : int
+    member private Property : int with set
+    // the access modifier before getter and setter will be ignored
+    member Property2 : int with internal get, private set
+```
 
 The new syntax is:
 
@@ -45,12 +57,15 @@ Example:
 ```fsharp
 type A() =
     // allow, access modifier before property name
-    member val internal B = 0 with get, set
+    member val internal Allow1 = 0 with get, set
+    member val internal Allow2 = 0 with get
     // allow, access modifier before getter or setter
-    member val B2 = 0 with public get, private set
-    member val B4 = 0 with public get, set
+    member val Allow3 = 0 with public get, private set
+    member val Allow4 = 0 with public get, set
+    member val Allow5 = 0 with internal get
     // not allowed, access modifier cannot be placed before the property name and the getter or setter at the same time
-    member val internal B3 = 0 with public get, private set
+    member val internal NotAllowed1 = 0 with public get, private set
+    member val internal NotAllowed2 = 0 with public get
 ```
 
 # Drawbacks
