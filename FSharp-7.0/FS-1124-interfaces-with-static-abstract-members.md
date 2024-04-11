@@ -69,7 +69,8 @@ The syntax of expressions is extended with
 `'T.M` is resolved to either
 
 * A static abstract method when `'T` is constrained by an interface `I` and `M` is an accessible static abstract member of `I`.
-  These are processed as normal member calls.
+  These are processed as normal member calls, or
+  the most derived static method when interface `I` provides a default implementation of `M` (i.e. a virtual static method).
 
 
   ```fsharp
