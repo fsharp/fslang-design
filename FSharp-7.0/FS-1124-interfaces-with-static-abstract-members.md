@@ -57,6 +57,10 @@ type C() =
 
 Static abstract methods may not be declared in classes.
 
+Static abstract methods may not be called directly on interfaces.
+
+A static abstract interface member can be accessed only on a type parameter.
+
 ### Invoking constraint members
 
 The syntax of expressions is extended with
