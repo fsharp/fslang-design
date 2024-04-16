@@ -55,7 +55,7 @@ type C() =
          static member op_Addition(x: C, y: C) = C()
 ```
 
-Static abstract methods may not be declared in classes.
+Static abstract methods may not be declared in classes, abstract classes, or structs.
 
 Static virtual methods can be called directly on interfaces.
 
@@ -260,7 +260,7 @@ Object expressions may not be used to implement interfaces that contain static a
 
 ## Implementation slot signature inference
 
-Implementaton slot signature inference happens as for instance members.  For example:
+Implementation slot signature inference happens as for instance members.  For example:
 
 ```fsharp
 type IAdditionOperator<'T> =
