@@ -57,6 +57,8 @@ type C() =
 
 Static abstract methods may not be declared in classes.
 
+Static virtual methods can be called directly on interfaces.
+
 Static abstract methods may not be called directly on interfaces.
 
 A static abstract interface member can be accessed only on a type parameter.
