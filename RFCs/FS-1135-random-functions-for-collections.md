@@ -1,6 +1,6 @@
 # F# RFC FS-1135 - Random functions for collections (List, Array, Seq)
 
-The design suggestion [Add shuffle, sample etc. methods for lists, arrays etc](https://github.com/fsharp/fslang-suggestions/issues/508) has been marked "approved in principle".
+The design suggestion [Add shuffle, sample etc. methods for lists, arrays etc.](https://github.com/fsharp/fslang-suggestions/issues/508) has been marked "approved in principle".
 
 This RFC covers the detailed proposal for this suggestion.
 
@@ -8,11 +8,12 @@ This RFC covers the detailed proposal for this suggestion.
 - [x] Approved in principle
 - [ ] [Implementation]() (no implementation yet)
 - [ ] Design Review Meeting(s) with @dsyme and others invitees
-- [Discussion](https://github.com/fsharp/fslang-design/discussions/731)
+
+[Discussion](https://github.com/fsharp/fslang-design/discussions/731)
 
 # Summary
 
-This feature extends collections apis with functions for random sampling and shuffling built-in fsharp collections.
+This feature extends the collection apis with functions for random sampling and shuffling built-in fsharp collections.
 
 # Motivation
 
@@ -26,15 +27,15 @@ This feature is motivated by the following use cases:
 ### General
 
 The following general rules are applied to all functions
- - New functions should be implemented in List, Array, Seq modules
- - All functions should have a variant with a [Random](https://learn.microsoft.com/en-us/dotnet/api/system.random) parameter
- - Shared thread-safe Random instance should be used for all basic functions
+ - New functions should be implemented in `List`, `Array`, `Seq` modules
+ - Each function should have a variant that takes a [Random](https://learn.microsoft.com/en-us/dotnet/api/system.random) argument
+ - Custom shared thread-safe `Random` instance should be used for function without `Random` argument (since `Random.Shared` is only available since .NET 6)
 
 ### Shuffle
 
-Shuffle function should returned a new shuffled collection of the same collection type.
+The shuffle functions return a new collection of the same collection type and of the same size, with each item in a randomly mixed position. The chance to end up in any position is weighted evenly on the length of the collection.
 
-Two functions should be added to each module.
+The following functions will be added to each module.
 
 ```fsharp
 // Array module
@@ -49,7 +50,7 @@ val randomShuffleWith: random:Random -> list:'T list -> 'T list
 val randomShuffle: source:'T seq -> 'T seq
 val randomShuffleWith: random:Random -> source:'T seq -> 'T seq
 ```
-[ArgumentNullException](https://learn.microsoft.com/en-us/dotnet/api/system.argumentnullexception) should be raised if collection is null
+[ArgumentNullException](https://learn.microsoft.com/en-us/dotnet/api/system.argumentnullexception) is raised if collection is `null`, or if the `random` argument is `null`.
 
 Example:
 ```fsharp
@@ -59,9 +60,9 @@ let round1Order = allPlayers |> List.randomShuffle // [ "Charlie"; "Dave"; "Alic
 
 ### Choice
 
-Choice function should returned a random element from the collection.
+The choice functions return a single random element from the given collection. The random choice is weighted evenly on the size of the collection.
 
-Two functions should be added to each module.
+The following functions will be added to each module.
 
 ```fsharp
 // Array module
@@ -74,9 +75,9 @@ val randomChoiceWith: random:Random -> list:'T list -> 'T
 val randomChoice: source:'T seq -> 'T
 val randomChoiceWith: random:Random -> source:'T seq -> 'T
 ```
-[ArgumentNullException](https://learn.microsoft.com/en-us/dotnet/api/system.argumentnullexception) should be raised if collection is null
+[ArgumentNullException](https://learn.microsoft.com/en-us/dotnet/api/system.argumentnullexception) is raised if collection is `null`, or if the `random` argument is `null`.
 
-[ArgumentException](https://learn.microsoft.com/en-us/dotnet/api/system.argumentexception) should be raised if collection is empty
+[ArgumentException](https://learn.microsoft.com/en-us/dotnet/api/system.argumentexception) is raised if collection is empty.
 
 Example:
 ```fsharp
@@ -88,7 +89,7 @@ let round1Order = allPlayers |> List.randomChoice // "Charlie"
 
 Choices should select N elements from input collection in random order, once element is taken it can be selected again.
 
-Two functions should be added to each module.
+The following functions will be added to each module.
 
 ```fsharp
 // Array module
@@ -101,11 +102,11 @@ val randomChoicesWith: random:Random -> count:int -> list:'T list -> 'T list
 val randomChoices: count:int -> source:'T seq -> 'T seq
 val randomChoicesWith: random:Random -> count:int -> source:'T seq -> 'T seq
 ```
-[ArgumentNullException](https://learn.microsoft.com/en-us/dotnet/api/system.argumentnullexception) should be raised if collection is null
+[ArgumentNullException](https://learn.microsoft.com/en-us/dotnet/api/system.argumentnullexception) is raised if collection is `null`, or if the `random` argument is `null`.
 
-[ArgumentException](https://learn.microsoft.com/en-us/dotnet/api/system.argumentoutofrangeexception) should be raised if N is negative
+[ArgumentException](https://learn.microsoft.com/en-us/dotnet/api/system.argumentoutofrangeexception) is raised if N is negative.
 
-[ArgumentException](https://learn.microsoft.com/en-us/dotnet/api/system.argumentexception) should be raised if collection is empty
+[ArgumentException](https://learn.microsoft.com/en-us/dotnet/api/system.argumentexception) is raised if collection is empty.
 
 Example:
 ```fsharp
@@ -117,7 +118,7 @@ let round1Order = allPlayers |> List.randomChoices 3 // ["Bob", "Dave", "Bob"]
 
 Sample should select N elements from input collection in random order, once element is taken it won't be selected again. N can't be greater than collection length
 
-Two functions should be added to each module.
+The following functions will be added to each module.
 
 ```fsharp
 // Array module
@@ -130,11 +131,11 @@ val randomSampleWith: random:Random -> count:int -> list:'T list -> 'T list
 val randomSample: count:int -> source:'T seq -> 'T seq
 val randomSampleWith: random:Random -> count:int -> source:'T seq -> 'T seq
 ```
-[ArgumentNullException](https://learn.microsoft.com/en-us/dotnet/api/system.argumentnullexception) should be raised if collection is null
+[ArgumentNullException](https://learn.microsoft.com/en-us/dotnet/api/system.argumentnullexception) is raised if collection is `null`, or if the `random` argument is `null`.
 
-[ArgumentException](https://learn.microsoft.com/en-us/dotnet/api/system.argumentoutofrangeexception) should be raised if N is greater than collection length or is negative
+[ArgumentException](https://learn.microsoft.com/en-us/dotnet/api/system.argumentoutofrangeexception) is raised if N is greater than collection length or is negative.
 
-[ArgumentException](https://learn.microsoft.com/en-us/dotnet/api/system.argumentexception) should be raised if collection is empty
+[ArgumentException](https://learn.microsoft.com/en-us/dotnet/api/system.argumentexception) is raised if collection is empty.
 
 Example:
 ```fsharp
@@ -144,19 +145,17 @@ let round1Order = allPlayers |> List.randomSample 3 // ["Charlie", "Dave", "Alic
 
 # Drawbacks
 
-System.Random interface has added some new methods in [.NET 8](https://learn.microsoft.com/en-us/dotnet/core/whats-new/dotnet-8#methods-for-working-with-randomness), where naming is a bit different. More new methods can eventually be added in future .NET versions.
+Users may be tempted to use some of the recently added method of `System.Random` that also apply to collections instead of the ones we add in FSharp.Core. It may also be confusing to some, especially since the naming over there is slightly different. See [.NET 8 What's New](https://learn.microsoft.com/en-us/dotnet/core/whats-new/dotnet-8/runtime#methods-for-working-with-randomness).
 
 # Alternatives
 
-Use online snippets, or provide a nuget package.
+Not doing this.
 
 # Compatibility
 
-Please address all necessary compatibility questions:
-
-* Is this a breaking change? **No, unless user defined those extensions themselves**
-* What happens when previous versions of the F# compiler encounter this design addition as source code? **Should be fine**
-* What happens when previous versions of the F# compiler encounter this design addition in compiled binaries? **Should be fine**
+* Is this a breaking change? **No**
+* What happens when previous versions of the F# compiler encounter this design addition as source code? **Library function, not applicable**
+* What happens when previous versions of the F# compiler encounter this design addition in compiled binaries? **Library function, not applicable**
 * If this is a change or extension to FSharp.Core, what happens when previous versions of the F# compiler encounter this construct? **Will work as usual**
 
 # Pragmatics
@@ -179,18 +178,16 @@ Please list the reasonable expectations for tooling for this feature, including 
 * Colorization
 * Brace/parenthesis matching
 
-**Should work just like for other collections functions**
+**These will work just like for other collections functions**
 
 ## Performance
 
-Please list any notable concerns for impact on the performance of compilation and/or generated code
-
-* For existing code **Existing code should not be affected**
-* For the new features **Performance should be respected when implementing this feature, since it can be used in performance-sensitive scenaris**
+* For existing code **Existing code won't be affected**
+* For the new features **Performance should be respected when implementing this feature, since it can be used in performance-sensitive scenarios**
 
 ## Scaling
 
-Algorithmic complexity of the new features should be O(n) or less. 
+Algorithmic complexity of the new features should be O(n) for list and seq functions. O(1) for most array functions (except shuffle).
 
 ## Culture-aware formatting/parsing
 
@@ -198,9 +195,4 @@ N/A
 
 # Unresolved questions
 
-It's unclear, if more sophisticated overloads should be added:
- - Weights parameter for randomChoices function
- - Counts parameter for randomSample function
-
-~~In .NET 6 and higher [Random.Shared](https://learn.microsoft.com/en-us/dotnet/api/system.random.shared) is available, but as soon as F# Core only targets standard, it can't use it. Is targeting higher .NET possible (not just for this feature, maybe some others need it)?
-Same question about new [.NET 8 apis](https://learn.microsoft.com/en-us/dotnet/core/whats-new/dotnet-8#methods-for-working-with-randomness), they could be reused in theory~~
+N/A
