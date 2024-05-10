@@ -195,4 +195,4 @@ N/A
 
 # Unresolved questions
 
-N/A
+[Additional function suggested](https://github.com/fsharp/fslang-design/discussions/731#discussioncomment-9328918)
