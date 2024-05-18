@@ -29,6 +29,7 @@ This feature is motivated by the following use cases:
 The following general rules are applied to all functions
  - New functions should be implemented in `List`, `Array`, `Seq` modules
  - Each function should have a variant that takes a [Random](https://learn.microsoft.com/en-us/dotnet/api/system.random) argument
+ - Each function should have a variant that takes a custom `randomizer` function. This function should return a `float` value from `0..1` range sampled from the desired distribution.
  - Custom shared thread-safe `Random` instance should be used for function without `Random` argument (since `Random.Shared` is only available since .NET 6)
 
 ### Shuffle
@@ -41,16 +42,22 @@ The following functions will be added to each module.
 // Array module
 val randomShuffle: array:'T[] -> 'T[]
 val randomShuffleWith: random:Random -> array:'T[] -> 'T[]
+val randomShuffleBy: randomizer: (unit -> float) -> array:'T[] -> 'T[]
 val randomShuffleInPlace: array:'T[] -> 'T[]
 val randomShuffleInPlaceWith: random:Random -> array:'T[] -> 'T[]
+val randomShuffleInPlaceBy: randomizer: (unit -> float) -> array:'T[] -> 'T[]
 // List module
 val randomShuffle: list:'T list -> 'T list
 val randomShuffleWith: random:Random -> list:'T list -> 'T list
+val randomShuffleBy: randomizer: (unit -> float) -> list:'T list -> 'T list
 // Seq module
 val randomShuffle: source:'T seq -> 'T seq
 val randomShuffleWith: random:Random -> source:'T seq -> 'T seq
+val randomShuffleBy: randomizer: (unit -> float) -> source:'T seq -> 'T seq
 ```
 [ArgumentNullException](https://learn.microsoft.com/en-us/dotnet/api/system.argumentnullexception) is raised if collection is `null`, or if the `random` argument is `null`.
+
+[ArgumentOutOfRangeException](https://learn.microsoft.com/en-us/dotnet/api/system.argumentoutofrangeexception) is raised if randomizer returns a value outside the `0..1` range.
 
 Example:
 ```fsharp
@@ -68,16 +75,21 @@ The following functions will be added to each module.
 // Array module
 val randomChoice: array:'T[] -> 'T
 val randomChoiceWith: random:Random -> array:'T[] -> 'T
+val randomChoiceBy: randomizer: (unit -> float) -> array:'T[] -> 'T
 // List module
 val randomChoice: list:'T list -> 'T
 val randomChoiceWith: random:Random -> list:'T list -> 'T
+val randomChoiceBy: randomizer: (unit -> float) -> list:'T list -> 'T
 // Seq module
 val randomChoice: source:'T seq -> 'T
 val randomChoiceWith: random:Random -> source:'T seq -> 'T
+val randomChoiceBy: randomizer: (unit -> float) -> source:'T seq -> 'T
 ```
 [ArgumentNullException](https://learn.microsoft.com/en-us/dotnet/api/system.argumentnullexception) is raised if collection is `null`, or if the `random` argument is `null`.
 
 [ArgumentException](https://learn.microsoft.com/en-us/dotnet/api/system.argumentexception) is raised if collection is empty.
+
+[ArgumentOutOfRangeException](https://learn.microsoft.com/en-us/dotnet/api/system.argumentoutofrangeexception) is raised if randomizer returns a value outside the `0..1` range.
 
 Example:
 ```fsharp
@@ -95,18 +107,23 @@ The following functions will be added to each module.
 // Array module
 val randomChoices: count:int -> array:'T[] -> 'T[]
 val randomChoicesWith: random:Random -> count:int -> array:'T[] -> 'T[]
+val randomChoicesBy: randomizer: (unit -> float) -> count:int -> array:'T[] -> 'T[]
 // List module
 val randomChoices: count:int -> list:'T list -> 'T list
 val randomChoicesWith: random:Random -> count:int -> list:'T list -> 'T list
+val randomChoicesBy: randomizer: (unit -> float) -> count:int -> list:'T list -> 'T list
 // Seq module
 val randomChoices: count:int -> source:'T seq -> 'T seq
 val randomChoicesWith: random:Random -> count:int -> source:'T seq -> 'T seq
+val randomChoicesBy: randomizer: (unit -> float) -> count:int -> source:'T seq -> 'T seq
 ```
 [ArgumentNullException](https://learn.microsoft.com/en-us/dotnet/api/system.argumentnullexception) is raised if collection is `null`, or if the `random` argument is `null`.
 
 [ArgumentException](https://learn.microsoft.com/en-us/dotnet/api/system.argumentoutofrangeexception) is raised if N is negative.
 
 [ArgumentException](https://learn.microsoft.com/en-us/dotnet/api/system.argumentexception) is raised if collection is empty.
+
+[ArgumentOutOfRangeException](https://learn.microsoft.com/en-us/dotnet/api/system.argumentoutofrangeexception) is raised if randomizer returns a value outside the `0..1` range.
 
 Example:
 ```fsharp
@@ -124,18 +141,22 @@ The following functions will be added to each module.
 // Array module
 val randomSample: count:int -> array:'T[] -> 'T[]
 val randomSampleWith: random:Random -> count:int -> array:'T[] -> 'T[]
+val randomSampleBy: randomizer: (unit -> float) -> count:int -> array:'T[] -> 'T[]
 // List module
 val randomSample: count:int -> list:'T list -> 'T list
 val randomSampleWith: random:Random -> count:int -> list:'T list -> 'T list
 // Seq module
 val randomSample: count:int -> source:'T seq -> 'T seq
 val randomSampleWith: random:Random -> count:int -> source:'T seq -> 'T seq
+val randomSampleBy: randomizer: (unit -> float) -> count:int -> source:'T seq -> 'T seq
 ```
 [ArgumentNullException](https://learn.microsoft.com/en-us/dotnet/api/system.argumentnullexception) is raised if collection is `null`, or if the `random` argument is `null`.
 
 [ArgumentException](https://learn.microsoft.com/en-us/dotnet/api/system.argumentoutofrangeexception) is raised if N is greater than collection length or is negative.
 
 [ArgumentException](https://learn.microsoft.com/en-us/dotnet/api/system.argumentexception) is raised if collection is empty.
+
+[ArgumentOutOfRangeException](https://learn.microsoft.com/en-us/dotnet/api/system.argumentoutofrangeexception) is raised if randomizer returns a value outside the `0..1` range.
 
 Example:
 ```fsharp
@@ -195,4 +216,4 @@ N/A
 
 # Unresolved questions
 
-[Additional function suggested](https://github.com/fsharp/fslang-design/discussions/731#discussioncomment-9328918)
+N/A
