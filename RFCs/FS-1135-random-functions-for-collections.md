@@ -29,7 +29,7 @@ This feature is motivated by the following use cases:
 The following general rules are applied to all functions
  - New functions should be implemented in `List`, `Array`, `Seq` modules
  - Each function should have a variant that takes a [Random](https://learn.microsoft.com/en-us/dotnet/api/system.random) argument
- - Each function should have a variant that takes a custom `randomizer` function. This function should return a `float` value from `0..1` range sampled from the desired distribution.
+ - Each function should have a variant that takes a custom `randomizer` function. This function should return a `float` value that is greater than or equal to `0.0`, and less than `1.0`, like [Random.NextDouble](https://learn.microsoft.com/en-us/dotnet/api/system.random.nextdouble)).
  - Custom shared thread-safe `Random` instance should be used for function without `Random` argument (since `Random.Shared` is only available since .NET 6)
 
 ### Shuffle
@@ -57,7 +57,7 @@ val randomShuffleBy: randomizer: (unit -> float) -> source:'T seq -> 'T seq
 ```
 [ArgumentNullException](https://learn.microsoft.com/en-us/dotnet/api/system.argumentnullexception) is raised if collection is `null`, or if the `random` argument is `null`.
 
-[ArgumentOutOfRangeException](https://learn.microsoft.com/en-us/dotnet/api/system.argumentoutofrangeexception) is raised if randomizer returns a value outside the `0..1` range.
+[ArgumentOutOfRangeException](https://learn.microsoft.com/en-us/dotnet/api/system.argumentoutofrangeexception) is raised if the `randomizer` function returns a `float` value that is less than `0.0` or greater or equal to `1.0`.
 
 Example:
 ```fsharp
@@ -89,7 +89,7 @@ val randomChoiceBy: randomizer: (unit -> float) -> source:'T seq -> 'T
 
 [ArgumentException](https://learn.microsoft.com/en-us/dotnet/api/system.argumentexception) is raised if collection is empty.
 
-[ArgumentOutOfRangeException](https://learn.microsoft.com/en-us/dotnet/api/system.argumentoutofrangeexception) is raised if randomizer returns a value outside the `0..1` range.
+[ArgumentOutOfRangeException](https://learn.microsoft.com/en-us/dotnet/api/system.argumentoutofrangeexception) is raised if the `randomizer` function returns a `float` value that is less than `0.0` or greater or equal to `1.0`.
 
 Example:
 ```fsharp
@@ -123,7 +123,7 @@ val randomChoicesBy: randomizer: (unit -> float) -> count:int -> source:'T seq -
 
 [ArgumentException](https://learn.microsoft.com/en-us/dotnet/api/system.argumentexception) is raised if collection is empty.
 
-[ArgumentOutOfRangeException](https://learn.microsoft.com/en-us/dotnet/api/system.argumentoutofrangeexception) is raised if randomizer returns a value outside the `0..1` range.
+[ArgumentOutOfRangeException](https://learn.microsoft.com/en-us/dotnet/api/system.argumentoutofrangeexception) is raised if the `randomizer` function returns a `float` value that is less than `0.0` or greater or equal to `1.0`.
 
 Example:
 ```fsharp
@@ -156,7 +156,7 @@ val randomSampleBy: randomizer: (unit -> float) -> count:int -> source:'T seq ->
 
 [ArgumentException](https://learn.microsoft.com/en-us/dotnet/api/system.argumentexception) is raised if collection is empty.
 
-[ArgumentOutOfRangeException](https://learn.microsoft.com/en-us/dotnet/api/system.argumentoutofrangeexception) is raised if randomizer returns a value outside the `0..1` range.
+[ArgumentOutOfRangeException](https://learn.microsoft.com/en-us/dotnet/api/system.argumentoutofrangeexception) is raised if the `randomizer` function returns a `float` value that is less than `0.0` or greater or equal to `1.0`.
 
 Example:
 ```fsharp
