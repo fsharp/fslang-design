@@ -183,23 +183,11 @@ Not doing this.
 
 ## Diagnostics
 
-Please list the reasonable expectations for diagnostics for misuse of this feature. **I don't see a way to misuse it**
+There are no known diagnostics on any abuse or misuse of this feature.
 
 ## Tooling
 
-Please list the reasonable expectations for tooling for this feature, including any of these:
-
-* Debugging
-    * Breakpoints/stepping
-    * Expression evaluator
-    * Data displays for locals and hover tips
-* Auto-complete
-* Tooltips
-* Navigation and Go To Definition
-* Colorization
-* Brace/parenthesis matching
-
-**These will work just like for other collections functions**
+N/A, this is an F# Core library addition.
 
 ## Performance
 
