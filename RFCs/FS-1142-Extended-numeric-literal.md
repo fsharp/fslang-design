@@ -107,6 +107,7 @@ Make the language more consistent and easier to read. Enhance the custom numeric
 # Alternatives
 
 - For number prefix (`0x`, `0o`, `0b`) before integer custom numeric literals, we might introduce a new `FromIntegerString` to avoid the break change.
+- Or firstly parse it to `bigint` then `ToString` to obtain a literal without prefix.
 
 # Compatibility
 
@@ -133,4 +134,4 @@ Please list the reasonable expectations for tooling for this feature, including 
 
 # Unresolved questions
 
-- Should we introduce a new `FromIntegerString`?
+- Should we introduce a new `FromIntegerString` or use any way to remove number prefix from custom integer literal string passed to `FromString`?
