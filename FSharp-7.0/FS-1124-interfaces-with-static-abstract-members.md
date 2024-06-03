@@ -359,7 +359,7 @@ The following summarises the well-known drawbacks of these features, based on th
 
 > As an aside, for F# SRTP code, the degree of genericity is automically computed. For IWSAMs, in type-inferred languages with HM-type inference adjusting the amount of genericity is relatively simple. But the contested nature of generic code is still not productive outside of framework design.
 
-**Compiler and tooling slow-downs on large interface lists.**  For the specific case of IWSAMs, the presence of enormous generic interface lists can cause compiler slow-down. No one ever expected such lists of interfaces in .NET, this is a volcano of hidden complexity lying under the simple type `double` or `decimal`.
+**Compiler and tooling slow-downs on large interface lists.**  For the specific case of IWSAMs, the presence of enormous generic interface lists can cause compiler slow-down. No one ever expected such lists of interfaces in .NET, this is a volcano of hidden complexity lying under the simple type `double` or `decimal`. [3/6/2024: as prophesized, an example of how this feature led to this in real life can be seen [here](https://github.com/fsprojects/Fleece/issues/146)]
 
 To show that the above drawbacks are not imagined, consider the `System.Double` type in .NET 7. This now has the following list of interfaces:
 ```csharp
