@@ -1261,7 +1261,7 @@ It is possible that a future release will only make this feature non-preview wit
 There are many alternatives possible with regard to relatively small decisions, for example
 
 * Naming
-* Whether the `__resumeAt` construct is explcit at all at the start of `MoveNext` methods
+* Whether the `__resumeAt` construct is explicit at all at the start of `MoveNext` methods
 * Whether the `__stateMachine` construct is a new language construct or, as in this design, is a compiler-special construct built out of existing syntax.
 * many others
 

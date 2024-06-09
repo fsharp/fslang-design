@@ -49,7 +49,7 @@ match enum<E> 0 with
 | UnknownEnum x -> sprintf "Unknown case: %d" x // Unknown case: 0
 ```
 
-The warning message for incomplete matches on an enum value will be updated to explcitly guide the user to add an UnknownEnum case. Otherwise no one will ever know to use this.
+The warning message for incomplete matches on an enum value will be updated to explicitly guide the user to add an UnknownEnum case. Otherwise no one will ever know to use this.
 
 To support dynamically invoking this active pattern, e.g. through reflection, a dynamic implementation will be provided in FSharp.Core.
 
