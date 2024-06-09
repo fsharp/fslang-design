@@ -192,7 +192,7 @@ with
 This solution has the following caveats:
 
 1. This only improves debug user code that is compiled with tailcalls off.
-2. This improves the debugging experience for **first throw of exceptions** and the **synchronous** parts of asynchrounous code.
+2. This improves the debugging experience for **first throw of exceptions** and the **synchronous** parts of asynchronous code.
 3. The stack is still lost if:
 
     * The "trampoline" has been used, which happens every 300 executions of a bind on a stack of when any exception is raised (even if it is caught).
