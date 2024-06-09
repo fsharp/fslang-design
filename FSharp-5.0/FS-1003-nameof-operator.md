@@ -271,7 +271,7 @@ module rec M =
     let [<Literal>] OtherTag = nameof OtherTag
 ```
 
-However, this is not possible in the current implementation due to deficiences in processing literal values recursively. The work for this is tracked in the following language suggestion: https://github.com/fsharp/fslang-suggestions/issues/889
+However, this is not possible in the current implementation due to deficiencies in processing literal values recursively. The work for this is tracked in the following language suggestion: https://github.com/fsharp/fslang-suggestions/issues/889
 
 ## Alternatives
 
