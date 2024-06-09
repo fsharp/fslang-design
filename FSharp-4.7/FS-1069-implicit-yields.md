@@ -115,10 +115,10 @@ discarded (the expression is treated like a statement).
 There is still a (presumably very rare) backwards compat concern for cases where values are currently
 being ignored/discarded *and* the  list/array/sequence/computations only uses `yield!`.  For example
 
-    [ doSomethingThatReturnsAValueButCurrentlyDicardsIt(); yield! someThingsToYield() ] 
+    [ doSomethingThatReturnsAValueButCurrentlyDiscardsIt(); yield! someThingsToYield() ] 
 
 In this case, implicit yields are activated because there is no explicit `yield`.  However the
-expression `doSomethingThatReturnsAValueButCurrentlyDicardsIt()` would now be interpreted as a yield.  This is
+expression `doSomethingThatReturnsAValueButCurrentlyDiscardsIt()` would now be interpreted as a yield.  This is
 likely to give rise to a type error (it's unlikely that the function returns the same element type as `someThingsToYield()`),
 but if there is no type error it will yield an additional element.
 
