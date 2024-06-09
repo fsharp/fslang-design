@@ -24,7 +24,7 @@ From F# 2.0 to the initial versions of F# 4.1, the rules applied was:
 ###### F# 4.1 after the breaking change (VS2017 15.4-15.5)
 
 This led to some inconsistencies where tuple types that the user thinks of as "equivalent" when they flow in to F#
-via C# libraries  become non-equicalent when written explicitly in  F#. As a result a [change](https://github.com/dotnet/fsharp/pull/3283) was made to give the rule
+via C# libraries  become non-equivalent when written explicitly in  F#. As a result a [change](https://github.com/dotnet/fsharp/pull/3283) was made to give the rule
 
 >  Occurrences of ``System.Tuple<t,t2>`` and other .NET tuple types are always decompiled to F# tuple types regardless of whether they occur in .NET metadata or F# source code.
 >
