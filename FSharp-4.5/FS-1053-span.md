@@ -225,7 +225,7 @@ let test() =
     let addr : byref<int> = &f()
     addr <- addr + 1
 ```
-Hwoever it specifically doesn't apply to:
+However it specifically doesn't apply to:
 
 * the `&` operator itself
 
