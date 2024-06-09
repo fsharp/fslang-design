@@ -266,10 +266,10 @@ Here is a standalone repro reduced substantially, and where many types are made 
 let inline InvokeMap (mapping: ^F) (source: ^I) : ^R =  
     ((^I or ^R) : (static member Map : ^I * ^F ->  ^R) source, mapping)
 
- // A similated collection
+ // A simulated collection
 type Coll<'T>() =
 
-    // A similated 'Map' witness
+    // A simulated 'Map' witness
     static member Map (source: Coll<'a>, mapping: 'a->'b) : Coll<'b> = new Coll<'b>()
 ```
 Now consider this generic inline code:
