@@ -550,7 +550,7 @@ There are advantages to this approach, namely simplicity and familiarity for the
 Most programmers now grow up with the expectation that all declarations within
 a C# assembly or Java package can be mutually referential.  Anecdotal
 evidence supports the claim that some C# and Java developers reject F# because it requires
-declaration ordering, though many who perservere come to love that feature.
+declaration ordering, though many who persevere come to love that feature.
 
 However, there are reasons why full-assembly-recursion, by itself, would a problematic addition for F#, even if optional:
 * If implemented in isolation, it would be seem to change a key characteristic of F# coding (the avoidance of spaghetti frameworks). 
