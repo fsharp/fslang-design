@@ -73,7 +73,7 @@ let subset = {| data with- Z; W |}
 // val subset: {| X: int; Y: string |}
 ```
 
-Excluding 1 label does not require specifying a semicolon. Excluding 2 more more labels does.
+Excluding 1 label does not require specifying a semicolon. Excluding 2 more labels does.
 
 ## Interaction with `with`
 
