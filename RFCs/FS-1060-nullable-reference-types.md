@@ -361,7 +361,7 @@ let example1 (str: string) : string | null =
     | "" -> null
     | _ -> str
 ```
-checks correctly - the known type is `string | null` and the actual type of `str` is `string | null`.  However the non-type-annoted version
+checks correctly - the known type is `string | null` and the actual type of `str` is `string | null`.  However the non-type-annotated version
 ```fsharp
 let example1 (str: string) =
     match str with
