@@ -188,7 +188,7 @@ See also [this part of the discussion thread](https://github.com/fsharp/fslang-d
 
    Response: Too intrusive, too radical
 
-4. Wait for some other people in .NET land to formulate a notion of a "dyanmic package", its dependencies etc. and use that.  Or try to utilize an existing dynamic package composition framework.  Both seem overkill and wrong for F#.  Ideally, .NET would come with a notion of a "dynamic package" which could include sufficient rules for the selection of a component suitable for a runtime host, but to my knowlege that is not as yet the case.
+4. Wait for some other people in .NET land to formulate a notion of a "dynamic package", its dependencies etc. and use that.  Or try to utilize an existing dynamic package composition framework.  Both seem overkill and wrong for F#.  Ideally, .NET would come with a notion of a "dynamic package" which could include sufficient rules for the selection of a component suitable for a runtime host, but to my knowlege that is not as yet the case.
 
 5. Require that all TPDTC components be .NET Standard 2.0 (and no more).
 
