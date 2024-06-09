@@ -132,7 +132,7 @@ given type `inref<_>`.  Together with other rules this means `inref<'T>` also im
 
 By the type inference rules above, a `byref<'T>` may be used where an `inref<'T>` is expected.
 
-For methods and properties on F# value types, the F# value type `this` paramater
+For methods and properties on F# value types, the F# value type `this` parameter
 is given type `inref<'T>` if the value type is considered immutable (has no mutable fields and no mutable sub-structs).
 
 #### `outref<T>` for output reference parameters
