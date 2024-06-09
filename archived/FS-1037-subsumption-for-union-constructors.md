@@ -46,7 +46,7 @@ but given a
 # Motivation
 [motivation]: #motivation
 
-The above error message is very confusing since an `int list` is a subset of `seq<int>`. Furthermore, this issue is specific to the Union Constructor. A regular function deals with flexible types in the above manner with no issues. For example, a function that is an alias of the Union Constructor has no problem with the above scenario, which makes the limitationr ather awkward.
+The above error message is very confusing since an `int list` is a subset of `seq<int>`. Furthermore, this issue is specific to the Union Constructor. A regular function deals with flexible types in the above manner with no issues. For example, a function that is an alias of the Union Constructor has no problem with the above scenario, which makes the limitation rather awkward.
 
 # Detailed design
 [design]: #detailed-design
