@@ -472,7 +472,7 @@ For example, `__resumeAt` corresponds either to a `goto` (for a known label) or 
 start of a method).
 
 If a `ResumableCode` expression is determined to be valid resumable code, then the semantics of the
-method or function hosting the resumable code is detemined by the following:
+method or function hosting the resumable code is determined by the following:
 
 1. All implementations are inlined under the static assumption `__useResumableCode` is true.
 
