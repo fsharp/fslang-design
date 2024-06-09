@@ -290,7 +290,7 @@ The characteristics are
    and the return types known.  The process of generalizing the function makes the type variable `'a` rigid (generalized).  The
    member constraints are then solved via weak resolution in the final phase of inference, and the return type of `InvokeMap`
    is determined to be a `ZipList`, and the `'a` variable now requires an addition operator.  Because the code has already
-   been generalized the process of asserting this constraint fails with an obscure error messsage.
+   been generalized the process of asserting this constraint fails with an obscure error message.
 
 ### Workarounds
 
