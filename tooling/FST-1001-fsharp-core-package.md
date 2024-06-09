@@ -229,7 +229,7 @@ are somewhat orthogonal to the package structure and delivery. See [this comment
 * At what point does the ``FSharp.Core`` package drop the inclusion of PCL versions of FSharp.Core (as mentioned above, PCL library development will still always be available by referencing older versions of the package)
   - Answer: when support for .NET Standard package references is widespread, stable and fully accepted
 
-* At what point does the ``FSharp.Core`` package drop the inclusion of Xamarin-specific versions of FSharp.Core (as mentioned above, Xamaring library development will still always be possible by referencing older versions of the package)
+* At what point does the ``FSharp.Core`` package drop the inclusion of Xamarin-specific versions of FSharp.Core (as mentioned above, Xamarin library development will still always be possible by referencing older versions of the package)
   - Answer: when Xamarin no longer needs these
 
 ### Open Questions (Proposal B)
