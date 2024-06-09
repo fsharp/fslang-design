@@ -192,7 +192,7 @@ See also [this part of the discussion thread](https://github.com/fsharp/fslang-d
 
 5. Require that all TPDTC components be .NET Standard 2.0 (and no more).
 
-   Response: This is consdidered too draconian, though will be very common in practice.  Even if we did this we would still need better rules to locate the TPDTC from the TPRTC reference.
+   Response: This is considered too draconian, though will be very common in practice.  Even if we did this we would still need better rules to locate the TPDTC from the TPRTC reference.
 
 6. Look in architecture folders x86/x64
 

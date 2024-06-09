@@ -115,7 +115,7 @@ type MyStructGenericWithNoConstraint<'T>(x: 'T, y: 'T) =
     member _.X = x
     member _.Y = y
 
-// Can be considerd unmanaged, as long as 'T is unmanaged.
+// Can be considered unmanaged, as long as 'T is unmanaged.
 // Note, that despite constructor having managed argument (obj), it is not used as part of the backing field.
 [<Struct>]
 type MyStructGenericWithUnusedUnmanagedParameter<'T>(x: 'T, y: 'T, z: obj) =
