@@ -12,7 +12,7 @@ This RFC defines the support for extension method and type extension in overload
 
 # Motivation
 
-Up to F# 8.0, there is no support for calling the extension method or type extensions if a type exposes a property with the same name, forcing the use of work arounds when consuming C# libraries leveraging this idiom.
+Up to F# 8.0, there is no support for calling the extension method or type extensions if a type exposes a property with the same name, forcing the use of workarounds when consuming C# libraries leveraging this idiom.
 
 The feature enables support for Linq members such as Count on types that have a Count property:
 
