@@ -44,7 +44,7 @@ extension SDK to the Microsoft.NET.Sdk, bundled with the .NET CLI Tools through 
 
 * Minimal disruption and alteration to the Microsoft.NET.Sdk code.  (This implies some rejigging of the pieces of the FSharp.NET.Sdk implementation)
 
-* The tooling can be pointed to an updated F# compiler, e.g. a compiler deliverd via the
+* The tooling can be pointed to an updated F# compiler, e.g. a compiler delivered via the
   FSharp.Compiler.Tools package, see [this comment](https://github.com/dotnet/sdk/pull/1172#issuecomment-299280631) for example.
 
 
