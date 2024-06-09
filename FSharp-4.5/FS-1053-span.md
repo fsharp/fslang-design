@@ -329,7 +329,7 @@ Using `IsReadOnly` attribute on a struct which has a mutable field will give an 
 "ByRefLike" structs are stack-bound types with rules like `byref<_>` and `Span<_>`.
 They declare struct types that are never allocated on the heap. These are
 useful for high-performance programming as you get a set of strong checks
-about the lifetimes and non-capture of these values. They are also potetnially useful for correctness
+about the lifetimes and non-capture of these values. They are also potentially useful for correctness
 in some situations where capture must be avoided.
 
 * Can be used as function parameters, method parameters, local variables, method returns
