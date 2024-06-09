@@ -33,7 +33,7 @@ Unreserve the following keywords:
     eager - this is no longer needed, it was initially designed to be "let eager" to match a potential "let lazy"
     object  - there is no need to reserve this
     recursive  - F# is happy using "rec"
-    functor  - If F# added parametereized modules, we would use "module M(args) = ..."
+    functor  - If F# added parameterized modules, we would use "module M(args) = ..."
     measure  - There is no specific reason to reserve this these days, the [<Measure>] attribute suffices
     volatile - There is no specific reason to reserve this these days, the [<Volatile>] attribute suffices
 
