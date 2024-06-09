@@ -118,7 +118,7 @@ f2 (Some (B() :> _)
 
 The requirement to make upcasts is surprising and counter-intuitive (though comes with benefits see 'Drawbacks').
 
-There are several existing techniques in the F# language to reduce the occurence of upcasts and to ensure resulting code is as general
+There are several existing techniques in the F# language to reduce the occurrence of upcasts and to ensure resulting code is as general
 as possible.  These include:
 
 - Condensation and decondensation of function types each time a function or method value is used,
