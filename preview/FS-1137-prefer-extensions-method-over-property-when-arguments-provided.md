@@ -57,11 +57,11 @@ The feature won't enable resolving those extension methods / type extensions in 
 
 ## Support for type extension
 
-The reasonning for also supporting type extensions (which C# does not support/are F# specific) is to keep extension methods and methods defined in a type extension conceptually identical from standpoint of F# consumer.
+The reasoning for also supporting type extensions (which C# does not support/are F# specific) is to keep extension methods and methods defined in a type extension conceptually identical from standpoint of F# consumer.
 
 ## Support for static properties
 
-The reasonning for also supporting shadowing of static properties is to avoid introducing disparity against instance and static properties and the ability to use shadowing through type extensions (there is no such thing as extension method seen as static member).
+The reasoning for also supporting shadowing of static properties is to avoid introducing disparity against instance and static properties and the ability to use shadowing through type extensions (there is no such thing as extension method seen as static member).
 
 ## Implementation details
 
