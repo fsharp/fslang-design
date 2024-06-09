@@ -916,7 +916,7 @@ let len2v (input1: int | null) (input2: int | null) =
     | v1, v2 -> v1 + v2
 ```
 
-Plus parallel value-type versions of these functions are required because of the limiation for generic code mentioned above.
+Plus parallel value-type versions of these functions are required because of the limitation for generic code mentioned above.
 
 ```fsharp
 /// Get the null value for a nullable value type.
