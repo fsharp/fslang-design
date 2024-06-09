@@ -90,7 +90,7 @@ Due to the idiom of indexed property not being possible to express in C#, and th
 ## The features renders obsolete the lack of support for intrinsic methods of same name as a property
 
 In terms of language design, beside subtleties in overload resolution pertaining to methods, there is little reasons to distinguish intrinsic methods versus extension methods or methods defined in type extensions. Yet, C#, VB.NET and F# still preclude for methods to be defined with the same name as a property, despite:
-* they can't bear the same name in the IL (properties have a `get_` or `set_` prefix addorned to the IL methods implementation of getter and setter)
+* they can't bear the same name in the IL (properties have a `get_` or `set_` prefix adorned to the IL methods implementation of getter and setter)
 * they can be defined as extension methods in C# & VB.NET, and in F# with this feature, as method in type extension and extension methods
 
 It may make sense to lift this restriction in case C# moves in this direction.
