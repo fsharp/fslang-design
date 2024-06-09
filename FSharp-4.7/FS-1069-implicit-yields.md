@@ -122,7 +122,7 @@ expression `doSomethingThatReturnsAValueButCurrentlyDiscardsIt()` would now be i
 likely to give rise to a type error (it's unlikely that the function returns the same element type as `someThingsToYield()`),
 but if there is no type error it will yield an additional element.
 
-The intitial working assumption is that such cases will be extraordinarily rare - given that the code reports a warning today.
+The initial working assumption is that such cases will be extraordinarily rare - given that the code reports a warning today.
 For this reason, in the balance it seems ok to change the interpretation of these cases, subject to
 a `/langversion:5.0` flag.
 

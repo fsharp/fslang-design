@@ -146,7 +146,7 @@ The following steps are proposed for the next few months, until about September 
 
 4. ``FSharp.Core.netstandard`` is pre-loaded as a part of dotnet SDK tooling, making some degree of offline development possible.
 
-5. The default build logic for the intial set of F# project templates in the dotnet SDK will be to have a dependency only the ``FSharp.Core.netstandard``
+5. The default build logic for the initial set of F# project templates in the dotnet SDK will be to have a dependency only the ``FSharp.Core.netstandard``
    package.  It will, however, be possible to add ``FSharp.Core`` or other packages as a dependency instead.
 
 Library authors will have a choice of depending on ``FSharp.Core``(unified, fat), ``FSharp.Core.netstandard`` (minimal, needs some thought) or  ``FSharp.Core.netfx`` (not quite minimal, needs some thought) as their FSharp.Core package reference.
