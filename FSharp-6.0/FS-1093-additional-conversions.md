@@ -192,7 +192,7 @@ on the expression.  For the following, it is propagated before:
 
 For other expressions, the overall type is propagated after checking.
 
-When an overall type `overallTy` is propagated to an expresson with type `exprTy` and the "must convert to" flag is set, and
+When an overall type `overallTy` is propagated to an expression with type `exprTy` and the "must convert to" flag is set, and
 `overallTy` doesn't unify with `exprTy`, then a type-directed conversion is attempted by:
 
 1. Trying to add a coercion constraint from `exprTy :> overallTy`. If this succeeds, a coercion operation is added to the elaborated expression.

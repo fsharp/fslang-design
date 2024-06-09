@@ -66,7 +66,7 @@ This change allows updating nested fields, using dot notation, within one copy a
 let anotherPerson = { person with A.S.N = "1" }
 ````
 
-Multiple fields with differing levels of nesting can be updated within the same expersssion.
+Multiple fields with differing levels of nesting can be updated within the same expression.
 
 ````fsharp
 let anotherPerson = { person with A.S.N = "1"; Age = 1; }

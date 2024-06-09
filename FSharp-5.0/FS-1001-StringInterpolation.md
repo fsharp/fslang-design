@@ -10,7 +10,7 @@ There is an approved-in-principle [proposal](http://fslang.uservoice.com/forums/
 
 ### Summary
 
-A new expresssion form called an interpolated string is added. 
+A new expression form called an interpolated string is added. 
 
 ```fsharp
 let x = 1

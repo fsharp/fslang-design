@@ -66,7 +66,7 @@ The design philosophy is as follows:
 
 3. The F# metadata format is unchanged. Like `nameof` and other F# features,
    resumable state machines are encoded within existing TypedTree constructs using a combination of known compiler intrinsics
-   and TypedTree expresions.
+   and TypedTree expressions.
 
 4. We treat this as a compiler feature. The actual feature is barely surfaced
    as a language feature, but is rather a set of idioms known to the F# compiler, together used to build efficient computation
