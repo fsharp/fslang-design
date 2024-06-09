@@ -77,7 +77,7 @@ and [<TailCall>] baz x =
 [alternatives]: #alternatives
 
 * Use the reserved `tailcall` keyword rather than an attribute
-* Apply the inspection to all recusive functions
+* Apply the inspection to all recursive functions
 
 # Unresolved questions
 [unresolved]: #unresolved-questions

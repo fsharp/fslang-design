@@ -376,7 +376,7 @@ module rec Tests
 
 let mutable x = 0
 ```
-will give an error ``error FS0874: reecursive 'let' bindings may be marked mutable.  
+will give an error ``error FS0874: recursive 'let' bindings may be marked mutable.  
 
 Technically speaking, we could no doubt allow this.  However, it should be treated as an issue orthogonal to this feature.
 
