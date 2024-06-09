@@ -149,7 +149,7 @@ namespace MyLibrary.Core
 
     open System
 
-    /// <summary>Thisis a good type.</summary>
+    /// <summary>This is a good type.</summary>
     ///
     /// <note>Thanks to Joe for this type.</note>
     ///
