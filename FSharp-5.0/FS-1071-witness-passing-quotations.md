@@ -186,7 +186,7 @@ This PR shifts us to use witness passing.   That is,
 
 2. You can access this information via the new `Quotations.Patterns.CallWithWitnesses` active pattern, and reconstruct the node using `Quotations.Expr.CallWithWitnesses`.
 
-3. The compiled method signature for each SRTP-constrained generic inlined function has one extra argument for each SRTP constraint. This is in a new method with a new distinguished suffic to the name.
+3. The compiled method signature for each SRTP-constrained generic inlined function has one extra argument for each SRTP constraint. This is in a new method with a new distinguished suffix to the name.
 
 4. The emitted IL for each SRTP-constrained generic inlined function either passes the necessary witnesses, and now never emits the `NotSupportedException` code.
 
