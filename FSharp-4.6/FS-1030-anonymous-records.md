@@ -76,7 +76,7 @@ In theory F# developers will expect two contradictory things:
 
 (a) **It Just Works across assembly boundaries**. That is, type identity for anonymous types will, by default, be assembly neutral. So ``{| X:int; Y: int |}`` in one assembly will be type equivalent to the same type when used in another assembly
 
-(b) **It Just Works with .NET Reflection, ``sprintf "%A"``, Json.NET and other features.** That is, the implied runtime types of the objects have .NET metadata, i.e. the runtime objects/types correspdonding to anonymous record values/types will have .NET metadata (like F# nominal record types).
+(b) **It Just Works with .NET Reflection, ``sprintf "%A"``, Json.NET and other features.** That is, the implied runtime types of the objects have .NET metadata, i.e. the runtime objects/types corresponding to anonymous record values/types will have .NET metadata (like F# nominal record types).
 
 Unfortunately .NET provides no mechanism to achieve both of these, i.e. there is no .NET mechanism to make types both have "strong" .NET metadata and be equivalent across assembly boundaries.
 
