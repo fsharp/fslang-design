@@ -81,7 +81,7 @@ A literal `{` or `}` character, paired or not, must be escaped (by doubling) in 
 Expression fills for single-quote or verbatim interpolation strings **may not** include further string literals.
 Expression fills for triple-quote interpolation strings **may** include single quote or verbatim string literals but not triple-quote literals.
    
-Byte strings, such as `"abc"B` do not support interoplation.
+Byte strings, such as `"abc"B` do not support interpolation.
 
 An interpolation string is checked as:
 
