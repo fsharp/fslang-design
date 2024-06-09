@@ -176,7 +176,7 @@ FSI/Design time support will look at the following places in order:
 * look into ~/.fsharp/fsx-extensions
 * look into .fsharp/fsx-extensions folder next to fsi.exe
 
-gather all the distinct dll names, order of precedence favorising those in the same order shown above, and load them in the process if their assembly contains an arbitrary attribute (resolved by name rather than dependency on external library) and types marked with same attributes.
+gather all the distinct dll names, order of precedence favoring those in the same order shown above, and load them in the process if their assembly contains an arbitrary attribute (resolved by name rather than dependency on external library) and types marked with same attributes.
 
 On .NET Framework, the dll are loaded through `Assembly.LoadFrom`.
 
