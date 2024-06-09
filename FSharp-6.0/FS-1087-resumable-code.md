@@ -1175,7 +1175,7 @@ Recall how async differs from tasks:
 | F# async | async-waits | one result | multiple cold starts |  tailcalls |   implicit | implicit |
 | F# task/C# task |   async-waits | one result | once-hot-start |  no-tailcalls |   explicit | explicit |
 | F# seq | no-async-waits | multiple results | multi cold starts | tailcalls | none | none |
-| F# taskSeq/C# async seq  | async waits | mutli result | multi-cold-start | no-tailcalls |  implicit | explicit | 
+| F# taskSeq/C# async seq  | async waits | multi result | multi-cold-start | no-tailcalls |  implicit | explicit | 
 
 Anyway the approximate reimplementation appears to run as fast as TaskBuilder for sync cases, and as fast as tasks for async cases. That makes it like 10-20x faster than the current F# async implementation.  Stack traces etc. would be greatly improved to.
  
