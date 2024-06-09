@@ -581,7 +581,7 @@ Answer: no impact, just more programs will be expected, no new expression shapes
 
 Answer: no, indeed it might be used less
 
-> "[20:43] Chet Husk - for 'Interaction with post-applicaiton property setters', the property was given an explicit type before use. if the type was not directly specified and instead inferred through usage (2L), would that be enough to 'fix' the overall type for purposes of these rules?
+> "[20:43] Chet Husk - for 'Interaction with post-application property setters', the property was given an explicit type before use. if the type was not directly specified and instead inferred through usage (2L), would that be enough to 'fix' the overall type for purposes of these rules?
 
 Answer: yes, exactly, inference is enough to fix the 'overall type'
 
