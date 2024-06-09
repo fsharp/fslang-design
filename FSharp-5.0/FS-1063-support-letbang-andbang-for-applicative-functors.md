@@ -436,7 +436,7 @@ ce {
  }
 ```
 
-TBD: there are other syntactc forms that are valid, these need to be listed
+TBD: there are other syntactic forms that are valid, these need to be listed
 
 # Drawbacks
 [drawbacks]: #drawbacks
