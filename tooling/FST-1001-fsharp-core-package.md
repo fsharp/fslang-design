@@ -213,7 +213,7 @@ are somewhat orthogonal to the package structure and delivery. See [this comment
   - Pinning to a wilcard .path (eg ``4.1.*``) mean it's possibile to update it later.
   - Pinning to wilcard minor (eg ``4.*``) mean a more strict contract for the package.
   - Implicit version may help just give the minimal supported version.
-  - All bundles (VS/Mono/cli) support offline packages (to not downlaod additional stuff). So this doesnt preclude open ranges, just mean new version need to be downloaded if needed.
+  - All bundles (VS/Mono/cli) support offline packages (to not download additional stuff). So this doesnt preclude open ranges, just mean new version need to be downloaded if needed.
 
 * Is the FSharp.Core reference explicit or implicit in .NET SDK project files?  See [again this comment](https://github.com/fsharp/fslang-design/issues/188#issuecomment-301245317)
   - an Fsharp.Core.dll is always required. Template can implicit reference it or not.
