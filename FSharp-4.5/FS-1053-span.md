@@ -363,7 +363,7 @@ Note that `[<IsByRefLike>]` does not imply `[<Struct>]`  both attributes have to
 
 The F# approach to `stackalloc` has always been to make it an "unsafe library function" whose use generates a "here be dragons" warning.  The C# team make it part of the language and are able to do some additional checks.
 
-In theory it would be possible to mirror those checks in F#.  However, the C# team are considerig further rule changes around `stackalloc` in any case. Thus it seems ok (or at least consistent) if we follow the existing approach for F# and don’t 
+In theory it would be possible to mirror those checks in F#.  However, the C# team are considering further rule changes around `stackalloc` in any case. Thus it seems ok (or at least consistent) if we follow the existing approach for F# and don’t 
 add any specific knowledge of stackalloc to the rules.  
 
 #### Ignoring Obsolete attribute on existing `ByRefLike` definitions
