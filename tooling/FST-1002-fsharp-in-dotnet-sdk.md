@@ -204,7 +204,7 @@ Time Elapsed 00:00:09.58
 
 C:\temp\fsharp.builtin>
 ```
-If the SDK detects that an FSharp.SDK project is loaded then, the FSharp integration is disabled, and the FSharp.SDK builds per normal.  However, they currently donot build with the latst dotnet.exe tooling out of the box, because the compiler doesn't run on NetStandard 2.0, it requires netstandard 1.0 shared library to be downloaded.
+If the SDK detects that an FSharp.SDK project is loaded then, the FSharp integration is disabled, and the FSharp.SDK builds per normal.  However, they currently do not build with the latst dotnet.exe tooling out of the box, because the compiler doesn't run on NetStandard 2.0, it requires netstandard 1.0 shared library to be downloaded.
 
 ### Bundling of FSharp.NET.Sdk with CLI tools
 
