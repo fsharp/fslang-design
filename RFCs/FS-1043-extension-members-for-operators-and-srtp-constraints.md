@@ -285,7 +285,7 @@ The characteristics are
 
 2. The definition of the member constraint allows reoslution by **return type**, e.g. `(^I or ^R)` for `Map` .  Because of this, the return type of the inner `InvokeMap` call is **not** known to be `Coll` until weak resolution is applied to the constraints. This is because extra overloads could in theory be added via new witnesses mapping the collection to a different collection type.
 
-3. The resolution of the nested member constraints will eventually imply that the type variable `'a` support the addition opreator.
+3. The resolution of the nested member constraints will eventually imply that the type variable `'a` support the addition operator.
    However after this RFC, the generic function `MapTwice` now gets generalized **before** the member constraints are fully solved
    and the return types known.  The process of generalizing the function makes the type variable `'a` rigid (generalized).  The
    member constraints are then solved via weak resolution in the final phase of inference, and the return type of `InvokeMap`
