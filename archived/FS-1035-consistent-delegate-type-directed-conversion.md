@@ -43,7 +43,7 @@ Test().Test (test)
 [design]: #detailed-design
 
 Type directed conversion extends to happen even if a method does not have overloads.
-From the user perspective nothing changes except that functions can be passed as delegates in more scenarious.
+From the user perspective nothing changes except that functions can be passed as delegates in more scenarios.
 
 # Drawbacks
 [drawbacks]: #drawbacks
