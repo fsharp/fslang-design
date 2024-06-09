@@ -10,7 +10,7 @@ it is worth writing out the spec of the new optimizations here and their rationa
 is partly to ensure we have test coverage for these.
 
 
-1. `__stack_` prefixed vars are not eliminated during optimization. The ratonale is that these
+1. `__stack_` prefixed vars are not eliminated during optimization. The rationale is that these
    are only used when describing resumable code, primarily for tasks.
 
 2. `InlineIfLambda` attribute is recognized and applied.  The rationale is covered in
