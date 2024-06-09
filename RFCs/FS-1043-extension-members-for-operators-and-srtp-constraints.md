@@ -309,7 +309,7 @@ let inline (+) (x: ZipList<'a>, y: ZipList<'a>) : ZipList<'a> =
 let inline (+) (x: ZipList<'a>, y: ZipList<'a>) : ZipList<'a> =
     InvokeApply (InvokeMap ((+): 'a -> 'a -> 'a) x) y
 ```
-   This works because the type annotation means the `op_Addition` constraint is immediately assocaited with the type variable `'a` that is part of the function signature.
+   This works because the type annotation means the `op_Addition` constraint is immediately associated with the type variable `'a` that is part of the function signature.
 
 3. Another approach (and likely the best) is to **no longer use return types as support types** in this kind of generic code.  (My understanding is that the use of return types as support types in such cases FSharpPlus was basically "only" to delay weak resolution anyway).  This means using this definition:
 
