@@ -17,7 +17,7 @@ A new active pattern should be added to FSharp.Core, named `UnknownEnum`, to mat
 
 Currently, for `match` expressions on enumerations (enums), the warning FS0104 which warns against unknown enum cases not being matched exists.
 
-However, to silence this warning, one has to either use a wildacard pattern, which has the downside of preventing the warning FS0025 from being emitted when a new enum case is added to the enum type, or disable this warning entirely, which has the downside of a `MatchFailureException` being raised once an invalid value is matched against, potentially as a result of deserialization which the developer cannot control.
+However, to silence this warning, one has to either use a wildcard pattern, which has the downside of preventing the warning FS0025 from being emitted when a new enum case is added to the enum type, or disable this warning entirely, which has the downside of a `MatchFailureException` being raised once an invalid value is matched against, potentially as a result of deserialization which the developer cannot control.
 
 An `UnknownEnum` pattern would be an ideal solution to this, as it matches all cases that FS0104 would warn against, while keeping FS0025 warnings when a new case is added to the enum type. As a result, using `match` expressions on enums can be both safe, as in matching all potential values, and future-proof, as in keeping FS0025 warnings when a new case is added.
 

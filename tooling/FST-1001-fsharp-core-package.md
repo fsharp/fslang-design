@@ -210,8 +210,8 @@ are somewhat orthogonal to the package structure and delivery. See [this comment
 * Is the FSharp.Core package reference pinned or not in templates?  
   - PackageReference support version ranges. Package versions in NuGet are major.minor.patch (semver), that's the official versioning scheme.
   - Pinning to an exact specific version, es 4.1.9 mean if i need to update it, user need to do it manually. And is bad for resilience to bugs. And is more complicated if implicit.
-  - Pinning to a wilcard .path (eg ``4.1.*``) mean it's possibile to update it later.
-  - Pinning to wilcard minor (eg ``4.*``) mean a more strict contract for the package.
+  - Pinning to a wildcard .path (eg ``4.1.*``) mean it's possibile to update it later.
+  - Pinning to wildcard minor (eg ``4.*``) mean a more strict contract for the package.
   - Implicit version may help just give the minimal supported version.
   - All bundles (VS/Mono/cli) support offline packages (to not download additional stuff). So this doesnt preclude open ranges, just mean new version need to be downloaded if needed.
 
