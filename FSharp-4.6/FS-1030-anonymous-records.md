@@ -327,7 +327,7 @@ let data4 = {| data2 with X = "3" |} // gives {| X = "3"; Y = "1" |}
 
 Fields are placed in a canonical order by the compiler, so type ``{| A : int; B : int |}`` is type-equivalent to ``{| B: int; A : int |}``. 
 
-## Interaction with F# Reflection Utilies
+## Interaction with F# Reflection Utilities
 
 The FSharp.Core functions ``FSharp.Reflection.FSharpType.GetRecordFields`` and ``FSharp.Reflection.FSharpValue.MakeRecord/GetRecordField/GetRecordFields`` work with anonymous record values and types.
 
