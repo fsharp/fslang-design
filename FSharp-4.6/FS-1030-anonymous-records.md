@@ -457,7 +457,7 @@ There are several possible future extensions that are compatible with this RFC:
 
 1. Supporting pattern matching, e.g. `match x with {| Y = y |} -> ...`
 
-1. Allowing the use of `[<CLIMutable>]` on anonynous record values
+1. Allowing the use of `[<CLIMutable>]` on anonymous record values
 
 1. Interaction between nominal record types and anonymous record types:
 
