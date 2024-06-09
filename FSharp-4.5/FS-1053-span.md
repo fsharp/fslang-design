@@ -556,7 +556,7 @@ let callTestIn() =
 type DateTime with 
     member x.Foo() = ...
 ```
-as a "byref this" extension member where `x` is a readonly reference.  Instead you have to define a C#-style byref extension method. This means a copy happens on invocation. If it did writing performant extension members for F# struct types would be very easy.  Perhaps we should allow somthing like this
+as a "byref this" extension member where `x` is a readonly reference.  Instead you have to define a C#-style byref extension method. This means a copy happens on invocation. If it did writing performant extension members for F# struct types would be very easy.  Perhaps we should allow something like this
 
 ```
 type DateTime with 
