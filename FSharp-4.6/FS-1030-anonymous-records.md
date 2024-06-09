@@ -574,7 +574,7 @@ Response:
 
 ### Alternative: support pattern matching
 
-A note by @dsyme: The omission of pattern matching for anonymous records really shows my strong bias against pattern matching on records at all - I nearly always dislike code that uses pattern matching on records. For exaple, I don't think it adds to the robustness of code since pattern matching on records is "flexible", i.e. fields can be omitted.   I know others will disagree however.
+A note by @dsyme: The omission of pattern matching for anonymous records really shows my strong bias against pattern matching on records at all - I nearly always dislike code that uses pattern matching on records. For example, I don't think it adds to the robustness of code since pattern matching on records is "flexible", i.e. fields can be omitted.   I know others will disagree however.
 
 ### Alternative: syntax ``type {| i = 1 |}``
 
