@@ -1,6 +1,6 @@
 # F# RFC FS-1127 - Init-only setters and required properties support in F# #
 
-The design suggestion [C# record interop (including init only properties of .net 5 and required of .net 7)](https://github.com/fsharp/fslang-suggestions/issues/904) has been approved in principle.  This RFC covers the detailed proposal for `init` and `requried` properties.
+The design suggestion [C# record interop (including init only properties of .net 5 and required of .net 7)](https://github.com/fsharp/fslang-suggestions/issues/904) has been approved in principle.  This RFC covers the detailed proposal for `init` and `required` properties.
 
 - [x] Implementation: [Completed](https://github.com/dotnet/fsharp/pull/13490)
 - [x] [Discussion](https://github.com/fsharp/fslang-design/discussions/695)
