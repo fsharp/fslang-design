@@ -2,7 +2,7 @@
 
 A proposal is being put forward - initiated by Microsoft - to include F# functionality directly into [the dotnet SDK](https://github.com/dotnet/sdk), also known as "Microsoft.NET.Sdk",
 which is the primary next-generation cross-platform SDK for .NET Framework and .NET Core programming. This work can be seen as the next logical step
-in the evolution of [the FSharp.NET.SDK](https://github.com/dotnet/netcorecli-fsc/) - merging much of the funtionality into an even more core piece of .NET tooling.
+in the evolution of [the FSharp.NET.SDK](https://github.com/dotnet/netcorecli-fsc/) - merging much of the functionality into an even more core piece of .NET tooling.
 
 Despite being a tooling issue rather than a language issue, this is being treated as an F# RFC to facilitate discussion.
 
