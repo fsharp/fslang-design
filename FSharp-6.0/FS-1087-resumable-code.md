@@ -1179,7 +1179,7 @@ Recall how async differs from tasks:
 
 Anyway the approximate reimplementation appears to run as fast as TaskBuilder for sync cases, and as fast as tasks for async cases. That makes it like 10-20x faster than the current F# async implementation.  Stack traces etc. would be greatly improved to.
  
-However it's not a perfect reimplementation - there are no tailcalls nor cancellation checks yet  -  and perfect compat is probably impossible sadly, there are lots of subtleties. For example `async.Return()` and other direct use of CE methods change type from `Async<T>` to `AsyncCode<T>`, so the API is not perfect compat (an `Async.Return` etc. would be needed instead).   We could possible fix that in the F# compiler though there are lots of other little niggles too.
+However isn't a perfect reimplementation - there are neither tailcalls nor cancellation checks yet  -  and perfect compat is probably impossible sadly, there are lots of subtleties. For example `async.Return()` and other direct use of CE methods change type from `Async<T>` to `AsyncCode<T>`, so the API is not perfect compat (an `Async.Return` etc. would be needed instead).   We could possible fix that in the F# compiler though there are lots of other little niggles too.
 
 That said it should be good enough to allow an FSharp.Control.Async2 package that is a drop-in replacement for F# async for 99.9% compat.  (The `Async2<T>` would be a different type in that case, though that may matter less now `Task<T>` is so established more as an interop standard)
 
