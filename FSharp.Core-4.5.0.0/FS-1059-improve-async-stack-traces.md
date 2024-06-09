@@ -161,7 +161,7 @@ This is not perfect. We see the generated closure names. But at least the line n
 
 ## Possible solutions to Problem Two
 
-One way to improve the exception stacks for losing stack traces is to use a "trampoline" to run the asynchronous parts of computations. When an exceltion happens, the exception continuation (or other information require to continue execution) is written into the trampoline.
+One way to improve the exception stacks for losing stack traces is to use a "trampoline" to run the asynchronous parts of computations. When an exception happens, the exception continuation (or other information require to continue execution) is written into the trampoline.
 
 This technique works for async because we have a trampoline available.
 
