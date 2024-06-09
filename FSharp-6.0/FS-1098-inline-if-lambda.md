@@ -94,7 +94,7 @@ There is no really good reason not to do this, except it feels like it is useful
 
 See the collector examples in [list.fs](https://github.com/dotnet/fsharp/blob/main/tests/benchmarks/TaskPerf/list.fs)
 and [array.fs](https://github.com/dotnet/fsharp/blob/main/tests/benchmarks/TaskPerf/array.fs) and compares them to examples
-using the resumable code mechanism.  The colelctor examples rely on InlineIfLambda and the optimizations described in
+using the resumable code mechanism.  The collector examples rely on InlineIfLambda and the optimizations described in
 [Tooling RFC FST-1034](https://github.com/fsharp/fslang-design/blob/main/tooling/FST-1034-lambda-optimizations.md)
 
 The sample defines  `listc { .. }`, `arrayc { .. }` for collections.
