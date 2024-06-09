@@ -209,7 +209,7 @@ module rec Example =
           ...
 ```
 
-#### Meaning of ``rec`` w.r.t. Name Resoltion
+#### Meaning of ``rec`` w.r.t. Name Resolution
 
 The meaning of ``rec`` is that _all_ type, function, member and value declarations in all nested modules
 may be mutually referential.  For example:

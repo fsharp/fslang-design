@@ -283,7 +283,7 @@ let inline MapTwice (x: Coll<'a>) (v: 'a) : Coll<'a> =
 The characteristics are
 1. There is no overloading directly, but this code is generic and there is the *potential* for further overloading by adding further extension methods.
 
-2. The definition of the member constraint allows reoslution by **return type**, e.g. `(^I or ^R)` for `Map` .  Because of this, the return type of the inner `InvokeMap` call is **not** known to be `Coll` until weak resolution is applied to the constraints. This is because extra overloads could in theory be added via new witnesses mapping the collection to a different collection type.
+2. The definition of the member constraint allows resolution by **return type**, e.g. `(^I or ^R)` for `Map` .  Because of this, the return type of the inner `InvokeMap` call is **not** known to be `Coll` until weak resolution is applied to the constraints. This is because extra overloads could in theory be added via new witnesses mapping the collection to a different collection type.
 
 3. The resolution of the nested member constraints will eventually imply that the type variable `'a` support the addition operator.
    However after this RFC, the generic function `MapTwice` now gets generalized **before** the member constraints are fully solved
