@@ -168,7 +168,7 @@ The discussion thread linked above records the discussion and response. Basicall
 
 * relying on tools such as Paket and Nuget to handle the configuration of design-time tools is problematic.  For example, at first sight it looks possible to utilize the capability of Paket emit load scripts to help with such configuration, however these wouldn't apply to command-line compilation or project builds.  Further, NuGet is very far from being able to do this kind of configuration and it is unrealistic to expect them to add this capability in any timeframe that helps. Further, the full set of design-time tooling contexts is not actually known to NuGet.exe or Paket.exe -  -  a new F# design-time  tool (such as a documentation generator or VSCode editor) hosted in .NET Core may arrive after the fact
 
-In contrast, in the proposal in this RFC, a relatively modest adjustment is made to the current scheme to have the F# compiler logic interpret ``TypeProviderAssembly`` attributes to a relative reference in a stable and predictable way.  This resolution would apply to any and all tooling built using updated versions of ``FSharp.Compiler.Service.dll``, and would roll out consistenly across all F# implementations.
+In contrast, in the proposal in this RFC, a relatively modest adjustment is made to the current scheme to have the F# compiler logic interpret ``TypeProviderAssembly`` attributes to a relative reference in a stable and predictable way.  This resolution would apply to any and all tooling built using updated versions of ``FSharp.Compiler.Service.dll``, and would roll out consistently across all F# implementations.
 
 See also [this part of the discussion thread](https://github.com/fsharp/fslang-design/issues/229#issuecomment-343155429)
 
