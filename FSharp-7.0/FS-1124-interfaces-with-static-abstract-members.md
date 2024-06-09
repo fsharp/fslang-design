@@ -323,7 +323,7 @@ See also "Alternatives for Units of Measure" below
 
 ### SRTP adjustments
 
-SRTP constraints now give an error if they declare optional, inref, outref, ParamArray, CallerMemberName or AutoQuote atttributes on parameters.  These were ignored and should never have been allowed.
+SRTP constraints now give an error if they declare optional, inref, outref, ParamArray, CallerMemberName or AutoQuote attributes on parameters.  These were ignored and should never have been allowed.
 
 ## Drawbacks
 [drawbacks]: #drawbacks

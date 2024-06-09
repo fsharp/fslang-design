@@ -9,7 +9,7 @@ The design suggestion "Inline if lambda attributes on parameters" is approved in
 
 # Summary
 
-We add an attribute `InlineIfLambdaAtttribute` to use on parameters of inlined functions and methods, indicating to the compiler that, if a lambda
+We add an attribute `InlineIfLambdaAttribute` to use on parameters of inlined functions and methods, indicating to the compiler that, if a lambda
 is supplied as a parameter, it should be inlined.
 
 # Motivation
@@ -33,7 +33,7 @@ let map ([<InlineIfLambda>] f: int -> int) xs  =
 
 # Detailed design
 
-We add `InlineIfLambdaAtttribute` to use on parameters of inlined functions and methods, indicating to the compiler that, if a lambda
+We add `InlineIfLambdaAttribute` to use on parameters of inlined functions and methods, indicating to the compiler that, if a lambda
 is supplied as a parameter, it should be inlined.
 
 The attribute is indicative only and may be ignored by the F# compiler.
