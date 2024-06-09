@@ -32,7 +32,7 @@ Error FS0192: internal error: FindTypeDefBuilder: <Method> not found (FS0192) (<
 
 Instead the type is extended in the same way as a normal type extension.
 
-The proposed systax is the same as the existing intrinsic type extension syntax:
+The proposed syntax is the same as the existing intrinsic type extension syntax:
 
 Example code short form:
 

@@ -460,7 +460,7 @@ for type inference and for implementing efficient "safe" static initialization.
 
 ### Alternative: ``... and ... `` for more declarations 
 
-One sytntac alternative that was considered was  allowing ``and`` to join more declaration forms, e.g.
+One syntax alternative that was considered was  allowing ``and`` to join more declaration forms, e.g.
 
 ```fsharp
 
