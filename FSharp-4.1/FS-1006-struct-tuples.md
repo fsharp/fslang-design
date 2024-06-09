@@ -118,7 +118,7 @@ These defaults would be applied at the end of type inference like other defaults
 
 Structness would always be inferred statically for all locations throughout all F# programs. 
 
-Structness inference is not essential but may ease interoperabillity.  On the other hand it adds considerable complexity to the implementation and may potentially confuse some users who prefer a high degree of type/expression form separation.
+Structness inference is not essential but may ease interoperability.  On the other hand it adds considerable complexity to the implementation and may potentially confuse some users who prefer a high degree of type/expression form separation.
 
 
 ### Possible Extension: Tuple Field Metadata
