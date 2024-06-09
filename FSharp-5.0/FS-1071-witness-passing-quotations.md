@@ -197,7 +197,7 @@ function is called at a non-generic, specific type.
 
 For example, for an SRTP-constraint `when  ^a : (static member (+) :  ^a * ^a ->  ^a)`:
 
-* You will see `(fun (a: double) (b: double) -> LanguagePrimtiives.AdditionDynamic a b)` passed in at the place where the code is specialized at type `double`.
+* You will see `(fun (a: double) (b: double) -> LanguagePrimitives.AdditionDynamic a b)` passed in at the place where the code is specialized at type `double`.
 
 * You will see `(fun (a: TimeSpan) (b: TimeSpan) -> TimeSpan.op_Addition(a,b))` passed in at the place where the code is specialized at type `TimeSpan`.
 
@@ -334,7 +334,7 @@ module OperatorIntrinsics =
 
 
 ```
-For example, for the SRTP-constraint `when  ^a : (static member (+) :  ^a * ^a ->  ^a)` you will see `(fun (a: double) (b: double) -> LanguagePrimtiives.AdditionDynamic a b)` passed at the place where the code is specialized at type `double`.
+For example, for the SRTP-constraint `when  ^a : (static member (+) :  ^a * ^a ->  ^a)` you will see `(fun (a: double) (b: double) -> LanguagePrimitives.AdditionDynamic a b)` passed at the place where the code is specialized at type `double`.
 
 The above are used whenever a "built in" constraint solution is determined by the F# compiler, e.g. in the cases where no corresponding `op_Addition` member actually exists on a type such as `System.Double`, but rather the F# compiler simulates the existence of such a type.
 
