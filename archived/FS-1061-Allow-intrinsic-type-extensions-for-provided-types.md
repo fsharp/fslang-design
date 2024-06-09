@@ -102,7 +102,7 @@ type ViewController(handle : IntPtr) =
         base.ViewDidLoad()
 ```
 
-This has several drawbacks that makes the user facing code more complex and unweidy than it should be with additions mentioned in the RFC.
+This has several drawbacks that makes the user facing code more complex and unwieldy than it should be with additions mentioned in the RFC.
 
 ### Attributes have to be defined on outward facing type
 
