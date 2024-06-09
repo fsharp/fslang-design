@@ -27,8 +27,8 @@ The motivation is to make sure that users hit the "reserved keyword" warning les
 
 Unreserve the following keywords:
 
-    method  - the F# commmunity are happy with 'member' to introduce methods
-    constructor - the F# commmunity are happy with 'new' to introduce constructors
+    method  - the F# community are happy with 'member' to introduce methods
+    constructor - the F# community are happy with 'new' to introduce constructors
     atomic - this was related to the fad for transactional memory circa 2006. In F# this would now be a library-defined computation expression
     eager - this is no longer needed, it was initially designed to be "let eager" to match a potential "let lazy"
     object  - there is no need to reserve this
