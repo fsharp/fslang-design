@@ -81,7 +81,7 @@ However, when positive changes for Fable are made to the F# compiler itself, tho
 
 ## Build process
 
-Today, FCS does not require the installation of too many dependencies nor does it require Windows. This is especially important for Fable.
+Today, FCS requires neither the installation of too many dependencies nor Windows. This is especially important for Fable.
 
 Given this, building FCS from `dotnet/fsharp` should also require no additional dependencies. It should be as [simple as it is today](https://github.com/dotnet/fsharp/tree/master/fcs#building-testing-packaging-releases) in the current FCS source.
 
