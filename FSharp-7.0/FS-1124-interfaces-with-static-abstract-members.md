@@ -399,7 +399,7 @@ public readonly struct Double :
     System.Numerics.IUnaryPlusOperators<double,double>
 ```
 
-At this point, any reader should stop to consider carefully the pros and cons here.  Each and every new interface adds conceptual overhead, and what was previously comparatively simple and compelling has become complex and curious. This complexity is potentially encountered by any and all users of .NET - beginner users trained in abstract math seem particularly fond of such numeric hierarchies, and are drawn to them like a moth to the flame.  Yet these abstractions are useful only to the extent that writing generic code is successfully and regularly instantiated at many types - yet this is not known to be a significant real-world limiting problem for .NET today in practice, and for which many practical, enacpsulated workarounds exist.
+At this point, any reader should stop to consider carefully the pros and cons here.  Each and every new interface adds conceptual overhead, and what was previously comparatively simple and compelling has become complex and curious. This complexity is potentially encountered by any and all users of .NET - beginner users trained in abstract math seem particularly fond of such numeric hierarchies, and are drawn to them like a moth to the flame.  Yet these abstractions are useful only to the extent that writing generic code is successfully and regularly instantiated at many types - yet this is not known to be a significant real-world limiting problem for .NET today in practice, and for which many practical, encapsulated workarounds exist.
 
 ### Drawback - Interfaces with static abstract methods will get misunderstood as types, not type-constraints
 
