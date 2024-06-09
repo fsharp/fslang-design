@@ -185,7 +185,7 @@ Code that is generic over record types  _can_ be written using static member con
 ## Design Principle: Not anonymous object expressions
 
 There are numerous aspects of the F#/.NET object system that could, in theory, be supported by "Kind B" anonymous record types (which have full .NET metadata and a backing .NET type). This incudes
-* properties (computerd on-demand)
+* properties (computed on-demand)
 * interface implementations
 * methods
 * indexer properties
