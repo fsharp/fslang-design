@@ -142,7 +142,7 @@ The following steps are proposed for the next few months, until about September 
 
 2. Microsoft publish ``FSharp.Core.netstandard`` (deprecating ``Microsoft.FSharp.Core.netcore``).  If time permits, Microsoft also publish ``FSharp.Core.netfx`` containing the .NET 4.x DLLs.
 
-3. If technically feasible (see below), F# Core Engineering add these packages as dependencies of a future version of ``FSharp.Core`` and drop the direct inclusion of DLLs. (As noted above these are not necesssarily **permanent** dependencies)
+3. If technically feasible (see below), F# Core Engineering add these packages as dependencies of a future version of ``FSharp.Core`` and drop the direct inclusion of DLLs. (As noted above these are not necessarily **permanent** dependencies)
 
 4. ``FSharp.Core.netstandard`` is pre-loaded as a part of dotnet SDK tooling, making some degree of offline development possible.
 
