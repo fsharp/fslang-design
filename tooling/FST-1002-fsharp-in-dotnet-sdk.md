@@ -214,7 +214,7 @@ such as templating.  It doesn't make sense to have two F# stories in the .NET CL
 
 @KevinRansom adds:
 
-> It has to continue to work, we will not remove it from the dotnet cli.  We assume that developers have existing projects that make use of it, we need to ensure that those projects build with the new tooling.  Currently they don’t because dotnet cli doesnot ship a with the ability to run 1.0 apps … super weirdly … I will put in a diversion to make it use the deployed compiler so that they work.
+> It has to continue to work, we will not remove it from the dotnet cli.  We assume that developers have existing projects that make use of it, we need to ensure that those projects build with the new tooling.  Currently they don’t because dotnet cli does not ship a with the ability to run 1.0 apps … super weirdly … I will put in a diversion to make it use the deployed compiler so that they work.
 
 
 ### Mono
