@@ -36,7 +36,7 @@ This is a tooling RFC because:
 2. The centrality of the `FSharp.Formatting.ApiDocs` component means that what it accepts can end up being a language standard.
 
 In practice, at the time of writing, the `FSharp.Formatting.ApiDocs.dll` component (or its direct predecessor `FSharp.MetadataFormat.dll`) is used
-somewhere in the processnig of all F# XML doc files for documentation generation, except in the Visual Studio IDE, and is really the only
+somewhere in the processing of all F# XML doc files for documentation generation, except in the Visual Studio IDE, and is really the only
 component capable of processing F# XML doc files at all.
 
 ## Problems Addressed
