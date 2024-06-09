@@ -71,7 +71,7 @@ and [<TailCall>] baz x =
 [drawbacks]: #drawbacks
 
 * Attributed functions would not be able to be used as non-tailcalls or higher-order functions within their frame.
-* Using `module rec` or `namespace rec` or object programming creates large recursive scopes, making the use of this attribute pretty much impossible. Thus you can't have both these good things and muct make an unstable choice between them
+* Using `module rec` or `namespace rec` or object programming creates large recursive scopes, making the use of this attribute pretty much impossible. Thus you can't have both these good things and must make an unstable choice between them
 
 # Alternatives
 [alternatives]: #alternatives
