@@ -506,7 +506,7 @@ module CSharpCompatAnonymousObjects =
     let f1 (x : {< X : int >}) =  x.X
 ```
 
-However we decided against this.  It is one thing to expain that ``new`` adds .NET metadata to an anonymous type.  It is another to explain the existence of an entirely new set of ``{< ... >}`` parentheses.
+However we decided against this.  It is one thing to explain that ``new`` adds .NET metadata to an anonymous type.  It is another to explain the existence of an entirely new set of ``{< ... >}`` parentheses.
 
 #### Alternative: Allow optional naming of anonymous types.  
 
