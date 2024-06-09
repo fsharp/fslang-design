@@ -30,7 +30,7 @@ package for FSharp.Core for all different target platforms. A single, unified FS
 
 The F# Core Engineering group also publish [notes and guidance on FSharp.Core.dll](http://fsharp.github.io/2015/04/18/fsharp-core-notes.html).
 
-Equally, the FSharp.Core NuGet pacakge has problems, see below.
+Equally, the FSharp.Core NuGet package has problems, see below.
 
 ### Today
 
