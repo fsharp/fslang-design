@@ -213,7 +213,7 @@ If the "must convert to" flag is not set on `overallTy`, then unification betwee
 > NOTE: For list, array, `new`, object expressions, tuple, record and anonymous-record expressions, pre-checking integration
 > allows the overall type to be propagated into the partially-known type (e.g. an
 > list expression is known to have at least type `list<_>` for some element type), which in turn allows the
-> inference of element types or type araguments.  This may be relevant to processing the contents of the expression.
+> inference of element types or type arguments.  This may be relevant to processing the contents of the expression.
 > For example, consider
 > 
 ```fsharp
