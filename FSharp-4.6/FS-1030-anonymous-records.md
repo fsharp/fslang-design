@@ -93,7 +93,7 @@ This leads to two different kinds of anonymous records:
 A basic litmus test of this feature is this: can the user smoothly (through localized, regular transformations) adjust a closed body of code to use existing F# nominal record types instead of anonymous record types?
 
 We adopt the design principle that the answer to this must be "yes" - the developer just has to
-1. expicitly define each implied record type
+1. explicitly define each implied record type
 2. replace ``{| ... |}`` by ``{ .. }``
 3. add some type annotations.
 Let's call this process "nominalization".
