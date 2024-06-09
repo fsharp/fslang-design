@@ -416,7 +416,7 @@ let f (ns: string | null) = ns.Length // Gives a nullability warning
 
 In some rare cases it may be necessary to "add the possibility of null" to an existing value, to
 make it compatible with a nullable type without warning.   We expect this to normally be done by
-a type annoation, see above.  However for completeness it is also possible to do this by using the `withNull` operator.
+a type annotation, see above.  However for completeness it is also possible to do this by using the `withNull` operator.
 
 ```fsharp
 val inline withNull : value:'T -> ('T | null) when 'T : not struct
