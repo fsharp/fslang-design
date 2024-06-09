@@ -928,7 +928,7 @@ No.
 ## Unresolved questions
 [unresolved]: #unresolved-questions
 
-* [ ] Document that IWSAMs that define op_Implicit and op_Explicit do not, practiclly speaking, result in implicit conversions being usable, because of F# restrictions on activating implicit conversions in the presence of generic type variables
+* [ ] Document that IWSAMs that define op_Implicit and op_Explicit do not, practically speaking, result in implicit conversions being usable, because of F# restrictions on activating implicit conversions in the presence of generic type variables
 * [ ] Document that some code becomes more generic, e.g.
 
   ```fsharp
