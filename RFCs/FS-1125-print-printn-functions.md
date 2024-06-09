@@ -73,7 +73,7 @@ Printing output without a newline is a fairly uncommon need and could make the `
 
 **Should the `print` functions be generic, and if so what is the specification?**
 
-The initial suggestion approved as that `string` be non-generic.  In [the discussion in the initial PR](https://github.com/dotnet/fsharp/pull/13597), a suggestion was made to make the print functions generic.  This is based on a separate motiviation to use the functions to rapidly write code to output any data - rather than the educational scenarios. This is seen as important enough that the suggestion is we shouldn't proceed with adding `print` taking just a string if that would preclude adding the generic one later.
+The initial suggestion approved as that `string` be non-generic.  In [the discussion in the initial PR](https://github.com/dotnet/fsharp/pull/13597), a suggestion was made to make the print functions generic.  This is based on a separate motivation to use the functions to rapidly write code to output any data - rather than the educational scenarios. This is seen as important enough that the suggestion is we shouldn't proceed with adding `print` taking just a string if that would preclude adding the generic one later.
  
 Adding a generic `print` raises many significant design questions and exposes some existing design flaws in F#. For example, a generic print can be implemented today using any of these:
  
