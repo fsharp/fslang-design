@@ -215,7 +215,7 @@ Operators are tricky constructs in F#, since their compiled name is very differe
 nameof(+)   // gives "+"
 ```
 
-That said, you can also take a name of the compiled name of the same operator. If you do that, then the compiled name is revaled:
+That said, you can also take a name of the compiled name of the same operator. If you do that, then the compiled name is revealed:
 
 ```fsharp
 
