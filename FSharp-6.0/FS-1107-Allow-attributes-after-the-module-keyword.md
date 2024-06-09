@@ -68,7 +68,7 @@ In the case of `module`, the indentation rules consider the position _after_ the
 
 # Detailed design
 
-For both `type`s and `let`s, attributes can be placed right before the acessibility modifier.
+For both `type`s and `let`s, attributes can be placed right before the accessibility modifier.
 ```fs
 module private rec M =
     type [<Experimental "">] private Hello() = do ()
