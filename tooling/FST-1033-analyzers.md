@@ -160,7 +160,7 @@ type IAnalyzerContext =
     abstract ProjectOptions: string[]
     abstract GetSource: fileName: string -> ISourceText
 
-type postion = string * int * int
+type position = string * int * int
 type range = string * int * int * int * int
 
 // produced by analyzer
