@@ -60,7 +60,7 @@ etc. with the standard functions and values.
 ### Structural equality, hashing and comparison
 
 `System.Collections.Immutable.ImmutableArray` implements `IStructuralEquality` and `IStructuralComparison`, so
-this means F# strucural equality, hashing and comparison semantics are respected "all the way down".
+this means F# structural equality, hashing and comparison semantics are respected "all the way down".
 
 TBD: examples and test cases
 
