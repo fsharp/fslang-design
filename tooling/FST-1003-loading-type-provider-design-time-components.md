@@ -19,7 +19,7 @@ gets seamlessly and automatically found and loaded into any F#-aware host design
 
 The host tooling does F# analysis or compilation via requests to ``FSharp.Compiler.Service.dll``, which in turn interrogates the TPDTCs to resolve type names, methods and so on.  The TPDTCs hand back metadata (via an artificial implementation of System.Type objects) and target code (via F# quotations and/or generated assembly fragments).  The TPDTCs are given the list of target reference assemblies to help them prepare appropriate types and target code, a process largely automated by [the Type Provider SDK](https://github.com/fsprojects/FSharp.TypeProviders.SDK/).
 
-Thiss RFC is about the process of finding and loading the TPDTC once the attribute has been detected.
+This RFC is about the process of finding and loading the TPDTC once the attribute has been detected.
 
 Host tools include:
 
