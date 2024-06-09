@@ -15,7 +15,7 @@ This RFC covers the detailed proposal for this suggestion.
 
 Allow returning `bool` instead of `unit option` for partial active patterns.
 
-Allow omiting the `[<return: Struct>]` when writing voption-returning active patterns.
+Allow omitting the `[<return: Struct>]` when writing voption-returning active patterns.
 
 # Motivation
 
