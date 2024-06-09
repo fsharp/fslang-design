@@ -33,7 +33,7 @@ The following snippet lists examples of the current and proposed ways of using s
 ```fsharp
 let f1old (x: 't when 't :> IDisposable and 't :> int seq) = ()
 let f1new1 (x: 't & #IDisposable & #(int seq)) = () 
-// ` 't & ` may be omitted when when do not need to refer back to the type parameter
+// ` 't & ` may be omitted when they do not need to refer back to the type parameter
 let f1new2 (x: #IDisposable & #(int seq)) = () 
 
 let computeOld<'n, 'o when 'n :> INumber<'n> and 'o :> 'n seq> (x: 'n, other: 'o) = ()
