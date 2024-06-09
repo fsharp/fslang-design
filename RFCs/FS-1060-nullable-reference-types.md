@@ -205,7 +205,7 @@ let len2r (str1: string | null) (str2: string | null) =
 
 #### Null ambivalence (obliviousness)
 
-On import, an assembly that does not have `NonNullTypes` specified or an assembly scope where `NonNullTypes(false)` is active results in imported types being considered "null-ambivalent".  That is, there is no information about whether the types are nullabale or non-nullable.
+On import, an assembly that does not have `NonNullTypes` specified or an assembly scope where `NonNullTypes(false)` is active results in imported types being considered "null-ambivalent".  That is, there is no information about whether the types are nullable or non-nullable.
 
 Null-ambivalence is only directly expressible in F# code using `string __ambivalent` and the `__ambivalent` attribute is suppressed in routine coding.  However because null-ambivalence arises on import of legacy assemblies, it is an important additional concept in the F# typechecking rules.  For the purposes of this specification we consider the F# type system to have an additional case which we denote by `reference-type%`, indicating null-ambivalence.
 
