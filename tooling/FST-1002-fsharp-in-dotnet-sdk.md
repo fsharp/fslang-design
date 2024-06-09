@@ -146,7 +146,7 @@ To change the package version set ``FSharpCoreImplicitPackageVersion`` to a spec
 
 __TargetFSharpCoreVersion__
 
-For desktop versions, E.g. those who want to target FSharp.Core.4.3.0.0 e.t.c use the ``TargetFSharpCoreVersion`` property. This has no effect on netstandar or netcoreapp target builds.
+For desktop versions, E.g. those who want to target FSharp.Core.4.3.0.0 e.t.c use the ``TargetFSharpCoreVersion`` property. This has no effect on netstandard or netcoreapp target builds.
 These proposals are implemented within the VisualFSharp repo in targets we deploy with the compiler, and so will not require coordination with the cli or sdk to implement.
 
 The source files can be found here: https://github.com/dotnet/fsharp/blob/master/src/fsharp/FSharp.Build/Microsoft.FSharp.NetSdk.props
