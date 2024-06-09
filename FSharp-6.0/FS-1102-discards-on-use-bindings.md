@@ -41,7 +41,7 @@ __ |> ignore // Mutes the unused variable warning
 Please address all necessary compatibility questions:
 
 * Is this a breaking change? No.
-* What happens when previous versions of the F# compiler encounter this design addition as source code? Erorr as usual.
+* What happens when previous versions of the F# compiler encounter this design addition as source code? Error as usual.
 * What happens when previous versions of the F# compiler encounter this design addition in compiled binaries? The code will work.
 * If this is a change or extension to FSharp.Core, what happens when previous versions of the F# compiler encounter this construct? This is not a change to FSharp.Core.
 
