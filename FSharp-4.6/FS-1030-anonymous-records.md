@@ -537,7 +537,7 @@ Sorting by field name is the natural thing for the programmer from a type-system
 
 However it does have some downsides.  For example, when using anonymous record data for rows in tabular data the fields will not imply a column ordering.  
 
-#### Alternative: Various alternatives aroud copy-and-update
+#### Alternative: Various alternatives around copy-and-update
 
 Copy-and-update could be design differently:
 
