@@ -141,7 +141,7 @@ simpler to start with `FSharp.Compiler.Analyzers.v1.0` only containing an API wh
 relevant logical source file contents**.
 
 This means analyzers that want to access the syntax tree would have to parse using their own private copy of FCS.
-Wach analyzer would have to run its own compilation/analysis internally, rather than having access to the FCS compiled trees.
+Each analyzer would have to run its own compilation/analysis internally, rather than having access to the FCS compiled trees.
 This is expensive for each analyser but is at least a start.
 
 The `FSharp.Compiler.Analyzers.v1.0` API could then be something simple like this:
