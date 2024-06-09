@@ -216,7 +216,7 @@ Given this starting point we could then iterate towards expanding the functional
 
 ### Discussion Summary
 
-This RFC is inteded to start a discussion and iterate towards steps forward.  We'll try to summarise the discussion here:
+This RFC is intended to start a discussion and iterate towards steps forward.  We'll try to summarise the discussion here:
 
 @dsyme says: I'm not sure how else to make progress in a reasonable timeframe, short of expecting analyzers to be recompiled.
 
