@@ -244,7 +244,7 @@ TBD: We must decide if this will also apply to functions taking struct tuples, a
 
 ### Feature Interaction: Generalization of tuples 
 
-In F#, like most other ML langauges, some simple values can be generalized.
+In F#, like most other ML languages, some simple values can be generalized.
 This means these values are given generic type rather than hitting the value-restriction error. e.g.
 
 ```fsharp
