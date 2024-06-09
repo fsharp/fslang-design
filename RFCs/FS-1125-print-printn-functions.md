@@ -115,7 +115,7 @@ let f x y = x + y
 print (f 1)
 ```
     
-The same logic should be applied to warn on under-applied interpolatations:
+The same logic should be applied to warn on under-applied interpolations:
     
 ```fsharp
 let f x y = x + y
