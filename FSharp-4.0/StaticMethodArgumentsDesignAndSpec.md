@@ -46,9 +46,9 @@ From the point of view of the type provider author, using the modified ProvideTy
       let m = ProvidedMethod("ExampleMethWithStaticParam", [ ], typeof<int>, IsStaticMethod = false)
       m.DefineStaticParameters(staticParams, (fun nm args ->
           let arg = args.[0] :?> int
-          let parms = [ for i in 1 .. arg -> ProvidedParameter("arg" + string i, typeof<int>)]
+          let params = [ for i in 1 .. arg -> ProvidedParameter("arg" + string i, typeof<int>)]
           let m2 = 
-              ProvidedMethod(nm, parms, typeof<int>, IsStaticMethod = false,
+              ProvidedMethod(nm, params, typeof<int>, IsStaticMethod = false,
                              InvokeCode = fun args -> <@@ arg @@>)
           newType.AddMember m2
           m2))
