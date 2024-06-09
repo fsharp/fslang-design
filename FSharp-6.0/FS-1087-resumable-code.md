@@ -641,7 +641,7 @@ module StateMachineHelpers =
 
 ## Library additions (resumable code combinators)
 
-A set of combinators is provided for combining resumable code. This is the normal way to specify resumable code for computation expression buidlers,
+A set of combinators is provided for combining resumable code. This is the normal way to specify resumable code for computation expression builders,
 see the examples.
 
 ```fsharp
