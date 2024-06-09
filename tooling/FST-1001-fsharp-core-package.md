@@ -179,7 +179,7 @@ This approach _appears_ to meet
 
 * Microsoft scenario requirements
 
-* Microsoft size requrements
+* Microsoft size requirements
 
 * Microsoft publication criteria
 
