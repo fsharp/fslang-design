@@ -77,7 +77,7 @@ module private PlaneHelpers =
 exception Error of Plane
 
 type Plane() = 
-    member x.StartTheEngines() = ... raise (NoFuelInPlance x)
+    member x.StartTheEngines() = ... raise (NoFuelInPlane x)
 ```
 
 * There is also some syntactic awkwardness when mutually refential types have attributes, e.g.
