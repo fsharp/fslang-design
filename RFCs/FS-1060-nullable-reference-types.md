@@ -283,7 +283,7 @@ This constraint is checked as follows:
 
 * An error is given if the constraint is instantiated with a type that uses null as a true value e.g. the `option` type or the `unit` type.
 
-* A nullabliity warning is given if the constraint is instantiated with a nullable type or a type defined with `AllowNullLiteral(true)` attribute.
+* A nullability warning is given if the constraint is instantiated with a nullable type or a type defined with `AllowNullLiteral(true)` attribute.
 
 > NOTE: The F# 4.x `null` also constraint implies a `not struct` constraint. See [Unresolved questions](nullable-reference-types.md#unresolved-questions) for more. 
 
@@ -373,7 +373,7 @@ does not check, here the known type on the last line is `T with T : null` and th
 Additional examples:
 
 ```fsharp
-let xs1 = [ ""; ""; null ] // gives a nullablity warning
+let xs1 = [ ""; ""; null ] // gives a nullability warning
 
 let xs2 : (string | null) list = [ ""; ""; null ] 
 
