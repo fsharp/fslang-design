@@ -89,7 +89,7 @@ The F# SDK version 11.0.0 is released, and it defines FSharp.Core 4.6.x.y as the
 
 * If a user attempts to load FSharp.Core 4.6.0.0, the check is satisfied.
 * If a user attempts to load FSharp.Core 4.6.3.2, the check is satisfied.
-* If a user attempts to load FSharp.Core 4.7.0.0, the check is **not** satisifed, and a warning is emitted:
+* If a user attempts to load FSharp.Core 4.7.0.0, the check is **not** satisfied, and a warning is emitted:
 
 "The version of FSharp.Core you attempted to load (4.7.0.0) is higher than the highest version of FSharp.Core that is guaranteed to load (4.6.x.y) on F# SDK version 11.0.0. Your code may fail at runtime. See here for a matrix of F# SDK and FSharp.Core versions: [LINK]"
 
