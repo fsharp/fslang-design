@@ -536,7 +536,7 @@ It seems likely that any discussion about `op_Implicit` and widening of integer 
 There is an alternative solution to generic literals which is to enhance the existing literal mechanism to allow the user to implement their own, namely:
 
 * Allow the user opening a module NumericLiteralD (where D stands for default) which will be called when no suffix is used in number literals.
-* Allow the user to define the default constraint, which will in anycase make the language more consistent.
+* Allow the user to define the default constraint, which will in any case make the language more consistent.
 * Introduce an optional method to interpret float-like literals, something like FromDecimal
 * Implement this optimization https://github.com/fsharp/fslang-suggestions/issues/602#issuecomment-510754929
 
