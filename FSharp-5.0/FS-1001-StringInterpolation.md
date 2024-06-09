@@ -6,7 +6,7 @@ There is an approved-in-principle [proposal](http://fslang.uservoice.com/forums/
 * [Discussion](https://github.com/fsharp/fslang-design/issues/368)
 * [x] Implementation: [first draft by @yatli](https://github.com/dotnet/fsharp/pull/8966), [final merged to master (--langversion:preview)](https://github.com/dotnet/fsharp/pull/8907)
 * [x] Design review meeting (26/06/2020, online, @dsyme, @cartermp, @TIHan, @jonsequitur), [notes](https://github.com/dotnet/fsharp/pull/8907#issuecomment-650304311)
-* [x] Implementation review meeting with @cartermap and @TIHan, [notes](https://gist.github.com/dsyme/dc86bf86de81b83b75557d4944db43c2).
+* [x] Implementation review meeting with @cartermp and @TIHan, [notes](https://gist.github.com/dsyme/dc86bf86de81b83b75557d4944db43c2).
 
 ### Summary
 

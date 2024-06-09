@@ -17,7 +17,7 @@ have been marked "approved in principle" (or closed as duplicates), while the fo
 - [Composed function leads to unexpected indentation warning](https://github.com/dotnet/fsharp/issues/10852)
 - [Warning only when function application is inside SynExpr.IfThenElse](https://github.com/dotnet/fsharp/issues/10929)
 
-[As @catermp said](https://github.com/fsharp/fslang-suggestions/issues/786#issuecomment-533809188),
+[As @cartermp said](https://github.com/fsharp/fslang-suggestions/issues/786#issuecomment-533809188),
 
 > I agree with this since we've made it a precedent to relax indentation like this in the past few releases.
 
