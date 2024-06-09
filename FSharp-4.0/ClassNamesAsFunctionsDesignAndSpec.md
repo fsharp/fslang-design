@@ -59,7 +59,7 @@ thus generating a type ty, and process the object construction (fun v -> new ty(
 Particular care is needed for the cases where the type name 
 is a generic type (or one of a number of generic types overloaded by generic arity).
 
-The IDE tests need care, since there are some code paths that may potentially affect the intellisence results given for cases like
+The IDE tests need care, since there are some code paths that may potentially affect the IntelliSense results given for cases like
 
      System.Collections.Generic.List   <-- press . after this, trying to access static members
 
