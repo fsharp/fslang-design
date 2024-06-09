@@ -52,7 +52,7 @@ Next, consider any `let! pat = expr in innerComp`. If the `innerComp` is an imme
 
 then the expression becomes `builder.BindReturn(source, (fun pat -> innerExpr))` where `innerExpr` is the inner computation with `return` removed.
 
-Likewise, apply a corresponding rule to produce calls to `Bind2Return`, `Bind3Return` and so on from `and!` expressions whose inner computation is an imediately-returning computation.
+Likewise, apply a corresponding rule to produce calls to `Bind2Return`, `Bind3Return` and so on from `and!` expressions whose inner computation is an immediately-returning computation.
 
 
 ## Notes
