@@ -1166,7 +1166,7 @@ I did a trial re-implementation of F# async (imperfectly and only a subset of th
 
 * Implementation: https://github.com/dotnet/fsharp/blob/main/tests/benchmarks/CompiledCodeBenchmarks/TaskPerf/TaskPerf/async2.fs
 
-* Signature fle: https://github.com/dotnet/fsharp/blob/main/tests/benchmarks/CompiledCodeBenchmarks/TaskPerf/TaskPerf/async2.fsi
+* Signature file: https://github.com/dotnet/fsharp/blob/main/tests/benchmarks/CompiledCodeBenchmarks/TaskPerf/TaskPerf/async2.fsi
 
 Recall how async differs from tasks:
 
