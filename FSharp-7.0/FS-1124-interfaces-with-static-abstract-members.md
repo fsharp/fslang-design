@@ -763,7 +763,7 @@ In this RFC we go with Option A+B, with the possibility of adding Option D at so
         ^T.call()
 ```
 
-Here the `^` on the last line is causing the expression to be interpreted as an infix expression `a^b`. The resolution is to require the use of `'T' for invocationse.g.
+Here the `^` on the last line is causing the expression to be interpreted as an infix expression `a^b`. The resolution is to require the use of `'T' for invocations, e.g.
 ```fsharp
     let inline f<^T when ^T : (static member StaticMethod: int -> int)>() =
         'T.StaticMethod(3)
