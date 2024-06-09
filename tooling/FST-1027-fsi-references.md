@@ -160,7 +160,7 @@ We may consider using `AssemblyLoadContext` in some clever way in the future, bu
 
 It works in all FCS driven tool (or even fsc itself) through :
 * having the extension assembly next to the process one
-* the `--compilertool:` flag, whilch can point to a directory containing the extensions
+* the `--compilertool:` flag, which can point to a directory containing the extensions
 
 By convention, tools that load extensions in other locations, should also load extensions that are sitting in same folder, unless there are good reasons not doing so.
 
