@@ -60,7 +60,7 @@ and not:
 g3: seq<#MemberInfo> -> MemberInfo[]
 ```
 
-No warning is added for existing redudant casts. This could be added in a future release once a `/langlevel` flag is in place, it is a one line change to add such a warning.
+No warning is added for existing redundant casts. This could be added in a future release once a `/langlevel` flag is in place, it is a one line change to add such a warning.
 
 # Drawbacks
 [drawbacks]: #drawbacks
