@@ -111,7 +111,7 @@ Supporting "smooth nominalization" means we need to carefully consider whether f
 * adding fields to anonymous records ``{ x with A = 1 }``
 * unioning anonymous records `` { include x; include y }``
 
-These should be included if and only if they are **also** implemented for nominal record types. Futher, their use makes the cost of nominalization higher, because F# nominal record types do not support the above
+These should be included if and only if they are **also** implemented for nominal record types. Further, their use makes the cost of nominalization higher, because F# nominal record types do not support the above
 features - even ``{ x with A=1 }`` is restricted to create objects of the same type as the original ``x``, and thus multiple
 nominal types will be needed where this construct is used.
 
