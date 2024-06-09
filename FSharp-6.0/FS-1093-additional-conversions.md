@@ -434,7 +434,7 @@ In addition, these widenings are not included:
 
 Earlier drafts of this PR included `int32` --> `float32` and `float32` --> `float` widenings. However, the use cases for these as
 adhoc type-directed conversions in F# programming are not particularly compelling - remember, adhoc conversions can cause confusion, and
-shuold only be added if really necessary.
+should only be added if really necessary.
 
 * One proposed use case for an implicit TDC for `int32` --> `float32`  is machine learning
   APIs which accept `float32` data, for example ideally little usability penalty should apply when switching from `float` to `float32`.
