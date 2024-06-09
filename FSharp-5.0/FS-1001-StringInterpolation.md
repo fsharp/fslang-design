@@ -183,7 +183,7 @@ is a legitimate expression.
 
 ### Tooling
 
-The compiler service tooling is adjusted to account for understanding when we're in an interoplated context (and complete the `}` with brace completion). It is expected that autocompletion will work in an interoplated context, as will any navigational features that work with symbols in a document.
+The compiler service tooling is adjusted to account for understanding when we're in an interpolated context (and complete the `}` with brace completion). It is expected that autocompletion will work in an interpolated context, as will any navigational features that work with symbols in a document.
 
 ### Performance expectations
 
