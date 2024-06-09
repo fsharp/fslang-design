@@ -156,7 +156,7 @@ let findOrNull (index: int) (list: 'T list) : 'T | null when 'T : not struct =
     | None -> null
 ```
 
-> NOTE: One problem with the above syntax is that it makes nullable types a litle too easy to use, and there is concern that they may thus become mainstream in F# usage.  However alternative syntaxes are either unimplementable or heavyweight, e.g. `string | null` is not backwards compatible. However it is a design goal to support the use of non-null reference types by default, we want to encourage the programmer to **avoid** using nullable reference types unless absolutely necessary, so this issue may be reconsidered.
+> NOTE: One problem with the above syntax is that it makes nullable types a little too easy to use, and there is concern that they may thus become mainstream in F# usage.  However alternative syntaxes are either unimplementable or heavyweight, e.g. `string | null` is not backwards compatible. However it is a design goal to support the use of non-null reference types by default, we want to encourage the programmer to **avoid** using nullable reference types unless absolutely necessary, so this issue may be reconsidered.
 
 #### `null` literal in expressions
 
