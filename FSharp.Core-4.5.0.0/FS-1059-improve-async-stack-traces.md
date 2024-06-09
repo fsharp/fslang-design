@@ -117,7 +117,7 @@ Possible solutions to these problems:
 
 1. Keep causal stacks in objects and reinstate them when the behavior of the objects is activated.
 
-    * This could be done if there was a way to do some kind of `[<CaptureCallerStackToken>]` and pass it down. This can be simulated by [caputring a `System.Diagnostics.StackTrace`](https://gist.github.com/dsyme/fb5c70ce6b16ac3047b8ceae057ccccb) for each and every computational object created and passing them down.
+    * This could be done if there was a way to do some kind of `[<CaptureCallerStackToken>]` and pass it down. This can be simulated by [capturing a `System.Diagnostics.StackTrace`](https://gist.github.com/dsyme/fb5c70ce6b16ac3047b8ceae057ccccb) for each and every computational object created and passing them down.
 
     * This could give very nice stack traces, but you would need to be able to hijack the normal debugging mechanisms and say, "hey, this is the real causal stack". This can be done for **exception** stack traces by hacking the internals of a .NET exception object (see [this blog post](https://eiriktsarpalis.wordpress.com/2015/12/27/reconciling-stacktraces-with-computation-expressions/)).
 
