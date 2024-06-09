@@ -1227,7 +1227,7 @@ The resumable code composition and elimination happens late in the F# compiler. 
 The code-weaving mechanism of resumable code can also be used to accurately statically combine non-resumable code fragments. For example, this is
 done by the `list { .. }`, `option { .. }` and `voption { .. }` examples.
 
-The code achieved is more reliably efficient than that acheived by simply inlining all combinators, because user code is identified as resumable code and
+The code achieved is more reliably efficient than that achieved by simply inlining all combinators, because user code is identified as resumable code and
 passed in via `ResumableCode` parameters which are statically inlined and flattened through the code weaving process.  Additionally, the control code and
 user code can be woven via delegates taking the "this" state machine argument as a byref to a struct state machine (e.g. see the `list` sample) which
 means zero allocations occur in the final resulting code.
