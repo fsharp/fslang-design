@@ -92,7 +92,7 @@ Points 1-3 guide many of the decisions below.
 
 ### Specifying resumable code
 
-Resumable code is a new low-level primitive form of compositional re-entrant code suitable only for writing
+Resumable code is a new low-level primitive form of compositional reentrant code suitable only for writing
 high-performance compiled implementations of computation expressions.
 
 Resumable code is represented by the `ResumableCode<'Data, 'T>` delegate type. 
