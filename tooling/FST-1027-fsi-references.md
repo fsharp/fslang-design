@@ -180,7 +180,7 @@ gather all the distinct dll names, order of precedence favoring those in the sam
 
 On .NET Framework, the dll are loaded through `Assembly.LoadFrom`.
 
-On .NET Core the loading mechanism is yet to be determined (**TBD**), although the extensions will need to be targetting .NET Standard 1.6 or higher.
+On .NET Core the loading mechanism is yet to be determined (**TBD**), although the extensions will need to be targeting .NET Standard 1.6 or higher.
 
 The fact that those dll will be loadable for both .NET Core and .NET Framework compilers  is yet to be determined (**TBD**).
 

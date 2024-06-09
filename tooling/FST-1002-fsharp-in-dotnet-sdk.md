@@ -123,7 +123,7 @@ __F# Template format compared with C#__
 In general there are no deviations between the two languages.  C# supports source file globbing (Wild card search for files to compile).  The F# compiler requires source file ordering specified in the project file and so this feature is disabled for F# projects.
 PackageRefs in an F# project are specified in the same way as C# projects, Similarly for Project Refs and References.
 
-There are extra properties to control F# specific features, such as FSharp.Core dll and Package referencing as well as System.ValueTuple package referencing.  The real value of these extra properties is apparent when targetting multiple .net frameworks.
+There are extra properties to control F# specific features, such as FSharp.Core dll and Package referencing as well as System.ValueTuple package referencing.  The real value of these extra properties is apparent when targeting multiple .net frameworks.
 
 __System.ValueTuple Reference__
 
