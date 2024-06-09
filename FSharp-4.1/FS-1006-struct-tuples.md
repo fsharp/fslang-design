@@ -83,7 +83,7 @@ let f (x,y) = x+y
 
 would apply only to reference tuples.
 
-There are no implitict conversions from struct tuples to reference tuples or vice-versa in this basic design.
+There are no implicit conversions from struct tuples to reference tuples or vice-versa in this basic design.
 
 ### Possible Extension: structness inference
 
