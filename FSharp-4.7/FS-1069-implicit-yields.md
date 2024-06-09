@@ -206,7 +206,7 @@ In practice, generating unit-values computationally seems not to arise, and if i
 
 ## Interaction with recursive functions
 
-When yields are implicit, in some cases expressions in computed list expressions which migh appear to be yields can be given "statement" interpretation instead of "yield" interpretation, giving rise to computed list expressions that yield nothing.   Any useful code that does this will almost always give a later type checking error. However that error can be hard to understand.
+When yields are implicit, in some cases expressions in computed list expressions which might appear to be yields can be given "statement" interpretation instead of "yield" interpretation, giving rise to computed list expressions that yield nothing.   Any useful code that does this will almost always give a later type checking error. However that error can be hard to understand.
 
 For example, consider this code, transforming a tree labelled with integers to a tree labelled with strings:
 

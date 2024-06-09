@@ -578,7 +578,7 @@ A note by @dsyme: The omission of pattern matching for anonymous records really 
 
 ### Alternative: syntax ``type {| i = 1 |}``
 
-Response: This is one of a number of alternatives trying imply "this value has runtime type information".  Others might be ``rtt {| i = 1 |}`` (``rtt`` for "runtime type") or ``obj {| i = 1 |}``.  However each of which seems worse in other ways. For example ``type`` mighy imply "what comes after this is in the syntax of types" or something like that.
+Response: This is one of a number of alternatives trying imply "this value has runtime type information".  Others might be ``rtt {| i = 1 |}`` (``rtt`` for "runtime type") or ``obj {| i = 1 |}``.  However each of which seems worse in other ways. For example ``type`` might imply "what comes after this is in the syntax of types" or something like that.
 
 #### Alternative: Support both Kind A and Kind B types 
 
