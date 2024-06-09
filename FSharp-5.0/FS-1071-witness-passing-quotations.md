@@ -486,7 +486,7 @@ if not inlined, which is why we always currently always require it to be inlined
 
 ### Choice of name for alternative entry point
 
-This RFC suffixes `$W` for the entry point.  Alternatives such as `WithWitnesses` were consdiered.
+This RFC suffixes `$W` for the entry point.  Alternatives such as `WithWitnesses` were considered.
 
 
 

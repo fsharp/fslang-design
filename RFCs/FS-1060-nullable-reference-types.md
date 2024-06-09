@@ -491,7 +491,7 @@ let zs = seq { yield ""; yield ""; yield null } // WARNING inferred type seq<str
 
 Nullability warnings are never emitted for the `obj` type. 
 
-> NOTE: The rationale for this is that reflection-based APIs are generally much simpler if nullability is not tracked For example consdier
+> NOTE: The rationale for this is that reflection-based APIs are generally much simpler if nullability is not tracked For example consider
 >     static member PreComputeRecordReader : recordType:Type  * ?bindingFlags:BindingFlags -> (obj -> obj[])
 > versus
 >     static member PreComputeRecordReader : recordType:Type  * ?bindingFlags:BindingFlags -> ((obj | null) -> (obj | null)[])
