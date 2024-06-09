@@ -198,7 +198,7 @@ However, a similar set of rules do not apply to `outref<'T>`.  This is for compa
 
 For compatibility, .NET parameters using the `[in]` attribute (e.g. `[in] int32& p`) are interpreted as type `byref<'T>` (e.g. `byref<int32>`).  This is for similar reasons to the above: .NET method signatures already exist that may use `[in]`.  This means the only place where `inref<'T>` types are introduced implicitly by F# is 
 1. For  a .NET parameter or return type that  has an `IsReadOnlyAttribute` `modreq`, see below.
-2. For the `this` pointer on a struct type that has no mutable fields, see belowif a .NET signature also has a `modreq` attribute for `IsReadOnly` on a parameter, see below.
+2. For the `this` pointer on a struct type that has no mutable fields, see below if a .NET signature also has a `modreq` attribute for `IsReadOnly` on a parameter, see below.
 3. For the address of a memory location derived from another `inref<_>` pointer.
 
 #### Implicit dereference of return byrefs
