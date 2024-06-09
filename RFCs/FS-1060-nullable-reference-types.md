@@ -218,7 +218,7 @@ type =
 #### Library additions
 
 In the prototype, library functions are added to cover the basic operations associated with nullable reference types. These
-corresponse to `value.HasValue`, `value.Value` and `Nullable(value)` for nullable value types.
+correspond to `value.HasValue`, `value.Value` and `Nullable(value)` for nullable value types.
 The status of these library functions is TBD and the naming is quite hard to get right.
 
 ```fsharp
