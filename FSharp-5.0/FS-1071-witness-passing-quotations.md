@@ -308,7 +308,7 @@ module LanguagePrimitives =
         val InequalityDynamic : x:'T1 -> y:'T2 -> 'U
         val DivideByIntDynamic : x:'T -> y:int -> 'T
 
-// These are pre-existing and act as suitable witnesses
+// These are preexisting and act as suitable witnesses
 module OperatorIntrinsics =
         val AbsDynamic : x:'T -> 'T 
         val AcosDynamic : x:'T -> 'T 
