@@ -122,7 +122,7 @@ Adds extra functions to FSharp.Core
 
 # Alternatives
 
-See suggestion discussion  thread for discusssion on `updateManyAt` and also other naming alternatives.
+See suggestion discussion  thread for discussion on `updateManyAt` and also other naming alternatives.
 
 # Compatibility
 
