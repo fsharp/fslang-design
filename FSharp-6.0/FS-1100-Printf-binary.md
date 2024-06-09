@@ -80,7 +80,7 @@ Please address all necessary compatibility questions:
 * Is this a breaking change? No
 * What happens when previous versions of the F# compiler encounter this design addition as source code? Error as expected.
 * What happens when previous versions of the F# compiler encounter this design addition in compiled binaries?
-  For exposed printf formats, users should make sure they have the correct FSharp.Core referenced, otherwise expections will occur.
+  For exposed printf formats, users should make sure they have the correct FSharp.Core referenced, otherwise exceptions will occur.
 * If this is a change or extension to FSharp.Core, what happens when previous versions of the F# compiler encounter this construct?
   There is no risk of exposing unsupported language features to previous versions of the F# compiler since the API surface of FSharp.Core stays constant.
 
