@@ -799,7 +799,7 @@ A previous version of this RFC proposed to use rewriting of the interfaces consi
 |  |`IMultiplyOperators<double<'u>,double<'u>,double<'u^2>>`  |
 |  | etc. |
 
-Note the `m^2` on the `IMultiplyOperators`.  However, this technique is obviouisly flawed, because it only allows `double<m> * double<m>` and not, say `double<m> * double<kg>`.  The links above have further commentary.
+Note the `m^2` on the `IMultiplyOperators`.  However, this technique is obviously flawed, because it only allows `double<m> * double<m>` and not, say `double<m> * double<kg>`.  The links above have further commentary.
 
 [ Aside: This is an example of why nominal concept modelling of the kind used in `System.Numerics.*` is problematic: concepts are fragile as new genericity requirements are placed on them. ]
 
