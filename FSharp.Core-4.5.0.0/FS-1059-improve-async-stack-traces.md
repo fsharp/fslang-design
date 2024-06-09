@@ -82,7 +82,7 @@ Here is the stack:
 
 Barely any user code is on the stack at all, and the line numbers are all closures in the implementation of the DSL.
 
-It is also important to note that C# async and other implementations of Promises/Tasks/"Hot Tasks" don't suffer this problem since they are not "delayef". But most F# DSLs are "delayed". For `async { }`, it is F#'s use of "cold tasks" that require explicit starting that causes the issue.
+It is also important to note that C# async and other implementations of Promises/Tasks/"Hot Tasks" don't suffer this problem since they are not "delayed". But most F# DSLs are "delayed". For `async { }`, it is F#'s use of "cold tasks" that require explicit starting that causes the issue.
 
 ## Problem Two - losing tack traces for exceptions
 
