@@ -433,7 +433,7 @@ is given on such a cast.  For examples:
 
 * A warning is given when casting from `C<'S>` to `C<'T | null>` and from `C<'S | null>` to `C<'T>`.
 
-TBD: check these are implemented correctly, and check where there are cases where no warning is emittied.
+TBD: check these are implemented correctly, and check where there are cases where no warning is emitted.
 
 
 #### Type inference - null assignment and passing
