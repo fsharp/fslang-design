@@ -274,7 +274,7 @@ The checking and elaboration of these forms is fairly straight-forward.
 Notes:
 * Anonymous record types are marked serializable
 
-Anonymous record types types have  full C#-compatible anonymous object metadata. Underneath these compile to an instantiation of a generic type defined in the declaring assembly with appropriate .NET metadata (property names). These types are CLIMutable and thus C#-compatible. The identity of the types are implicitly assembly-qualified.
+Anonymous record types have  full C#-compatible anonymous object metadata. Underneath these compile to an instantiation of a generic type defined in the declaring assembly with appropriate .NET metadata (property names). These types are CLIMutable and thus C#-compatible. The identity of the types are implicitly assembly-qualified.
 
 These types are usable in LINQ queries.
 
