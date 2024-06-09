@@ -43,7 +43,7 @@ When RFCs are implemented and a version of F# is revved, the RFCs which correspo
 
 ### Who is in Charge?
 
-Historically the designer of F# has been Don Syme (@dsyme). Practically speaking, today most of the design process operates through the efforts of contributors, overseen by those with commit rights on this repository, who are curently @vzarytovskii, @dsyme, @cartermp, @baronfel, and @abelbraaksma. Much of the work happens by contributions via RFCs and most features now proceed from initial approval all the way to implementation through community and enterprise contributions. The planning and progress process for features is intended to be transparent and participative.
+Historically the designer of F# has been Don Syme (@dsyme). Practically speaking, today most of the design process operates through the efforts of contributors, overseen by those with commit rights on this repository, who are currently @vzarytovskii, @dsyme, @cartermp, @baronfel, and @abelbraaksma. Much of the work happens by contributions via RFCs and most features now proceed from initial approval all the way to implementation through community and enterprise contributions. The planning and progress process for features is intended to be transparent and participative.
 
 Throughout feature development the needs of all stakeholders can be taken into account, e.g. the needs of those delivering tooling or long-term support for F#. Together with the F# community, the overseers of the design process will continue to refine this process based on community and delivery needs.
 
