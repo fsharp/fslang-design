@@ -25,7 +25,7 @@ This is effectively Microsoft getting their ducks in row. That is, the days of p
 
 Any of the following do not apply:
 
-* Removing ownership of packages from F# Sofware Foundation
+* Removing ownership of packages from F# Software Foundation
 * Removing ability of F# Software Foundation to manage the above projects in conjunction with Microsoft
 * Removing of any existing permissions or capabilities for the F# Software Foundation
 
