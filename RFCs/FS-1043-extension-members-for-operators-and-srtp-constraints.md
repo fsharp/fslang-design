@@ -329,7 +329,7 @@ This is the only example I've found of this in FSharpPlus.  However I guess ther
 
 ```
      let inline SomeGenericFunction (...) =
-        ...some composition of FSharpPlus operations that use return types to resolve member constrinats....
+        ...some composition of FSharpPlus operations that use return types to resolve member constraints....
 ```
 
 We expect this pattern to happening in client code of FSharpPlus code. The recommendation is:

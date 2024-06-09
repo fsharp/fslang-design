@@ -207,7 +207,7 @@ The syntactic places where this warning is **not** emitted are:
 * When declaring a self-constraint `when ISomeInterface<...>`
 * When declaring a flexible-constraint `#ISomeInterface<...>`
 
-At all other locations the use of an IWSAM constraint results in the warning. Note this includes `typeof<ISomeInterface<...>>` - reflecting over IWSAM csontraints is sufficiently rare that this is not given a special dispensation.
+At all other locations the use of an IWSAM constraint results in the warning. Note this includes `typeof<ISomeInterface<...>>` - reflecting over IWSAM constraints is sufficiently rare that this is not given a special dispensation.
 
 ### Interaction with SRTP constraints
 
