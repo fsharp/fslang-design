@@ -57,7 +57,7 @@ None from a user's standpoint.
 
 ## Alternatives
 
-The main alternative is "don't do this" and continue to require the extra space. However, this is somewhat of a parlor trick to memorize, which we want to avoid from a language design standpoiht.
+The main alternative is "don't do this" and continue to require the extra space. However, this is somewhat of a parlor trick to memorize, which we want to avoid from a language design standpoint.
 
 ## Compatibility
 
