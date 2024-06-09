@@ -67,7 +67,7 @@ FSharpAI.Tools.Translate <@ PretrainedFFStyleVGGCore @>
 
 By it's nature AI models will use generic math code like "+", that's kind of unavoidable.
 Even more so when [RFC FS-1043](https://github.com/fsharp/fslang-design/blob/master/RFCs/FS-1043-extension-members-for-operators-and-srtp-constraints.md) is accepted. Without accurate information about how generic math operators like "+" really resolve, the quotation
-meta-programming is inaccurate and often full of bugs. A typical manifestion will be adding an overload (e.g. `Tensor + double`) and then getting this:
+meta-programming is inaccurate and often full of bugs. A typical manifestation will be adding an overload (e.g. `Tensor + double`) and then getting this:
 ```fsharp
 FSharpAI.Tools.ShapeAnalysis <@ PretrainedFFStyleVGGCore @>
 
