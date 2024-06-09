@@ -459,7 +459,7 @@ A state machine is not _compilable_ if its resumable code is not compilable, tha
 If a state machine is not compilable, see "Execution of non-compilable state machines" below.
 
 > NOTE: Non-compilable state machines often occur when defining functions producing state machines.
-> This occurs becuase any `ResumableCode` parameters are not yet fully defined through inlining.
+> This occurs because any `ResumableCode` parameters are not yet fully defined through inlining.
 > 
 > State machines are made compilable using 'inline' on the function.  However all F# inlined code also has corresponding non-inline code emitted for 
 > reflection and quotations.  For this reason, when defining functions producing state machines, an   `if __useResumableCode then` alternative should 

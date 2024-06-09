@@ -301,7 +301,7 @@ will return the right thing.  However
     f 3.0<m>
 ```
 
-will return `9.0<m>` instead of `9.0<m^2>`, becuase `op_Multiply` in `IMultiplyOperators<double<m>>` would, without doing anything, have signature
+will return `9.0<m>` instead of `9.0<m^2>`, because `op_Multiply` in `IMultiplyOperators<double<m>>` would, without doing anything, have signature
 
 ```fsharp
 op_Multiply: double<m> * double<m> -> double<m>
