@@ -18,7 +18,7 @@ Allow the usage of `Item1`/`Item2`/etc. from struct tuples and ValueTuple in F# 
 
 Struct tuples are backed by the `ValueTuple` type, which does define `Item1`/`Item2`/etc as properties on it. However, it is a compile error to access these in F# code from an F# struct tuple.
 
-You can access these fields from reference tuples today, which makes things very akward:
+You can access these fields from reference tuples today, which makes things very awkward:
 
 ```fsharp
 let x = (1, 2)
