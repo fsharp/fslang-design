@@ -64,7 +64,7 @@ type Plane() =
     member x.StartTheEngines() = ... PlaneHelpers.start x
 
 module private PlaneHelpers = 
-    let start(x:Plane)=  ... // note, the module is mutually refential with the type
+    let start(x:Plane)=  ... // note, the module is mutually referential with the type
 ```
 
 * This problem is particularly apparent when a module is used to contain helpers for implementations of interfaces and
@@ -80,7 +80,7 @@ type Plane() =
     member x.StartTheEngines() = ... raise (NoFuelInPlane x)
 ```
 
-* There is also some syntactic awkwardness when mutually refential types have attributes, e.g.
+* There is also some syntactic awkwardness when mutually referential types have attributes, e.g.
 
 ```fsharp
 [<Struct>]
@@ -482,7 +482,7 @@ We decided against this for two reasons
 * it feels syntactically awkward in a similar way to current ``type X .. and ... `` feels awkward, especially when combined with attribute declarations
 
 
-### Alternative: ``#rec`` declarations and scoped mutually refential regions
+### Alternative: ``#rec`` declarations and scoped mutually referential regions
 
 There is no intrinsic reason why mutual reference needs to be dealt
 with at the ``module`` or ``namespace`` scope - it is often useful to make 
