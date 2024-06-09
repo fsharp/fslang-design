@@ -294,7 +294,6 @@ is
 ```
 
 # Examples and Error Messages
-[exampes]: #examples
 
 The prototype currently has this (it could be improved)
 
