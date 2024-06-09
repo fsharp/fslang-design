@@ -468,7 +468,7 @@ module M = ...
 
 and module N = ....
 
-and exception E of stirng
+and exception E of string
 
 and let f x = x + 1
 
