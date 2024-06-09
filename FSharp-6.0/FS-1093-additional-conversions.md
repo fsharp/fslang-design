@@ -577,7 +577,7 @@ Questions:
 
 Answer: no impact, just more programs will be expected, no new expression shapes
   
-> "[21:27] Heron Barreto - are we going to expand usage of the flexibe type operator(?) with this RFC?"
+> "[21:27] Heron Barreto - are we going to expand usage of the flexible type operator(?) with this RFC?"
 
 Answer: no, indeed it might be used less
 
