@@ -84,7 +84,7 @@ Implicit yields are activated for
 
 1. List, array and sequence expressions that have no explicit yield (i.e. you can't mix implicit and explicit yields).  Using `yield!` is allowed.
 
-2. Computation expressions that have no explicit `yield` and where the builder supports the neessary methods for yielding, i.e. `Yield`, `Combine`, `Delay` and `Zero`.
+2. Computation expressions that have no explicit `yield` and where the builder supports the necessary methods for yielding, i.e. `Yield`, `Combine`, `Delay` and `Zero`.
 
 When implicit yields are activated, 
 
