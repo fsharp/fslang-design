@@ -67,7 +67,7 @@ async {
 }
 ```
 
-It should be noted that it would not be sufficient to simply generate all the associated ``let!``s (or, as it appears in the IL, the call to ``.Bind``) for each ``elif!`` at the beginning of the whole if expression, as this would cause undesired evaluation (likely, side effects as well) even when those branches' checks aren't reached. In other words, the prior example's ``cexpr2`` must only be evaluted when it is reached.
+It should be noted that it would not be sufficient to simply generate all the associated ``let!``s (or, as it appears in the IL, the call to ``.Bind``) for each ``elif!`` at the beginning of the whole if expression, as this would cause undesired evaluation (likely, side effects as well) even when those branches' checks aren't reached. In other words, the prior example's ``cexpr2`` must only be evaluated when it is reached.
 
 Any combination of successive ``elif`` and ``elif!`` branches should be allowed. Additionally, an ``if!`` need not be present in order to use ``elif!``. Here are some more valid use cases:
 

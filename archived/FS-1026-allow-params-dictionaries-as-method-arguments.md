@@ -198,7 +198,7 @@ let createDict() =
   tmp.Add("c", 3.0 * 2.0 :> obj)
 S.A(3+5, createDict())
 ```
-And it is clear that `1+3` and `3.0 * 2.0` are evaluated after `3+5`. If we'd just create the dictionary and add the arguments, the dictionary arguments would be evluated before the formal argument `x`. In this case it makes no observable difference, but it's easy to construct a case where the difference is observable.
+And it is clear that `1+3` and `3.0 * 2.0` are evaluated after `3+5`. If we'd just create the dictionary and add the arguments, the dictionary arguments would be evaluated before the formal argument `x`. In this case it makes no observable difference, but it's easy to construct a case where the difference is observable.
 
 # Drawbacks
 [drawbacks]: #drawbacks
