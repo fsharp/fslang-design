@@ -30,7 +30,7 @@ The attribute is verbose and tedious. In the cases that this RFC seeks to addres
 # Detailed design
 [design]: #detailed-design
 
-If a module is defined in a declaration group (i.e. namespace declaration group, or the group of declarations making up a module) containing a non-augmentation type definition of the same name, then the compiled name of the module is implicitly suffixed by ``Module`` as if the ``[<CompilationRepresentation(CompilationRepresentationFlags.ModuleSuffix )>]`` had been used. This behavior _cannot_ be overriden with the `[<CompiledName()>]` attribute.
+If a module is defined in a declaration group (i.e. namespace declaration group, or the group of declarations making up a module) containing a non-augmentation type definition of the same name, then the compiled name of the module is implicitly suffixed by ``Module`` as if the ``[<CompilationRepresentation(CompilationRepresentationFlags.ModuleSuffix )>]`` had been used. This behavior _cannot_ be overridden with the `[<CompiledName()>]` attribute.
 
 This applies if the module is an abbreviation.
 
