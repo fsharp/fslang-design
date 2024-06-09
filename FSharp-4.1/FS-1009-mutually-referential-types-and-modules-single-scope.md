@@ -261,7 +261,7 @@ namespace rec NS =
          let y2 () = ...
 ```
 
-Note that the interpretaion of ``rec`` differs from that in OCaml.  In OCaml, ``module rec M`` allows the
+Note that the interpretation of ``rec`` differs from that in OCaml.  In OCaml, ``module rec M`` allows the
 module contents to be accessed via the name ``M``, e.g. ``module rec M = ... let g() = 2 let f() = 1 + M.g()``.
 But unless M is opened, mutual references _must_ go via the name ``M``. This proposal for F# is that there is
 effectively an implicit ``open`` immediately after the ``rec`` and on all nested modules.  This fits
