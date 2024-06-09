@@ -143,7 +143,7 @@ It has to end with 4x" to match the opening.
 
 Alternatives:
 
-1. Try to fully align with C#'s raw string literals at the cost of backward compatiblity.
+1. Try to fully align with C#'s raw string literals at the cost of backward compatibility.
 
   Such change would break any code that has at least one escaped `{` or `}` in an interpolated (triple quoted) string literal. This feature does not warrant such a breaking change.
 

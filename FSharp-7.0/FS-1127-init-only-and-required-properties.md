@@ -161,7 +161,7 @@ None
 
 No alternatives
 
-## Compatiblity ##
+## Compatibility ##
 
 - Is this a breaking change?
 

@@ -124,7 +124,7 @@ An alternate design would be to also expose the `Tag` property and `Tags` nested
     | Binary compatible for C# consumer   | No                   | No                  |
     | Source compatible for C# consumer   | No                   | No                  |
 
-# Compatiblity
+# Compatibility
 
 * Is this a breaking change?
 
