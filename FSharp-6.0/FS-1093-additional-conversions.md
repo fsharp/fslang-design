@@ -479,7 +479,7 @@ let g() =
 
 Here, `data1` now needs a type annotation to maintain the same inferred type.  This matters because `data` is a tuple, and, in the absence of 
 co-variance on tuples (which wouldn't apply to the `int --> obj` conversion in any case), would need to be unpackaged and repackaged to
-get the correcct destination type of `obj * obj`.  Here is a working version with the type annotation:
+get the correct destination type of `obj * obj`.  Here is a working version with the type annotation:
 
 ```fsharp
 let g() =
