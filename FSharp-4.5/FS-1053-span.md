@@ -477,7 +477,7 @@ type S(x: int, y: int) =
     member this.Replace(s: S) = this <- s
 ```
 Note that the struct is immutable, except for a `Replace` method.  The `this` parameter will now be considered `inref<S>` and
-an error will be reported suggesting to add a mutable field if the struc is to be mutated.
+an error will be reported suggesting to add a mutable field if the struct is to be mutated.
 
 Allowing this assignment was never intended in the F# design and I consider this as fixing a bug in the F# compiler now we have the
 machinery to express read-only references.
