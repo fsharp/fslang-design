@@ -31,7 +31,7 @@ Ideally this would work for type providers too, i.e. methods with this kind of a
 # Motivation
 [motivation]: #motivation
 
-When interoperating with languages that are more dynamic than F# (like Python, Matlab or R), we can often get the list of available methods/functions, but we cannot always get the names and types of parameters. For example, in R provider, you sometimes have to write:
+When interoperating with languages that are more dynamic than F# (like Python, MATLAB or R), we can often get the list of available methods/functions, but we cannot always get the names and types of parameters. For example, in R provider, you sometimes have to write:
 
 ```fsharp
 namedParams [ ("xval", days), ("yval", prices), ("another", box 1) ]
