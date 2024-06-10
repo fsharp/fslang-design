@@ -54,7 +54,7 @@ TBD
 [alternatives]: #alternatives
 
 ## Don't do it
-As a workaround, wrapping function into a lamdba works in all cases, e.g.
+As a workaround, wrapping function into a lambda works in all cases, e.g.
 ```F#
 let test x = x + 1
 Test().Test (fun x -> test x)
