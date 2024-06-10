@@ -386,7 +386,7 @@ A `<resumable-expr>` is:
     <expr>
     ```
 
-Static checks are performed for the specificaiton of low-level resumable code as outlined above.
+Static checks are performed for the specification of low-level resumable code as outlined above.
 
 
 ### Hosting resumable code in a resumable state machine struct
