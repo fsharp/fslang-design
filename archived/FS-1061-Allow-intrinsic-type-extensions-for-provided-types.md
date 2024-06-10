@@ -171,7 +171,7 @@ The only drawback is the complexity of the addition, but the addition makes prov
 # Alternatives
 [alternatives]: #alternatives
 
-The alternative is to add features to the provided type by alternative means such as inheriting from the provided type or by augmenting another type which defers to the provided type internally.  These drawbacks are detailed in [Examples of current limitations that this RFC addresses](#examples-of-current-limitations-that-this-frc-addresses).
+The alternative is to add features to the provided type by alternative means such as inheriting from the provided type or by augmenting another type which defers to the provided type internally.  These drawbacks are detailed in [Examples of current limitations that this RFC addresses](#examples-of-current-limitations-that-this-rfc-addresses).
 
 Another alternative would be to add partial classes to F# which is really what intrinsic type extensions are albeit limited to extensions in the same file.  The biggest downside to this alternative is it would have a large impact on tooling such as changes required to *Go to Definition* etc.
 
