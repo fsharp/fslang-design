@@ -19,7 +19,7 @@ This RFC covers Part 1 of [RFC FS-1039 Struct representation for active patterns
 
 Powerful and extensible features such as Active Patterns and Optional Arguments should be near-zero-cost abstractions. A `ValueOption` type is a first step in this direction.
 
-Additionally, in situations where a struct can provide a benefit over a reference type, `ValueOption` may allow developers to eek out more performance independently of their usage of Active Patterns and Optional Arguments.
+Additionally, in situations where a struct can provide a benefit over a reference type, `ValueOption` may allow developers to squeeze out more performance independently of their usage of Active Patterns and Optional Arguments.
 
 # Detailed design
 [design]: #detailed-design
