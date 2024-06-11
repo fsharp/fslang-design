@@ -66,6 +66,7 @@ Please list the reasonable expectations for tooling for this feature, including 
 * Auto-complete
 * Tooltips
 * Navigation and Go To Definition
+* Error recovery (wrong, incomplete code)
 * Colorization
 * Brace/parenthesis matching
 
