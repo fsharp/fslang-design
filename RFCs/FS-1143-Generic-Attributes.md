@@ -51,10 +51,10 @@ type Example =
 
 //assuming AClassAttribute has a property "_.TheType" where we store the single argument we pass above:
 typeof<Example>.GetCustomAttributes(typeof<AClassAttribute>)
-|> Array.filter (fun x -> x :?> AClassAttribute |> _.TheType)
+|> Array.filter (fun x -> (x :?> AClassAttribute |> _.TheType) = typeof<SomeTypeA>)
 //gives like [|AClassAttribute|]
 typeof<Example>.GetCustomAttributes(typeof<AClassAttribute>)
-|> Array.filter (fun x -> x :?> AClassAttribute |> _.TheType)
+|> Array.filter (fun x -> (x :?> AClassAttribute |> _.TheType) = typeof<SomeTypeA>)
 //gives like [|AClassAttribute|]
 ```
 
@@ -66,6 +66,8 @@ This feature will increase the complexity of attribute handling throughout the c
 
 While the benefit to reflection seems to have no alternative, the actual storage of type information in the instance of an attribute is currently achievable via passing a typeof<_> argument to the attribute ctor itself.
 
+Given that the core purpose of this RFC is to increase both the ergonomics of F# and the interop between F# and C#, there is no real alternative on that end.
+
 # Compatibility
 
 Please address all necessary compatibility questions:
@@ -73,9 +75,9 @@ Please address all necessary compatibility questions:
 * Is this a breaking change?
   * No
 * What happens when previous versions of the F# compiler encounter this design addition as source code?
-  *
+  * Unexpected postfix token error
 * What happens when previous versions of the F# compiler encounter this design addition in compiled binaries?
-  *
+  * Attributes that require type arguments would be unusable. Reflection should be unaffected (as the GetCustomAttributes functionality relies on type specs.)
 * If this is a change or extension to FSharp.Core, what happens when previous versions of the F# compiler encounter this construct?
   * Not a change to Core.
 
@@ -123,4 +125,29 @@ Does the proposed RFC interact with culture-aware formatting and parsing of numb
 
 # Unresolved questions
 
-What parts of the design are still TBD?
+In what instances will type inferencing be possible? Presumably, the following will be a (relatively) trivial case:
+
+```fsharp
+type MyAttribute<^T>(context : ^T)=
+  inherit Attribute()
+
+[<MyAttribute(24)>]
+let x = 1
+```
+
+Though it may be less common, could we also support inferencing from the surrounding environment:
+
+```fsharp
+type MyOtherAttribute<^T>()=
+  inherit Attribute()
+
+type SomeClass<^T,^S>(arg1, arg2)=
+
+  [<MyOtherAttribute<^T>>]
+  member _.Field1 = arg1
+  
+  [<MyOtherAttribute<^S>>]
+  member _.Field1 = arg1
+```
+
+This may be completely incongruent with how attributes are currently handled in F# (or dotnet entirely), but given that whenever we talk about `SomeClass` we would do so while also contextualizing `^T` and `^S`, it seems like something like this might be able to work.
