@@ -12,7 +12,7 @@ Depending the concern being discussed, erase the other top sections and review/t
 
 Formatting infrastructure decision checklist:
 * [ ] If this is a code formatter discussion, please suggest a detailed list of settings names and their default values, with their behaviour
-* [ ] the choice for tooling support should be based on ease of implementation in code formatter
+* [ ] the choice for tooling support should be based on ease of implementation in the code formatter
 * [ ] the choice for tooling output should be based on
   * [ ] conserving original formatting but for specific predicate that makes code significantly less maintainable
   * [ ] maximizing uniformity of a specific construct across a particular codebase
