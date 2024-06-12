@@ -11,7 +11,7 @@ Depending the concern being discussed, erase the other top sections and review/t
 # Is your request about a feature in code formatting (using fantomas, .editorconfig, editors with formatting options)?
 
 Formatting infrastructure decision checklist:
-* [ ] If this is code formatter discussion, please suggest a detailed list of settings names and their default values, with their behaviour
+* [ ] If this is a code formatter discussion, please suggest a detailed list of settings names and their default values, with their behaviour
 * [ ] the choice for tooling support should be based on ease of implementation in code formatter
 * [ ] the choice for tooling output should be based on
   * [ ] conserving original formatting but for specific predicate that makes code significantly less maintainable
