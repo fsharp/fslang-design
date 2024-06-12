@@ -127,7 +127,7 @@ builder.Method((builder.Yield()), a, b, c, d, e, f)
 
 The same rules as calling this code will apply for the computation expressions.
 
-The restriction of having a 1:1 match on the method and keyword names for the overloads is kept as it keeps the intent clear. Howevere the overloads don't need to be marked with `[<CustomOperation>]` again.
+The restriction of having a 1:1 match on the method and keyword names for the overloads is kept as it keeps the intent clear. However the overloads don't need to be marked with `[<CustomOperation>]` again.
 
 
 ### Consistency of attributes

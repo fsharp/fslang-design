@@ -19,7 +19,7 @@ The aim of this feature is to allow provided types from [type providers](https:/
 # Motivation
 [motivation]: #motivation
 
-The motivation for this change comes from the inherent limitations with the way that provided types can be used.  With C# code generation it's very common for the generated code to be produced as a [partial class](https://docs.microsoft.com/en-us/dotnet/csharp/programming-guide/classes-and-structs/partial-classes-and-methods) where the user is free to extend the type in another file by using the partial class syntax, in F# this is not possible as it has no concept of a partial class.  F# does have intrinsic and optional type extensions, it makes sense to allow this syntax to be used on provided types to allow the generated code more customisation by the user.  Frameworks such as Xamarin.iOS require certain methods to be implemented as overloads which rules out using optional type extensions, indeed its common for frameworks to have these kind of constraints as C# is known to use partial classes for these situations.  Having intrinsic type extension syntax greatly simplifys the construction on these types.  
+The motivation for this change comes from the inherent limitations with the way that provided types can be used.  With C# code generation it's very common for the generated code to be produced as a [partial class](https://docs.microsoft.com/en-us/dotnet/csharp/programming-guide/classes-and-structs/partial-classes-and-methods) where the user is free to extend the type in another file by using the partial class syntax, in F# this is not possible as it has no concept of a partial class.  F# does have intrinsic and optional type extensions, it makes sense to allow this syntax to be used on provided types to allow the generated code more customisation by the user.  Frameworks such as Xamarin.iOS require certain methods to be implemented as overloads which rules out using optional type extensions, indeed its common for frameworks to have these kind of constraints as C# is known to use partial classes for these situations.  Having intrinsic type extension syntax greatly simplifies the construction on these types.  
 
 # Detailed design
 [design]: #detailed-design
@@ -32,7 +32,7 @@ Error FS0192: internal error: FindTypeDefBuilder: <Method> not found (FS0192) (<
 
 Instead the type is extended in the same way as a normal type extension.
 
-The proposed systax is the same as the existing intrinsic type extension syntax:
+The proposed syntax is the same as the existing intrinsic type extension syntax:
 
 Example code short form:
 
@@ -102,7 +102,7 @@ type ViewController(handle : IntPtr) =
         base.ViewDidLoad()
 ```
 
-This has several drawbacks that makes the user facing code more complex and unweidy than it should be with additions mentioned in the RFC.
+This has several drawbacks that makes the user facing code more complex and unwieldy than it should be with additions mentioned in the RFC.
 
 ### Attributes have to be defined on outward facing type
 
@@ -171,7 +171,7 @@ The only drawback is the complexity of the addition, but the addition makes prov
 # Alternatives
 [alternatives]: #alternatives
 
-The alternative is to add features to the provided type by alternative means such as inheriting from the provided type or by augmenting another type which defers to the provided type internally.  These drawbacks are detailed in [Examples of current limitations that this RFC addresses](##examples-of-current-limitations-that-this-frc-addresses).
+The alternative is to add features to the provided type by alternative means such as inheriting from the provided type or by augmenting another type which defers to the provided type internally.  These drawbacks are detailed in [Examples of current limitations that this RFC addresses](#examples-of-current-limitations-that-this-rfc-addresses).
 
 Another alternative would be to add partial classes to F# which is really what intrinsic type extensions are albeit limited to extensions in the same file.  The biggest downside to this alternative is it would have a large impact on tooling such as changes required to *Go to Definition* etc.
 

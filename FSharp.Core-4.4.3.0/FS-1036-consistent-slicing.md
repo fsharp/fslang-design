@@ -33,7 +33,7 @@ The same issues apply to `l.[i..]`, which fails when i≥l.Length, including the
 The flaw in `l.[..j]` generates **unexpected runtime errors**. E.g.
 
 - If n is a position in the string s, you would expect `s.[..(n-1)]` to be the substring prior to n but this is not true at the moment (for n=0).
-- You want to split a list l into the first n elements and the remaining elements. You write: `let a,b = l.[..(n-1)], l.[n..]`. This code unexpectedly fails when n=0 and and when n=l.Length.
+- You want to split a list l into the first n elements and the remaining elements. You write: `let a,b = l.[..(n-1)], l.[n..]`. This code unexpectedly fails when n=0 and when n=l.Length.
 
 
 # Detailed design

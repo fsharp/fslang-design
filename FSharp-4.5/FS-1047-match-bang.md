@@ -65,7 +65,7 @@ The alternative is to refrain from adding this, where programmers will continue 
 # Compatibility
 [compatibility]: #compatibility
 
-This is a completely backwards compatible change, and will only require changes to the F# compiler, not the library. No exisiting code will differ in functionality. Previous versions of the F# compiler that do not implement this syntax emit a compiler error when encountering an instance of it. Additionally, since this is syntactic sugar for existing constructs, compiled binaries using `match!` will be compatible with previous F# compilers and tools.
+This is a completely backwards compatible change, and will only require changes to the F# compiler, not the library. No existing code will differ in functionality. Previous versions of the F# compiler that do not implement this syntax emit a compiler error when encountering an instance of it. Additionally, since this is syntactic sugar for existing constructs, compiled binaries using `match!` will be compatible with previous F# compilers and tools.
 
 # Unresolved questions
 [unresolved]: #unresolved-questions

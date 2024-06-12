@@ -85,7 +85,7 @@ type MyStructGenericWithNoConstraint<'T>(x: 'T, y: 'T) =
 
 Instances of both `MyStructGeneric<'T>` and `MyStructGenericWithNoConstraint<'T>` will be treated as unmanaged type as long as `'T` is being unmanaged.
 
-In other words, any generic struct type, with all of its fielads are known to be unmanaged, can be considered unmanaged, _with_ or _without_ the `unmanaged` constraint on type parameter(s)
+In other words, any generic struct type, with all of its fields are known to be unmanaged, can be considered unmanaged, _with_ or _without_ the `unmanaged` constraint on type parameter(s)
 
 ## Adjusted definition of an unmanaged type
 
@@ -115,7 +115,7 @@ type MyStructGenericWithNoConstraint<'T>(x: 'T, y: 'T) =
     member _.X = x
     member _.Y = y
 
-// Can be considerd unmanaged, as long as 'T is unmanaged.
+// Can be considered unmanaged, as long as 'T is unmanaged.
 // Note, that despite constructor having managed argument (obj), it is not used as part of the backing field.
 [<Struct>]
 type MyStructGenericWithUnusedUnmanagedParameter<'T>(x: 'T, y: 'T, z: obj) =

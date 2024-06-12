@@ -83,7 +83,7 @@ let f (x,y) = x+y
 
 would apply only to reference tuples.
 
-There are no implitict conversions from struct tuples to reference tuples or vice-versa in this basic design.
+There are no implicit conversions from struct tuples to reference tuples or vice-versa in this basic design.
 
 ### Possible Extension: structness inference
 
@@ -118,7 +118,7 @@ These defaults would be applied at the end of type inference like other defaults
 
 Structness would always be inferred statically for all locations throughout all F# programs. 
 
-Structness inference is not essential but may ease interoperabillity.  On the other hand it adds considerable complexity to the implementation and may potentially confuse some users who prefer a high degree of type/expression form separation.
+Structness inference is not essential but may ease interoperability.  On the other hand it adds considerable complexity to the implementation and may potentially confuse some users who prefer a high degree of type/expression form separation.
 
 
 ### Possible Extension: Tuple Field Metadata
@@ -244,7 +244,7 @@ TBD: We must decide if this will also apply to functions taking struct tuples, a
 
 ### Feature Interaction: Generalization of tuples 
 
-In F#, like most other ML langauges, some simple values can be generalized.
+In F#, like most other ML languages, some simple values can be generalized.
 This means these values are given generic type rather than hitting the value-restriction error. e.g.
 
 ```fsharp
@@ -294,7 +294,6 @@ is
 ```
 
 # Examples and Error Messages
-[exampes]: #examples
 
 The prototype currently has this (it could be improved)
 

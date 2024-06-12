@@ -49,7 +49,7 @@ This is arguably just a bug in the parser, which currently assumes that `<^` is 
 let inline ( <^ ) x y = x + y
 ```
 
-This is not the correct behavior. To address this, the parsing of type argument declaractions should be adjusted to account for this case. It currently does assume that `'ident` (`| QUOTE ident` is the parser rule) is a type argument. Similar assumptions have to be ironed out.
+This is not the correct behavior. To address this, the parsing of type argument declarations should be adjusted to account for this case. It currently does assume that `'ident` (`| QUOTE ident` is the parser rule) is a type argument. Similar assumptions have to be ironed out.
 
 ## Drawbacks
 
@@ -57,7 +57,7 @@ None from a user's standpoint.
 
 ## Alternatives
 
-The main alternative is "don't do this" and continue to require the extra space. However, this is somewhat of a parlor trick to memorize, which we want to avoid from a language design standpoiht.
+The main alternative is "don't do this" and continue to require the extra space. However, this is somewhat of a parlor trick to memorize, which we want to avoid from a language design standpoint.
 
 ## Compatibility
 

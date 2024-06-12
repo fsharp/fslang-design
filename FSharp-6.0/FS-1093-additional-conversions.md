@@ -118,7 +118,7 @@ f2 (Some (B() :> _)
 
 The requirement to make upcasts is surprising and counter-intuitive (though comes with benefits see 'Drawbacks').
 
-There are several existing techniques in the F# language to reduce the occurence of upcasts and to ensure resulting code is as general
+There are several existing techniques in the F# language to reduce the occurrence of upcasts and to ensure resulting code is as general
 as possible.  These include:
 
 - Condensation and decondensation of function types each time a function or method value is used,
@@ -192,7 +192,7 @@ on the expression.  For the following, it is propagated before:
 
 For other expressions, the overall type is propagated after checking.
 
-When an overall type `overallTy` is propagated to an expresson with type `exprTy` and the "must convert to" flag is set, and
+When an overall type `overallTy` is propagated to an expression with type `exprTy` and the "must convert to" flag is set, and
 `overallTy` doesn't unify with `exprTy`, then a type-directed conversion is attempted by:
 
 1. Trying to add a coercion constraint from `exprTy :> overallTy`. If this succeeds, a coercion operation is added to the elaborated expression.
@@ -213,7 +213,7 @@ If the "must convert to" flag is not set on `overallTy`, then unification betwee
 > NOTE: For list, array, `new`, object expressions, tuple, record and anonymous-record expressions, pre-checking integration
 > allows the overall type to be propagated into the partially-known type (e.g. an
 > list expression is known to have at least type `list<_>` for some element type), which in turn allows the
-> inference of element types or type araguments.  This may be relevant to processing the contents of the expression.
+> inference of element types or type arguments.  This may be relevant to processing the contents of the expression.
 > For example, consider
 > 
 ```fsharp
@@ -434,7 +434,7 @@ In addition, these widenings are not included:
 
 Earlier drafts of this PR included `int32` --> `float32` and `float32` --> `float` widenings. However, the use cases for these as
 adhoc type-directed conversions in F# programming are not particularly compelling - remember, adhoc conversions can cause confusion, and
-shuold only be added if really necessary.
+should only be added if really necessary.
 
 * One proposed use case for an implicit TDC for `int32` --> `float32`  is machine learning
   APIs which accept `float32` data, for example ideally little usability penalty should apply when switching from `float` to `float32`.
@@ -479,7 +479,7 @@ let g() =
 
 Here, `data1` now needs a type annotation to maintain the same inferred type.  This matters because `data` is a tuple, and, in the absence of 
 co-variance on tuples (which wouldn't apply to the `int --> obj` conversion in any case), would need to be unpackaged and repackaged to
-get the correcct destination type of `obj * obj`.  Here is a working version with the type annotation:
+get the correct destination type of `obj * obj`.  Here is a working version with the type annotation:
 
 ```fsharp
 let g() =
@@ -536,7 +536,7 @@ It seems likely that any discussion about `op_Implicit` and widening of integer 
 There is an alternative solution to generic literals which is to enhance the existing literal mechanism to allow the user to implement their own, namely:
 
 * Allow the user opening a module NumericLiteralD (where D stands for default) which will be called when no suffix is used in number literals.
-* Allow the user to define the default constraint, which will in anycase make the language more consistent.
+* Allow the user to define the default constraint, which will in any case make the language more consistent.
 * Introduce an optional method to interpret float-like literals, something like FromDecimal
 * Implement this optimization https://github.com/fsharp/fslang-suggestions/issues/602#issuecomment-510754929
 
@@ -577,11 +577,11 @@ Questions:
 
 Answer: no impact, just more programs will be expected, no new expression shapes
   
-> "[21:27] Heron Barreto - are we going to expand usage of the flexibe type operator(?) with this RFC?"
+> "[21:27] Heron Barreto - are we going to expand usage of the flexible type operator(?) with this RFC?"
 
 Answer: no, indeed it might be used less
 
-> "[20:43] Chet Husk - for 'Interaction with post-applicaiton property setters', the property was given an explicit type before use. if the type was not directly specified and instead inferred through usage (2L), would that be enough to 'fix' the overall type for purposes of these rules?
+> "[20:43] Chet Husk - for 'Interaction with post-application property setters', the property was given an explicit type before use. if the type was not directly specified and instead inferred through usage (2L), would that be enough to 'fix' the overall type for purposes of these rules?
 
 Answer: yes, exactly, inference is enough to fix the 'overall type'
 

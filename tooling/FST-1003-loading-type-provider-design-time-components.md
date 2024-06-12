@@ -13,13 +13,13 @@ Despite being a tooling issue rather than a language issue, this is being treate
 ### Background and Terminology
 
 Type providers augment a regular DLL reference to a regular .NET library by adding a component into host design-time tooling.  To use a type provider the
-programmer specifies a reference to a normal target platform DLL (e.g. ``-r:lib\net45\FSharp.Data.dll``, normally via a reference to the ``FSharp.Data`` pacakge which has this DLL under ``lib\net45``), and this DLL contains a [``TypeProviderAssembly(...)``](https://msdn.microsoft.com/en-us/visualfsharpdocs/conceptual/compilerservices.typeproviderassemblyattribute-class-%5Bfsharp%5D) attribute that indicates there should exist an associated
+programmer specifies a reference to a normal target platform DLL (e.g. ``-r:lib\net45\FSharp.Data.dll``, normally via a reference to the ``FSharp.Data`` package which has this DLL under ``lib\net45``), and this DLL contains a [``TypeProviderAssembly(...)``](https://msdn.microsoft.com/en-us/visualfsharpdocs/conceptual/compilerservices.typeproviderassemblyattribute-class-%5Bfsharp%5D) attribute that indicates there should exist an associated
 Type Provider Design Time Component (TPDTC, e.g. ``FSharp.Data.DesignTime.dll``) to also use at design-time. The TPDTC
 gets seamlessly and automatically found and loaded into any F#-aware host design-time tools (i.e. compilers, editor addins and any other tooling built using ``FSharp.Compiler.Service.dll``) that process the original reference.  
 
 The host tooling does F# analysis or compilation via requests to ``FSharp.Compiler.Service.dll``, which in turn interrogates the TPDTCs to resolve type names, methods and so on.  The TPDTCs hand back metadata (via an artificial implementation of System.Type objects) and target code (via F# quotations and/or generated assembly fragments).  The TPDTCs are given the list of target reference assemblies to help them prepare appropriate types and target code, a process largely automated by [the Type Provider SDK](https://github.com/fsprojects/FSharp.TypeProviders.SDK/).
 
-Thiss RFC is about the process of finding and loading the TPDTC once the attribute has been detected.
+This RFC is about the process of finding and loading the TPDTC once the attribute has been detected.
 
 Host tools include:
 
@@ -166,9 +166,9 @@ The discussion thread linked above records the discussion and response. Basicall
 
 * the cheapest and most efficient way to get 100% consistent behaviour for TPDTC loading across all F# tooling providers and usage scenarios is to place this logic in FSHarp.COmpiler.Service.dll.  There is not point spreading the logic out across Paket, NuGet etc, and doing that would massively explode the matrix of possibilities of tooling (e.g. versions of F#, versions of Paket, versions of NuGet etc.)
 
-* relying on tools such as Paket and Nuget to handle the configuration of design-time tools is problematic.  For example, at first sight it looks possible to utilize the capability of Paket emit load scripts to help with such configuration, however these wouldn't apply to coommand-line compilation or project builds.  Further, NuGet is very far from being able to do this kind of configuration and it is unrealistic to expect them to add this capability in any timeframe that helps. Further, the full set of design-time tooling contexts is not actually known to NuGet.exe or Paket.exe -  -  a new F# design-time  tool (such as a documentation generator or VSCode editor) hosted in .NET Core may arrive after the fact
+* relying on tools such as Paket and Nuget to handle the configuration of design-time tools is problematic.  For example, at first sight it looks possible to utilize the capability of Paket emit load scripts to help with such configuration, however these wouldn't apply to command-line compilation or project builds.  Further, NuGet is very far from being able to do this kind of configuration and it is unrealistic to expect them to add this capability in any timeframe that helps. Further, the full set of design-time tooling contexts is not actually known to NuGet.exe or Paket.exe -  -  a new F# design-time  tool (such as a documentation generator or VSCode editor) hosted in .NET Core may arrive after the fact
 
-In contrast, in the proposal in this RFC, a relatively modest adjustment is made to the current scheme to have the F# compiler logic interpret ``TypeProviderAssembly`` attributes to a relative reference in a stable and predictable way.  This resolution would apply to any and all tooling built using updated versions of ``FSharp.Compiler.Service.dll``, and would roll out consistenly across all F# implementations.
+In contrast, in the proposal in this RFC, a relatively modest adjustment is made to the current scheme to have the F# compiler logic interpret ``TypeProviderAssembly`` attributes to a relative reference in a stable and predictable way.  This resolution would apply to any and all tooling built using updated versions of ``FSharp.Compiler.Service.dll``, and would roll out consistently across all F# implementations.
 
 See also [this part of the discussion thread](https://github.com/fsharp/fslang-design/issues/229#issuecomment-343155429)
 
@@ -188,11 +188,11 @@ See also [this part of the discussion thread](https://github.com/fsharp/fslang-d
 
    Response: Too intrusive, too radical
 
-4. Wait for some other people in .NET land to formulate a notion of a "dyanmic package", its dependencies etc. and use that.  Or try to utilize an existing dynamic package composition framework.  Both seem overkill and wrong for F#.  Ideally, .NET would come with a notion of a "dynamic package" which could include sufficient rules for the selection of a component suitable for a runtime host, but to my knowlege that is not as yet the case.
+4. Wait for some other people in .NET land to formulate a notion of a "dynamic package", its dependencies etc. and use that.  Or try to utilize an existing dynamic package composition framework.  Both seem overkill and wrong for F#.  Ideally, .NET would come with a notion of a "dynamic package" which could include sufficient rules for the selection of a component suitable for a runtime host, but to my knowledge that is not as yet the case.
 
 5. Require that all TPDTC components be .NET Standard 2.0 (and no more).
 
-   Response: This is consdidered too draconian, though will be very common in practice.  Even if we did this we would still need betterrules to locate the TPDTC from the TPRTC reference.
+   Response: This is considered too draconian, though will be very common in practice.  Even if we did this we would still need better rules to locate the TPDTC from the TPRTC reference.
 
 6. Look in architecture folders x86/x64
 

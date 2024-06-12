@@ -163,7 +163,7 @@ In summary, all language server features directed at the underscore should behav
   * Completion after `_.` should be equivalent to completion after `(fun x -> x.` in the same context.
   * TODO: Check there aren't any snippets or other oddities
 * Tooltips
-  * On hovering over the underscore a tooltip should be shown the the type of the anonymous function, and any other context that would normally be shown for a function arg.
+  * On hovering over the underscore a tooltip should be shown the type of the anonymous function, and any other context that would normally be shown for a function arg.
   * TODO: Does the rhs `x` ever show something different to the lhs `x`?
 * Navigation and Go To Definition
   * None? No document symbols are created by this construct.

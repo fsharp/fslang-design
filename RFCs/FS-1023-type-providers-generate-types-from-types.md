@@ -56,7 +56,7 @@ type ProvidedType = TypeProvider<SomeType, {... other arguments ...}>
 ```
 And further on `ProvidedType` can be used like existing provided types.
 
-It is very likely there will be constraints on the kind of types that can be passed in to a type provider, and the types' provenance. See unresolved questions for more details.
+It is very likely there will be constraints on the kind of types that can be passed into a type provider, and the types' provenance. See unresolved questions for more details.
 
 ## Type Provider Implementation
 

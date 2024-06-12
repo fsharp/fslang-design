@@ -12,14 +12,14 @@ Likewise, the idea of a struct option type is implied by this suggestion and has
 # Summary
 [summary]: #summary
 
-This RFC covers Part 1 of [RFC FS-1039 Struct representation for active patterns](../FSharp-6.0/FS-1039-struct-representation-for-active-patterns.md), but factors out the specific conern of a struct-based optional type, `ValueOption`.
+This RFC covers Part 1 of [RFC FS-1039 Struct representation for active patterns](../FSharp-6.0/FS-1039-struct-representation-for-active-patterns.md), but factors out the specific concern of a struct-based optional type, `ValueOption`.
 
 # Motivation
 [motivation]: #motivation
 
 Powerful and extensible features such as Active Patterns and Optional Arguments should be near-zero-cost abstractions. A `ValueOption` type is a first step in this direction.
 
-Additionally, in situations where a struct can provide a benefit over a reference type, `ValueOption` may allow developers to eek out more performance independently of their usage of Active Patterns and Optional Arguments.
+Additionally, in situations where a struct can provide a benefit over a reference type, `ValueOption` may allow developers to squeeze out more performance independently of their usage of Active Patterns and Optional Arguments.
 
 # Detailed design
 [design]: #detailed-design

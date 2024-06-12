@@ -141,7 +141,7 @@ simpler to start with `FSharp.Compiler.Analyzers.v1.0` only containing an API wh
 relevant logical source file contents**.
 
 This means analyzers that want to access the syntax tree would have to parse using their own private copy of FCS.
-Wach analyzer would have to run its own compilation/analysis internally, rather than having access to the FCS compiled trees.
+Each analyzer would have to run its own compilation/analysis internally, rather than having access to the FCS compiled trees.
 This is expensive for each analyser but is at least a start.
 
 The `FSharp.Compiler.Analyzers.v1.0` API could then be something simple like this:
@@ -160,7 +160,7 @@ type IAnalyzerContext =
     abstract ProjectOptions: string[]
     abstract GetSource: fileName: string -> ISourceText
 
-type postion = string * int * int
+type position = string * int * int
 type range = string * int * int * int * int
 
 // produced by analyzer
@@ -216,7 +216,7 @@ Given this starting point we could then iterate towards expanding the functional
 
 ### Discussion Summary
 
-This RFC is inteded to start a discussion and iterate towards steps forward.  We'll try to summarise the discussion here:
+This RFC is intended to start a discussion and iterate towards steps forward.  We'll try to summarise the discussion here:
 
 @dsyme says: I'm not sure how else to make progress in a reasonable timeframe, short of expecting analyzers to be recompiled.
 

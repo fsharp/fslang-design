@@ -39,7 +39,7 @@ module MyModule =
 
 To evaluate the expressions bound to the values just once, this RFC proposes leveraging a specific feature of the .NET CLR:
 static constructors of generic classes are run each time the class is instantiated with a different type argument, and each
-instantation of the class has it's own set of ``static`` fields.
+instantiation of the class has its own set of ``static`` fields.
 
 The F# 4.1 compiler simply generates a static method (rather than a static field or property) for module-scoped, ``let``-bound
 values marked with ``[<GeneralizableValue>]``. To illustrate, the F# compiler is currently producing code that'd decompile into

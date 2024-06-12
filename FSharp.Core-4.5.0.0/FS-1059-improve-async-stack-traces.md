@@ -82,7 +82,7 @@ Here is the stack:
 
 Barely any user code is on the stack at all, and the line numbers are all closures in the implementation of the DSL.
 
-It is also important to note that C# async and other implementations of Promises/Tasks/"Hot Tasks" don't suffer this problem since they are not "delayef". But most F# DSLs are "delayed". For `async { }`, it is F#'s use of "cold tasks" that require explicit starting that causes the issue.
+It is also important to note that C# async and other implementations of Promises/Tasks/"Hot Tasks" don't suffer this problem since they are not "delayed". But most F# DSLs are "delayed". For `async { }`, it is F#'s use of "cold tasks" that require explicit starting that causes the issue.
 
 ## Problem Two - losing tack traces for exceptions
 
@@ -117,7 +117,7 @@ Possible solutions to these problems:
 
 1. Keep causal stacks in objects and reinstate them when the behavior of the objects is activated.
 
-    * This could be done if there was a way to do some kind of `[<CaptureCallerStackToken>]` and pass it down. This can be simulated by [caputring a `System.Diagnostics.StackTrace`](https://gist.github.com/dsyme/fb5c70ce6b16ac3047b8ceae057ccccb) for each and every computational object created and passing them down.
+    * This could be done if there was a way to do some kind of `[<CaptureCallerStackToken>]` and pass it down. This can be simulated by [capturing a `System.Diagnostics.StackTrace`](https://gist.github.com/dsyme/fb5c70ce6b16ac3047b8ceae057ccccb) for each and every computational object created and passing them down.
 
     * This could give very nice stack traces, but you would need to be able to hijack the normal debugging mechanisms and say, "hey, this is the real causal stack". This can be done for **exception** stack traces by hacking the internals of a .NET exception object (see [this blog post](https://eiriktsarpalis.wordpress.com/2015/12/27/reconciling-stacktraces-with-computation-expressions/)).
 
@@ -161,7 +161,7 @@ This is not perfect. We see the generated closure names. But at least the line n
 
 ## Possible solutions to Problem Two
 
-One way to improve the exception stacks for losing stack traces is to use a "trampoline" to run the asynchronous parts of computations. When an exceltion happens, the exception continuation (or other information require to continue execution) is written into the trampoline.
+One way to improve the exception stacks for losing stack traces is to use a "trampoline" to run the asynchronous parts of computations. When an exception happens, the exception continuation (or other information require to continue execution) is written into the trampoline.
 
 This technique works for async because we have a trampoline available.
 
@@ -192,7 +192,7 @@ with
 This solution has the following caveats:
 
 1. This only improves debug user code that is compiled with tailcalls off.
-2. This improves the debugging experience for **first throw of exceptions** and the **synchronous** parts of asynchrounous code.
+2. This improves the debugging experience for **first throw of exceptions** and the **synchronous** parts of asynchronous code.
 3. The stack is still lost if:
 
     * The "trampoline" has been used, which happens every 300 executions of a bind on a stack of when any exception is raised (even if it is caught).

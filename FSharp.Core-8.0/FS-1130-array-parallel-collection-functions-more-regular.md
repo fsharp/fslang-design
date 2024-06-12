@@ -100,7 +100,7 @@ The last column is an indication of what is expected of the Array.Parallel modul
 This is where comments and suggestions are expected.
 
 Proposed approach:
-- If current cell is blank and you would like to have that function implemented in Array.Parallel, write "code suggestion" comment, than can be 1-click commited
+- If current cell is blank and you would like to have that function implemented in Array.Parallel, write "code suggestion" comment, than can be 1-click committed
 - If current cell has a value and you disagree or are not sure, use the conversation feature to start a thread.
 
 

@@ -1,7 +1,7 @@
 # F# Tooling RFC FST-1031 - Recommended XML doc extensions for F# documentation tooling
 
 It is well known that the information present in .NET XML documentation files is not quite sufficient for quality API documentation generation.
-The purpose of this tooling RFC is to describe minor but imporant new documentation tags. They are supported by the `FSharp.Formatting` API documentation generation tooling.
+The purpose of this tooling RFC is to describe minor but important new documentation tags. They are supported by the `FSharp.Formatting` API documentation generation tooling.
 
 See also: [F# Tooling RFC FST-1035 - XML-documentation collecting mechanism](https://github.com/fsharp/fslang-design/blob/main/tooling/FST-1035-xml-documentation-collecting-mechanism.md)
 
@@ -36,7 +36,7 @@ This is a tooling RFC because:
 2. The centrality of the `FSharp.Formatting.ApiDocs` component means that what it accepts can end up being a language standard.
 
 In practice, at the time of writing, the `FSharp.Formatting.ApiDocs.dll` component (or its direct predecessor `FSharp.MetadataFormat.dll`) is used
-somewhere in the processnig of all F# XML doc files for documentation generation, except in the Visual Studio IDE, and is really the only
+somewhere in the processing of all F# XML doc files for documentation generation, except in the Visual Studio IDE, and is really the only
 component capable of processing F# XML doc files at all.
 
 ## Problems Addressed
@@ -149,7 +149,7 @@ namespace MyLibrary.Core
 
     open System
 
-    /// <summary>Thisis a good type.</summary>
+    /// <summary>This is a good type.</summary>
     ///
     /// <note>Thanks to Joe for this type.</note>
     ///

@@ -113,13 +113,13 @@ The following code is similar to the class above and also compiles correctly:
               interface IGet<float>  with member x.Get() = 1.
 ```
 
-In object expressions, the type parameter can be infered, e.g. the following is currently valid code:
+In object expressions, the type parameter can be inferred, e.g. the following is currently valid code:
 
 ```F#
 let x = { new IGet<_> with member x.Get() = 1 }
 ```
 
-It is an explicit non-goal to allow type unknowns when implementing an interface more than once, the following code is NOT valid, even though the types _could_ be infered in this case:
+It is an explicit non-goal to allow type unknowns when implementing an interface more than once, the following code is NOT valid, even though the types _could_ be inferred in this case:
 
 ```F#
     let x = { new IGet<_> with member x.Get() = 1

@@ -161,7 +161,7 @@ When previous versions of F# compiler see the combinator `EnumerateTryWith` in F
 ## Diagnostics
 
 A big misuse can be relying on throwing and catching exceptions for flow control.
-This compiles and runs fine, but the performance of constant throwing+catching exceptions is orders of maginute lower compared to regular code.
+This compiles and runs fine, but the performance of constant throwing+catching exceptions is orders of magnitude lower compared to regular code.
 
 ```fsharp
 let rec f () = seq {

@@ -83,7 +83,7 @@ Require programmers to implement this themselves in their own programs.
 # Compatibility
 [compatibility]: #compatibility
 
-As this is just an addition to F# Core and does not require nany new syntax, it is not a breaking change to the compiler
+As this is just an addition to F# Core and does not require any new syntax, it is not a breaking change to the compiler
 
 
 # Unresolved questions

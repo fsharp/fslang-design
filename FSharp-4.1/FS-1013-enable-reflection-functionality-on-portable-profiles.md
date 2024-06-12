@@ -52,7 +52,7 @@ type FSharpType with
     static member IsExceptionRepresentation: exceptionType:Type * ?nonPublic:bool -> bool
 ```
 
-The user mustwould opt-in to by using
+The user would opt-in to by using
 
 ```fsharp
 open FSharp.Reflection.FSharpReflectionExtensions 

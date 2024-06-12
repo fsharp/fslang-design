@@ -26,7 +26,7 @@ There is more information about Task-like returns for async methods available in
 # Motivation
 [motivation]: #motivation
 
-When the Roslyn feature is shipped, we anticipate a lot of code getting updates to use `ValueTask<T>` for peformance
+When the Roslyn feature is shipped, we anticipate a lot of code getting updates to use `ValueTask<T>` for performance
 benefits.  Adding the ability to await and start ValueTasks from an async workflow fills a hole in interop scenarios.
 
 # Detailed design
@@ -77,6 +77,6 @@ The alternative here is designing full support for Task-like return types on asy
 
 * Are `ValueTask<T>`s capable of being created with `TaskCompletionOption`s?  If not, then `StartAsValueTask` and `StartChildAsValueTask` wouldn't need the parameter with those options.
 
-* There is a major question of dependencies - which assembly will ValueTask be defined in, and can FSharp.Core take a static API dependency on that assembly? (An alternative may be to have inlined methods in FSharp.Core with staticaly resolved member constraints that capture the "C# Task pattern", though it's not yet clear if that's technically possible)
+* There is a major question of dependencies - which assembly will ValueTask be defined in, and can FSharp.Core take a static API dependency on that assembly? (An alternative may be to have inlined methods in FSharp.Core with statically resolved member constraints that capture the "C# Task pattern", though it's not yet clear if that's technically possible)
 
 Any further unresolved questions are more in line with how we support general Task-like returns.  This would be a future RFC.

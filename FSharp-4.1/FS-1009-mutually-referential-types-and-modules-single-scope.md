@@ -64,7 +64,7 @@ type Plane() =
     member x.StartTheEngines() = ... PlaneHelpers.start x
 
 module private PlaneHelpers = 
-    let start(x:Plane)=  ... // note, the module is mutually refential with the type
+    let start(x:Plane)=  ... // note, the module is mutually referential with the type
 ```
 
 * This problem is particularly apparent when a module is used to contain helpers for implementations of interfaces and
@@ -77,10 +77,10 @@ module private PlaneHelpers =
 exception Error of Plane
 
 type Plane() = 
-    member x.StartTheEngines() = ... raise (NoFuelInPlance x)
+    member x.StartTheEngines() = ... raise (NoFuelInPlane x)
 ```
 
-* There is also some syntactic awkwardness when mutually refential types have attributes, e.g.
+* There is also some syntactic awkwardness when mutually referential types have attributes, e.g.
 
 ```fsharp
 [<Struct>]
@@ -209,7 +209,7 @@ module rec Example =
           ...
 ```
 
-#### Meaning of ``rec`` w.r.t. Name Resoltion
+#### Meaning of ``rec`` w.r.t. Name Resolution
 
 The meaning of ``rec`` is that _all_ type, function, member and value declarations in all nested modules
 may be mutually referential.  For example:
@@ -261,7 +261,7 @@ namespace rec NS =
          let y2 () = ...
 ```
 
-Note that the interpretaion of ``rec`` differs from that in OCaml.  In OCaml, ``module rec M`` allows the
+Note that the interpretation of ``rec`` differs from that in OCaml.  In OCaml, ``module rec M`` allows the
 module contents to be accessed via the name ``M``, e.g. ``module rec M = ... let g() = 2 let f() = 1 + M.g()``.
 But unless M is opened, mutual references _must_ go via the name ``M``. This proposal for F# is that there is
 effectively an implicit ``open`` immediately after the ``rec`` and on all nested modules.  This fits
@@ -376,7 +376,7 @@ module rec Tests
 
 let mutable x = 0
 ```
-will give an error ``error FS0874: reecursive 'let' bindings may be marked mutable.  
+will give an error ``error FS0874: recursive 'let' bindings may be marked mutable.  
 
 Technically speaking, we could no doubt allow this.  However, it should be treated as an issue orthogonal to this feature.
 
@@ -460,7 +460,7 @@ for type inference and for implementing efficient "safe" static initialization.
 
 ### Alternative: ``... and ... `` for more declarations 
 
-One sytntac alternative that was considered was  allowing ``and`` to join more declaration forms, e.g.
+One syntax alternative that was considered was  allowing ``and`` to join more declaration forms, e.g.
 
 ```fsharp
 
@@ -468,7 +468,7 @@ module M = ...
 
 and module N = ....
 
-and exception E of stirng
+and exception E of string
 
 and let f x = x + 1
 
@@ -482,7 +482,7 @@ We decided against this for two reasons
 * it feels syntactically awkward in a similar way to current ``type X .. and ... `` feels awkward, especially when combined with attribute declarations
 
 
-### Alternative: ``#rec`` declarations and scoped mutually refential regions
+### Alternative: ``#rec`` declarations and scoped mutually referential regions
 
 There is no intrinsic reason why mutual reference needs to be dealt
 with at the ``module`` or ``namespace`` scope - it is often useful to make 
@@ -550,7 +550,7 @@ There are advantages to this approach, namely simplicity and familiarity for the
 Most programmers now grow up with the expectation that all declarations within
 a C# assembly or Java package can be mutually referential.  Anecdotal
 evidence supports the claim that some C# and Java developers reject F# because it requires
-declaration ordering, though many who perservere come to love that feature.
+declaration ordering, though many who persevere come to love that feature.
 
 However, there are reasons why full-assembly-recursion, by itself, would a problematic addition for F#, even if optional:
 * If implemented in isolation, it would be seem to change a key characteristic of F# coding (the avoidance of spaghetti frameworks). 

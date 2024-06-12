@@ -22,7 +22,7 @@ We should be able to provide better performance just via a simple attribute addi
 
 # Detailed design
 
-These are sequeneced in expected order of being implemented.
+These are sequenced in expected order of being implemented.
 
 
 **1. It should be possible to use struct options in optional parameters**

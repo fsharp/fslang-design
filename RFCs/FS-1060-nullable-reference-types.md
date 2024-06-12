@@ -156,7 +156,7 @@ let findOrNull (index: int) (list: 'T list) : 'T | null when 'T : not struct =
     | None -> null
 ```
 
-> NOTE: One problem with the above syntax is that it makes nullable types a litle too easy to use, and there is concern that they may thus become mainstream in F# usage.  However alternative syntaxes are either unimplementable or heavyweight, e.g. `string | null` is not backwards compatible. However it is a design goal to support the use of non-null reference types by default, we want to encourage the programmer to **avoid** using nullable reference types unless absolutely necessary, so this issue may be reconsidered.
+> NOTE: One problem with the above syntax is that it makes nullable types a little too easy to use, and there is concern that they may thus become mainstream in F# usage.  However alternative syntaxes are either unimplementable or heavyweight, e.g. `string | null` is not backwards compatible. However it is a design goal to support the use of non-null reference types by default, we want to encourage the programmer to **avoid** using nullable reference types unless absolutely necessary, so this issue may be reconsidered.
 
 #### `null` literal in expressions
 
@@ -205,7 +205,7 @@ let len2r (str1: string | null) (str2: string | null) =
 
 #### Null ambivalence (obliviousness)
 
-On import, an assembly that does not have `NonNullTypes` specified or an assembly scope where `NonNullTypes(false)` is active results in imported types being considered "null-ambivalent".  That is, there is no information about whether the types are nullabale or non-nullable.
+On import, an assembly that does not have `NonNullTypes` specified or an assembly scope where `NonNullTypes(false)` is active results in imported types being considered "null-ambivalent".  That is, there is no information about whether the types are nullable or non-nullable.
 
 Null-ambivalence is only directly expressible in F# code using `string __ambivalent` and the `__ambivalent` attribute is suppressed in routine coding.  However because null-ambivalence arises on import of legacy assemblies, it is an important additional concept in the F# typechecking rules.  For the purposes of this specification we consider the F# type system to have an additional case which we denote by `reference-type%`, indicating null-ambivalence.
 
@@ -218,7 +218,7 @@ type =
 #### Library additions
 
 In the prototype, library functions are added to cover the basic operations associated with nullable reference types. These
-corresponse to `value.HasValue`, `value.Value` and `Nullable(value)` for nullable value types.
+correspond to `value.HasValue`, `value.Value` and `Nullable(value)` for nullable value types.
 The status of these library functions is TBD and the naming is quite hard to get right.
 
 ```fsharp
@@ -283,7 +283,7 @@ This constraint is checked as follows:
 
 * An error is given if the constraint is instantiated with a type that uses null as a true value e.g. the `option` type or the `unit` type.
 
-* A nullabliity warning is given if the constraint is instantiated with a nullable type or a type defined with `AllowNullLiteral(true)` attribute.
+* A nullability warning is given if the constraint is instantiated with a nullable type or a type defined with `AllowNullLiteral(true)` attribute.
 
 > NOTE: The F# 4.x `null` also constraint implies a `not struct` constraint. See [Unresolved questions](nullable-reference-types.md#unresolved-questions) for more. 
 
@@ -361,7 +361,7 @@ let example1 (str: string) : string | null =
     | "" -> null
     | _ -> str
 ```
-checks correctly - the known type is `string | null` and the actual type of `str` is `string | null`.  However the non-type-annoted version
+checks correctly - the known type is `string | null` and the actual type of `str` is `string | null`.  However the non-type-annotated version
 ```fsharp
 let example1 (str: string) =
     match str with
@@ -373,7 +373,7 @@ does not check, here the known type on the last line is `T with T : null` and th
 Additional examples:
 
 ```fsharp
-let xs1 = [ ""; ""; null ] // gives a nullablity warning
+let xs1 = [ ""; ""; null ] // gives a nullability warning
 
 let xs2 : (string | null) list = [ ""; ""; null ] 
 
@@ -416,7 +416,7 @@ let f (ns: string | null) = ns.Length // Gives a nullability warning
 
 In some rare cases it may be necessary to "add the possibility of null" to an existing value, to
 make it compatible with a nullable type without warning.   We expect this to normally be done by
-a type annoation, see above.  However for completeness it is also possible to do this by using the `withNull` operator.
+a type annotation, see above.  However for completeness it is also possible to do this by using the `withNull` operator.
 
 ```fsharp
 val inline withNull : value:'T -> ('T | null) when 'T : not struct
@@ -433,7 +433,7 @@ is given on such a cast.  For examples:
 
 * A warning is given when casting from `C<'S>` to `C<'T | null>` and from `C<'S | null>` to `C<'T>`.
 
-TBD: check these are implemented correctly, and check where there are cases where no warning is emittied.
+TBD: check these are implemented correctly, and check where there are cases where no warning is emitted.
 
 
 #### Type inference - null assignment and passing
@@ -491,7 +491,7 @@ let zs = seq { yield ""; yield ""; yield null } // WARNING inferred type seq<str
 
 Nullability warnings are never emitted for the `obj` type. 
 
-> NOTE: The rationale for this is that reflection-based APIs are generally much simpler if nullability is not tracked For example consdier
+> NOTE: The rationale for this is that reflection-based APIs are generally much simpler if nullability is not tracked For example consider
 >     static member PreComputeRecordReader : recordType:Type  * ?bindingFlags:BindingFlags -> (obj -> obj[])
 > versus
 >     static member PreComputeRecordReader : recordType:Type  * ?bindingFlags:BindingFlags -> ((obj | null) -> (obj | null)[])
@@ -916,7 +916,7 @@ let len2v (input1: int | null) (input2: int | null) =
     | v1, v2 -> v1 + v2
 ```
 
-Plus parallel value-type versions of these functions are required because of the limiation for generic code mentioned above.
+Plus parallel value-type versions of these functions are required because of the limitation for generic code mentioned above.
 
 ```fsharp
 /// Get the null value for a nullable value type.

@@ -8,7 +8,7 @@ This RFC proposes that we publish the [F# Compiler Tools package (FCT)](https://
 
 Today, changes to the F# desktop compiler SDK are made in the Visual F# repository. When they are merged, the source code changes must also be ported over to the F# packaging repository before a new version of FCT can be published. This process is done manually and can sometimes be a bottleneck for people who need a fix.
 
-Additionally, although the FCT bits are the same as what is developed in the Visual F# repository, they are not signed with the Microsoft signing keys, nor is the package signed with the Microsoft signing keys. This means that some organizations may not feel "safe" with this package in their systems, even if the bits are still the same as what they would get from the Visual Studio Build Tools SKU.
+Additionally, although the FCT bits are the same as what is developed in the Visual F# repository, neither the bits nor the package are signed with the Microsoft signing keys. This means that some organizations may not feel "safe" with this package in their systems, even if the bits are still the same as what they would get from the Visual Studio Build Tools SKU.
 
 ## Details
 

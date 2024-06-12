@@ -12,7 +12,7 @@ This RFC defines the support for extension method and type extension in overload
 
 # Motivation
 
-Up to F# 8.0, there is no support for calling the extension method or type extensions if a type exposes a property with the same name, forcing the use of work arounds when consuming C# libraries leveraging this idiom.
+Up to F# 8.0, there is no support for calling the extension method or type extensions if a type exposes a property with the same name, forcing the use of workarounds when consuming C# libraries leveraging this idiom.
 
 The feature enables support for Linq members such as Count on types that have a Count property:
 
@@ -57,11 +57,11 @@ The feature won't enable resolving those extension methods / type extensions in 
 
 ## Support for type extension
 
-The reasonning for also supporting type extensions (which C# does not support/are F# specific) is to keep extension methods and methods defined in a type extension conceptually identical from standpoint of F# consumer.
+The reasoning for also supporting type extensions (which C# does not support/are F# specific) is to keep extension methods and methods defined in a type extension conceptually identical from standpoint of F# consumer.
 
 ## Support for static properties
 
-The reasonning for also supporting shadowing of static properties is to avoid introducing disparity against instance and static properties and the ability to use shadowing through type extensions (there is no such thing as extension method seen as static member).
+The reasoning for also supporting shadowing of static properties is to avoid introducing disparity against instance and static properties and the ability to use shadowing through type extensions (there is no such thing as extension method seen as static member).
 
 ## Implementation details
 
@@ -90,7 +90,7 @@ Due to the idiom of indexed property not being possible to express in C#, and th
 ## The features renders obsolete the lack of support for intrinsic methods of same name as a property
 
 In terms of language design, beside subtleties in overload resolution pertaining to methods, there is little reasons to distinguish intrinsic methods versus extension methods or methods defined in type extensions. Yet, C#, VB.NET and F# still preclude for methods to be defined with the same name as a property, despite:
-* they can't bear the same name in the IL (properties have a `get_` or `set_` prefix addorned to the IL methods implementation of getter and setter)
+* they can't bear the same name in the IL (properties have a `get_` or `set_` prefix adorned to the IL methods implementation of getter and setter)
 * they can be defined as extension methods in C# & VB.NET, and in F# with this feature, as method in type extension and extension methods
 
 It may make sense to lift this restriction in case C# moves in this direction.

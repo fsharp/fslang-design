@@ -6,11 +6,11 @@ There is an approved-in-principle [proposal](http://fslang.uservoice.com/forums/
 * [Discussion](https://github.com/fsharp/fslang-design/issues/368)
 * [x] Implementation: [first draft by @yatli](https://github.com/dotnet/fsharp/pull/8966), [final merged to master (--langversion:preview)](https://github.com/dotnet/fsharp/pull/8907)
 * [x] Design review meeting (26/06/2020, online, @dsyme, @cartermp, @TIHan, @jonsequitur), [notes](https://github.com/dotnet/fsharp/pull/8907#issuecomment-650304311)
-* [x] Implementation review meeting with @cartermap and @TIHan, [notes](https://gist.github.com/dsyme/dc86bf86de81b83b75557d4944db43c2).
+* [x] Implementation review meeting with @cartermp and @TIHan, [notes](https://gist.github.com/dsyme/dc86bf86de81b83b75557d4944db43c2).
 
 ### Summary
 
-A new expresssion form called an interpolated string is added. 
+A new expression form called an interpolated string is added. 
 
 ```fsharp
 let x = 1
@@ -81,7 +81,7 @@ A literal `{` or `}` character, paired or not, must be escaped (by doubling) in 
 Expression fills for single-quote or verbatim interpolation strings **may not** include further string literals.
 Expression fills for triple-quote interpolation strings **may** include single quote or verbatim string literals but not triple-quote literals.
    
-Byte strings, such as `"abc"B` do not support interoplation.
+Byte strings, such as `"abc"B` do not support interpolation.
 
 An interpolation string is checked as:
 
@@ -183,7 +183,7 @@ is a legitimate expression.
 
 ### Tooling
 
-The compiler service tooling is adjusted to account for understanding when we're in an interoplated context (and complete the `}` with brace completion). It is expected that autocompletion will work in an interoplated context, as will any navigational features that work with symbols in a document.
+The compiler service tooling is adjusted to account for understanding when we're in an interpolated context (and complete the `}` with brace completion). It is expected that autocompletion will work in an interpolated context, as will any navigational features that work with symbols in a document.
 
 ### Performance expectations
 

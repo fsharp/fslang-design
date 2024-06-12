@@ -66,7 +66,7 @@ The design philosophy is as follows:
 
 3. The F# metadata format is unchanged. Like `nameof` and other F# features,
    resumable state machines are encoded within existing TypedTree constructs using a combination of known compiler intrinsics
-   and TypedTree expresions.
+   and TypedTree expressions.
 
 4. We treat this as a compiler feature. The actual feature is barely surfaced
    as a language feature, but is rather a set of idioms known to the F# compiler, together used to build efficient computation
@@ -92,7 +92,7 @@ Points 1-3 guide many of the decisions below.
 
 ### Specifying resumable code
 
-Resumable code is a new low-level primitive form of compositional re-entrant code suitable only for writing
+Resumable code is a new low-level primitive form of compositional reentrant code suitable only for writing
 high-performance compiled implementations of computation expressions.
 
 Resumable code is represented by the `ResumableCode<'Data, 'T>` delegate type. 
@@ -386,7 +386,7 @@ A `<resumable-expr>` is:
     <expr>
     ```
 
-Static checks are performed for the specificaiton of low-level resumable code as outlined above.
+Static checks are performed for the specification of low-level resumable code as outlined above.
 
 
 ### Hosting resumable code in a resumable state machine struct
@@ -459,7 +459,7 @@ A state machine is not _compilable_ if its resumable code is not compilable, tha
 If a state machine is not compilable, see "Execution of non-compilable state machines" below.
 
 > NOTE: Non-compilable state machines often occur when defining functions producing state machines.
-> This occurs becuase any `ResumableCode` parameters are not yet fully defined through inlining.
+> This occurs because any `ResumableCode` parameters are not yet fully defined through inlining.
 > 
 > State machines are made compilable using 'inline' on the function.  However all F# inlined code also has corresponding non-inline code emitted for 
 > reflection and quotations.  For this reason, when defining functions producing state machines, an   `if __useResumableCode then` alternative should 
@@ -472,7 +472,7 @@ For example, `__resumeAt` corresponds either to a `goto` (for a known label) or 
 start of a method).
 
 If a `ResumableCode` expression is determined to be valid resumable code, then the semantics of the
-method or function hosting the resumable code is detemined by the following:
+method or function hosting the resumable code is determined by the following:
 
 1. All implementations are inlined under the static assumption `__useResumableCode` is true.
 
@@ -641,7 +641,7 @@ module StateMachineHelpers =
 
 ## Library additions (resumable code combinators)
 
-A set of combinators is provided for combining resumable code. This is the normal way to specify resumable code for computation expression buidlers,
+A set of combinators is provided for combining resumable code. This is the normal way to specify resumable code for computation expression builders,
 see the examples.
 
 ```fsharp
@@ -713,7 +713,7 @@ type MoveNextMethodImpl<'Data> = delegate of byref<ResumableStateMachine<'Data>>
 /// Defines the implementation of the SetStateMachine method for a struct state machine.
 type SetStateMachineMethodImpl<'Data> = delegate of byref<ResumableStateMachine<'Data>> * IAsyncStateMachine -> unit
 
-/// Defines the implementation of the code reun after the creation of a struct state machine.
+/// Defines the implementation of the code run after the creation of a struct state machine.
 type AfterCode<'Data, 'Result> = delegate of byref<ResumableStateMachine<'Data>> -> 'Result
 
 module StateMachineHelpers = 
@@ -1166,7 +1166,7 @@ I did a trial re-implementation of F# async (imperfectly and only a subset of th
 
 * Implementation: https://github.com/dotnet/fsharp/blob/main/tests/benchmarks/CompiledCodeBenchmarks/TaskPerf/TaskPerf/async2.fs
 
-* Signature fle: https://github.com/dotnet/fsharp/blob/main/tests/benchmarks/CompiledCodeBenchmarks/TaskPerf/TaskPerf/async2.fsi
+* Signature file: https://github.com/dotnet/fsharp/blob/main/tests/benchmarks/CompiledCodeBenchmarks/TaskPerf/TaskPerf/async2.fsi
 
 Recall how async differs from tasks:
 
@@ -1175,11 +1175,11 @@ Recall how async differs from tasks:
 | F# async | async-waits | one result | multiple cold starts |  tailcalls |   implicit | implicit |
 | F# task/C# task |   async-waits | one result | once-hot-start |  no-tailcalls |   explicit | explicit |
 | F# seq | no-async-waits | multiple results | multi cold starts | tailcalls | none | none |
-| F# taskSeq/C# async seq  | async waits | mutli result | multi-cold-start | no-tailcalls |  implicit | explicit | 
+| F# taskSeq/C# async seq  | async waits | multi result | multi-cold-start | no-tailcalls |  implicit | explicit | 
 
 Anyway the approximate reimplementation appears to run as fast as TaskBuilder for sync cases, and as fast as tasks for async cases. That makes it like 10-20x faster than the current F# async implementation.  Stack traces etc. would be greatly improved to.
  
-However it's not a perfect reimplementation - there are no tailcalls nor cancellation checks yet  -  and perfect compat is probably impossible sadly, there are lots of subtleties. For example `async.Return()` and other direct use of CE methods change type from `Async<T>` to `AsyncCode<T>`, so the API is not perfect compat (an `Async.Return` etc. would be needed instead).   We could possible fix that in the F# compiler though there are lots of other little niggles too.
+However isn't a perfect reimplementation - there are neither tailcalls nor cancellation checks yet  -  and perfect compat is probably impossible sadly, there are lots of subtleties. For example `async.Return()` and other direct use of CE methods change type from `Async<T>` to `AsyncCode<T>`, so the API is not perfect compat (an `Async.Return` etc. would be needed instead).   We could possible fix that in the F# compiler though there are lots of other little niggles too.
 
 That said it should be good enough to allow an FSharp.Control.Async2 package that is a drop-in replacement for F# async for 99.9% compat.  (The `Async2<T>` would be a different type in that case, though that may matter less now `Task<T>` is so established more as an interop standard)
 
@@ -1227,7 +1227,7 @@ The resumable code composition and elimination happens late in the F# compiler. 
 The code-weaving mechanism of resumable code can also be used to accurately statically combine non-resumable code fragments. For example, this is
 done by the `list { .. }`, `option { .. }` and `voption { .. }` examples.
 
-The code achieved is more reliably efficient than that acheived by simply inlining all combinators, because user code is identified as resumable code and
+The code achieved is more reliably efficient than that achieved by simply inlining all combinators, because user code is identified as resumable code and
 passed in via `ResumableCode` parameters which are statically inlined and flattened through the code weaving process.  Additionally, the control code and
 user code can be woven via delegates taking the "this" state machine argument as a byref to a struct state machine (e.g. see the `list` sample) which
 means zero allocations occur in the final resulting code.
@@ -1261,7 +1261,7 @@ It is possible that a future release will only make this feature non-preview wit
 There are many alternatives possible with regard to relatively small decisions, for example
 
 * Naming
-* Whether the `__resumeAt` construct is explcit at all at the start of `MoveNext` methods
+* Whether the `__resumeAt` construct is explicit at all at the start of `MoveNext` methods
 * Whether the `__stateMachine` construct is a new language construct or, as in this design, is a compiler-special construct built out of existing syntax.
 * many others
 

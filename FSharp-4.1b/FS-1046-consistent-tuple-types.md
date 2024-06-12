@@ -2,7 +2,7 @@
 
 During the F# 4.1 release cycle, a breaking change was made to how explicit uses of ``System.Tuple<...>`` in F# source code are
 interpreted.  At the time this change was made (as a bug fix) the extent of its impact was not properly appreciated, resulting
-in the need for a subsequent set of code adjustments and a subequent fix.
+in the need for a subsequent set of code adjustments and a subsequent fix.
 
 * [The PR that caused the change](https://github.com/dotnet/fsharp/pull/3283)
 * [The issue documenting the regressions](https://github.com/dotnet/fsharp/pull/3729)
@@ -23,8 +23,8 @@ From F# 2.0 to the initial versions of F# 4.1, the rules applied was:
 
 ###### F# 4.1 after the breaking change (VS2017 15.4-15.5)
 
-This led to some inconsistencies where tuple types that the user thinks of as "equivalent" when they flow in to F#
-via C# libraries  become non-equicalent when written explicitly in  F#. As a result a [change](https://github.com/dotnet/fsharp/pull/3283) was made to give the rule
+This led to some inconsistencies where tuple types that the user thinks of as "equivalent" when they flow into F#
+via C# libraries  become non-equivalent when written explicitly in  F#. As a result a [change](https://github.com/dotnet/fsharp/pull/3283) was made to give the rule
 
 >  Occurrences of ``System.Tuple<t,t2>`` and other .NET tuple types are always decompiled to F# tuple types regardless of whether they occur in .NET metadata or F# source code.
 >

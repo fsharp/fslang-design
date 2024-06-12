@@ -29,7 +29,7 @@ https://github.com/dotnet/fsharp/issues/457
 https://github.com/dotnet/fsharp/pull/458#issuecomment-127711336
 > 1. add new complement and logicalNot operators that work as intended. See also this workaround
 > 2. add a compiler warning when ~~~ statically resolves to a non-primitive op_LogicalNot operator, or doesn't resolve statically at all (in let inline ... code). The warning would direct the user to use complement or logicalNot explicitly instead.
-> 3. in some far off future revision of F# change ~~~ to resolve to op_OnesCoplement and consider adding the symbolic !!! operator for op_LogicalNot.
+> 3. in some far off future revision of F# change ~~~ to resolve to op_OnesComplement and consider adding the symbolic !!! operator for op_LogicalNot.
 
 # Drawbacks
 

@@ -22,7 +22,7 @@ Advanced ``#if`` expressions are useful in a world with heterogenus platforms. I
 
 ### Design
 
-As ``#if`` expressions are not trivial (nested parantheses, operator precedence) a specialized "preprocessor" lexer/parser pair is introduced (pplex.fsy/pppars.fsy).
+As ``#if`` expressions are not trivial (nested parentheses, operator precedence) a specialized "preprocessor" lexer/parser pair is introduced (pplex.fsy/pppars.fsy).
 
 The existing simple "preprocessor" parser in lex.fsl is removed and instead lex.fsl invokes the "preprocessor" lexer/parser for each line that start with ``#if/#elif``. The resulting expression tree is evaluated and the existing mechanism for activating/deactivating code is used. Any errors discovered during "preprocessor" parsing are reported like normal.
 

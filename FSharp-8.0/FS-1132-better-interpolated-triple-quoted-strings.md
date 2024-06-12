@@ -40,7 +40,7 @@ This change should:
 
 # Detailed design
 
-The existing form of interpolated triple quoted strings: `$"""...{}..."""` is extended to allow multiple dollar signs at the begining of the string literal.
+The existing form of interpolated triple quoted strings: `$"""...{}..."""` is extended to allow multiple dollar signs at the beginning of the string literal.
 The count of these `$` characters indicates how many `{` and `}` characters are used to delimit interpolation expression within the content of the literal.
 
 Behavior of triple quoted string literals starting with a single `$` remains unchanged.
@@ -143,7 +143,7 @@ It has to end with 4x" to match the opening.
 
 Alternatives:
 
-1. Try to fully align with C#'s raw string literals at the cost of backward compatiblity.
+1. Try to fully align with C#'s raw string literals at the cost of backward compatibility.
 
   Such change would break any code that has at least one escaped `{` or `}` in an interpolated (triple quoted) string literal. This feature does not warrant such a breaking change.
 

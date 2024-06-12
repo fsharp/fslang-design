@@ -10,7 +10,7 @@ it is worth writing out the spec of the new optimizations here and their rationa
 is partly to ensure we have test coverage for these.
 
 
-1. `__stack_` prefixed vars are not eliminated during optimization. The ratonale is that these
+1. `__stack_` prefixed vars are not eliminated during optimization. The rationale is that these
    are only used when describing resumable code, primarily for tasks.
 
 2. `InlineIfLambda` attribute is recognized and applied.  The rationale is covered in
@@ -58,7 +58,7 @@ is partly to ensure we have test coverage for these.
 6. We optimize certain common patterns related to computed functions that are rare in normal F# code,
    but very common in F# lambda code representing synchronous machines.
    
-   Specificlly we "lift" pre-computations off computed functions, allowing the resulting function lambda to be "exposed" so reduction can
+   Specifically we "lift" pre-computations off computed functions, allowing the resulting function lambda to be "exposed" so reduction can
    occur.
    
    For this case, we always lift 'let', 'letrec', sequentials and 'match' off computed functions so:

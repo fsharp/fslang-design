@@ -84,7 +84,7 @@ Implicit yields are activated for
 
 1. List, array and sequence expressions that have no explicit yield (i.e. you can't mix implicit and explicit yields).  Using `yield!` is allowed.
 
-2. Computation expressions that have no explicit `yield` and where the builder supports the neessary methods for yielding, i.e. `Yield`, `Combine`, `Delay` and `Zero`.
+2. Computation expressions that have no explicit `yield` and where the builder supports the necessary methods for yielding, i.e. `Yield`, `Combine`, `Delay` and `Zero`.
 
 When implicit yields are activated, 
 
@@ -115,14 +115,14 @@ discarded (the expression is treated like a statement).
 There is still a (presumably very rare) backwards compat concern for cases where values are currently
 being ignored/discarded *and* the  list/array/sequence/computations only uses `yield!`.  For example
 
-    [ doSomethingThatReturnsAValueButCurrentlyDicardsIt(); yield! someThingsToYield() ] 
+    [ doSomethingThatReturnsAValueButCurrentlyDiscardsIt(); yield! someThingsToYield() ] 
 
 In this case, implicit yields are activated because there is no explicit `yield`.  However the
-expression `doSomethingThatReturnsAValueButCurrentlyDicardsIt()` would now be interpreted as a yield.  This is
+expression `doSomethingThatReturnsAValueButCurrentlyDiscardsIt()` would now be interpreted as a yield.  This is
 likely to give rise to a type error (it's unlikely that the function returns the same element type as `someThingsToYield()`),
 but if there is no type error it will yield an additional element.
 
-The intitial working assumption is that such cases will be extraordinarily rare - given that the code reports a warning today.
+The initial working assumption is that such cases will be extraordinarily rare - given that the code reports a warning today.
 For this reason, in the balance it seems ok to change the interpretation of these cases, subject to
 a `/langversion:5.0` flag.
 
@@ -206,7 +206,7 @@ In practice, generating unit-values computationally seems not to arise, and if i
 
 ## Interaction with recursive functions
 
-When yields are implicit, in some cases expressions in computed list expressions which migh appear to be yields can be given "statement" interpretation instead of "yield" interpretation, giving rise to computed list expressions that yield nothing.   Any useful code that does this will almost always give a later type checking error. However that error can be hard to understand.
+When yields are implicit, in some cases expressions in computed list expressions which might appear to be yields can be given "statement" interpretation instead of "yield" interpretation, giving rise to computed list expressions that yield nothing.   Any useful code that does this will almost always give a later type checking error. However that error can be hard to understand.
 
 For example, consider this code, transforming a tree labelled with integers to a tree labelled with strings:
 

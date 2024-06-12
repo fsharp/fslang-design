@@ -40,7 +40,7 @@ Help text
 ```
                 - LANGUAGE -
 --langversion:{?|version|latest|preview} Display the allowed values for language version, specify language version such as latest, preview or 4.7
-?      -  The compiler shall display a list of vaid options.
+?      -  The compiler shall display a list of valid options.
 latest -  The compiler shall selected the latest RTM version of the language
 default-  Synonym for latest.  Perhaps eventually default may not be the latest, but it seems unlikely.
 preview-  Enable all of the preview features.

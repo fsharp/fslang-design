@@ -24,7 +24,7 @@ The change still keeps the restriction that an F# type can itself only implement
         interface I<int>
         interface I<string>
 
-is not allowed. This is partly because of the way interface implementation methods are named in compiled IL (only the prefix "I" is added), and partly because the equivalent object expression form can inculde type unknowns, e.g.
+is not allowed. This is partly because of the way interface implementation methods are named in compiled IL (only the prefix "I" is added), and partly because the equivalent object expression form can include type unknowns, e.g.
 
     { interface I<_> with ...
       interface I<_> with ...

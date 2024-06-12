@@ -14,7 +14,7 @@ The design suggestion [Support let! .. and... for applicative functors](https://
 This RFC adds support a new `let! ... and! ... ` syntax in computation expressions.  This allows
 computations to avoid using of a sequence of `let! ... let! ...` which forces re-execution of 'expensive' binds
 when these are independent. There are many examples where this is valuable, many of them known as "applicatives" in the functional
-programming community - or, equivelantly, in the distinction between the "static" and "dynamic" portions of computation graphs.
+programming community - or, equivalently, in the distinction between the "static" and "dynamic" portions of computation graphs.
 
 The RFC also adds an optional translation of those binds which immediately always execute `return`. These use an optional builder method `BindReturn`.
 
@@ -52,7 +52,7 @@ Next, consider any `let! pat = expr in innerComp`. If the `innerComp` is an imme
 
 then the expression becomes `builder.BindReturn(source, (fun pat -> innerExpr))` where `innerExpr` is the inner computation with `return` removed.
 
-Likewise, apply a corresponding rule to produce calls to `Bind2Return`, `Bind3Return` and so on from `and!` expressions whose inner computation is an imediately-returning computation.
+Likewise, apply a corresponding rule to produce calls to `Bind2Return`, `Bind3Return` and so on from `and!` expressions whose inner computation is an immediately-returning computation.
 
 
 ## Notes
@@ -436,7 +436,7 @@ ce {
  }
 ```
 
-TBD: there are other syntactc forms that are valid, these need to be listed
+TBD: there are other syntactic forms that are valid, these need to be listed
 
 # Drawbacks
 [drawbacks]: #drawbacks

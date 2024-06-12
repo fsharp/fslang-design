@@ -9,7 +9,7 @@ The design suggestion "Inline if lambda attributes on parameters" is approved in
 
 # Summary
 
-We add an attribute `InlineIfLambdaAtttribute` to use on parameters of inlined functions and methods, indicating to the compiler that, if a lambda
+We add an attribute `InlineIfLambdaAttribute` to use on parameters of inlined functions and methods, indicating to the compiler that, if a lambda
 is supplied as a parameter, it should be inlined.
 
 # Motivation
@@ -33,7 +33,7 @@ let map ([<InlineIfLambda>] f: int -> int) xs  =
 
 # Detailed design
 
-We add `InlineIfLambdaAtttribute` to use on parameters of inlined functions and methods, indicating to the compiler that, if a lambda
+We add `InlineIfLambdaAttribute` to use on parameters of inlined functions and methods, indicating to the compiler that, if a lambda
 is supplied as a parameter, it should be inlined.
 
 The attribute is indicative only and may be ignored by the F# compiler.
@@ -94,7 +94,7 @@ There is no really good reason not to do this, except it feels like it is useful
 
 See the collector examples in [list.fs](https://github.com/dotnet/fsharp/blob/main/tests/benchmarks/TaskPerf/list.fs)
 and [array.fs](https://github.com/dotnet/fsharp/blob/main/tests/benchmarks/TaskPerf/array.fs) and compares them to examples
-using the resumable code mechanism.  The colelctor examples rely on InlineIfLambda and the optimizations described in
+using the resumable code mechanism.  The collector examples rely on InlineIfLambda and the optimizations described in
 [Tooling RFC FST-1034](https://github.com/fsharp/fslang-design/blob/main/tooling/FST-1034-lambda-optimizations.md)
 
 The sample defines  `listc { .. }`, `arrayc { .. }` for collections.

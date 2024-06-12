@@ -207,7 +207,7 @@ The syntactic places where this warning is **not** emitted are:
 * When declaring a self-constraint `when ISomeInterface<...>`
 * When declaring a flexible-constraint `#ISomeInterface<...>`
 
-At all other locations the use of an IWSAM constraint results in the warning. Note this includes `typeof<ISomeInterface<...>>` - reflecting over IWSAM csontraints is sufficiently rare that this is not given a special dispensation.
+At all other locations the use of an IWSAM constraint results in the warning. Note this includes `typeof<ISomeInterface<...>>` - reflecting over IWSAM constraints is sufficiently rare that this is not given a special dispensation.
 
 ### Interaction with SRTP constraints
 
@@ -301,7 +301,7 @@ will return the right thing.  However
     f 3.0<m>
 ```
 
-will return `9.0<m>` instead of `9.0<m^2>`, becuase `op_Multiply` in `IMultiplyOperators<double<m>>` would, without doing anything, have signature
+will return `9.0<m>` instead of `9.0<m^2>`, because `op_Multiply` in `IMultiplyOperators<double<m>>` would, without doing anything, have signature
 
 ```fsharp
 op_Multiply: double<m> * double<m> -> double<m>
@@ -323,7 +323,7 @@ See also "Alternatives for Units of Measure" below
 
 ### SRTP adjustments
 
-SRTP constraints now give an error if they declare optional, inref, outref, ParamArray, CallerMemberName or AutoQuote atttributes on parameters.  These were ignored and should never have been allowed.
+SRTP constraints now give an error if they declare optional, inref, outref, ParamArray, CallerMemberName or AutoQuote attributes on parameters.  These were ignored and should never have been allowed.
 
 ## Drawbacks
 [drawbacks]: #drawbacks
@@ -341,7 +341,7 @@ Statically-constrained qualified genericity is strongly distortive of the practi
 
 While sometimes beautiful and simple as language design elements, these features are contested in programming communities. Their presence is deeply attractive to programmers who desire them - in many cases they become part of the fundamental organisational machinery applied to code and composition. They are equally problematic for those who don't see overall value in the complexity their use brings. We should also note the relative success, simplicity and practical productivity of languages that omit these features including Elm, Go and even Python.
 
-.NET has historically avoided this space. This was a deliberate decision in C# 2.0 by Anders Hejlsberg, who rejected proposals for statically-constrained genericity on the grounds of the complexity introduced v. the benefit achieved - a decision the initial author of this RFC (Don Syme) was involved with and agreed with. C# 11 and .NET 6/7 has since revisted this decision, primarily because reflective code of any kind is now considered more expensive in static compilation scenarios, and in C# reflection had frequently been used as a workaround for the absence of qualified genericity (other practical workarounds are available in F#, including the use of SRTP).
+.NET has historically avoided this space. This was a deliberate decision in C# 2.0 by Anders Hejlsberg, who rejected proposals for statically-constrained genericity on the grounds of the complexity introduced v. the benefit achieved - a decision the initial author of this RFC (Don Syme) was involved with and agreed with. C# 11 and .NET 6/7 has since revisited this decision, primarily because reflective code of any kind is now considered more expensive in static compilation scenarios, and in C# reflection had frequently been used as a workaround for the absence of qualified genericity (other practical workarounds are available in F#, including the use of SRTP).
 
 The following summarises the well-known drawbacks of these features, based on the author's experience with all of the above. Emphatic language is used to act as a corrective.
 
@@ -357,7 +357,7 @@ The following summarises the well-known drawbacks of these features, based on th
 
 **The 'correct' degree of genericity becomes contested.** Features in this space can bring a cultural attitude that "code is better if it is made more generic". Some people will even claim such code is 'simpler' - meaning nothing more that it can be reused, and ignoring the fact that it is by no measure cognitively simpler. In code review, for example, one reviewer may say that the code submitted can be made more generic by constraining with  the `IBinaryFloatingPointIeee754<T>` interface instead of `INumber<T>` - regardless of whether this genericity is needed. Another reviewer may have different point of view,and suggest a refactoring into two parts, one constrained by `ILogarithmicFunctions<T>` and `IDecrementOperators<T>`, another suggests switching to `ISubtractionOperators<TSelf, TOther, TResult>`. Note there is no effective measure of "goodness" here except max-abstraction.  The end result is that the amount of genericity to use becomes unproductively contested.
 
-> As an aside, for F# SRTP code, the degree of genericity is automically computed. For IWSAMs, in type-inferred languages with HM-type inference adjusting the amount of genericity is relatively simple. But the contested nature of generic code is still not productive outside of framework design.
+> As an aside, for F# SRTP code, the degree of genericity is automatically computed. For IWSAMs, in type-inferred languages with HM-type inference adjusting the amount of genericity is relatively simple. But the contested nature of generic code is still not productive outside of framework design.
 
 **Compiler and tooling slow-downs on large interface lists.**  For the specific case of IWSAMs, the presence of enormous generic interface lists can cause compiler slow-down. No one ever expected such lists of interfaces in .NET, this is a volcano of hidden complexity lying under the simple type `double` or `decimal`. [3/6/2024: as prophesized, an example of how this feature led to this in real life can be seen [here](https://github.com/fsprojects/Fleece/issues/146)]
 
@@ -399,7 +399,7 @@ public readonly struct Double :
     System.Numerics.IUnaryPlusOperators<double,double>
 ```
 
-At this point, any reader should stop to consider carefully the pros and cons here.  Each and every new interface adds conceptual overhead, and what was previously comparatively simple and compelling has become complex and curious. This complexity is potentially encountered by any and all users of .NET - beginner users trained in abstract math seem particularly fond of such numeric hierarchies, and are drawn to them like a moth to the flame.  Yet these abstractions are useful only to the extent that writing generic code is successfully and regularly instantiated at many types - yet this is not known to be a significant real-world limiting problem for .NET today in practice, and for which many practical, enacpsulated workarounds exist.
+At this point, any reader should stop to consider carefully the pros and cons here.  Each and every new interface adds conceptual overhead, and what was previously comparatively simple and compelling has become complex and curious. This complexity is potentially encountered by any and all users of .NET - beginner users trained in abstract math seem particularly fond of such numeric hierarchies, and are drawn to them like a moth to the flame.  Yet these abstractions are useful only to the extent that writing generic code is successfully and regularly instantiated at many types - yet this is not known to be a significant real-world limiting problem for .NET today in practice, and for which many practical, encapsulated workarounds exist.
 
 ### Drawback - Interfaces with static abstract methods will get misunderstood as types, not type-constraints
 
@@ -510,7 +510,7 @@ type SomeClass(newArg , x) =
 
 This is at the heart of F# programming and all functional programming, and it is powerful and accurate. Additionally, requirements change: what is initially independent may later need to become dependent on something new. In F#, when this happens, 99% of the time you plumb a parameter through: perhaps organising them via tuples, or records, or objects. Either way the adjustments are relatively straight-forward. That's the whole point.
 
-It is obvious-yet-crucial that **implementations of static abstract methods have a fixed signature and are static**. If an implementation of a static abstract method  later needs something new - something unavailable from the inputs or global state or implicit thread/task context - you are stuck. Normal static methods can become instance methods in this situation, or take additional parameters.  But implementations of static abstract methods can't become instance, and they can't take additional explicit parameters: since they **must be forever static** and **must always take specific arguments**.  You are stuck: you literally have no way of explicitly plumbing information from A to B. Your options are are switching to a new set of IWSAMs (plus a new framework to compose them), or removing the use of IWSAMs and returning to the land of objects and functions.
+It is obvious-yet-crucial that **implementations of static abstract methods have a fixed signature and are static**. If an implementation of a static abstract method  later needs something new - something unavailable from the inputs or global state or implicit thread/task context - you are stuck. Normal static methods can become instance methods in this situation, or take additional parameters.  But implementations of static abstract methods can't become instance, and they can't take additional explicit parameters: since they **must be forever static** and **must always take specific arguments**.  You are stuck: you literally have no way of explicitly plumbing information from A to B. Your options are switching to a new set of IWSAMs (plus a new framework to compose them), or removing the use of IWSAMs and returning to the land of objects and functions.
 
 To see why this matters, consider a basic `IParseable<T>` (the actual `IParseable<T>` has some additional options, see below).
 
@@ -539,9 +539,9 @@ type C =
                 ....
 ```
 
-But how to get `version1` into `Parse`?  In this case, there is literally no way to explicitly communicate that parameter to those two implementations of `IParseable<T>`. This means your composition framework built on the IWSAM `IParseable<T>` may become useless to you, due to nothing but this one small (yet predictable) change in requirements. You will now have to remove all use of `IParseable<T>` and shift to another technnique, or else rely on implicit communication of parameters (global state, thread locals...). This is no theoretical exercise - format parsers often change, by necessity over time, and need variations.
+But how to get `version1` into `Parse`?  In this case, there is literally no way to explicitly communicate that parameter to those two implementations of `IParseable<T>`. This means your composition framework built on the IWSAM `IParseable<T>` may become useless to you, due to nothing but this one small (yet predictable) change in requirements. You will now have to remove all use of `IParseable<T>` and shift to another technique, or else rely on implicit communication of parameters (global state, thread locals...). This is no theoretical exercise - format parsers often change, by necessity over time, and need variations.
 
-What's gone wrong? Well, IWSAMs should never have been used for parsing domain objects - and a compositional framework should never use IWSAMs. But `IParseable<'T>` sounded so compelling to implement, didn't it? And those IWASMs combining them were so mathematically elegant and beautiful, weren't they? Well, none of that matters now. Specifically, **IWSAMs like `IParseable<T>` should only be implemented on types where the parsing implementation is forever "closed" and "incontrovertible"**. By this we mean that their implemententations will never depend on external information (beyond culture/date/number formatting, see below), and there will be no variations on how the implementations should act.
+What's gone wrong? Well, IWSAMs should never have been used for parsing domain objects - and a compositional framework should never use IWSAMs. But `IParseable<'T>` sounded so compelling to implement, didn't it? And those IWSAMs combining them were so mathematically elegant and beautiful, weren't they? Well, none of that matters now. Specifically, **IWSAMs like `IParseable<T>` should only be implemented on types where the parsing implementation is forever "closed" and "incontrovertible"**. By this we mean that their implementations will never depend on external information (beyond culture/date/number formatting, see below), and there will be no variations on how the implementations should act.
 
 What should you do instead?  Well, you should always have used regular interfaces, objects and functions - the world of normal functional-object programming - that is, parser combinators. For composition you should use explicit composition of parser functions and objects. All this is standard functional-object programming. For example:
 
@@ -632,9 +632,9 @@ A summary of guidance from the above:
 
 * **Understand the inherent limitations of IWSAMs.** IWSAM implementations are not within the "core" portion of the F#: they are not first-class objects, can't be produced by methods and, can't be additionally parameterized. IWSAM implementations must be intrinsic to the type, they can't be added after-the-fact.
 
-* **Don't give in to type-categorization impulse.**  With IWSAMs, you can happily waste years of your life carefully categorising all the concepts in your codebase. Don't do it. Throw away the urge to categorise. Forget that you can do it. It almost certainly isn't helpful to categorise the types in your application code using these.
+* **Don't give into type-categorization impulse.**  With IWSAMs, you can happily waste years of your life carefully categorising all the concepts in your codebase. Don't do it. Throw away the urge to categorise. Forget that you can do it. It almost certainly isn't helpful to categorise the types in your application code using these.
 
-* **Don't give in to max-abstraction impulse.**  With IWSAMs and other generic code, you can happily waste even more years of your life max-abstracting out every common bit of code across your codebase. Don't do it. Throw away the urge to max-abstract just for its own sake. Forget that you can do it, and if you try don't use IWSAMs, since using explicit function passing will likely result in more reusable generic code (see below).
+* **Don't give into max-abstraction impulse.**  With IWSAMs and other generic code, you can happily waste even more years of your life max-abstracting out every common bit of code across your codebase. Don't do it. Throw away the urge to max-abstract just for its own sake. Forget that you can do it, and if you try don't use IWSAMs, since using explicit function passing will likely result in more reusable generic code (see below).
 
 * **Using IWSAMs in application code carries a strong risk you or your team will later remove their use.** Explicitly plumbing new parameters to IWSAM implementations is not possible without changing IWSAM definitions. Because of this, using IWSAMs exposes you to the open-ended possibility that you will have to use implicit information plumbing, or remove the use of IWSAMs. Given that F# teams generally prefer explicit information plumbing, teams will often remove the use of devices that require implicit information plumbing.  
 
@@ -763,7 +763,7 @@ In this RFC we go with Option A+B, with the possibility of adding Option D at so
         ^T.call()
 ```
 
-Here the `^` on the last line is causing the expression to be interpreted as an infix expression `a^b`. The resolution is to require the use of `'T' for invocationse.g.
+Here the `^` on the last line is causing the expression to be interpreted as an infix expression `a^b`. The resolution is to require the use of `'T' for invocations, e.g.
 ```fsharp
     let inline f<^T when ^T : (static member StaticMethod: int -> int)>() =
         'T.StaticMethod(3)
@@ -799,7 +799,7 @@ A previous version of this RFC proposed to use rewriting of the interfaces consi
 |  |`IMultiplyOperators<double<'u>,double<'u>,double<'u^2>>`  |
 |  | etc. |
 
-Note the `m^2` on the `IMultiplyOperators`.  However, this technique is obviouisly flawed, because it only allows `double<m> * double<m>` and not, say `double<m> * double<kg>`.  The links above have further commentary.
+Note the `m^2` on the `IMultiplyOperators`.  However, this technique is obviously flawed, because it only allows `double<m> * double<m>` and not, say `double<m> * double<kg>`.  The links above have further commentary.
 
 [ Aside: This is an example of why nominal concept modelling of the kind used in `System.Numerics.*` is problematic: concepts are fragile as new genericity requirements are placed on them. ]
 
@@ -928,7 +928,7 @@ No.
 ## Unresolved questions
 [unresolved]: #unresolved-questions
 
-* [ ] Document that IWSAMs that define op_Implicit and op_Explicit do not, practiclly speaking, result in implicit conversions being usable, because of F# restrictions on activating implicit conversions in the presence of generic type variables
+* [ ] Document that IWSAMs that define op_Implicit and op_Explicit do not, practically speaking, result in implicit conversions being usable, because of F# restrictions on activating implicit conversions in the presence of generic type variables
 * [ ] Document that some code becomes more generic, e.g.
 
   ```fsharp

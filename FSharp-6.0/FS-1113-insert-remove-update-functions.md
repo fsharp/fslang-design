@@ -91,7 +91,7 @@ module Array =
     val insertManyAt: index: int -> values: seq<'T> -> source: 'T[] -> 'T[]
 
 module Seq =
-    /// Return a new ssequence which, when iterated, will have the item at a given index removed
+    /// Return a new sequence which, when iterated, will have the item at a given index removed
     /// If the index is outside the range of valid indexes for the sequence then it is ignored.
     val removeAt: index: int -> source: seq<'T> -> seq<'T>
 
@@ -122,7 +122,7 @@ Adds extra functions to FSharp.Core
 
 # Alternatives
 
-See suggestion discussion  thread for discusssion on `updateManyAt` and also other naming alternatives.
+See suggestion discussion  thread for discussion on `updateManyAt` and also other naming alternatives.
 
 # Compatibility
 

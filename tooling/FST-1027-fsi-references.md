@@ -160,7 +160,7 @@ We may consider using `AssemblyLoadContext` in some clever way in the future, bu
 
 It works in all FCS driven tool (or even fsc itself) through :
 * having the extension assembly next to the process one
-* the `--compilertool:` flag, whilch can point to a directory containing the extensions
+* the `--compilertool:` flag, which can point to a directory containing the extensions
 
 By convention, tools that load extensions in other locations, should also load extensions that are sitting in same folder, unless there are good reasons not doing so.
 
@@ -176,11 +176,11 @@ FSI/Design time support will look at the following places in order:
 * look into ~/.fsharp/fsx-extensions
 * look into .fsharp/fsx-extensions folder next to fsi.exe
 
-gather all the distinct dll names, order of precedence favorising those in the same order shown above, and load them in the process if their assembly contains an arbitrary attribute (resolved by name rather than dependency on external library) and types marked with same attributes.
+gather all the distinct dll names, order of precedence favoring those in the same order shown above, and load them in the process if their assembly contains an arbitrary attribute (resolved by name rather than dependency on external library) and types marked with same attributes.
 
 On .NET Framework, the dll are loaded through `Assembly.LoadFrom`.
 
-On .NET Core the loading mechanism is yet to be determined (**TBD**), although the extensions will need to be targetting .NET Standard 1.6 or higher.
+On .NET Core the loading mechanism is yet to be determined (**TBD**), although the extensions will need to be targeting .NET Standard 1.6 or higher.
 
 The fact that those dll will be loadable for both .NET Core and .NET Framework compilers  is yet to be determined (**TBD**).
 

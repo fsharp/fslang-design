@@ -67,7 +67,7 @@ FSharpAI.Tools.Translate <@ PretrainedFFStyleVGGCore @>
 
 By it's nature AI models will use generic math code like "+", that's kind of unavoidable.
 Even more so when [RFC FS-1043](https://github.com/fsharp/fslang-design/blob/master/RFCs/FS-1043-extension-members-for-operators-and-srtp-constraints.md) is accepted. Without accurate information about how generic math operators like "+" really resolve, the quotation
-meta-programming is inaccurate and often full of bugs. A typical manifestion will be adding an overload (e.g. `Tensor + double`) and then getting this:
+meta-programming is inaccurate and often full of bugs. A typical manifestation will be adding an overload (e.g. `Tensor + double`) and then getting this:
 ```fsharp
 FSharpAI.Tools.ShapeAnalysis <@ PretrainedFFStyleVGGCore @>
 
@@ -186,7 +186,7 @@ This PR shifts us to use witness passing.   That is,
 
 2. You can access this information via the new `Quotations.Patterns.CallWithWitnesses` active pattern, and reconstruct the node using `Quotations.Expr.CallWithWitnesses`.
 
-3. The compiled method signature for each SRTP-constrained generic inlined function has one extra argument for each SRTP constraint. This is in a new method with a new distinguished suffic to the name.
+3. The compiled method signature for each SRTP-constrained generic inlined function has one extra argument for each SRTP constraint. This is in a new method with a new distinguished suffix to the name.
 
 4. The emitted IL for each SRTP-constrained generic inlined function either passes the necessary witnesses, and now never emits the `NotSupportedException` code.
 
@@ -197,7 +197,7 @@ function is called at a non-generic, specific type.
 
 For example, for an SRTP-constraint `when  ^a : (static member (+) :  ^a * ^a ->  ^a)`:
 
-* You will see `(fun (a: double) (b: double) -> LanguagePrimtiives.AdditionDynamic a b)` passed in at the place where the code is specialized at type `double`.
+* You will see `(fun (a: double) (b: double) -> LanguagePrimitives.AdditionDynamic a b)` passed in at the place where the code is specialized at type `double`.
 
 * You will see `(fun (a: TimeSpan) (b: TimeSpan) -> TimeSpan.op_Addition(a,b))` passed in at the place where the code is specialized at type `TimeSpan`.
 
@@ -308,7 +308,7 @@ module LanguagePrimitives =
         val InequalityDynamic : x:'T1 -> y:'T2 -> 'U
         val DivideByIntDynamic : x:'T -> y:int -> 'T
 
-// These are pre-existing and act as suitable witnesses
+// These are preexisting and act as suitable witnesses
 module OperatorIntrinsics =
         val AbsDynamic : x:'T -> 'T 
         val AcosDynamic : x:'T -> 'T 
@@ -334,7 +334,7 @@ module OperatorIntrinsics =
 
 
 ```
-For example, for the SRTP-constraint `when  ^a : (static member (+) :  ^a * ^a ->  ^a)` you will see `(fun (a: double) (b: double) -> LanguagePrimtiives.AdditionDynamic a b)` passed at the place where the code is specialized at type `double`.
+For example, for the SRTP-constraint `when  ^a : (static member (+) :  ^a * ^a ->  ^a)` you will see `(fun (a: double) (b: double) -> LanguagePrimitives.AdditionDynamic a b)` passed at the place where the code is specialized at type `double`.
 
 The above are used whenever a "built in" constraint solution is determined by the F# compiler, e.g. in the cases where no corresponding `op_Addition` member actually exists on a type such as `System.Double`, but rather the F# compiler simulates the existence of such a type.
 
@@ -486,7 +486,7 @@ if not inlined, which is why we always currently always require it to be inlined
 
 ### Choice of name for alternative entry point
 
-This RFC suffixes `$W` for the entry point.  Alternatives such as `WithWitnesses` were consdiered.
+This RFC suffixes `$W` for the entry point.  Alternatives such as `WithWitnesses` were considered.
 
 
 

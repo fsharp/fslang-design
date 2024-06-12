@@ -30,7 +30,7 @@ package for FSharp.Core for all different target platforms. A single, unified FS
 
 The F# Core Engineering group also publish [notes and guidance on FSharp.Core.dll](http://fsharp.github.io/2015/04/18/fsharp-core-notes.html).
 
-Equally, the FSharp.Core NuGet pacakge has problems, see below.
+Equally, the FSharp.Core NuGet package has problems, see below.
 
 ### Today
 
@@ -142,11 +142,11 @@ The following steps are proposed for the next few months, until about September 
 
 2. Microsoft publish ``FSharp.Core.netstandard`` (deprecating ``Microsoft.FSharp.Core.netcore``).  If time permits, Microsoft also publish ``FSharp.Core.netfx`` containing the .NET 4.x DLLs.
 
-3. If technically feasible (see below), F# Core Engineering add these packages as dependencies of a future version of ``FSharp.Core`` and drop the direct inclusion of DLLs. (As noted above these are not necesssarily **permanent** dependencies)
+3. If technically feasible (see below), F# Core Engineering add these packages as dependencies of a future version of ``FSharp.Core`` and drop the direct inclusion of DLLs. (As noted above these are not necessarily **permanent** dependencies)
 
 4. ``FSharp.Core.netstandard`` is pre-loaded as a part of dotnet SDK tooling, making some degree of offline development possible.
 
-5. The default build logic for the intial set of F# project templates in the dotnet SDK will be to have a dependency only the ``FSharp.Core.netstandard``
+5. The default build logic for the initial set of F# project templates in the dotnet SDK will be to have a dependency only the ``FSharp.Core.netstandard``
    package.  It will, however, be possible to add ``FSharp.Core`` or other packages as a dependency instead.
 
 Library authors will have a choice of depending on ``FSharp.Core``(unified, fat), ``FSharp.Core.netstandard`` (minimal, needs some thought) or  ``FSharp.Core.netfx`` (not quite minimal, needs some thought) as their FSharp.Core package reference.
@@ -179,7 +179,7 @@ This approach _appears_ to meet
 
 * Microsoft scenario requirements
 
-* Microsoft size requrements
+* Microsoft size requirements
 
 * Microsoft publication criteria
 
@@ -210,10 +210,10 @@ are somewhat orthogonal to the package structure and delivery. See [this comment
 * Is the FSharp.Core package reference pinned or not in templates?  
   - PackageReference support version ranges. Package versions in NuGet are major.minor.patch (semver), that's the official versioning scheme.
   - Pinning to an exact specific version, es 4.1.9 mean if i need to update it, user need to do it manually. And is bad for resilience to bugs. And is more complicated if implicit.
-  - Pinning to a wilcard .path (eg ``4.1.*``) mean it's possibile to update it later.
-  - Pinning to wilcard minor (eg ``4.*``) mean a more strict contract for the package.
+  - Pinning to a wildcard .path (eg ``4.1.*``) mean it's possibile to update it later.
+  - Pinning to wildcard minor (eg ``4.*``) mean a more strict contract for the package.
   - Implicit version may help just give the minimal supported version.
-  - All bundles (VS/Mono/cli) support offline packages (to not downlaod additional stuff). So this doesnt preclude open ranges, just mean new version need to be downloaded if needed.
+  - All bundles (VS/Mono/cli) support offline packages (to not download additional stuff). So this doesnt preclude open ranges, just mean new version need to be downloaded if needed.
 
 * Is the FSharp.Core reference explicit or implicit in .NET SDK project files?  See [again this comment](https://github.com/fsharp/fslang-design/issues/188#issuecomment-301245317)
   - an Fsharp.Core.dll is always required. Template can implicit reference it or not.
@@ -229,7 +229,7 @@ are somewhat orthogonal to the package structure and delivery. See [this comment
 * At what point does the ``FSharp.Core`` package drop the inclusion of PCL versions of FSharp.Core (as mentioned above, PCL library development will still always be available by referencing older versions of the package)
   - Answer: when support for .NET Standard package references is widespread, stable and fully accepted
 
-* At what point does the ``FSharp.Core`` package drop the inclusion of Xamarin-specific versions of FSharp.Core (as mentioned above, Xamaring library development will still always be possible by referencing older versions of the package)
+* At what point does the ``FSharp.Core`` package drop the inclusion of Xamarin-specific versions of FSharp.Core (as mentioned above, Xamarin library development will still always be possible by referencing older versions of the package)
   - Answer: when Xamarin no longer needs these
 
 ### Open Questions (Proposal B)

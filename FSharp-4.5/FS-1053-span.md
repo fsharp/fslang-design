@@ -132,7 +132,7 @@ given type `inref<_>`.  Together with other rules this means `inref<'T>` also im
 
 By the type inference rules above, a `byref<'T>` may be used where an `inref<'T>` is expected.
 
-For methods and properties on F# value types, the F# value type `this` paramater
+For methods and properties on F# value types, the F# value type `this` parameter
 is given type `inref<'T>` if the value type is considered immutable (has no mutable fields and no mutable sub-structs).
 
 #### `outref<T>` for output reference parameters
@@ -198,7 +198,7 @@ However, a similar set of rules do not apply to `outref<'T>`.  This is for compa
 
 For compatibility, .NET parameters using the `[in]` attribute (e.g. `[in] int32& p`) are interpreted as type `byref<'T>` (e.g. `byref<int32>`).  This is for similar reasons to the above: .NET method signatures already exist that may use `[in]`.  This means the only place where `inref<'T>` types are introduced implicitly by F# is 
 1. For  a .NET parameter or return type that  has an `IsReadOnlyAttribute` `modreq`, see below.
-2. For the `this` pointer on a struct type that has no mutable fields, see belowif a .NET signature also has a `modreq` attribute for `IsReadOnly` on a parameter, see below.
+2. For the `this` pointer on a struct type that has no mutable fields, see below if a .NET signature also has a `modreq` attribute for `IsReadOnly` on a parameter, see below.
 3. For the address of a memory location derived from another `inref<_>` pointer.
 
 #### Implicit dereference of return byrefs
@@ -225,7 +225,7 @@ let test() =
     let addr : byref<int> = &f()
     addr <- addr + 1
 ```
-Hwoever it specifically doesn't apply to:
+However it specifically doesn't apply to:
 
 * the `&` operator itself
 
@@ -329,7 +329,7 @@ Using `IsReadOnly` attribute on a struct which has a mutable field will give an 
 "ByRefLike" structs are stack-bound types with rules like `byref<_>` and `Span<_>`.
 They declare struct types that are never allocated on the heap. These are
 useful for high-performance programming as you get a set of strong checks
-about the lifetimes and non-capture of these values. They are also potetnially useful for correctness
+about the lifetimes and non-capture of these values. They are also potentially useful for correctness
 in some situations where capture must be avoided.
 
 * Can be used as function parameters, method parameters, local variables, method returns
@@ -363,7 +363,7 @@ Note that `[<IsByRefLike>]` does not imply `[<Struct>]`  both attributes have to
 
 The F# approach to `stackalloc` has always been to make it an "unsafe library function" whose use generates a "here be dragons" warning.  The C# team make it part of the language and are able to do some additional checks.
 
-In theory it would be possible to mirror those checks in F#.  However, the C# team are considerig further rule changes around `stackalloc` in any case. Thus it seems ok (or at least consistent) if we follow the existing approach for F# and don’t 
+In theory it would be possible to mirror those checks in F#.  However, the C# team are considering further rule changes around `stackalloc` in any case. Thus it seems ok (or at least consistent) if we follow the existing approach for F# and don’t 
 add any specific knowledge of stackalloc to the rules.  
 
 #### Ignoring Obsolete attribute on existing `ByRefLike` definitions
@@ -477,7 +477,7 @@ type S(x: int, y: int) =
     member this.Replace(s: S) = this <- s
 ```
 Note that the struct is immutable, except for a `Replace` method.  The `this` parameter will now be considered `inref<S>` and
-an error will be reported suggesting to add a mutable field if the struc is to be mutated.
+an error will be reported suggesting to add a mutable field if the struct is to be mutated.
 
 Allowing this assignment was never intended in the F# design and I consider this as fixing a bug in the F# compiler now we have the
 machinery to express read-only references.
@@ -556,7 +556,7 @@ let callTestIn() =
 type DateTime with 
     member x.Foo() = ...
 ```
-as a "byref this" extension member where `x` is a readonly reference.  Instead you have to define a C#-style byref extension method. This means a copy happens on invocation. If it did writing performant extension members for F# struct types would be very easy.  Perhaps we should allow somthing like this
+as a "byref this" extension member where `x` is a readonly reference.  Instead you have to define a C#-style byref extension method. This means a copy happens on invocation. If it did writing performant extension members for F# struct types would be very easy.  Perhaps we should allow something like this
 
 ```
 type DateTime with 

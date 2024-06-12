@@ -76,7 +76,7 @@ In theory F# developers will expect two contradictory things:
 
 (a) **It Just Works across assembly boundaries**. That is, type identity for anonymous types will, by default, be assembly neutral. So ``{| X:int; Y: int |}`` in one assembly will be type equivalent to the same type when used in another assembly
 
-(b) **It Just Works with .NET Reflection, ``sprintf "%A"``, Json.NET and other features.** That is, the implied runtime types of the objects have .NET metadata, i.e. the runtime objects/types correspdonding to anonymous record values/types will have .NET metadata (like F# nominal record types).
+(b) **It Just Works with .NET Reflection, ``sprintf "%A"``, Json.NET and other features.** That is, the implied runtime types of the objects have .NET metadata, i.e. the runtime objects/types corresponding to anonymous record values/types will have .NET metadata (like F# nominal record types).
 
 Unfortunately .NET provides no mechanism to achieve both of these, i.e. there is no .NET mechanism to make types both have "strong" .NET metadata and be equivalent across assembly boundaries.
 
@@ -92,8 +92,8 @@ This leads to two different kinds of anonymous records:
 
 A basic litmus test of this feature is this: can the user smoothly (through localized, regular transformations) adjust a closed body of code to use existing F# nominal record types instead of anonymous record types?
 
-We adopt the dsign principle that the answer to this must be "yes" - the developer just has to
-1. expicitly define each implied record type
+We adopt the design principle that the answer to this must be "yes" - the developer just has to
+1. explicitly define each implied record type
 2. replace ``{| ... |}`` by ``{ .. }``
 3. add some type annotations.
 Let's call this process "nominalization".
@@ -111,7 +111,7 @@ Supporting "smooth nominalization" means we need to carefully consider whether f
 * adding fields to anonymous records ``{ x with A = 1 }``
 * unioning anonymous records `` { include x; include y }``
 
-These should be included if and only if they are **also** implemented for nominal record types. Futher, their use makes the cost of nominalization higher, because F# nominal record types do not support the above
+These should be included if and only if they are **also** implemented for nominal record types. Further, their use makes the cost of nominalization higher, because F# nominal record types do not support the above
 features - even ``{ x with A=1 }`` is restricted to create objects of the same type as the original ``x``, and thus multiple
 nominal types will be needed where this construct is used.
 
@@ -185,7 +185,7 @@ Code that is generic over record types  _can_ be written using static member con
 ## Design Principle: Not anonymous object expressions
 
 There are numerous aspects of the F#/.NET object system that could, in theory, be supported by "Kind B" anonymous record types (which have full .NET metadata and a backing .NET type). This incudes
-* properties (computerd on-demand)
+* properties (computed on-demand)
 * interface implementations
 * methods
 * indexer properties
@@ -274,7 +274,7 @@ The checking and elaboration of these forms is fairly straight-forward.
 Notes:
 * Anonymous record types are marked serializable
 
-Anonymous record types types have  full C#-compatible anonymous object metadata. Underneath these compile to an instantiation of a generic type defined in the declaring assembly with appropriate .NET metadata (property names). These types are CLIMutable and thus C#-compatible. The identity of the types are implicitly assembly-qualified.
+Anonymous record types have  full C#-compatible anonymous object metadata. Underneath these compile to an instantiation of a generic type defined in the declaring assembly with appropriate .NET metadata (property names). These types are CLIMutable and thus C#-compatible. The identity of the types are implicitly assembly-qualified.
 
 These types are usable in LINQ queries.
 
@@ -327,7 +327,7 @@ let data4 = {| data2 with X = "3" |} // gives {| X = "3"; Y = "1" |}
 
 Fields are placed in a canonical order by the compiler, so type ``{| A : int; B : int |}`` is type-equivalent to ``{| B: int; A : int |}``. 
 
-## Interaction with F# Reflection Utilies
+## Interaction with F# Reflection Utilities
 
 The FSharp.Core functions ``FSharp.Reflection.FSharpType.GetRecordFields`` and ``FSharp.Reflection.FSharpValue.MakeRecord/GetRecordField/GetRecordFields`` work with anonymous record values and types.
 
@@ -457,7 +457,7 @@ There are several possible future extensions that are compatible with this RFC:
 
 1. Supporting pattern matching, e.g. `match x with {| Y = y |} -> ...`
 
-1. Allowing the use of `[<CLIMutable>]` on anonynous record values
+1. Allowing the use of `[<CLIMutable>]` on anonymous record values
 
 1. Interaction between nominal record types and anonymous record types:
 
@@ -506,7 +506,7 @@ module CSharpCompatAnonymousObjects =
     let f1 (x : {< X : int >}) =  x.X
 ```
 
-However we decided against this.  It is one thing to expain that ``new`` adds .NET metadata to an anonymous type.  It is another to explain the existence of an entirely new set of ``{< ... >}`` parentheses.
+However we decided against this.  It is one thing to explain that ``new`` adds .NET metadata to an anonymous type.  It is another to explain the existence of an entirely new set of ``{< ... >}`` parentheses.
 
 #### Alternative: Allow optional naming of anonymous types.  
 
@@ -537,7 +537,7 @@ Sorting by field name is the natural thing for the programmer from a type-system
 
 However it does have some downsides.  For example, when using anonymous record data for rows in tabular data the fields will not imply a column ordering.  
 
-#### Alternative: Various alternatives aroud copy-and-update
+#### Alternative: Various alternatives around copy-and-update
 
 Copy-and-update could be design differently:
 
@@ -574,11 +574,11 @@ Response:
 
 ### Alternative: support pattern matching
 
-A note by @dsyme: The omission of pattern matching for anonymous records really shows my strong bias against pattern matching on records at all - I nearly always dislike code that uses pattern matching on records. For exaple, I don't think it adds to the robustness of code since pattern matching on records is "flexible", i.e. fields can be omitted.   I know others will disagree however.
+A note by @dsyme: The omission of pattern matching for anonymous records really shows my strong bias against pattern matching on records at all - I nearly always dislike code that uses pattern matching on records. For example, I don't think it adds to the robustness of code since pattern matching on records is "flexible", i.e. fields can be omitted.   I know others will disagree however.
 
 ### Alternative: syntax ``type {| i = 1 |}``
 
-Response: This is one of a number of alternatives trying imply "this value has runtime type information".  Others might be ``rtt {| i = 1 |}`` (``rtt`` for "runtime type") or ``obj {| i = 1 |}``.  However each of which seems worse in other ways. For example ``type`` mighy imply "what comes after this is in the syntax of types" or something like that.
+Response: This is one of a number of alternatives trying imply "this value has runtime type information".  Others might be ``rtt {| i = 1 |}`` (``rtt`` for "runtime type") or ``obj {| i = 1 |}``.  However each of which seems worse in other ways. For example ``type`` might imply "what comes after this is in the syntax of types" or something like that.
 
 #### Alternative: Support both Kind A and Kind B types 
 

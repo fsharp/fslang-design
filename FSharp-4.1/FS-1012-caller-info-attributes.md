@@ -80,7 +80,7 @@ Yes: Quotations works as expected no special implementation and there are tests 
 
 ## Feature Interaction - Anonymous function
 
-Check an anonymous lambda experession, e.g. ``(fun () -> ...)``.  
+Check an anonymous lambda expression, e.g. ``(fun () -> ...)``.  
 
 Yes: anonymous lambda expression works as expected no special implementation and there are tests in the PR.
 

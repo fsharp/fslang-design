@@ -2,7 +2,7 @@
 
 A proposal is being put forward - initiated by Microsoft - to include F# functionality directly into [the dotnet SDK](https://github.com/dotnet/sdk), also known as "Microsoft.NET.Sdk",
 which is the primary next-generation cross-platform SDK for .NET Framework and .NET Core programming. This work can be seen as the next logical step
-in the evolution of [the FSharp.NET.SDK](https://github.com/dotnet/netcorecli-fsc/) - merging much of the funtionality into an even more core piece of .NET tooling.
+in the evolution of [the FSharp.NET.SDK](https://github.com/dotnet/netcorecli-fsc/) - merging much of the functionality into an even more core piece of .NET tooling.
 
 Despite being a tooling issue rather than a language issue, this is being treated as an F# RFC to facilitate discussion.
 
@@ -44,7 +44,7 @@ extension SDK to the Microsoft.NET.Sdk, bundled with the .NET CLI Tools through 
 
 * Minimal disruption and alteration to the Microsoft.NET.Sdk code.  (This implies some rejigging of the pieces of the FSharp.NET.Sdk implementation)
 
-* The tooling can be pointed to an updated F# compiler, e.g. a compiler deliverd via the
+* The tooling can be pointed to an updated F# compiler, e.g. a compiler delivered via the
   FSharp.Compiler.Tools package, see [this comment](https://github.com/dotnet/sdk/pull/1172#issuecomment-299280631) for example.
 
 
@@ -123,7 +123,7 @@ __F# Template format compared with C#__
 In general there are no deviations between the two languages.  C# supports source file globbing (Wild card search for files to compile).  The F# compiler requires source file ordering specified in the project file and so this feature is disabled for F# projects.
 PackageRefs in an F# project are specified in the same way as C# projects, Similarly for Project Refs and References.
 
-There are extra properties to control F# specific features, such as FSharp.Core dll and Package referencing as well as System.ValueTuple package referencing.  The real value of these extra properties is apparent when targetting multiple .net frameworks.
+There are extra properties to control F# specific features, such as FSharp.Core dll and Package referencing as well as System.ValueTuple package referencing.  The real value of these extra properties is apparent when targeting multiple .net frameworks.
 
 __System.ValueTuple Reference__
 
@@ -146,7 +146,7 @@ To change the package version set ``FSharpCoreImplicitPackageVersion`` to a spec
 
 __TargetFSharpCoreVersion__
 
-For desktop versions, E.g. those who want to target FSharp.Core.4.3.0.0 e.t.c use the ``TargetFSharpCoreVersion`` property. This has no effect on netstandar or netcoreapp target builds.
+For desktop versions, E.g. those who want to target FSharp.Core.4.3.0.0 e.t.c use the ``TargetFSharpCoreVersion`` property. This has no effect on netstandard or netcoreapp target builds.
 These proposals are implemented within the VisualFSharp repo in targets we deploy with the compiler, and so will not require coordination with the cli or sdk to implement.
 
 The source files can be found here: https://github.com/dotnet/fsharp/blob/master/src/fsharp/FSharp.Build/Microsoft.FSharp.NetSdk.props
@@ -204,7 +204,7 @@ Time Elapsed 00:00:09.58
 
 C:\temp\fsharp.builtin>
 ```
-If the SDK detects that an FSharp.SDK project is loaded then, the FSharp integration is disabled, and the FSharp.SDK builds per normal.  However, they currently donot build with the latst dotnet.exe tooling out of the box, because the compiler doesn't run on NetStandard 2.0, it requires netstandard 1.0 shared library to be downloaded.
+If the SDK detects that an FSharp.SDK project is loaded then, the FSharp integration is disabled, and the FSharp.SDK builds per normal.  However, they currently do not build with the latest dotnet.exe tooling out of the box, because the compiler doesn't run on NetStandard 2.0, it requires netstandard 1.0 shared library to be downloaded.
 
 ### Bundling of FSharp.NET.Sdk with CLI tools
 
@@ -214,7 +214,7 @@ such as templating.  It doesn't make sense to have two F# stories in the .NET CL
 
 @KevinRansom adds:
 
-> It has to continue to work, we will not remove it from the dotnet cli.  We assume that developers have existing projects that make use of it, we need to ensure that those projects build with the new tooling.  Currently they don’t because dotnet cli doesnot ship a with the ability to run 1.0 apps … super weirdly … I will put in a diversion to make it use the deployed compiler so that they work.
+> It has to continue to work, we will not remove it from the dotnet cli.  We assume that developers have existing projects that make use of it, we need to ensure that those projects build with the new tooling.  Currently they don’t because dotnet cli does not ship a with the ability to run 1.0 apps … super weirdly … I will put in a diversion to make it use the deployed compiler so that they work.
 
 
 ### Mono

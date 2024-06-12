@@ -30,7 +30,7 @@ It is arguable that this upcast should never be required. And indeed, if the nom
 
 The design is to do what is already done for list and array expressions since F# 3.1: assess the known type of the list/array/sequence expression before it is analyzed. If the element type is known and nominal, then use it as the basis for inserting coercions automatically.
 
-This is done by "inserting a flexible type varible". If the known element type is `C` then the known type of the element expression becomes type inference variable `?T` with constraint `?T :> C`. For sealed types this is solved immedaitely. For non-sealed types,the constraint remains. 
+This is done by "inserting a flexible type variable". If the known element type is `C` then the known type of the element expression becomes type inference variable `?T` with constraint `?T :> C`. For sealed types this is solved immediately. For non-sealed types,the constraint remains. 
 
 In addition, we need to avoid extra errors in situations like this:
 
@@ -60,7 +60,7 @@ and not:
 g3: seq<#MemberInfo> -> MemberInfo[]
 ```
 
-No warning is added for existing redudant casts. This could be added in a future release once a `/langlevel` flag is in place, it is a one line change to add such a warning.
+No warning is added for existing redundant casts. This could be added in a future release once a `/langlevel` flag is in place, it is a one line change to add such a warning.
 
 # Drawbacks
 [drawbacks]: #drawbacks

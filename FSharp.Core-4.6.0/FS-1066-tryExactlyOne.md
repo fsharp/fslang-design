@@ -12,7 +12,7 @@ This RFC covers the detailed proposal for this suggestion.
 # Summary
 [summary]: #summary
 
-Add function `tryExactlyOne` working like `exactlyOne`, but notthrowing and returning `option` type to `array`, `list` and `seq` modules.
+Add function `tryExactlyOne` working like `exactlyOne`, but nonthrowing and returning `option` type to `array`, `list` and `seq` modules.
 
 # Motivation
 [motivation]: #motivation

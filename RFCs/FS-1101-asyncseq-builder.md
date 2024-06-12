@@ -33,7 +33,7 @@ TBD
 
 Planned support:
 
-* The standard computation expresion features for imperative code (`Delay`, `Run`, `While`, `For`, `TryWith`, `TryFinally`, `Yield`, `YieldFrom`)
+* The standard computation expression features for imperative code (`Delay`, `Run`, `While`, `For`, `TryWith`, `TryFinally`, `Yield`, `YieldFrom`)
 
 * `let!` and `return!` on task values
 
