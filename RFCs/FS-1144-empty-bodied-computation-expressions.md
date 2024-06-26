@@ -349,7 +349,7 @@ SynExpr.App
 * In the absence of a body and additional type information, it is theoretically just as likely that the user is attempting to apply a function to an incomplete record construction expression. In this case, the AST now diverges from the user's intent.
 * Both parsing and typechecking must be updated.
 * Represents a breaking change to the untyped AST.
-* As in the previous alternative, there is risk in complexity in making changes to the parser's treatment of curly-braced expressions.
+* As in the previous alternative, there is risk and complexity in making changes to the parser's treatment of curly-braced expressions.
 
 # Compatibility
 
