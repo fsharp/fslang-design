@@ -6,8 +6,8 @@ This RFC covers the detailed proposal for this suggestion.
 
 - [x] [Allow empty CE body and return `Zero`](https://github.com/fsharp/fslang-suggestions/issues/1232)
 - [x] Approved in principle
-- [ ] [Implementation](https://github.com/dotnet/fsharp/pull/FILL-ME-IN)
-- [ ] [Discussion](https://github.com/fsharp/fslang-design/discussions/FILL-ME-IN)
+- [x] [Implementation](https://github.com/dotnet/fsharp/pull/17352)
+- [x] [Discussion](https://github.com/fsharp/fslang-design/discussions/775)
 
 # Summary
 
