@@ -11,7 +11,7 @@ This RFC covers the detailed proposal for this suggestion.
 
 # Summary
 
-We add compiler support for using a computation expression with an empty body to represent a computation or data structure's zero, empty, or identity value.
+We add compiler support for using a [computation expression](https://learn.microsoft.com/dotnet/fsharp/language-reference/computation-expressions) with an empty body to represent a computation or data structure's zero, empty, or identity value.
 
 ```fsharp
 let xs = seq { } // Empty sequence.
