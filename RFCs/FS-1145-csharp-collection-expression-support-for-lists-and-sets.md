@@ -43,13 +43,15 @@ FSharpSet<int> xs = [1, 2, 3];
 
 <!-- Why are we doing this? What use cases does it support? What is the expected outcome? -->
 
-Just as it is common for F# code to consume .NET libraries written in C#, there is a variety of scenarios where it is necessary to interact with F# libraries from C#.
+Instantiating F# lists and sets in C# is currently verbose, cumbersome, and inefficient.
+
+Just as it is common for F# code to consume .NET libraries written in C#, there are many scenarios where it is necessary or desirable to interact with F# libraries from C#.
 
 In mixed-language solutions containing both C# and F# projects, for example, unit tests written in C# may need to test APIs written in F#.
 
-Even in a C#-only solution, unit tests written in C# may wish to use the automatically-implemented structural equality of the F# list and set types in making test assertions.
+In C#-only solutions, unit tests written in C# may wish to use the automatically-implemented structural equality of the F# list and set types to make test assertions.
 
-Instantiating F# lists and sets in C# is currently verbose, cumbersome, and inefficient.
+## Status quo
 
 The primary way to create F# lists in C# is currently to instantiate an intermediate collection (e.g., an array) and pass that to one of the methods on `ListModule`, like `ListModule.OfArray` or `ListModule.OfSequence`. Technically, it is also possible to manually chain calls of `FSharpList<T>.Cons` and `FSharpList<T>.Empty` to create a list, but this is extremely verbose and seldom done in practice.
 
