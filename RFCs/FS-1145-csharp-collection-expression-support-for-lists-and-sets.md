@@ -184,6 +184,8 @@ For both lists and sets, we annotate the `Create` method's `items` parameter wit
 
 We give the static `List` type the compiled name `FSharpList` to align with the generic list type's ``FSharpList`1``. As mentioned above, a similar convention is followed by the types in the `System.Collections.Immutable` namespace in the BCL.
 
+(Not shown: to discourage direct use in source code, we also annotate the `List` type and its `Create` method with the `CompilerMessageAttribute` and specify `IsHidden=true`.)
+
 ```fsharp
 type List<'T> = …
 
@@ -196,6 +198,8 @@ and [<Sealed; AbstractClass; CompiledName("FSharpList")>] List =
 ### `Set`
 
 We give the static `Set` type the compiled name `FSharpSet` to align with the generic set type's ``FSharpSet`1``.
+
+(Not shown: to discourage direct use in source code, we also annotate the `Set` type and its `Create` method with the `CompilerMessageAttribute` and specify `IsHidden=true`.)
 
 ```fsharp
 type Set<'T> (…) = …
@@ -232,7 +236,7 @@ type Set<'T> = …
 
 <!-- Why should we *not* do this? -->
 
-There are no obvious drawbacks to adding this support to FSharp.Core.
+The main arguable drawback of this approach is that the API surface area of FSharp.Core is now technically different depending on the target framework. In practice, we mitigate this by annotating the new APIs with the `CompilerMessageAttribute` and specifying `IsHidden=true`. This means that editors will not suggest `List.Create` and `Set.Create` in autocompletion, and, if a user nonetheless attempts to use them directly, the compiler will emit a warning that these APIs are intended for compiler use only.
 
 # Alternatives
 
@@ -260,7 +264,7 @@ Instead of adding polyfills for .NET 8-specific types, we could instead simply a
 Please address all necessary compatibility questions:
 
 * Is this a breaking change?
-  * No
+  * No.
 * What happens when previous versions of the F# compiler encounter this design addition as source code?
   * N/A.
 * What happens when previous versions of the F# compiler encounter this design addition in compiled binaries?
