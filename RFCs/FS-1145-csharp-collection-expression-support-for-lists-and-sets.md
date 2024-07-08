@@ -259,6 +259,12 @@ We don't do this for two reasons:
 
 Instead of adding polyfills for .NET 8-specific types, we could instead simply add a `net8.0` target framework to FSharp.Core. There are many reasons why this has not been done yet, and supporting this feature alone is not enough to outweigh them.
 
+## Add `Create` overloads taking arrays
+
+See [dotnet/csharplang#8144](https://github.com/dotnet/csharplang/issues/8144).
+
+A future version of the C# compiler may support a pattern wherein an array may be created on the heap and its ownership transferred to a collection builder type's `Create` method. There does not however seem to be a good reason to add array overloads unless or until that feature should come to pass.
+
 # Compatibility
 
 Please address all necessary compatibility questions:
