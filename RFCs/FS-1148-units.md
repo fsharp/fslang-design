@@ -1,4 +1,4 @@
-# F# RFC FS-1146 - Ease conversion between Units of Measure (UoM) and undecorated numerals and simplify casting
+# F# RFC FS-1148 - Ease conversion between Units of Measure (UoM) and undecorated numerals and simplify casting
 
 The design suggestion [Ease conversion between Units of Measure (UoM) and undecorated numerals and simplify casting](https://github.com/fsharp/fslang-suggestions/issues/892) has been marked "approved in principle".
 
