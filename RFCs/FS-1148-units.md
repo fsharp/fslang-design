@@ -26,7 +26,13 @@ The additions follow a common pattern:
 - An overloaded `Add` method for each of the supported primitive types adds a UoM to the value
 - An overloaded `Remove` method for each of the supported primitive types removed UoM from the value
 - An overloaded `Cast` method for each of the supported primitive types replaces UoM on the value
-- Overloaded `Add*`, `Remove*` and `Cast*` e.g. `AddArray` for common collection types containing supported primitives.
+- Overloaded `Add*`, `Remove*` and `Cast*` e.g. `AddArray` for common collection types containing supported primitives:
+  - `Array`
+  - `List`
+  - `ResizeArray`
+  - `Seq`
+
+Total added methods is 195 `13 supported primitives * 3 methods * (primitive + 4 collection types)`. They are presented as 15 methods with 13 overloads each.
 
 ```fsharp
 namespace Microsoft.FSharp.Core
@@ -65,3 +71,4 @@ This doesn't extend the F# metadata format.
 ### Unresolved questions
 
 - Should any other collections be added?
+- The use of overloaded methods is not typical for FSharp.Core design. Is it acceptable here?
