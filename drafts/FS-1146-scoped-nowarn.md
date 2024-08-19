@@ -48,10 +48,13 @@ let handler e =
 # Detailed specification
 
 1. The compiler shall recognize a new *compiler directive* `#warnon` (to be added to §12.4 of the F# spec).
+
 2. `#warnon` shall have warning numbers as arguments in the same way as `#nowarn` (including non-string arguments (RFC-1147)).
-3. Functionality
-   - In the following, we use the term NOWARN for a `#nowarn` directive for a certain warning number. Similarly, we use WARNON for a `#warnon` with the same warning number.
+
+3. In the following, we use the term NOWARN for a `#nowarn` directive for a certain warning number. Similarly, we use WARNON for a `#warnon` with the same warning number.
+
    - NOWARN and WARNON shall disable/enable the warning until eof or a corresponding WARNON / NOWARN
+
    - Compiler defaults (system defaults and compiler flags) shall be valid outside of scopes defined by
      - NOWARN - WARNON pairs
      - WARNON - NOWARN pairs
@@ -59,23 +62,37 @@ let handler e =
      - WARNON and eof
 
      with no other NOWARN or WARNON inbetween.
+
    - [Alternatives](#alternatives) have been considered but dismissed.
-4. The current definition "*Compiler directives are declarations in non-nested modules or namespace declaration groups*" (§12.4) shall be relaxed for `#nowarn` and `#warnon`. They now can appear also inside modules anywhere on a separate line. Warning 236 will no longer be issued. We considered and dismissed a more restrictive [alternative](#alternatives).
+
+4. The current definition "*Compiler directives are declarations in non-nested modules or namespace declaration groups*" (§12.4) shall be relaxed for `#nowarn` and `#warnon`. They now can appear also inside modules anywhere on a separate line. 
+
+    Warning 236 will no longer be issued. 
+
+    We considered and dismissed a more restrictive [alternative](#alternatives).
+
 5. Indentation rules for directives are currently not defined in the spec, except for (obsolete) no-indentation of conditional compilation directives. For compatibility reasons, the following shall hold.
+
    - `#nowarn` and `#warnon` directives have to start on the offside line of the enclosing offside context.
 
    [Alternatives](#indentation) have been considered and dismissed.
+
 6. All of the above rules are valid for `.fs` source files, `.fsi` signature files and `.fsx` script files.
+
 7. For the interactive `fsi` REPL, the functionality as described in (3) above is valid across all interactions, while the indentation rules (5) are valid within a single input. (4) is not applicable.
+
 8. The compiler service shall implement the changes (3) to (5) above.
+
 9. Interaction with `#line` directives.
+
    - The sections that in terms of the `#line` directives belong to a certain file shall be considered by `#nowarn` / `#warnon` as a separate file. This means that, in a generated file, a `#nowarn` in a line pointing to the generating file is effective only in other such lines, and not in lines that are not affected by any `#line` directive.
+
    - See also the [alternative](#interaction-with-line-directives) that was considered and dismissed.
 
 > *Note:* Currently, the spec (§12.4) specifies for `#nowarn`:
-<br/>"For signature (.fsi) files and implementation (.fs) files, turns off warnings within this lexical scope.
-For script (.fsx or .fsscript) files, turns off warnings globally."
-<br/>The current compiler, however, ignores the lexical scope and disables the warnings until end of file. For compatibility reasons, we keep it that way. For script files, we propose to use the new rules, which technically is a breaking change, see also the [Alternatives](#alternatives) section.
+    <br/>"For signature (.fsi) files and implementation (.fs) files, turns off warnings within this lexical scope.
+    For script (.fsx or .fsscript) files, turns off warnings globally."
+    <br/>The current compiler, however, ignores the lexical scope and disables the warnings until end of file. For compatibility reasons, we keep it that way. <br/>For script files, we propose to use the new rules, which technically is a breaking change, see also the [Alternatives](#alternatives) section.
 
 > *Note:* Currently, the compiler services considers a `#nowarn` somewhere in a file as valid everywhere in this file. We consider this a bug that will be fixed.
 
@@ -120,7 +137,7 @@ Alternative 3
 - NOWARN disables the warning (independent of the defaults), until eof or a WARNON
 - WARNON is allowed only after a NOWARN and restores the defaults for the warning
 
-Alternative 1 would have been nice, but is not backwards compatible.
+Alternative 1 would have been nice and simple, but is not backwards compatible.
 
 Alternative 2 has no way of going back to the default settings.
 
@@ -140,11 +157,11 @@ An alternative would be to have `#nowarn` and `#warnon` start new offside contex
 
 ## Script files
 
-Item 6 of the [Detailed Specification](#detailed-specification) section extends the new functionality to script files, thereby introducing a breaking change. Alternatively, we could disallow `#warnon` for script files. Or define rules for `#warnon` before the `#nowarn` that different from the rules for `.fs` source files and necessarily complicated.
+Item 6 of the [Detailed Specification](#detailed-specification) section extends the new functionality to script files, thereby introducing a breaking change. Alternatively, we could disallow `#warnon` for script files. Or define rules for `#warnon` before the `#nowarn` that are different from the rules for `.fs` source files and necessarily complicated.
 
 ## Interaction with Line Directives
 
-A (perhaps more user-friendly) alternative to item 9 of the [Detailed Specification](#detailed-specification) section would be to have `#nowarn` / `#warnon` operate independently of the `#line` directives. For the implementation, however, this would mean book-keeping of the original filename and line numbers in all `range`s. Which is, both in terms of implementation effort and runtime cost, probably prohibitive.
+A (perhaps more user-friendly) alternative to item 9 of the [Detailed Specification](#detailed-specification) section would be to have `#nowarn` / `#warnon` operate independently of the `#line` directives. For the implementation, however, this would mean book-keeping of the original filename and line numbers in the `range` struct. Which is, both in terms of implementation effort and runtime cost, probably prohibitive.
 
 # Compatibility
 
