@@ -94,7 +94,7 @@ let handler e =
     For script (.fsx or .fsscript) files, turns off warnings globally."
     <br/>The current compiler, however, ignores the lexical scope and disables the warnings until end of file. For compatibility reasons, we keep it that way. <br/>For script files, we propose to use the new rules, which technically is a breaking change, see also the [Alternatives](#alternatives) section.
 
-> *Note:* Currently, the compiler services considers a `#nowarn` somewhere in a file as valid everywhere in this file. We consider this a bug that will be fixed.
+> *Note:* Currently, the compiler service considers a `#nowarn` somewhere in a file as valid everywhere in this file. We consider this a bug that will be fixed.
 
 > *Note:* The interaction of `#nowarn` and `#line` directives is not specified in the F# spec.
    In the current compiler, it is broken (see [details below](#issues-in-the-current-implementation)).
@@ -217,6 +217,12 @@ shows a warning FS0025 for line 5. If you replace the `10` in the first `#line` 
 Reason is the [`checkFile` flag](https://github.com/dotnet/fsharp/blob/d37a8ae8aea915e1819b34c7fcd49749d11a3723/src/Compiler/Driver/CompilerDiagnostics.fs#L2241), introduced more than 10 years ago. Originally probably a hack in a debugging situation, it survived reviews since, and ended up being used in further modules. When this flag is set to `false` (which it is in most situations), `#nowarn` processing relies on comparing line numbers of one file with line numbers of another file. Accidentally, it sometimes works.
 
 We are mentioning this here since it explains why we have no real compatibility reference for the `#line` / `#nowarn` interaction.
+
+## Documentation
+
+In the ["Line Directives" section](https://learn.microsoft.com/en-us/dotnet/fsharp/language-reference/compiler-directives#line-directives) of the language reference, an additional paragraph on the interaction between line and nowarn/warnon directives should be inserted.
+
+In the ["Preprocessor Directives"](https://learn.microsoft.com/en-us/dotnet/fsharp/language-reference/compiler-directives#preprocessor-directives) section, the `#nowarn` entry should be extended to include `#warnon` and the functionality defined in this RFC. For the interaction with the `#line` directive, the "Line Directives" section should be referenced. Finally, the text should be updated to reflect RFC FS-1147. 
 
 # Unresolved questions
 
