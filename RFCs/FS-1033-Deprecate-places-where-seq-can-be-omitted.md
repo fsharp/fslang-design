@@ -7,7 +7,7 @@ This RFC covers the detailed proposal for this suggestion.
 - [x] [Deprecate places where seq can be omitted](https://github.com/fsharp/fslang-suggestions/issues/1033)
 - [x] Approved in principle
 - [x] [Implementation](https://github.com/dotnet/fsharp/pull/17772)
-- [x] [Discussion](https://github.com/fsharp/fslang-design/discussions/781)
+- [x] [Discussion](https://github.com/fsharp/fslang-design/discussions/788)
 
 # Summary
 
