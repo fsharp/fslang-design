@@ -31,6 +31,7 @@ let (..) _ _ = "Im an index range operator"
 
 let x = { 1..10 } // Here the index range operator is being overridden and `x` will be a string instead of a sequence.
 ```
+- The FSharp-Spec-4.1 already mentions that the ommission of the `seq` keyword is not recommended and that it might be deprecated (§6.3.12).
 
 # Detailed design
 
