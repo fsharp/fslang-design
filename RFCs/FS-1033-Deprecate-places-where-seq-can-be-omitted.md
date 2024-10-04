@@ -25,13 +25,18 @@ Deprecate places where seq can be omitted.
 
 - Having only one way to create a sequence will make the language more consistent and easier to understand.
 
-- Prevents the accidental override of index range operator.
+- Preventing the overload of `..` `op_Range` and `.. ..` `op_RangeStep` operators. Which can lead to confusing code like:
 ```fsharp
-let (..) _ _ = "Im an index range operator"
+let (..) _ _ = "Im an op_Range operator"
 
 let x = { 1..10 } // Here the index range operator is being overridden and `x` will be a string instead of a sequence.
+
+let (.. ..) _ _ = "Im an op_RangeStep operator"
+
+let y = { 1..10..20 } // Here the index range operator is being overridden and `y` will be a string instead of a sequence.
 ```
-- The FSharp-Spec-4.1 already mentions that the ommission of the `seq` keyword is not recommended and that it might be deprecated (§6.3.12).
+
+- The FSharp-Spec-4.1 already mentions that the omission of the `seq` keyword is not recommended and that it might be deprecated (§6.3.12).
 
 # Detailed design
 
