@@ -18,6 +18,10 @@ This feature extends the `[<Literal>]` attribute to support `decimal`.
 - Better consistency between numeric types
 - Increased interoperability with C#
 
+# Specification changes
+
+In §4.3 of the F# spec, the `const` rule shall have an additional production `| decimal`.
+
 # Detailed design
 
 As of F# 8 it is not possible to define a decimal constant and the following code
