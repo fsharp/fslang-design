@@ -336,6 +336,8 @@ in some situations where capture must be avoided.
 * Cannot be static or instance members of a class or normal struct
 * Cannot be captured by any closure construct (async methods or lambda expressions)
 * Cannot be used as a generic parameter
+    - In F# 9 and higher, this restriction is relaxed if the generic parameter is defined in C# using the `allows ref struct` anti-constraint. F# can instantiate such generics in types and methods with byref-like types. As a few examples, this affects BCL delegate types (`Action<>`,`Func<>`), interfaces (`IEnumerable<>`,`IComparable<>`) and generic arguments with a user-provided accumulator function (`String.string Create<TState>(int length, TState state, SpanAction<char, TState> action)`)
+    - It is impossible to author generic code supporting byref-like types in F#.
 
 Here is an example:
 ```fsharp
