@@ -161,9 +161,11 @@ Since warnings are a compile time feature, there is no binary compatibility issu
 
 Today there are no warnings for empty or repeated `#nowarn` directives (or only in very specific situations). Most invalid arguments are ignored.
 
-With the new feature (i.e. under feature flag), there shall be warnings for invalid arguments to the warn directives.
+With the new feature (i.e. under feature flag), there shall be warnings for invalid arguments to the warn directives. There shall also be warnings for repeated directives for the same number (except when there is the counterpart directive inbetween).
 
-Warning 236 ("Directives inside modules are ignored") will be removed.
+Use of the new `#warnon` directive under earlier language versions shall throw error 3350 (language feature error).
+
+Warning 236 ("Directives inside modules are ignored") shall be removed.
 
 ## Tooling
 
