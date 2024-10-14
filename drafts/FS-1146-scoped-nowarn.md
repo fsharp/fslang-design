@@ -165,7 +165,7 @@ With the new feature (i.e. under feature flag), there shall be warnings for inva
 
 Use of the new `#warnon` directive under earlier language versions shall throw error 3350 (language feature error).
 
-Warning 236 ("Directives inside modules are ignored") shall be removed.
+Warning 236 ("Directives inside modules are ignored") shall be removed for language versions containing the Scoped Nowarn feature.
 
 ## Tooling
 
