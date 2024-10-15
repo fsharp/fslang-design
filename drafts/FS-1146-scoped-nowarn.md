@@ -51,6 +51,8 @@ let handler e =
 
 2. `#warnon` shall have warning numbers as arguments in the same way as `#nowarn` (including non-string arguments (RFC-1147)).
 
+   > *Note:* Legacy oddities such as warning numbers in triple-quoted strings shall continue to be valid, for compatibility reasons. However, "multiline #nowarn" (with indented warning numbers in the following lines) is considered a bug and will not be supported any more, because it is against the spec and totally against the idea of pragmas. Tools must be able to easily interpret pragmas.
+
 3. In the following, we use the term NOWARN for a `#nowarn` directive for a certain warning number. Similarly, we use WARNON for a `#warnon` with the same warning number.
 
    - NOWARN and WARNON shall disable/enable the warning until eof or a corresponding WARNON / NOWARN
@@ -87,7 +89,7 @@ let handler e =
 > *Note:* Currently, the spec (§12.4) specifies for `#nowarn`:
     <br/>"For signature (.fsi) files and implementation (.fs) files, turns off warnings within this lexical scope.
     For script (.fsx or .fsscript) files, turns off warnings globally."
-    <br/>The current compiler, however, ignores the lexical scope and disables the warnings until end of file. For compatibility reasons, we keep it that way. <br/>For script files, we propose to use the new rules, which technically is a breaking change, see also the [Alternatives](#alternatives) section.
+    <br/>The current compiler, however, ignores the lexical scope and disables the warnings until end of file. For compatibility reasons, we keep it that way. <br/>For script files, we propose to use the new rules. This is technically is a breaking change, see also the [Alternatives](#alternatives) section.
 
 > *Note:* Currently, the compiler service considers a `#nowarn` somewhere in a file as valid everywhere in this file. We consider this a bug that will be fixed.
 
