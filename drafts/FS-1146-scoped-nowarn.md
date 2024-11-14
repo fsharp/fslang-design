@@ -175,7 +175,13 @@ Use of the new `#warnon` directive under earlier language versions shall produce
 
 ## Tooling
 
-No specific tooling change is expected.
+Tooling (fsac, vs, fantomas) will need to adapt to correctly color the warn directives, because they
+are no longer stored in the syntax tree as "ScopedPragmas" in 
+the top-level module / namespace fragments, but rather as warn scope trivia.
+They are also delivered by ServiceLexing as trivia.
+
+More tools might be affected by the changes in the compiler service surface area (mainly in the syntax tree).
+ 
 
 ## Performance and Scaling
 
