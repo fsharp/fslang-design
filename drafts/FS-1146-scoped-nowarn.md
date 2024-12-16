@@ -51,7 +51,7 @@ let handler e =
 
 2. `#warnon` shall have warning numbers as arguments in the same way as `#nowarn` (including non-string arguments (RFC-1147)).
 
-   > *Note:* Legacy oddities such as warning numbers in triple-quoted strings shall continue to be valid, for compatibility reasons. However, "multiline #nowarn" (with indented warning numbers in the following lines) is considered a bug and will not be supported any more, because it is against the spec and totally against the idea of pragmas. Tools must be able to easily interpret pragmas.
+   > *Note:* Legacy oddities such as warning numbers in triple-quoted strings shall continue to be valid, for compatibility reasons. However, "multiline #nowarn" (with indented warning numbers in the following lines) is considered a bug and will not be supported any more, because it is against the spec and totally against the idea of pragmas. Tools must be able to easily interpret pragmas. Also, spaces between the hash sign and the nowarn/warnon (line `#  nowarn 25`) shall not be allowed.
 
 3. In the following, we use the term NOWARN for a `#nowarn` directive for a certain warning number. Similarly, we use WARNON for a `#warnon` with the same warning number.
 
