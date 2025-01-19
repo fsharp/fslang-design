@@ -63,7 +63,7 @@ The style guide itself is adjusted via PRs to [the style guide doc](https://gith
 
 Adjustments to the style guide should generally only be made with consideration about their implementability in Fantomas, and if an adjustment is approved you should be prepared to contribute a matching pull request to Fantomas.
 
-The decision maker for the style guide is @dsyme, with input/veto from @nojaf (current maintainer of Fantomas) and input from all interested parties.
+The decision makers for the style guide are the [F# Language Design Squad](https://github.com/fsharp/fslang-suggestions), with input/veto from @nojaf (or the current maintainer of Fantomas) - and of course input from all interested parties.
 
 ## Code of Conduct
 
