@@ -12,7 +12,7 @@ This RFC covers the detailed proposal.
 
 F# discriminated unions have a number of generated public members that were created for C# interoperability and are hidden from F# code. These include an instance property `IsFoo : bool` per case `Foo`.
 
-This proposal is to make these members visible and usable from F# code too.
+This proposal is to make, for discriminated unions with more than one case, these members visible and usable from F# code too.
 
 # Motivation
 
