@@ -43,7 +43,7 @@ When RFCs are implemented and a version of F# is revved, the RFCs which correspo
 
 ### Who is in Charge?
 
-Historically the designer of F# has been Don Syme (@dsyme). Practically speaking, today most of the design process operates through the efforts of contributors, overseen by those with commit rights on this repository, who are currently @vzarytovskii, @dsyme, @cartermp, @baronfel, and @abelbraaksma. Much of the work happens by contributions via RFCs and most features now proceed from initial approval all the way to implementation through community and enterprise contributions. The planning and progress process for features is intended to be transparent and participative.
+Practically speaking, today most of the design process operates through the efforts of contributors, overseen by those with commit rights on this repository. The "F# Language Design Squad" is documented [fslang-suggestions](https://github.com/fsharp/fslang-suggestions).  Much of the work happens by contributions via RFCs and most features now proceed from initial approval all the way to implementation through community and enterprise contributions. The planning and progress process for features is intended to be transparent and participative.
 
 Throughout feature development the needs of all stakeholders can be taken into account, e.g. the needs of those delivering tooling or long-term support for F#. Together with the F# community, the overseers of the design process will continue to refine this process based on community and delivery needs.
 
@@ -63,7 +63,7 @@ The style guide itself is adjusted via PRs to [the style guide doc](https://gith
 
 Adjustments to the style guide should generally only be made with consideration about their implementability in Fantomas, and if an adjustment is approved you should be prepared to contribute a matching pull request to Fantomas.
 
-The decision maker for the style guide is @dsyme, with input/veto from @nojaf (current maintainer of Fantomas) and input from all interested parties.
+The decision makers for the style guide are the [F# Language Design Squad](https://github.com/fsharp/fslang-suggestions), with input/veto from @nojaf (or the current maintainer of Fantomas) - and of course input from all interested parties.
 
 ## Code of Conduct
 

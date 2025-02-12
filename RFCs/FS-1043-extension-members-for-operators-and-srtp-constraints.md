@@ -8,8 +8,8 @@ These design suggestions:
 have been marked "approved in principle". This RFC covers the detailed proposal for these
 
 * [x] Approved in principle
-* [Discussion thread](https://github.com/fsharp/fslang-design/issues/435)
-* [ ] Implementation: [In progress](https://github.com/dotnet/fsharp/pull/6805)
+* [x] [Discussion](https://github.com/fsharp/fslang-design/issues/435)
+* [x] [Implementation](https://github.com/dotnet/fsharp/pull/8404)
 
 
 # Summary

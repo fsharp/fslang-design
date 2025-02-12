@@ -1012,7 +1012,7 @@ Next we define the `Run` method for the builder.
                     __resumeAt sm.ResumptionPoint 
                     let __stack_code_fin = code.Invoke(&sm)
                     if __stack_code_fin then
-                        sm.ResumptionPoint  <- -1 // indicates complete))
+                        sm.ResumptionPoint  <- -1)) // indicates complete
 
                 // IAsyncStateMachine.SetStateMachine
                 (SetStateMachineMethodImpl<_>(fun sm state -> ()))
