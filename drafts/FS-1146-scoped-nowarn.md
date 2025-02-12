@@ -6,8 +6,8 @@ This RFC covers the detailed proposal for this suggestion.
 
 - [x] [Suggestion](https://github.com/fsharp/fslang-suggestions/issues/278)
 - [x] Approved in principle
-- [ ] [Implementation](https://github.com/dotnet/fsharp/pull/18049)
-- [X] [Discussion](https://github.com/fsharp/fslang-design/discussions/786)
+- [x] [Implementation](https://github.com/dotnet/fsharp/pull/18049)
+- [x] [Discussion](https://github.com/fsharp/fslang-design/discussions/786)
 
 # Summary
 
@@ -47,12 +47,22 @@ let handler e =
 
 # Detailed specification
 
-1. The compiler shall recognize a new *compiler directive* `#warnon` (to be added to §12.4 of the F# spec).
+1. The compiler shall recognize a new "warnon" *compiler directive* (to be added to §12.4 of the F# spec).
 
-2. `#warnon` shall have warning numbers as arguments in the same way as `#nowarn` (including non-string arguments (RFC-1147)).
+    So, F# has now two *warn directives*: "nowarn" and "warnon".
 
-   > *Note:* Legacy oddities such as warning numbers in triple-quoted strings shall continue to be valid, for compatibility reasons. However, "multiline #nowarn" (with indented warning numbers in the following lines) is considered a bug and will not be supported any more, because it is against the spec and totally against the idea of pragmas. Tools must be able to easily interpret pragmas. Also, spaces between the hash sign and the nowarn/warnon (line `#  nowarn 25`) shall not be allowed.
+2. A warn directive is a single line of source code that consists of
+   - Optional leading whitespace
+   - The string `#nowarn` or `#warnon`
+   - Whitespace
+   - One or more arguments, separated by whitespace, in one of the formats specified by RFC-1147 (integer warning number, `FS` followed by an integer warning number, both optionally surrounded by double quotes)
+   - Optional whitespace
+   - Optional line comment
+   - Newline
 
+    > *Note:* See the [Compatibility](#compatibility) section below for some consequences.
+
+  
 3. In the following, we use the term NOWARN for a `#nowarn` directive for a certain warning number. Similarly, we use WARNON for a `#warnon` with the same warning number.
 
    - NOWARN and WARNON shall disable/enable the warning until eof or a corresponding WARNON / NOWARN
@@ -69,7 +79,7 @@ let handler e =
 
 4. The current definition "*Compiler directives are declarations in non-nested modules or namespace declaration groups*" (§12.4) shall be relaxed for `#nowarn` and `#warnon`. 
 
-    These directives now can appear also inside modules anywhere on a separate single line. The directive can be preceded by whitespace and followed by whitespace and a single-line comment.
+    These directives now can appear also inside modules anywhere on a separate single line.
 
     The style guide shall recommend the same indentation as the following line (for an opening directive) or previous line (for a closing directive).
 
@@ -79,22 +89,16 @@ let handler e =
 
 5. All of the above rules shall be valid for `.fs` source files, `.fsi` signature files, `.fsx` script files and shall also be reflected in the compiler service.
 
+   > *Note:* This leads to some breaking changes as described in the [Compatibility](#compatibility) section below.
+
 6. For the interactive `fsi` REPL, the warn directives shall be processed across all interactions.
 
 7. The warn directives shall be processed independently of any `#line` directives (§3.9 of the spec).
 
    The warn directives shall work only against the actual source file being compiled, the #line directive shall only impact the file and line number of error messages. For nowarn they are irrelevant.
 
-
-> *Note:* Currently, the spec (§12.4) specifies for `#nowarn`:
-    <br/>"For signature (.fsi) files and implementation (.fs) files, turns off warnings within this lexical scope.
-    For script (.fsx or .fsscript) files, turns off warnings globally."
-    <br/>The current compiler, however, ignores the lexical scope and disables the warnings until end of file. For compatibility reasons, we keep it that way. <br/>For script files, we propose to use the new rules. This is technically is a breaking change, see also the [Alternatives](#alternatives) section.
-
-> *Note:* Currently, the compiler service considers a `#nowarn` somewhere in a file as valid everywhere in this file. We consider this a bug that will be fixed.
-
-> *Note:* The interaction of `#nowarn` and `#line` directives is not specified in the F# spec.
-   In the current compiler, it is broken (see [details below](#issues-in-the-current-implementation)).
+   > *Note:* The interaction of `#nowarn` and `#line` directives is not specified in the F# spec.
+    Due to the way the #line directives are implemented in the compiler, the new specification can be reliably implemented only if the same #line target file is not targeted from multiple source files. This should, however, not be a significant limitation.
 
 ### Examples:
 
@@ -149,10 +153,62 @@ Item 5 of the [Detailed Specification](#detailed-specification) section extends 
 # Compatibility
 
 Warn scopes will be introduced under a feature flag.
-When the feature flag is off (for earlier language versions), the F# 9.0 behavior will be implemented.
-An exception to this compatibility is the previous inconsistent behavior in connection with #line directives (see [below](related-issues-in-the-current-implementation)), which will be replaced by considering, for files with #line directives, any #nowarn for a warning number to be valid for the whole file.
+When the feature flag is off (for earlier language versions), `#nowarn` will work as before (with the exceptions mentioned below) and `#warnon` will produce an error (see the [Diagnostics](#diagnostics) section below).
 
-Since previous versions of the compiler ignore unknown compiler directives, they continue to work as before.
+## Fixes that can affect old code when compiled with the new compiler, feature flag off
+
+a) There were a following inconsistencies in the previous behavior that cannot easily be replicated with the new code or that are just being fixed now.
+
+- Multiline and empty warn directives are no longer allowed
+- Whitespace between the hash character and the `nowarn` is no longer allowed.
+- Simple string warning numbers continue to be valid, but no triple quoted, interpolated or verbatim strings.
+- Some invalid arguments used to be ignored. They now produce warnings.
+- Two nowarn directives for the same warning number, without a warnon directive inbetween, produce a warning.
+
+```
+#nowarn 25                          // valid (was valid before)
+#nowarn "25"                        // valid (was valid before)
+#nowarn "FS0025"                    // valid (was valid before)
+#nowarn FS25                        // valid (was valid before)
+#nowarn                             // error (was allowed before)
+   25                       
+#nowarn                             // error (was allowed before)
+# nowarn 25                         // error (was allowed before)
+#nowarn """25"""                    // error (was allowed before)
+#nowarn $"25"                       // error (was error before)
+#nowarn @"25"                       // error (was allowed before)
+#nowarn "FS0xy"                     // error (was error before)
+#nowarn "FSxy"                      // error (was ignored before)
+#nowarn 0xy                         // error (was error before)
+#nowarn "0xy"                       // error (was warning before)
+#nowarn xy                          // error (was ignored before)
+#nowarn 20                          // valid (was valid before)
+#warnon 20                          // error (for old langversion only) (was ignored before) (see d) below)
+#nowarn 20                          // valid (was valid before)
+#nowarn 20                          // warning (in the context of the previous line) (was valid before)
+```
+
+b) Previously, when using the compiler proper (fsc), a `#nowarn` correctly disables warnings from that directive until end of file. The compiler service (as used by the IDEs), however, considers a `#nowarn` anywhere in a file as valid everywhere in this file. We consider the latter a bug that will be fixed so that the IDEs display the same warnings as the compiler.
+
+
+```
+""                  // warning 20 when compiled, but no squiggles in the IDE
+#nowarn 20
+```
+
+c) The interaction with #line directives might in rare cases now correctly suppress a warning that was visible before.
+
+d)  Previously, any accidental `#warnon` directive in the code was an unknown hash directive and as such ignored. With the new compiler and "-langversion=9.0", it will produce a "new feature" error (see the [Diagnostics](#diagnostics) section below).
+
+
+## Additional changes that can affect old code when compiled as F# 10
+
+e) Previously, a `#nowarn` anywhere in a script file affected *the whole compilation*. As from F# 10, this will no longer be the case. Warn directives in scripts will now work as specified in this RFC, in the same way as in ".fs" files. This is a breaking change, see also the [Alternatives](#alternatives) section above.
+
+f) Previously, any accidental `#warnon` directive in the code was an unknown hash directive and as such ignored. Now it will have an effect and might produce errors.
+
+
+## Binary compatibility
 
 Since warnings are a compile time feature, there is no binary compatibility issue.
 
@@ -163,24 +219,17 @@ Since warnings are a compile time feature, there is no binary compatibility issu
 
 Today there are no warnings for empty or repeated `#nowarn` directives (or only in very specific situations). Most invalid arguments are ignored.
 
-With the new feature (i.e. under feature flag), there shall be warnings for
+With the new feature, there shall be errors for all syntactically invalid directives. See also the [Compatibility](#compatibility) section above.
 
- - invalid arguments to the warn directives,
- - repeated directives for the same number (if there is no counterpart directive inbetween),
- - warn directives that are preceded in the same line by something else than whitespace,
- - warn directives that are followed by something else than whitespace, a line comment, or newline,
- - warn directives that are not followed by whitespace or newline (like `#nowarnx`)
+Warn directives shall under earlier language versions continue to produce warning 236 if used inside a sub-module.
 
-Use of the new `#warnon` directive under earlier language versions shall produce warning 236 (if inside a sub-module) or error 3350 (language feature error) (if top-level).
+Use of the new `#warnon` directive under earlier language versions shall produce error 3350 (language feature error).
 
 ## Tooling
 
-Tooling (fsac, vs, fantomas) will need to adapt to correctly color the warn directives, because they
-are no longer stored in the syntax tree as "ScopedPragmas" in 
-the top-level module / namespace fragments, but rather as warn scope trivia.
-They are also delivered by ServiceLexing as trivia.
+Tooling (fsac, vs, fantomas) will need to adapt to correctly color the warn directives.
 
-More tools might be affected by the changes in the compiler service surface area (mainly in the syntax tree).
+More tools might be affected by the changes in the compiler service surface area.
  
 
 ## Performance and Scaling
@@ -191,25 +240,6 @@ No performance and scaling impact is expected.
 
 There is no interaction with culture-aware formatting and parsing of numbers, dates and currencies.
 
-## Related issues in the current implementation
-
-The interaction between `#line` and `#nowarn` is broken in the current compiler.
-
-This following file (named `lineNoWarn.fs`)
-
-```
-namespace X
-#line 10 "xyz.fs"
-#nowarn "25"
-#line 5 "lineNoWarn.fs"
-module B = match None with None -> ()
-```
-
-shows a warning FS0025 for line 5. If you replace the `10` in the first `#line` directive by `1`, no warning is shown.
-
-Reason is the [`checkFile` flag](https://github.com/dotnet/fsharp/blob/d37a8ae8aea915e1819b34c7fcd49749d11a3723/src/Compiler/Driver/CompilerDiagnostics.fs#L2241), introduced more than 10 years ago. Originally probably a hack in a debugging situation, it survived reviews since, and ended up being used in further modules. When this flag is set to `false` (which it is in most situations), `#nowarn` processing relies on comparing line numbers of one file with line numbers of another file. Accidentally, it sometimes works.
-
-We are mentioning this here since it explains why we have no real compatibility reference for the `#line` / `#nowarn` interaction.
 
 ## Documentation
 
@@ -218,7 +248,3 @@ In the ["Line Directives" section](https://learn.microsoft.com/en-us/dotnet/fsha
 In the ["Preprocessor Directives"](https://learn.microsoft.com/en-us/dotnet/fsharp/language-reference/compiler-directives#preprocessor-directives) section, the `#nowarn` entry should be extended to include `#warnon` and the functionality defined in this RFC. For the interaction with the `#line` directive, the "Line Directives" section should be referenced. Finally, the text should be updated to reflect RFC FS-1147. 
 
 In the [F# code formatting guidelines](https://learn.microsoft.com/en-us/dotnet/fsharp/style-guide/formatting), the recommendation of the above Detailed Specification, item 4, should be added.
-
-# Unresolved questions
-
-... might come up in the discussion.
