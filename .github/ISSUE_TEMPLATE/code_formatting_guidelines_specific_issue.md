@@ -3,7 +3,7 @@ name: Formatting or code style guidelines issue
 about: Discuss editor / tooling formatting concerns and code style guidelines
 title: ''
 labels: [style-guide, under-discussion]
-assignees: '@nojaf,@KathleenDollard,@dsyme'
+assignees: '@KathleenDollard,@dsyme'
 ---
 
 Depending the concern being discussed, erase the other top sections and review/tick what applies the most.
