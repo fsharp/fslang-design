@@ -112,8 +112,8 @@ Please address all necessary compatibility questions:
 
 * Error when the attribute is applied to a non-optional parameter.
 * Error when the attribute is applied to a parameter whose type is not `string`.
-* Warn if the attribute is referenced a non-existing parameter name.
-* Warn if the attribute is referenced the parameter that the attribute is applied to.
+* Warn if the attribute is referencing a non-existing parameter name.
+* Warn if the attribute is referencing the parameter that the attribute is applied to.
 
 ## Performance
 
