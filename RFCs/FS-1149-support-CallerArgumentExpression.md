@@ -106,6 +106,19 @@ Please address all necessary compatibility questions:
 
 > This change does not affect FSharp.Core.
 
+# Pragmatics
+
+## Diagnostics
+
+* Error when the attribute is applied to a non-optional parameter.
+* Error when the attribute is applied to a parameter whose type is not `string`.
+* Warn if the attribute is referenced a non-existing parameter name.
+* Warn if the attribute is referenced the parameter that the attribute is applied to.
+
+## Performance
+
+The feature requires the compiler to read and store all the code text in memory, which may have a negative impact on the performance of the compiler.
+
 # Unresolved questions
 
 What parts of the design are still TBD?
