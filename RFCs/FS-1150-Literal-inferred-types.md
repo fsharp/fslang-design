@@ -322,6 +322,14 @@ type C() =
             // x has the type `struct('a * 'b) array`
 ```
 
+Tuple patterns will also be changed to allow type-directed resolution to `KeyValuePair<_, _>`.
+
+```fs
+match 1, 2: KeyValuePair<int, int> with
+| 1, 2 -> printfn "Works"
+| _ -> failwith "Won't reach here"
+```
+
 # FS-1150f Type-directed resolution of list literals
 The design suggestion [#1086](https://github.com/fsharp/fslang-suggestions/issues/1086) was marked "approved in principle" before.
 
