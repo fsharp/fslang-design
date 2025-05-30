@@ -275,7 +275,7 @@ System.Text.Rune support can be optionally considered. It would appear after `by
 
 By type inference, declaring a `[<Literal>]` type without the type suffix will be possible. `let [<Literal>] a: byte = 'a'`
 
-If a char literal is inferred to be a byte, then current rules for B-suffix applies: `'\u1234': byte` would give an out-of-range error.
+If a char literal is inferred to be a byte, then current rules for B-suffix applies: `'¶': byte` would give an out-of-range error, because B-suffix char literals are strictly ASCII, and `¶` has the value 182. For UTF-8 processing, strict ASCII is preferable, char literals should not fall into the range of 128 to 255.
 
 Moreover, char literal patterns will also be updated to be consistent with declaration of integers. `match 'a': byte with 'a' -> true | _ -> false` If resolved to a type other than char or byte, error.
 
