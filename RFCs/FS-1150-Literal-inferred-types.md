@@ -407,7 +407,7 @@ match [1; 2; 3]: ReadOnlySpan<byte> with
 
 If the inferred type of this pattern is not a `list`, the list pattern is changed to match if the length matches and the indexed elements further match the nested patterns. Keep the current behaviour if the inferred type is a `list`. It should work in the same places as the C# list pattern would.
 
-The reliance on indexing means that some types, e.g. sets, can be constructed using the list literal syntax but not the list pattern syntax. However, it also makes sense: you add elements to a collection with order, but this order isn't necessarily preserved within the collection.
+The reliance on indexing means that some types, e.g. sets, can be constructed using the list literal syntax but not deconstructed using the list pattern syntax. However, it also makes sense: you add elements to a collection with order, but this order isn't necessarily preserved within the collection.
 
 This pattern is not customizable, use an active pattern instead for customizing this behaviour.
 
