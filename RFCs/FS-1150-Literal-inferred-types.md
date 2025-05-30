@@ -350,17 +350,17 @@ The full list of possible target types and the order of resolution will follow [
 
 These types are already supported as of C# 12:
 ```fs
-let a: System.Collections.ArrayList = [1, 2, 3]
-let b: System.Collections.Generic.List<int> = [1, 2, 3]
-let c: System.Collections.Generic.HashSet<int> = [1, 2, 3]
-let d: System.Collections.Generic.SortedSet<int> = [1, 2, 3]
-let e: System.Collections.Immutable.ImmutableArray<int> = [1, 2, 3]
-let f: System.Collections.Immutable.ImmutableList<int> = [1, 2, 3]
-let g: System.Collections.Immutable.ImmutableHashSet<int> = [1, 2, 3]
-let h: System.Collections.Immutable.ImmutableSortedSet<int> = [1, 2, 3]
-let i: System.Span<int> = [1, 2, 3]
-let j: System.ReadOnlySpan<int> = [1, 2, 3]
-let k: int array = [1, 2, 3]
+let a: System.Collections.ArrayList = [1; 2; 3]
+let b: System.Collections.Generic.List<int> = [1; 2; 3]
+let c: System.Collections.Generic.HashSet<int> = [1; 2; 3]
+let d: System.Collections.Generic.SortedSet<int> = [1; 2; 3]
+let e: System.Collections.Immutable.ImmutableArray<int> = [1; 2; 3]
+let f: System.Collections.Immutable.ImmutableList<int> = [1; 2; 3]
+let g: System.Collections.Immutable.ImmutableHashSet<int> = [1; 2; 3]
+let h: System.Collections.Immutable.ImmutableSortedSet<int> = [1; 2; 3]
+let i: System.Span<int> = [1; 2; 3]
+let j: System.ReadOnlySpan<int> = [1; 2; 3]
+let k: int array = [1; 2; 3]
 ```
 
 Support for [C#'s proposed dictionary expressions](https://github.com/dotnet/csharplang/blob/main/proposals/dictionary-expressions.md) via combining type-directed resolution of lists of tuples should also be considered.
