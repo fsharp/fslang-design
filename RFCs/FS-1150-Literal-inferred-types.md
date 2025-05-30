@@ -176,7 +176,7 @@ However,
 
 By type inference, declaring a `[<Literal>]` type without the type suffix will be possible. `let [<Literal>] a: byte = 1`
 
-Moreover, integer literal patterns will also be updated to be consistent with declaration of integers. `match 1: byte with 1 -> true | _ -> false`
+Moreover, integer literal patterns will also be updated to be consistent with declaration of integers. `match 1: byte with 1 -> true | _ -> false` If resolved to a non-built-in type, error.
 
 Since integer literals with underscores, hexadecimal, octal and binary notations must be included with this feature, considering the interaction with NumericLiteralX modules, https://github.com/fsharp/fslang-design/pull/770 must be included.
 
@@ -238,7 +238,7 @@ The float literal will now have the type of `^a = float`. The float literal will
 
 By type inference, declaring a `[<Literal>]` type without the type suffix will be possible. `let [<Literal>] a: float32 = 1.2`
 
-Moreover, float literal patterns will also be updated to be consistent with declaration of integers. `match 1.2: float32 with 1.2 -> true | _ -> false`
+Moreover, float literal patterns will also be updated to be consistent with declaration of integers. `match 1.2: float32 with 1.2 -> true | _ -> false` If resolved to a non-built-in type, error.
 
 There is potential interaction with NumericLiteralX modules if https://github.com/fsharp/fslang-design/pull/770 is implemented.
 
@@ -275,7 +275,7 @@ System.Text.Rune support can be optionally considered. It would appear after `by
 
 By type inference, declaring a `[<Literal>]` type without the type suffix will be possible. `let [<Literal>] a: byte = 'a'`
 
-Moreover, char literal patterns will also be updated to be consistent with declaration of integers. `match 'a': byte with 'a' -> true | _ -> false`
+Moreover, char literal patterns will also be updated to be consistent with declaration of integers. `match 'a': byte with 'a' -> true | _ -> false` If resolved to a type other than char or byte, error.
 
 ## Diagnostics
 
@@ -385,7 +385,25 @@ List literals will include `with` as a computation expression keyword. It must b
 let l: ResizeArray<int> = [with(capacity = 3); 1; 2]
 ``` 
 
-# FS-1150h Type-directed resolution of string literals
+# FS-1150h Type-directed resolution of list patterns
+
+With type-directed resolution of list construction, it also makes sense to change list deconstruction to be type-directed too.
+
+C# has the [list pattern](https://github.com/dotnet/csharplang/blob/main/proposals/csharp-11.0/list-patterns.md) for this. It works based on indexing. F# can do the same:
+
+```fs
+match [1; 2; 3]: ReadOnlySpan<byte> with
+| [1; 2; 3] -> printfn "It matches"
+| _ -> failwith "Won't reach here"
+```
+
+If the inferred type of this pattern is not a `list`, the list pattern is changed to match if the length matches and the indexed elements further match the nested patterns. Keep the current behaviour if the inferred type is a `list`. It should work in the same places as the C# list pattern would.
+
+The reliance on indexing means that some types, e.g. sets, can be constructed using the list literal syntax but not the list pattern syntax. However, it also makes sense: you add elements to a collection with order, but this order isn't necessarily preserved within the collection.
+
+This pattern is not customizable, use an active pattern instead for customizing this behaviour.
+
+# FS-1150i Type-directed resolution of string literals
 The design suggestion [#1421](https://github.com/fsharp/fslang-suggestions/issues/1421) is marked "approved in principle".
 
 - [x] [Suggestion](https://github.com/fsharp/fslang-suggestions/issues/1421)
@@ -416,13 +434,15 @@ printfn a "hi" // Currently errors
 
 If byte is involved, the string literal is checked by UTF-8 rules, i.e. the current rules except no surrogate characters without its corresponding pair. The collection of bytes would be the string formatted as UTF-8. String interpolation for UTF-8 strings would only accept other collections of bytes, not any object as seen in UTF-16 rules. String interpolation for UTF-8 strings will not allow format specifiers.
 
+A UTF-8 string literal that is initialized to be a `ReadOnlySpan<byte>` will be compiler-optimized to [read from static data](https://github.com/fsharp/fslang-suggestions/issues/1350).
+
 ## Diagnostics
 
 Hovering the cursor above the string literal should show the inferred type. Currently this action does not popup anything.
 
 Pressing Go To Definition on the string literal should navigate to any conversion methods used under the hood.
 
-# FS-1150i Extending B-suffix string literals to be UTF-8 strings
+# FS-1150j Extending B-suffix string literals to be UTF-8 strings
 The design suggestion [#1421](https://github.com/fsharp/fslang-suggestions/issues/1421) is marked "approved in principle".
 
 - [x] [Suggestion](https://github.com/fsharp/fslang-suggestions/issues/1421)
@@ -435,3 +455,19 @@ Currently, B-suffix string literals in F# only allow ASCII values. As UTF-8 is t
 ```fs
 let a = "你好"B
 ```
+
+# FS-1150k Type-directed resolution of string patterns
+
+With type-directed resolution of string construction, it also makes sense to change string deconstruction to be type-directed too.
+
+If the inferred type is not a `string`, the string pattern would be a shorthand for the list pattern to match `char`s or `byte`s.
+
+```fs
+match [97; 98; 99]: ReadOnlySpan<byte> with
+| "abc" -> printfn "It matches"
+| _ -> failwith "Won't reach here"
+```
+
+This pattern is not customizable, use an active pattern instead for customizing this behaviour.
+
+This subsumes suggestion [#1351](https://github.com/fsharp/fslang-suggestions/issues/1351).
