@@ -395,6 +395,7 @@ The design suggestion [#1421](https://github.com/fsharp/fslang-suggestions/issue
 
 This string literal `"abc"` will now have the type of `^a = string`. The string literal can target, in this order:
 - string
+- PrintfFormat
 - any type targettable by the list literal with its contents set to:
     - char or
     - byte or
@@ -406,6 +407,12 @@ let b: ImmutableArray<char> = "abc"
 ```
 
 If string or char is involved, the string literal is checked by UTF-16 rules, i.e. the current rules. The collection of chars would be the string formatted as UTF-16.
+
+If PrintfFormat is involved, the current special-cased checking will still apply. This solves the unexpected error of:
+```fs
+let a = "%s"
+printfn a "hi" // Currently errors
+```
 
 If byte is involved, the string literal is checked by UTF-8 rules, i.e. the current rules except no surrogate characters without its corresponding pair. The collection of bytes would be the string formatted as UTF-8. String interpolation for UTF-8 strings would only accept other collections of bytes, not any object as seen in UTF-16 rules. String interpolation for UTF-8 strings will not allow format specifiers.
 
