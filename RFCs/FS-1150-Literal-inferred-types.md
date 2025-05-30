@@ -10,7 +10,7 @@ F# float literals `1.0` would not just be resolved to `float`, but also `float32
 
 F# char literals `'c'` would not just be resolved to `char`, but also `byte`, `Rune` and so on.
 
-F# tuple literals would not just be resolved to Tuple (`'a * 'b`), but also struct tuple (`struct('a * 'b)`). There seems to be not much value to extend this syntax to other types.
+F# tuple literals would not just be resolved to Tuple (`'a * 'b`), but also struct tuple (`struct('a * 'b)`) and `KeyValuePair<_, _>`. There seems to be not much value to extend this syntax to other types.
 
 F# list literals `[]` would not just be resolved to `list`, but also `ImmutableArray<_>`, `ReadOnlySpan<_>` and so on.
 
