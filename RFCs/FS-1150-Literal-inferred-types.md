@@ -403,7 +403,7 @@ Pressing Go To Definition on the list literal should navigate to any conversion 
 [C# has identified a need to supply constructor arguments for collection literals.](https://github.com/dotnet/csharplang/blob/main/proposals/collection-expression-arguments.md) It should also make sense for F# to allow this.
 
 ```fs
-let a: Dictionary<string, int> nameToAge1 = [
+let nameToAge1: Dictionary<string, int> = [
     with StringComparer.OrdinalIgnoreCase
     "alice", 23
     "bob", 34
