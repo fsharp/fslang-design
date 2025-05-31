@@ -388,6 +388,14 @@ let k: int array = [1; 2; 3]
 
 Support for [C#'s proposed dictionary expressions](https://github.com/dotnet/csharplang/blob/main/proposals/dictionary-expressions.md) via combining type-directed resolution of lists of tuples should also be implemented.
 
+```fs
+let nameToAge1: Dictionary<string, int> = [
+    "alice", 23
+    "bob", 34
+    "carol", 55
+]
+```
+
 F# `list`, `Set`, `Map` types will include the necessary collection builder types as specified in the C# collection expression specification to enable C# consumption. F# implementation of type-directed resolution of list literals will also use them.
 
 ## Diagnostics
@@ -403,7 +411,7 @@ Pressing Go To Definition on the list literal should navigate to any conversion 
 [C# has identified a need to supply constructor arguments for collection literals.](https://github.com/dotnet/csharplang/blob/main/proposals/collection-expression-arguments.md) It should also make sense for F# to allow this.
 
 ```fs
-let nameToAge1: Dictionary<string, int> = [
+let nameToAge2: Dictionary<string, int> = [
     with StringComparer.OrdinalIgnoreCase
     "alice", 23
     "bob", 34
