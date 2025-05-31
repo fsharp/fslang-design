@@ -398,6 +398,8 @@ let nameToAge1: Dictionary<string, int> = [
 
 F# `list`, `Set`, `Map` types will include the necessary collection builder types as specified in the C# collection expression specification to enable C# consumption. F# implementation of type-directed resolution of list literals will also use them.
 
+A list literal that is initialized to be a `ReadOnlySpan<byte>` with compile-time-known content will be compiler-optimized to [read from static data](https://github.com/fsharp/fslang-suggestions/issues/1350).
+
 ## Diagnostics
 
 Hovering the cursor above the list literal should show the inferred type. Currently this action does not popup anything.
