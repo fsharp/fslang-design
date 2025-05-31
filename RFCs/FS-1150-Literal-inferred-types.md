@@ -147,7 +147,16 @@ plus3 1 1 // Usage here.
 // val plus3: x: int -> y: int -> int
 ```
 
-However, supporting the definition of default types seems to provide little value for the added maintenance cost.
+This feature would be useful for e.g. type-directed `infinity` and `nan` values.
+```fs
+let inline infinity<^a = float when ^a: (static member PositiveInfinity: ^a)> =
+    'a.PositiveInfinity
+let inline nan<^a = float when ^a: (static member NaN: ^a)> =
+    'a.NaN
+```
+These default to `float` without external type information. Otherwise, if used without an `inline` context, the value restriction error occurs.
+
+However, supporting the definition of default types seems to provide little value for the added maintenance cost as most of the type-directed values are built-in.
 
 ## Alternative: Keep current behaviour
 
