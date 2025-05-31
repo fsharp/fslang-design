@@ -258,7 +258,28 @@ Hovering the cursor above the float literal should show the inferred type. Curre
 
 Pressing Go To Definition on the float literal should navigate to the conversion function used from the `NumericLiteralX` module (if implemented) or the `op_Implicit` definition if used.
 
-# FS-1150d Type-directed resolution of char literals
+# FS-1150d Type-directed resolution of infinity and nan
+
+Similarly to float literals, the values `infinity` and `nan` would also become type-directed. Both would have the type `^a = float`.
+
+```fs
+// Sample implementation
+let inline infinity<^a when ^a: (static member PositiveInfinity: ^a)> =
+    'a.PositiveInfinity
+let inline nan<^a when ^a: (static member NaN: ^a)> =
+    'a.NaN
+    
+// Usage
+let a: System.Half = infinity // Currently works
+let b: System.Half = nan // Currently works
+let c: System.Double = infinity // Currently errors
+let d: System.Double = nan // Currently errors
+let e: System.Single = infinity // Currently errors
+let f: System.Single = nan // Currently errors
+```
+All 6 value definitions as above should all work.
+
+# FS-1150e Type-directed resolution of char literals
 The design suggestion [#1421](https://github.com/fsharp/fslang-suggestions/issues/1421) is marked "approved in principle".
 
 - [x] [Suggestion](https://github.com/fsharp/fslang-suggestions/issues/1421)
@@ -285,7 +306,7 @@ Hovering the cursor above the char literal should show the inferred type. Curren
 
 Pressing Go To Definition on the char literal should navigate to the `op_Implicit` definition if used.
 
-# FS-1150e Type-directed resolution of tuple literals
+# FS-1150f Type-directed resolution of tuple literals
 The design suggestion [#988](https://github.com/fsharp/fslang-suggestions/issues/988) is marked "approved in principle".
 
 - [x] [Suggestion](https://github.com/fsharp/fslang-suggestions/issues/988)
@@ -332,7 +353,7 @@ match 1, 2: KeyValuePair<int, int> with
 | _ -> failwith "Won't reach here"
 ```
 
-# FS-1150f Type-directed resolution of list literals
+# FS-1150g Type-directed resolution of list literals
 The design suggestion [#1086](https://github.com/fsharp/fslang-suggestions/issues/1086) was marked "approved in principle" before.
 
 - [x] [Suggestion](https://github.com/fsharp/fslang-suggestions/issues/1086)
@@ -375,7 +396,7 @@ Hovering the cursor above the list literal should show the inferred type. Curren
 
 Pressing Go To Definition on the list literal should navigate to any conversion methods used under the hood.
 
-# FS-1150g Constructor arguments for list literals
+# FS-1150h Constructor arguments for list literals
 
 - [ ] [Implementation](https://github.com/dotnet/fsharp/pull/FILL-ME-IN)
 
@@ -395,7 +416,7 @@ List literals will include `with` as a computation expression keyword. It must b
 let l: ResizeArray<int> = [with(capacity = 3); 1; 2]
 ``` 
 
-# FS-1150h Type-directed resolution of list patterns
+# FS-1150i Type-directed resolution of list patterns
 
 With type-directed resolution of list construction, it also makes sense to change list deconstruction to be type-directed too.
 
@@ -413,7 +434,7 @@ The reliance on indexing means that some types, e.g. sets, can be constructed us
 
 This pattern is not customizable, use an active pattern instead for customizing this behaviour.
 
-# FS-1150i Type-directed resolution of string literals
+# FS-1150j Type-directed resolution of string literals
 The design suggestion [#1421](https://github.com/fsharp/fslang-suggestions/issues/1421) is marked "approved in principle".
 
 - [x] [Suggestion](https://github.com/fsharp/fslang-suggestions/issues/1421)
@@ -452,7 +473,7 @@ Hovering the cursor above the string literal should show the inferred type. Curr
 
 Pressing Go To Definition on the string literal should navigate to any conversion methods used under the hood.
 
-# FS-1150j Extending B-suffix string literals to be UTF-8 strings
+# FS-1150k Extending B-suffix string literals to be UTF-8 strings
 The design suggestion [#1421](https://github.com/fsharp/fslang-suggestions/issues/1421) is marked "approved in principle".
 
 - [x] [Suggestion](https://github.com/fsharp/fslang-suggestions/issues/1421)
@@ -466,7 +487,7 @@ Currently, B-suffix string literals in F# only allow ASCII values. As UTF-8 is t
 let a = "你好"B
 ```
 
-# FS-1150k Type-directed resolution of string patterns
+# FS-1150l Type-directed resolution of string patterns
 
 With type-directed resolution of string construction, it also makes sense to change string deconstruction to be type-directed too.
 
