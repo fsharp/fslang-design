@@ -868,7 +868,7 @@ At high approximation a Coroutine is Task<unit> without async I/O allowed. They 
 > * exceptions get stored away when they happen
 > * you get to return a result `Task<T>` (which makes them more "functional" and type-safe)
 
-See [coroutineBasic.fs](https://github.com/dotnet/fsharp/blob/main/tests/benchmarks/CompiledCodeBenchmarks/TaskPerf/TaskPerf/coroutineBasic.fs).
+See [coroutineBasic.fs](https://github.com/dotnet/fsharp/blob/6e7e5f3882f8315f95df0e8d39767e55ceb3d702/tests/benchmarks/CompiledCodeBenchmarks/TaskPerf/TaskPerf/coroutineBasic.fs).
 
 In this example we show how to use resumable code to define a computation expression for a basic form of coroutines. The logical
 properties are:
@@ -1146,7 +1146,7 @@ While there are improvements that can be made here, the JIT will perform obvious
 
 ## Example: coroutine { ... } with tailcalls
 
-See [coroutine.fs](https://github.com/dotnet/fsharp/blob/main/tests/benchmarks/TaskPerf/coroutine.fs).
+See [coroutine.fs](https://github.com/dotnet/fsharp/blob/6e7e5f3882f8315f95df0e8d39767e55ceb3d702/tests/benchmarks/CompiledCodeBenchmarks/TaskPerf/TaskPerf/coroutine.fs).
 
 This is for state machine compilation of coroutine computation expressions that support yielding and tailcalls.
 
@@ -1156,7 +1156,7 @@ See [tasks.fs](https://github.com/dotnet/fsharp/blob/main/src/FSharp.Core/tasks.
 
 ## Example: taskSeq { ... }
 
-See [taskSeq.fs](https://github.com/dotnet/fsharp/blob/main/tests/benchmarks/CompiledCodeBenchmarks/TaskPerf/TaskPerf/taskSeq.fs).
+See [taskSeq.fs](https://github.com/dotnet/fsharp/blob/6e7e5f3882f8315f95df0e8d39767e55ceb3d702/tests/benchmarks/CompiledCodeBenchmarks/TaskPerf/TaskPerf/taskSeq.fs).
 
 This is for state machine compilation of computation expressions that generate `IAsyncEnumerable<'T>` values. This is a headline C# 8.0 feature and a very large feature for C#.  It appears to mostly drop out as library code once general-purpose state machine support is available.
 
@@ -1164,9 +1164,9 @@ This is for state machine compilation of computation expressions that generate `
 
 I did a trial re-implementation of F# async (imperfectly and only a subset of the API) using resumable code. You can take a look at the subset that's implemented by looking in the signature file
 
-* Implementation: https://github.com/dotnet/fsharp/blob/main/tests/benchmarks/CompiledCodeBenchmarks/TaskPerf/TaskPerf/async2.fs
+* Implementation: [async2.fs](https://github.com/dotnet/fsharp/blob/6e7e5f3882f8315f95df0e8d39767e55ceb3d702/tests/benchmarks/CompiledCodeBenchmarks/TaskPerf/TaskPerf/async2.fs)
 
-* Signature file: https://github.com/dotnet/fsharp/blob/main/tests/benchmarks/CompiledCodeBenchmarks/TaskPerf/TaskPerf/async2.fsi
+* Signature file: [async2.fsi](https://github.com/dotnet/fsharp/blob/6e7e5f3882f8315f95df0e8d39767e55ceb3d702/tests/benchmarks/CompiledCodeBenchmarks/TaskPerf/TaskPerf/async2.fsi)
 
 Recall how async differs from tasks:
 
@@ -1185,7 +1185,7 @@ That said it should be good enough to allow an FSharp.Control.Async2 package tha
 
 # Performance
 
-[Recent perf status of implementation](https://github.com/dotnet/fsharp/blob/main/BenchmarkDotNet.Artifacts/results/TaskPerf.Benchmarks-report-github.md)
+[Recent perf status of implementation](https://github.com/dotnet/fsharp/blob/6e7e5f3882f8315f95df0e8d39767e55ceb3d702/BenchmarkDotNet.Artifacts/results/TaskPerf.Benchmarks-report-github.md)
 
 # Drawbacks
 
