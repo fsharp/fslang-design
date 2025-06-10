@@ -1,8 +1,6 @@
-# F# RFC FS-1150 - Type-directed resolution of literals
-
 # Summary
 
-This RFC collects separate design suggestions to make F# literals resolvable to types that are not their default types: `int`, `float`, `char`, tuple (`'a * 'b`), `list`, `string`. Each feature can be implemented separately.
+This RFC collects separate design suggestions to make F# literals resolvable to types that are not their default types: `int`, `float`, `char`, tuple (`'a * 'b`), `list`, `string`, `option`. Each feature can be implemented separately.
 
 F# integer literals `1` would not just be resolved to `int`, but also `int64`, `byte`, `float`, `bigint`, `Complex` and so on.
 
@@ -15,6 +13,8 @@ F# tuple literals would not just be resolved to Tuple (`'a * 'b`), but also stru
 F# list literals `[]` would not just be resolved to `list`, but also `ImmutableArray<_>`, `ReadOnlySpan<_>` and so on.
 
 F# string literals `"abc"` would not just be resolved to `string`, but also `PrintfFormat`, `char array`, `ReadOnlySpan<byte>`, `Rune list` and so on.
+
+F# option literals (and other DU values) would not just be resolved 
 
 # Motivation
 
@@ -83,8 +83,6 @@ This can be mitigated with two potential approaches:
 
 Not doing this - F# loses an opportunity to work towards one of its stated goals - to be "succinct", while staying robust and performant.
 
-
-
 # Detailed design
 
 # FS-1150a Displaying type defaulting
@@ -133,6 +131,26 @@ val inline plus:
 
 The compiled representation will not change. F# code cannot define default types explicitly, they are merely for showing how type inference works.
 
+In the initial implementation, there will be no statically resolved type constraints related to the new types of type defaulting to be introduced in this RFC. As a result, even inside `inline` functions, type defaulting would be done at function boundaries.
+
+```fs
+let inline f() = 1 // 1 to be typed as "^a = int" to be explained later, defaults to "int" because no new type information
+let a: byte = f() // won't work
+```
+
+There are also potential breaking changes for this RFC's new type defaulting to break generated signatures.
+
+```fs
+module A =
+    let f x y = x + y // Types not inferred from local module today.
+    let x = 1 // int today
+module B =
+    let f = A.f System.DateTime.Now // makes A.f typed as DateTime -> TimeSpan -> DateTime
+    let x = A.x + 1f // would this make A.x typed as float32?
+```
+
+If consistency of type signatures is considered important, it might make sense to have two types of type defaulting, one for existing inference of operators that work across signature boundaries, and one for new inferences of this RFC, such that `A.x` stays `int` and `B.x` would error. However, there is also an expectation of writing explicit type signatures for externally facing APIs. This break should be acceptable without necessitating two types of type defaulting.
+
 ## Alternative: Allow explicit use of default types
 F# functions can define this behaviour explicitly, reusing type parameters where appropriate:
 ```fs
@@ -147,7 +165,7 @@ plus3 1 1 // Usage here.
 // val plus3: x: int -> y: int -> int
 ```
 
-This feature would be useful for e.g. type-directed `infinity` and `nan` values.
+This feature would be useful for e.g. type-directed `infinity` and `nan` values with utilisation of existing static type parameter constraints.
 ```fs
 let inline infinity<^a = float when ^a: (static member PositiveInfinity: ^a)> =
     'a.PositiveInfinity
@@ -453,7 +471,18 @@ The reliance on indexing means that some types, e.g. sets, can be constructed us
 
 This pattern is not customizable, use an active pattern instead for customizing this behaviour.
 
-# FS-1150j Type-directed resolution of string literals
+# FS-1150j Using type-directed list literals to fulfill params parameters
+
+The design suggestion [#1377](https://github.com/fsharp/fslang-suggestions/issues/1377) is **not yet** marked "approved in principle".
+
+- [x] [Suggestion](https://github.com/fsharp/fslang-suggestions/issues/1377)
+- [x] Approved in principle
+- [ ] [Implementation](https://github.com/dotnet/fsharp/pull/FILL-ME-IN)
+- [ ] [Discussion](https://github.com/fsharp/fslang-design/discussions/FILL-ME-IN)
+
+Whenever there is a `[<ParamArray>]` parameter encountered (`params` in C#), instead of always inserting an array, wrap the variable-length parameter list inside a type-directed list literal behind  the scenes instead. Reuse all the previously defined rules for type-directed list literals.
+
+# FS-1150k Type-directed resolution of string literals
 The design suggestion [#1421](https://github.com/fsharp/fslang-suggestions/issues/1421) is marked "approved in principle".
 
 - [x] [Suggestion](https://github.com/fsharp/fslang-suggestions/issues/1421)
@@ -492,7 +521,7 @@ Hovering the cursor above the string literal should show the inferred type. Curr
 
 Pressing Go To Definition on the string literal should navigate to any conversion methods used under the hood.
 
-# FS-1150k Extending B-suffix string literals to be UTF-8 strings
+# FS-1150l Extending B-suffix string literals to be UTF-8 strings
 The design suggestion [#1421](https://github.com/fsharp/fslang-suggestions/issues/1421) is marked "approved in principle".
 
 - [x] [Suggestion](https://github.com/fsharp/fslang-suggestions/issues/1421)
@@ -506,7 +535,7 @@ Currently, B-suffix string literals in F# only allow ASCII values. As UTF-8 is t
 let a = "你好"B
 ```
 
-# FS-1150l Type-directed resolution of string patterns
+# FS-1150m Type-directed resolution of string patterns
 
 With type-directed resolution of string construction, it also makes sense to change string deconstruction to be type-directed too.
 
@@ -521,3 +550,52 @@ match [97; 98; 99]: ReadOnlySpan<byte> with
 This pattern is not customizable, use an active pattern instead for customizing this behaviour.
 
 This subsumes suggestion [#1351](https://github.com/fsharp/fslang-suggestions/issues/1351).
+
+## FS-1150n Type-directed resolution of union case literals
+
+The design suggestion [#1074](https://github.com/fsharp/fslang-suggestions/issues/1074) is **not yet** marked "approved in principle".
+
+- [x] [Suggestion](https://github.com/fsharp/fslang-suggestions/issues/1074)
+- [ ] Approved in principle
+- [ ] [Implementation](https://github.com/dotnet/fsharp/pull/FILL-ME-IN)
+- [ ] [Discussion](https://github.com/fsharp/fslang-design/discussions/FILL-ME-IN)
+
+Whenever there are more than one union types sharing the same union case name, F# defaults to picking the last defined union type. However, this is not obvious behaviour and causes verbosity with the need to disambiguate the type.
+
+```fs
+type A =
+| Updating
+| Done
+
+type B =
+| Updating
+| Complete
+
+let f = function Updating -> true | _ -> false
+// val f: (B -> bool)
+```
+
+Instead, all union case values with two or more possible target types should allow type-directed resolution.
+```fs
+val f: ((^a = B) -> bool)
+```
+
+```fs
+let f = function Updating -> true | _ -> false
+f Updating // defaults to B
+```
+```fs
+let f = function Updating -> true | _ -> false
+f A.Updating // f is now A -> bool
+```
+
+This also means that `let x = Updating` can be typed as `A` or `B`.
+
+## option
+
+The design suggestion [#874](https://github.com/fsharp/fslang-suggestions/issues/874) is a special case of the previous feature.
+
+- [x] [Suggestion](https://github.com/fsharp/fslang-suggestions/issues/874)
+- [ ] Approved in principle
+- [ ] [Implementation](https://github.com/dotnet/fsharp/pull/FILL-ME-IN)
+- [ ] [Discussion](https://github.com/fsharp/fslang-design/discussions/FILL-ME-IN)
