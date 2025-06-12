@@ -14,17 +14,18 @@ F# list literals `[]` would not just be resolved to `list`, but also `ImmutableA
 
 F# string literals `"abc"` would not just be resolved to `string`, but also `PrintfFormat`, `char array`, `ReadOnlySpan<byte>`, `Rune list` and so on.
 
-F# option literals (and other DU values) would not just be resolved 
+F# option literals (and other DU values) `Some` would not just be resolved to `option` but also `voption` if an alias is defined. Similarly for `Width` which can refer to `HTMLAttr`, `CSSProp` or `SVGAttr` in `Fable.React.Props`.
 
 # Motivation
-
-F# APIs should be able to reasonably choose to adopt `ImmutableArray<_>` or other such collection types for inputs without particularly changing user code that uses list literals. F# promotes being "succinct", these features would eliminate syntactic noise just because the default types in F# are not used.
 
 We over-emphasise the default types in F# - that is, in an API designer wants to get nice, minimal callside syntax, they have no choice but to accept `int`, `float`, `char`, tuple (`'a * 'b`), `list`, `string`. However this has problems:
 
 - It can be relatively highly allocating, e.g. for `list` and `string`.
 - It's not pleasant from C#, e.g. C# code cannot use F# `list` easily.
 - It's probably not the data representation used inside the API. For example the F# quotations API uses `list` throughout. but internally converts to `array`s.
+
+## Succinctness
+F# APIs should be able to reasonably choose to adopt `ImmutableArray<_>` or other such collection types for inputs without particularly changing user code that uses list literals. F# promotes being "succinct", these features would eliminate syntactic noise just because the default types in F# are not used.
 
 Some may [say](https://github.com/fsharp/fslang-suggestions/issues/1086#issuecomment-942676668) that these features just save a few characters - the saving is not worth in comparison to either effort spent on other features + extra cost of "magic" conversions happening. However, F# positions itself with "succinctness". It is important that syntactic noise be reduced to a minimum to stay different from major languages such as C#.
 
@@ -42,6 +43,15 @@ There have been similar efforts to reduce syntactic noise before:
 - [FS-1080 Dotless float32 literals](https://github.com/fsharp/fslang-design/blob/main/FSharp-5.0/FS-1080-float32-without-dot.md), implemented in F# 5.
 - [FS-1110 Dotless indexer syntax](https://github.com/fsharp/fslang-design/blob/main/FSharp-6.0/FS-1110-index-syntax.md), implemented in F# 6.
 
+## Robustness
+
+As explained in [C#'s collection expressions](https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/proposals/csharp-12.0/collection-expressions) specification:
+
+> Getting the best performance for constructing each collection type can be tricky. Simple solutions often waste both CPU and memory. Having a literal form allows for maximum flexibility from the compiler implementation to optimize the literal to produce at least as good a result as a user could provide, but with simple code.
+
+Having collection initialization logic be done by the compiler can ensure reliable code that works. You do not need to hand-wire stack initialization logic; the compiler can do it for you.
+
+## Performance
 Aside from being more succinct, there are also potential performance gains - another principle that F# advertises on. For example,
 
 ```fs
