@@ -100,6 +100,31 @@ async {
     let! (a, b): int * string = asyncTuple()
     and! (x, y): float * bool = asyncPair()
 }
+
+Tuple tuples with each element having direct type annotations require parentheses (same as regular `let`):
+
+```fsharp
+let a: int, b: string  = (5, 3) // Not allowed
+let! a: int, b: string  = (5, 3) // Not allowed
+
+let (a, b): int * int = (5, 3) // Allowed
+let! (a, b): int * int = (5, 3) // Allowed
+let a, b: int * int = (5, 3) // Allowed
+let! a, b: int * int = (5, 3) // Allowed
+let (a: int, b: string): int * int  = (5, 3) // Allowed
+let! (a: int, b: string): int * int  = (5, 3) // Allowed
+
+// Before (and still required after)
+async {
+    let! (a: int, b: string): int * string = asyncTuple()
+    and! (x: int, y: bool): float * bool = asyncPair()
+}
+
+// After - parentheses still required (consistent with regular let)
+async {
+    let! (a: int, b: string): int * string = asyncTuple()
+    and! (x: int, y: bool): float * bool = asyncPair()
+}
 ```
 
 ## Scenario: Record patterns
@@ -258,7 +283,7 @@ Please list the reasonable expectations for tooling for this feature, including 
 * Colorization
     * N/A.
 * Brace/parenthesis matching
-    * N/A.
+  - [UnnecessaryParenthesesDiagnosticAnalyzer](https://github.com/dotnet/fsharp/blob/main/vsintegration/src/FSharp.Editor/Diagnostics/UnnecessaryParenthesesDiagnosticAnalyzer.fs) should be updated to recognize that parentheses are not needed for type annotations in CE bindings, and should not suggest adding them.
 
 ## Performance
 
