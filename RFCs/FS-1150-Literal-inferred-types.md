@@ -105,7 +105,7 @@ This can be mitigated with two potential approaches:
 1. a warning that type defaulting behaviour is used. For example, `let x = 1` without further type restriction.
 2. exposing the behaviour of type defaulting first-class. This is covered in a separate suggestion - [Display type defaulting](https://github.com/fsharp/fslang-suggestions/issues/1427).
 
-## Potential breaking changes
+## Breaking changes
 
 There are potential breaking changes with interactions on previously defined type-directed conversions. Specifically, around `int64`, `nativeint` and `float` as defined in [FS-1093](https://github.com/fsharp/fslang-design/blob/main/FSharp-6.0/FS-1093-additional-conversions.md).
 
