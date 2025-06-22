@@ -127,7 +127,12 @@ let b = a + 1L
 // after: changes type of a to int64. also changes the generic type parameter used for f, from int32 to int64.
 ```
 
-However, one can also argue that a better type is being picked. Since the types involved are all numerical, there wouldn't be much runtime behaviour differences.
+However, one can also argue that a better type is being picked. Since the types involved are all numerical, there wouldn't be much runtime behaviour differences. In fact, one can argue that the result is now better:
+```fs
+let c: float = 1 / 2
+// before: 0
+// after: 0.5
+```
 
 # Alternatives
 
