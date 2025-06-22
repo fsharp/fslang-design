@@ -629,7 +629,7 @@ This pattern is not customizable, use an active pattern instead for customizing 
 
 This subsumes suggestion [#1351](https://github.com/fsharp/fslang-suggestions/issues/1351).
 
-## FS-1150m Type-directed resolution of union case literals
+# FS-1150m Type-directed resolution of union case literals
 
 The design suggestion [#1074](https://github.com/fsharp/fslang-suggestions/issues/1074) is **not yet** marked "approved in principle".
 
@@ -716,7 +716,7 @@ f A.Updating // f is now A -> bool
 
 This also means that `let x = Updating` can be typed as `A` or `B` depending on type inference.
 
-## FS-1150n Type-directed resolution of option cases
+# FS-1150n Type-directed resolution of option cases
 
 The design suggestion [#874](https://github.com/fsharp/fslang-suggestions/issues/874) is a special case of the previous feature.
 
