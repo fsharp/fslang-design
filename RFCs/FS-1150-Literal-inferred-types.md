@@ -670,6 +670,15 @@ type Z = X
 let a = X 1 // W
 let b = X // Z
 ```
+However, this also creates a breaking change if one of the cases is without parameters:
+```fs
+type Z = X
+type W = X of int | Y
+let x = X
+// before - x: int -> W
+// after - x: Z
+```
+This corner case be mitigated with a type annotation to guide type inference.
 
 Correspondingly, union cases will also be changed to satisfy these static member constraints. When satisfying a static member constraint of an active pattern, the DU case will be preferred over explicit declaration of an active pattern.
 ```fs
