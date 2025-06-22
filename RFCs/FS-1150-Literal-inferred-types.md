@@ -85,11 +85,13 @@ let a: Set<byte> = [1..10]
 
 # Drawbacks
 
+## Explainability
 There would be a lot of hidden magic behind the process of type-directed resolution. One of the strengths of F# is that implicit conversion is very, very rare in the language. Nearly everything is explicit in terms of conversions.
 - Implicit `yield` solved way more problems than it introduced (especially around Elmish), but one must understand the difference between `yield`, `yield!` and implicit `yield` in the rare corner cases.
 - Implicit `op_Implicit` conversions help more than it hinders e.g. going from some concrete type to a base class, and it's pretty easy to explain. But, it'll require some explanation of what `op_Implicit` is etc. - a completely foreign concept for everyday F# developers.
 - Implicit type-directed resolutions of literals require explanation of constructors and builder patterns, and the fact that `let x : Set = [ 1 .. 10 ]` isn't the same from a performance point of view as `let x = Set [ 1 .. 10 ]` will be challenging.
 
+## Diagnostics
 There is also risk of introducing action-at-a-distance type resolution behaviour when editing F# code.
 ```fs
 let a = 1 // Defaults to int
@@ -101,7 +103,31 @@ let d: float32 = c // This fixes c, and therefore b, to float32.
 ```
 This can be mitigated with two potential approaches:
 1. a warning that type defaulting behaviour is used. For example, `let x = 1` without further type restriction.
-2. exposing the behaviour of type defaulting first-class. More on this below.
+2. exposing the behaviour of type defaulting first-class. This is covered in a separate suggestion - [Display type defaulting](https://github.com/fsharp/fslang-suggestions/issues/1427).
+
+## Potential breaking changes
+
+There are potential breaking changes with interactions on previously defined type-directed conversions. Specifically, around `int64`, `nativeint` and `float` as defined in [FS-1093](https://github.com/fsharp/fslang-design/blob/main/FSharp-6.0/FS-1093-additional-conversions.md).
+
+```fs
+module A
+let a = 1 // This is public. There may be external dependencies.
+let b = a + 1L
+// before: Uses type-directed conversion of int32 -> int64.
+// after: changes type of a to int64.
+```
+
+This can easily be solved with a recompilation of consuming code.
+
+```fs
+let f<'a> (x: 'a) = printfn $"{typeof<'a>}"; x
+let a = f 1
+let b = a + 1L
+// before: Uses type-directed conversion of int32 -> int64.
+// after: changes type of a to int64. also changes the generic type parameter used for f, from int32 to int64.
+```
+
+However, one can also argue that a better type is being picked. Since the types involved are all numerical, there wouldn't be much runtime behaviour differences.
 
 # Alternatives
 
