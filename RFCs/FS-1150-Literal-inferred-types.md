@@ -39,6 +39,8 @@ let zz = ["red"; "yellow"; "blue"] |> Set.ofList // Eliminates a List.toSeq call
 let vv: Set<string> = ["red"; "yellow"; "blue"] // This is the most readable. Is it helpful to reduce the concept count on grouping syntax, particularly with the curly for sequence.
 ```
 
+It's easier code with fewer boilerplate.
+
 There have been similar efforts to reduce syntactic noise before:
 - [FS-1080 Dotless float32 literals](https://github.com/fsharp/fslang-design/blob/main/FSharp-5.0/FS-1080-float32-without-dot.md), implemented in F# 5.
 - [FS-1110 Dotless indexer syntax](https://github.com/fsharp/fslang-design/blob/main/FSharp-6.0/FS-1110-index-syntax.md), implemented in F# 6.
@@ -52,7 +54,19 @@ As explained in [C#'s collection expressions](https://learn.microsoft.com/en-us/
 Having collection initialization logic be done by the compiler can ensure reliable code that works. You do not need to hand-wire stack initialization logic; the compiler can do it for you.
 
 ## Performance
-Aside from being more succinct, there are also potential performance gains - another principle that F# advertises on. For example,
+Aside from being more succinct, there are also potential performance gains - another principle that F# advertises on.
+
+### Using Span overloads
+Modern .NET libraries have added Span overloads for better performance using stack-allocated data. F# currently cannot take advantage of this easily; the user has to write wiring code themselves.
+
+```fs
+System.String.Join(",", ["a", "b", "c"])
+// before: constructs a list of strings, allocating on the heap.
+// after: stack-allocates a ReadOnlySpan<string>, efficiently uses stack memory.
+```
+
+### Fewer runtime conversions
+Another example:
 
 ```fs
 let a: Set<byte> = set [1uy..10uy]
@@ -63,7 +77,7 @@ let a: Set<byte> = set [1uy..10uy]
 3. Constructs the set with the `seq<_>`-acceptable constructor
 4. Uses `seq<_>` constructs to add items to the underlying set structure
 
-Instead, type-directed resolution of the list literal can make use of more efficient operations. In addition, the `uy` type specifiers can also be eliminated.
+Instead, type-directed resolution of the list literal can make use of more efficient operations, resulting in fewer runtime conversions. In addition, the `uy` type specifiers can also be eliminated.
 
 ```fs
 let a: Set<byte> = [1..10]
