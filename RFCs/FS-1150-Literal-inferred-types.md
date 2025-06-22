@@ -655,12 +655,20 @@ let f = function Updating -> true | _ -> false
 
 Instead, all union case values with two or more possible target types should allow type-directed resolution.
 
-When there are two or more possible union case targets in scope, static member constraints are to be emitted instead of defaulting to the last defined type.
+When there are two or more possible union case targets in scope with the same parameters, static member constraints are to be emitted instead of defaulting to the last defined type.
 ```fs
 let inline f() = Updating
 // val inline f: unit -> ^a when ^a: (static member Updating: ^a)
 let inline g x = match x with Updating -> true | _ -> false
 // val inline g: x: ^a -> bool when ^a: (static member (|Updating|_|): ^a -> bool)
+```
+
+When there are union cases of the same name but with different parameters, method overload resolution kicks in.
+```fs
+type W = X of int | Y
+type Z = X
+let a = X 1 // W
+let b = X // Z
 ```
 
 Correspondingly, union cases will also be changed to satisfy these static member constraints. When satisfying a static member constraint of an active pattern, the DU case will be preferred over explicit declaration of an active pattern.
