@@ -210,7 +210,7 @@ let inline f (a: ^a when ^a: -3 and ^a: 7.5 and ^a: 10 and ^a: float) = ()
 // now integer types cannot satisfy this type constraint
 ```
 
-# FS-1150b Type-directed resolution of integer literals
+# FS-1150b Type-directed resolution of numeric literals
 
 The above constraints are to be inferred from numeric literals. For example, instead of always requiring `1` to have the type `int`, it now has the statically resolved type `^a when ^a: 1`. The same applies to numeric literals that currently infer the `float` type, for example `23e2` and `1.2`.
 
@@ -302,7 +302,6 @@ match b with
     -> ()
 | _ -> ()
 ```
-
 
 [FS-1093 Additional type directed conversions](https://github.com/fsharp/fslang-design/blob/main/FSharp-6.0/FS-1093-additional-conversions.md), added in F# 6, specifies existing conversions for literals:
 ```fs
