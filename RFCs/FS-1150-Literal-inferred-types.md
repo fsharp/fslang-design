@@ -552,7 +552,7 @@ This pattern is not customizable, use an active pattern instead for customizing 
 The design suggestion [#1377](https://github.com/fsharp/fslang-suggestions/issues/1377) is **not yet** marked "approved in principle".
 
 - [x] [Suggestion](https://github.com/fsharp/fslang-suggestions/issues/1377)
-- [x] Approved in principle
+- [ ] Approved in principle
 - [ ] [Implementation](https://github.com/dotnet/fsharp/pull/FILL-ME-IN)
 - [ ] [Discussion](https://github.com/fsharp/fslang-design/discussions/FILL-ME-IN)
 
