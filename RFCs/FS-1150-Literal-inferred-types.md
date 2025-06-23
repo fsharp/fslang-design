@@ -90,7 +90,7 @@ There would be a lot of hidden magic behind the process of type-directed resolut
 - Implicit type-directed resolutions of literals require explanation of constructors and builder patterns, and the fact that `let x : Set = [ 1 .. 10 ]` isn't the same from a performance point of view as `let x = Set [ 1 .. 10 ]` will be challenging.
 
 ## Diagnostics
-There is also risk of introducing action-at-a-distance type resolution behaviour when editing F# code.
+There is also risk of introducing action-at-a-distance type resolution behaviour when editing F# code. This RFC enables the following:
 ```fs
 let a = 1 // Defaults to int
 let b = 2 // Without code below, this defaults to int.
