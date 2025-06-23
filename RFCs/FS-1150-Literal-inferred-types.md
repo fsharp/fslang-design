@@ -120,7 +120,7 @@ This can easily be solved with a recompilation of consuming code.
 ```fs
 let f<'a> (x: 'a) = printfn $"{typeof<'a>}"; x
 let a = f 1
-let b = a + 1L
+let b: int64 = a
 // before: Uses type-directed conversion of int32 -> int64.
 // after: changes type of a to int64. also changes the generic type parameter used for f, from int32 to int64.
 ```
