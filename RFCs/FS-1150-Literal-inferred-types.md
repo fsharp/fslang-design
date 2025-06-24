@@ -4,15 +4,29 @@ This RFC collects separate design suggestions to make F# literals resolvable to 
 
 F# integer literals `1` would not just be resolved to `int`, but also `int64`, `byte`, `float`, `bigint`, `Complex` and so on.
 
-F# float literals `1.0` would not just be resolved to `float`, but also `float32`, `decimal`, `Half`, `NFloat` and so on.
+F# float literals `1.0` would not just be resolved to `float`, but also `float32`, `decimal`, `NFloat` and so on.
 
 F# char literals `'c'` would not just be resolved to `char`, but also `byte` and so on.
 
-F# tuple literals would not just be resolved to Tuple (`'a * 'b`), but also struct tuple (`struct('a * 'b)`) and `KeyValuePair<_, _>`. There seems to be not much value to extend this syntax to other types.
+F# tuple literals would not just be resolved to Tuple (`'a * 'b`), but also struct tuple (`struct('a * 'b)`) and `KeyValuePair<_, _>`.
 
 F# list literals `[]` would not just be resolved to `list`, but also `ImmutableArray<_>`, `ReadOnlySpan<_>` and so on.
 
 F# string literals `"abc"` would not just be resolved to `string`, but also `PrintfFormat`, `char array`, `ReadOnlySpan<byte>`, `Rune list` and so on.
+
+User types can be added to type resolution via `op_Implicit` conversions and `Deconstruct` methods. For example, if one wishes to define `System.Numerics.Vector3` via a tuple literal, it can be done with a type extension.
+
+```fs
+open System.Numerics
+type Vector3 with
+    static member op_Implicit struct(x, y, z) = Vector3(x, y, z)
+    member this.Deconstruct(x: _ outref, y: _ outref, z: _ outref) =
+        x <- this.X; y <- this.Y; z <- this.Z
+let x: Vector3 = 2, 3, 4
+match x with
+| 2, 3, 4 -> printfn "It works"
+| _ -> failwith "Won't reach"
+```
 
 # Motivation
 
@@ -103,6 +117,7 @@ This can be mitigated with two potential approaches:
 1. a warning that type defaulting behaviour is used. For example, `let x = 1` without further type restriction.
 2. exposing the behaviour of type defaulting first-class. This is covered in a separate suggestion - [Display type defaulting](https://github.com/fsharp/fslang-suggestions/issues/1427).
 
+For people who prefer being explicit at the cost of succinctness, an opt-in warning can be introduced that warns whenever 
 ## Breaking changes
 
 There are potential breaking changes with interactions on previously defined type-directed conversions. Specifically, around `int64`, `nativeint` and `float` as defined in [FS-1093](https://github.com/fsharp/fslang-design/blob/main/FSharp-6.0/FS-1093-additional-conversions.md).
@@ -442,7 +457,68 @@ match 1, 2: KeyValuePair<int, int> with
 | _ -> failwith "Won't reach here"
 ```
 
-# FS-1150f Type-directed resolution of list literals
+# FS-1150f Type-directed resolution of tuple patterns
+The design suggestion [#751](https://github.com/fsharp/fslang-suggestions/issues/751) is marked "approved in principle".
+
+- [x] [Suggestion](https://github.com/fsharp/fslang-suggestions/issues/988)
+- [x] Approved in principle
+- [ ] [Implementation](https://github.com/dotnet/fsharp/pull/FILL-ME-IN)
+- [ ] [Discussion](https://github.com/fsharp/fslang-design/discussions/FILL-ME-IN)
+
+The [C#-way](https://learn.microsoft.com/en-us/dotnet/csharp/fundamentals/functional/deconstruct#deconstructing-user-defined-types) of doing quick pattern matching and value extraction is by declaring member functions of name `Deconstruct`, or static extension methods accordingly. A `Deconstruct` method has the signature of:
+
+```cs
+public void Deconstruct(out T1 name1, out T2 name2, ...)
+```
+... which actively extracts values from the class instance.
+Multiple overloads can be supplied to accommodate different ways of deconstruction.
+
+Note that `Deconstruct` with one out variable can only be used with positional patterns but not deconstruction in C#:
+```cs
+using System;
+if(new Person { Name = "John Doe", Age = 69 } is Person())
+    Console.WriteLine(1);
+if(new Person { Name = "John Doe", Age = 69 } is Person(var a))
+    Console.WriteLine(2);
+var (x, y) = new Person { Name = "John Doe", Age = 69 };
+// var (z) = new Person { Name = "John Doe", Age = 69 }; // doesn't work
+
+class Person {
+    public string Name; public int Age; public DateTime DateOfBirth;
+    public void Deconstruct() { Console.WriteLine("a"); }
+    public void Deconstruct(out string name) { name = Name; }
+    public void Deconstruct(out string name, out int age) { name = Name; age  = Age; }
+}
+```
+
+Here, the deconstruction syntax equivalent is implemented in F#. This means that one-output deconstruction is unsupported. The tuple pattern will be modified to support `Deconstruct` method lookups:
+
+```fs
+type Person(name: string, age: int) =
+    member _.Deconstruct(n: _ outref, a: _ outref) = n <- name; a <- age
+let n, a = Person("John Doe", 69)
+Person("John Doe", 69) |> fun (n, a) -> ()
+// n: string = "John Doe"
+// a: int = 69
+```
+
+The [design considerations](https://github.com/dotnet/csharplang/blob/5c5e51654f7f217cc5d6bfa0442c97b9c2606891/meetings/2016/LDM-2016-05-03-04.md) behind the `Deconstruct` method can be summarized as:
+> 1. `Deconstruct` is a method because other features in C# that operate on objects are also method-based (`await` -> `.GetAwaiter`, `for` -> `.GetEnumerator`, collection initializer -> `.Add`). 
+> 2. `Deconstruct` uses `out` parameters for method overloading, where future added data in deconstructions can come from additional overloads instead of breaking binary compatibility.
+
+For the second point, conversion operators also support return type overloading, so `op_Implicit` to tuples would be an alternative way to implement deconstruction. However, unlike the rest of this RFC which relies on `op_Implicit` operators, they are not used here because of semantic differences.
+
+Implicit conversions to tuples do a lot more than just deconstruction and change the way that a given type can be consumed. Conversion operators focus on constructing the destination type, which other references to `op_Implicit` in this RFC do. However, even though a `Rectangle` for example can be deconstructed into width and height, constructing a tuple storing the same values as width and height would lose this context, as opposed to constructing a tuple from a `Point2D` for example, as a point is nothing more than the tuple of its coordinates. This is about API design flexibility rather than these behaviours being intrinsically unpreferable.
+
+The precise steps to determine a `Deconstruct` overload follows the same steps as in C#. This means that when multiple `Deconstruct` methods of the same number of parameters is encountered, an ambiguity error is issued regardless of the concrete types.
+
+## Diagnostics
+
+Hovering the cursor above the tuple pattern should show the inferred type. Currently this action does not popup anything.
+
+Pressing Go To Definition on the tuple pattern should navigate to any `Deconstruct` methods used under the hood if used.
+
+# FS-1150g Type-directed resolution of list literals
 The design suggestion [#1086](https://github.com/fsharp/fslang-suggestions/issues/1086) was marked "approved in principle" before.
 
 - [x] [Suggestion](https://github.com/fsharp/fslang-suggestions/issues/1086)
@@ -498,7 +574,7 @@ Hovering the cursor above the list literal should show the inferred type. Curren
 
 Pressing Go To Definition on the list literal should navigate to any conversion methods used under the hood.
 
-# FS-1150g Constructor arguments for list literals
+# FS-1150h Constructor arguments for list literals
 
 - [ ] [Implementation](https://github.com/dotnet/fsharp/pull/FILL-ME-IN)
 
@@ -527,7 +603,7 @@ let y: MyDict2 = f()
 
 This feature is ideally implemented with the general mechanism ([FS-1023 - Allow type providers to generate types from types](https://github.com/fsharp/fslang-design/blob/b3cdb5805855a186195d677a266d358f4caf6032/RFCs/FS-1023-type-providers-generate-types-from-types.md)). It can also be implemented as a compiler intrinsic, but the benefits brought by directly implementing that proposal far outweighs implementing only this special case here.
 
-# FS-1150h Type-directed resolution of list patterns
+# FS-1150i Type-directed resolution of list patterns
 
 With type-directed resolution of list construction, it also makes sense to change list deconstruction to be type-directed too.
 
@@ -545,7 +621,7 @@ The reliance on indexing means that some types, e.g. sets, can be constructed us
 
 This pattern is not customizable, use an active pattern instead for customizing this behaviour.
 
-# FS-1150i Using type-directed list literals to fulfill params parameters
+# FS-1150j Using type-directed list literals to fulfill params parameters
 
 The design suggestion [#1377](https://github.com/fsharp/fslang-suggestions/issues/1377) is **not yet** marked "approved in principle".
 
@@ -556,7 +632,7 @@ The design suggestion [#1377](https://github.com/fsharp/fslang-suggestions/issue
 
 Whenever there is a `[<ParamArray>]` parameter encountered (`params` in C#), instead of always inserting an array, wrap the variable-length parameter list inside a type-directed list literal behind  the scenes instead. Reuse all the previously defined rules for type-directed list literals.
 
-# FS-1150j Type-directed resolution of string literals
+# FS-1150k Type-directed resolution of string literals
 The design suggestion [#1421](https://github.com/fsharp/fslang-suggestions/issues/1421) is marked "approved in principle".
 
 - [x] [Suggestion](https://github.com/fsharp/fslang-suggestions/issues/1421)
@@ -596,7 +672,7 @@ Hovering the cursor above the string literal should show the inferred type. Curr
 
 Pressing Go To Definition on the string literal should navigate to any conversion methods used under the hood.
 
-# FS-1150k Extending B-suffix string literals to be UTF-8 strings
+# FS-1150l Extending B-suffix string literals to be UTF-8 strings
 The design suggestion [#1421](https://github.com/fsharp/fslang-suggestions/issues/1421) is marked "approved in principle".
 
 - [x] [Suggestion](https://github.com/fsharp/fslang-suggestions/issues/1421)
@@ -610,7 +686,7 @@ Currently, B-suffix string literals in F# only allow ASCII values. As UTF-8 is t
 let a = "你好"B
 ```
 
-# FS-1150l Type-directed resolution of string patterns
+# FS-1150m Type-directed resolution of string patterns
 
 With type-directed resolution of string construction, it also makes sense to change string deconstruction to be type-directed too.
 
