@@ -340,7 +340,7 @@ let f: float32 array = [| 1; 2; 3 |] // The integer themselves are float32
 
 ## Diagnostics
 
-Hovering the cursor above the numeric literal should show the inferred type. Currently this action does not popup anything.
+Hovering the cursor above the numeric literal should show the `op_Implicit` method if used, or the inferred type otherwise. Currently this action does not popup anything.
 
 Pressing Go To Definition on the numeric literal should navigate to the conversion function used from the `NumericLiteralX` module or the `op_Implicit` definition if used.
 
@@ -514,7 +514,7 @@ The precise steps to determine a `Deconstruct` overload follows the same steps a
 
 ## Diagnostics
 
-Hovering the cursor above the tuple pattern should show the inferred type. Currently this action does not popup anything.
+Hovering the cursor above the tuple pattern should show `Deconstruct` overload used if available, or the inferred type otherwise. Currently this action does not popup anything.
 
 Pressing Go To Definition on the tuple pattern should navigate to any `Deconstruct` methods used under the hood if used.
 
