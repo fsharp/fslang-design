@@ -120,15 +120,7 @@ This can be mitigated with two potential approaches:
 For people who prefer being explicit at the cost of succinctness, an opt-in warning can be introduced that warns whenever 
 ## Breaking changes
 
-There are potential breaking changes with interactions on previously defined type-directed conversions. Specifically, around `int64`, `nativeint` and `float` as defined in [FS-1093](https://github.com/fsharp/fslang-design/blob/main/FSharp-6.0/FS-1093-additional-conversions.md).
-
-```fs
-module A
-let a = 1 // This is public. There may be external dependencies.
-let b = a + 1L
-// before: Uses type-directed conversion of int32 -> int64.
-// after: changes type of a to int64.
-```
+There are potential breaking changes with interactions on previously defined type-directed conversions. Specifically, around 
 
 This can easily be solved with a recompilation of consuming code.
 
@@ -153,12 +145,146 @@ Not doing this - F# loses an opportunity to work towards one of its stated goals
 
 # Detailed design
 
-# FS-1150a Numeric statically resolved type parameter constraints
+# FS-1150a Inference behaviour of new inferred statically resolved constraints
 
-The design suggestion [#1421](https://github.com/fsharp/fslang-suggestions/issues/1421) is marked "approved in principle".
+C# has been adding type-directed features like [collection expressions](https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/operators/collection-expressions), which makes C# more succinct, robust and performant when calling .NET methods that expect collections, like `ReadOnlySpan`. It is ideal that F# achieves parity with C# at least when calling method overloads using the cleanest collection syntax (`[ ... ]`). However, `[ ... ]` currently has the fixed type `_ list`. Therefore, this RFC focuses on adding type-directed inference of existing literals like `[ ... ]`. There are a few levels of implementation to choose from -
+
+1. Only allow type-direction at literals passed directly to method arguments.
+
+```fs
+open System
+// before
+do
+    String.Join(",", [| "1"; "2"; "3" |].AsSpan()) |> printfn "%s"
+    String.Join(",", [| "1"; "2"; "3" |]) |> printfn "%s"
+// after
+do  // now calls (string * ReadOnlySpan<string>) overload with stack allocation.
+    String.Join(",", ["1"; "2"; "3"]) |> printfn "%s"
+    (String.Join: string * string array -> _)(",", ["1"; "2"; "3"]) |> printfn "%s"
+```
+2. In addition to level 1, also allow modification of type inference anywhere when the target type is known.
+```fs
+// also allow
+do
+    let xs: ReadOnlySpan<string> = ["1"; "2"; "3"]
+    String.Join(",", xs) |> printfn "%s"
+    let ys: string array = ["1"; "2"; "3"]
+    String.Join(",", ys) |> printfn "%s"
+```
+
+3. In addition to level 2, also allow modification of type inference throughout sequences of local `let` bindings (or `|>` piped chains) as well, with impact on type inference.
+```fs
+// also allow
+do
+    let xs = ["1"; "2"; "3"] // now infers ReadOnlySpan<string>
+    String.Join(",", xs) |> printfn "%s"
+    let ys = ["1"; "2"; "3"] // now infers string array
+    (String.Join: string * string array -> _)(",", xs) |> printfn "%s"
+// also allow
+do
+    ["1"; "2"; "3"] // now infers ReadOnlySpan<string>
+    |> fun xs -> String.Join(",", xs) |> printfn "%s" // Note: |> support for ref structs is in scope of this RFC.
+    ["1"; "2"; "3"] // now infers string array
+    |> Array.copy
+    |> fun ys -> String.Join(",", ys) |> printfn "%s"
+```
+
+4. In addition to level 3, also allow `inline` functions to specify constraints to enable type direction for literals on a statically resolved type parameter.
+```fs
+// also allow
+let inline g<^a when ^a: [string]>() =
+        ["1"; "2"; "3"]
+// ReadOnlySpan<string> is not applicable because ref structs cannot propagate across inline function boundaries. See https://github.com/fsharp/fslang-suggestions/issues/688#issuecomment-1201603354
+// string * string array
+do String.Join(",", g()) |> printfn "%s"
+```
+
+5. In addition to level 4, also allow modification of type inference across inline function boundaries.
+```fs
+// also allow
+let inline f() = ["1"; "2"; "3"] // f: unit -> ^a when ^a: [string]
+// string * string array
+do String.Join(",", f()) |> printfn "%s"
+```
+6. In addition to level 5, also allow modification of type inference across non-public non-inline function boundaries.
+```fs
+// also allow
+let private f() = ["1"; "2"; "3"] // unit -> string array
+do String.Join(",", f()) |> printfn "%s"
+```
+7. In addition to level 6, also allow modification of type inference across public non-inline function boundaries.
+```fs
+// also allow
+let f() = ["1"; "2"; "3"] // return type should admit ReadOnlySpan<string> - construct an array as stack allocated data cannot be returned here
+do String.Join(",", f()) |> printfn "%s"
+```
+
+C# only allows up to level 2 because it does not perform type inference as much as F# does.
+```cs
+using System;
+// level 1
+Console.WriteLine(String.Join(",", ["1", "2", "3"]));
+
+// level 2
+ReadOnlySpan<string> xs = ["1", "2", "3"];
+Console.WriteLine(String.Join(",", xs));
+// Note: The above line emits nullability warning CS8620 on `xs` because ReadOnlySpan<string> is passed into ReadOnlySpan<string?>
+
+// level 3 - error
+var xs = ["1", "2", "3"];
+// error CS9176: There is no target type for the collection expression.
+Console.WriteLine(String.Join(",", xs));
+
+// level 6 - error
+var f() => ["1"; "2"; "3"];
+// error CS0825: The contextual keyword 'var' may only appear within a local variable declaration or in script code
+Console.WriteLine(String.Join(",", f()));
+```
+
+Level 7 breaks binary compatibility with existing code. Not just for list literals but also for numeric literals when implicit conversions are applied to `int64`, `nativeint` and `float` as defined in [FS-1093](https://github.com/fsharp/fslang-design/blob/main/FSharp-6.0/FS-1093-additional-conversions.md). Therefore, it must not be implemented.
+
+```fs
+module A
+let a = 1 // This is public. There may be external dependencies.
+let b = a + 1L
+// before: Uses type-directed conversion of int32 -> int64.
+// after: changes type of a to int64.
+```
+
+[When are new features a good thing?](https://github.com/fsharp/fslang-suggestions/tree/8955f1b4a01312f5efe79ec724f8d0536748885b?tab=readme-ov-file#when-are-new-features-a-good-thing) notes that
+
+> features which make the language more orthogonal, simpler and easier to use are generally a very good thing.
+
+Allowing more literals to fit different types makes the language more orthogonal. Literals can now be "implemented" with different types without the need to be explicit about conversions. The annotations that are required to denote a different numeric or collection type that is not the default can be eliminated.
+```fs
+// before
+let simple: int list = [1; 2; 3; 4]
+let moreSyntax: uint64 Set = set [1UL; 2UL; 3UL; 4UL]
+let evenMoreSyntax: ImmutableArray<byte> = ImmutableArray.Create [|1uy; 2uy; 3uy; 4uy|]
+// after
+let simple: int list = [1; 2; 3; 4]
+let moreSyntax: uint64 Set = [1; 2; 3; 4]
+let evenMoreSyntax: ImmutableArray<byte> = [1; 2; 3; 4]
+```
+It's also simpler and easier to use.
+
+Meanwhile, this should also be as orthogonal as possible with type inference - the fact that more types support direct definitions from literals should not interfere with type inference. If `[ ... ]` can be an `ImmutableArray`, then it should behave like one as much as possible under type inference.
+
+Ideally for all the new type-directed inference, the same rules for inference of statically resolved constraints should also be followed:
+
+```fs
+let f a b = a + b
+let g = f 1L 2L // Changes type of f to long -> long -> long
+```
+
+Ideally level 7 would result in the most orthogonality between type-directed resolution and type inference but with binary compatibility constraints, only level 6 is achievable. This RFC aims to achieve a level 6 implementation. It can also be trimmed as necessary to target a lower level implementation, as each lower level is a subset of a higher level.
+
+# FS-1150b Numeric statically resolved type parameter constraints
+
+The design suggestion [#1421](https://github.com/fsharp/fslang-suggestions/issues/1421) was marked "approved in principle" before.
 
 - [x] [Suggestion](https://github.com/fsharp/fslang-suggestions/issues/1421)
-- [x] Approved in principle
+- [ ] Approved in principle
 - [ ] [Implementation](https://github.com/dotnet/fsharp/pull/FILL-ME-IN)
 - [ ] [Discussion](https://github.com/fsharp/fslang-design/discussions/FILL-ME-IN)
 
@@ -223,7 +349,7 @@ let inline f (a: ^a when ^a: -3 and ^a: 7.5 and ^a: 10 and ^a: float) = ()
 // now integer types cannot satisfy this type constraint
 ```
 
-# FS-1150b Type-directed resolution of numeric literals
+# FS-1150c Type-directed resolution of numeric literals
 
 The above constraints are to be inferred from numeric literals. For example, instead of always requiring `1` to have the type `int`, it now has the statically resolved type `^a when ^a: 1`. The same applies to numeric literals that currently infer the `float` type, for example `23e2` and `1.2`.
 
@@ -344,7 +470,7 @@ Hovering the cursor above the numeric literal should show the `op_Implicit` meth
 
 Pressing Go To Definition on the numeric literal should navigate to the conversion function used from the `NumericLiteralX` module or the `op_Implicit` definition if used.
 
-# FS-1150c Type-directed resolution of infinity and nan
+# FS-1150d Type-directed resolution of infinity and nan
 
 Similarly to float literals, the values `infinity` and `nan` would also become type-directed. Both would have the staticaly resolved type `^a when ^a: float`.
 
@@ -365,11 +491,11 @@ let f: System.Single = nan // Currently errors
 ```
 All 6 value definitions as above should all work.
 
-# FS-1150d Type-directed resolution of char literals
-The design suggestion [#1421](https://github.com/fsharp/fslang-suggestions/issues/1421) is marked "approved in principle".
+# FS-1150e Type-directed resolution of char literals
+The design suggestion [#1421](https://github.com/fsharp/fslang-suggestions/issues/1421) was marked "approved in principle" before.
 
 - [x] [Suggestion](https://github.com/fsharp/fslang-suggestions/issues/1421)
-- [x] Approved in principle
+- [ ] Approved in principle
 - [ ] [Implementation](https://github.com/dotnet/fsharp/pull/FILL-ME-IN)
 - [ ] [Discussion](https://github.com/fsharp/fslang-design/discussions/FILL-ME-IN)
 
@@ -403,7 +529,7 @@ Hovering the cursor above the char literal should show the inferred type. Curren
 
 Pressing Go To Definition on the char literal should navigate to the `op_Implicit` definition if used.
 
-# FS-1150e Type-directed resolution of tuple literals
+# FS-1150f Type-directed resolution of tuple literals
 The design suggestion [#988](https://github.com/fsharp/fslang-suggestions/issues/988) is marked "approved in principle".
 
 - [x] [Suggestion](https://github.com/fsharp/fslang-suggestions/issues/988)
@@ -457,7 +583,7 @@ match 1, 2: KeyValuePair<int, int> with
 | _ -> failwith "Won't reach here"
 ```
 
-# FS-1150f Type-directed resolution of tuple patterns
+# FS-1150g Type-directed resolution of tuple patterns
 The design suggestion [#751](https://github.com/fsharp/fslang-suggestions/issues/751) is marked "approved in principle".
 
 - [x] [Suggestion](https://github.com/fsharp/fslang-suggestions/issues/988)
@@ -518,7 +644,10 @@ Hovering the cursor above the tuple pattern should show `Deconstruct` overload u
 
 Pressing Go To Definition on the tuple pattern should navigate to any `Deconstruct` methods used under the hood if used.
 
-# FS-1150g Type-directed resolution of list literals
+# FS-1150h Special-casing selected FSharp.Core operators to allow ref struct usage
+
+
+# FS-1150i Type-directed resolution of list literals
 The design suggestion [#1086](https://github.com/fsharp/fslang-suggestions/issues/1086) was marked "approved in principle" before.
 
 - [x] [Suggestion](https://github.com/fsharp/fslang-suggestions/issues/1086)
@@ -574,7 +703,7 @@ Hovering the cursor above the list literal should show the inferred type. Curren
 
 Pressing Go To Definition on the list literal should navigate to any conversion methods used under the hood.
 
-# FS-1150h Constructor arguments for list literals
+# FS-1150j Constructor arguments for list literals
 
 - [ ] [Implementation](https://github.com/dotnet/fsharp/pull/FILL-ME-IN)
 
@@ -603,7 +732,7 @@ let y: MyDict2 = f()
 
 This feature is ideally implemented with the general mechanism ([FS-1023 - Allow type providers to generate types from types](https://github.com/fsharp/fslang-design/blob/b3cdb5805855a186195d677a266d358f4caf6032/RFCs/FS-1023-type-providers-generate-types-from-types.md)). It can also be implemented as a compiler intrinsic, but the benefits brought by directly implementing that proposal far outweighs implementing only this special case here.
 
-# FS-1150i Type-directed resolution of list patterns
+# FS-115kj Type-directed resolution of list patterns
 
 With type-directed resolution of list construction, it also makes sense to change list deconstruction to be type-directed too.
 
@@ -621,7 +750,7 @@ The reliance on indexing means that some types, e.g. sets, can be constructed us
 
 This pattern is not customizable, use an active pattern instead for customizing this behaviour.
 
-# FS-1150j Using type-directed list literals to fulfill params parameters
+# FS-1150l Using type-directed list literals to fulfill params parameters
 
 The design suggestion [#1377](https://github.com/fsharp/fslang-suggestions/issues/1377) is **not yet** marked "approved in principle".
 
@@ -632,11 +761,11 @@ The design suggestion [#1377](https://github.com/fsharp/fslang-suggestions/issue
 
 Whenever there is a `[<ParamArray>]` parameter encountered (`params` in C#), instead of always inserting an array, wrap the variable-length parameter list inside a type-directed list literal behind  the scenes instead. Reuse all the previously defined rules for type-directed list literals.
 
-# FS-1150k Type-directed resolution of string literals
-The design suggestion [#1421](https://github.com/fsharp/fslang-suggestions/issues/1421) is marked "approved in principle".
+# FS-1150m Type-directed resolution of string literals
+The design suggestion [#1421](https://github.com/fsharp/fslang-suggestions/issues/1421) was marked "approved in principle" before.
 
 - [x] [Suggestion](https://github.com/fsharp/fslang-suggestions/issues/1421)
-- [x] Approved in principle
+- [ ] Approved in principle
 - [ ] [Implementation](https://github.com/dotnet/fsharp/pull/FILL-ME-IN)
 - [ ] [Discussion](https://github.com/fsharp/fslang-design/discussions/FILL-ME-IN)
 
@@ -672,11 +801,11 @@ Hovering the cursor above the string literal should show the inferred type. Curr
 
 Pressing Go To Definition on the string literal should navigate to any conversion methods used under the hood.
 
-# FS-1150l Extending B-suffix string literals to be UTF-8 strings
-The design suggestion [#1421](https://github.com/fsharp/fslang-suggestions/issues/1421) is marked "approved in principle".
+# FS-1150n Extending B-suffix string literals to be UTF-8 strings
+The design suggestion [#1421](https://github.com/fsharp/fslang-suggestions/issues/1421) was marked "approved in principle" before.
 
 - [x] [Suggestion](https://github.com/fsharp/fslang-suggestions/issues/1421)
-- [x] Approved in principle
+- [ ] Approved in principle
 - [ ] [Implementation](https://github.com/dotnet/fsharp/pull/FILL-ME-IN)
 - [ ] [Discussion](https://github.com/fsharp/fslang-design/discussions/FILL-ME-IN)
 
@@ -686,7 +815,7 @@ Currently, B-suffix string literals in F# only allow ASCII values. As UTF-8 is t
 let a = "你好"B
 ```
 
-# FS-1150m Type-directed resolution of string patterns
+# FS-1150o Type-directed resolution of string patterns
 
 With type-directed resolution of string construction, it also makes sense to change string deconstruction to be type-directed too.
 
@@ -701,3 +830,14 @@ match [97; 98; 99]: ReadOnlySpan<byte> with
 This pattern is not customizable, use an active pattern instead for customizing this behaviour.
 
 This subsumes suggestion [#1351](https://github.com/fsharp/fslang-suggestions/issues/1351).
+
+# FS-1150p Type-directed resolution of boolean literals and patterns
+
+For uniformity with numeric, char, tuple, list and string literals, it also makes sense for boolean literals to undergo similar type-directed resolution.
+
+```fs
+open System
+let nil = Nullable<bool>()
+let a = [true; nil; false]
+```
+
