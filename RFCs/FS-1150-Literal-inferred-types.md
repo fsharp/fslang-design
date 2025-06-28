@@ -321,7 +321,20 @@ Constraint solving will define a `LiteralConversionCost` vector. It defaults to 
 ## Changes to specification
 [Method Application Resolution](https://github.com/fsharp/fslang-spec/blob/1890512002c43f832cbdd6524587c22563589403/spec/inference-procedures.md#method-application-resolution)
 
-Before the [method overload preference rule introduced by FS-1093](https://github.com/fsharp/fslang-design/blob/b3cdb5805855a186195d677a266d358f4caf6032/FSharp-6.0/FS-1093-additional-conversions.md#interaction-with-method-overload-resolution), add a new rule that reads the `LiteralConversionCost` vector result from constraint solving, and prefers an overload that has lower values in some or all vector dimensions and same in other or no vector dimensions, i.e. choose a Pareto front over other solutions.
+Before the [method overload preference rule introduced by FS-1093](https://github.com/fsharp/fslang-design/blob/b3cdb5805855a186195d677a266d358f4caf6032/FSharp-6.0/FS-1093-additional-conversions.md#interaction-with-method-overload-resolution), add a new rule that reads the `LiteralConversionCost` vector result from constraint solving, and prefers an overload that when compared to all other overloads, meets one of the following criteria:
+1. has lower values in some or all vector dimensions and same in other or no vector dimensions, i.e. choose a Pareto front over other solutions; or
+2. for each pairwise comparison `dim1`, `dim2` between
+    - `NumericBackCompat`, `Numeric`
+    - `Numeric`, `NumericTwoStep`
+    - `NumericBackCompat`, `NumericTwoStep`
+
+   when all other dimensions are equal, and sum (`dim1` + `dim2`) are equal, has more `dim1` than `dim2`.
+
+The following dimensions are defined for `LiteralConversionCost` vector:
+- `NumericBackCompat`
+- `Numeric`
+- `NumericTwoStep`
+
 
 # FS-1150b Numeric statically resolved type parameter constraints
 
@@ -393,11 +406,11 @@ let inline f (a: ^a when ^a: -3 and ^a: 7.5 and ^a: 10 and ^a: float) = ()
 // now integer types cannot satisfy this type constraint
 ```
 
-The numeric value constraint can be satisfied by the following types, generating a successful solution if the numeric value is in range:
+The numeric value constraint can be satisfied by the following types, in the order of method overload resolution preference for a single argument, generating a successful solution if the numeric value is in range:
 1. when without floating-point constraint, the default integer type: `int32`
-2. when without floating-point constraint, built-in types with existing type-directed conversions from `int32` as defined in FS-1093: `nativeint` (with `int32` range) / `int64` / `float` (with -2^53 to 2^53 range) / 
+2. when without floating-point constraint, built-in types with existing type-directed conversions from `int32` as defined in FS-1093: `nativeint` (with `int32` range) / `int64` / `float` (with -2^53 to 2^53 range) / any type with an `op_Implicit` conversion from `int32`
 3. when without floating-point constraint, other built-in integer types: `uint32` / `unativeint` (with `uint32` range) / `uint64` / `decimal` (with -(2^96-1) to (2^96-1) range) / `int8` / `uint8` / `int16` / `uint16` / `bigint` (direct calls to `FSharp.Core.NumericLiterals.NumericLiteralI` will exist even if NumericLiteralI is shadowed)
-4. when without floating-point constraint, for `t` in `int32` / `nativeint` (with `int32` range) / `int64` / `float` (with -2^53 to 2^53 range) / `unativeint` (with `uint32` range) / `uint32` / `uint64` / `decimal` (with -(2^96-1) to (2^96-1) range) / `int8` / `uint8` / `int16` / `uint16` / `bigint`, any other type with an `op_Implicit` conversion from `t`. 
+4. when without floating-point constraint, for `t` in `nativeint` (with `int32` range) / `int64` / `float` (with -2^53 to 2^53 range) / `unativeint` (with `uint32` range) / `uint32` / `uint64` / `decimal` (with -(2^96-1) to (2^96-1) range) / `int8` / `uint8` / `int16` / `uint16` / `bigint`, any other type with an `op_Implicit` conversion from `t`. 
     - `System.Int128` does not have built-in support. It is supported using `int32` conversion, then `int64` conversion, then `uint64` conversion, if possible.
     - `System.UInt128` does not have built-in support. It is supported using `uint32` conversion, then `uint64` conversion, if possible.
     - `System.Half` does not have built-in support. It is supported using `int8` conversion, then `uint8` conversion, if possible.
@@ -405,12 +418,12 @@ The numeric value constraint can be satisfied by the following types, generating
     - `System.Runtime.InteropServices.NFloat` does not have built-in support. It is supported using `int32` conversion, then `int64` conversion, then `uint64` conversion, if possible.
     - Note: Some types like [System.Buffers.NIndex](https://learn.microsoft.com/en-us/dotnet/api/system.buffers.nindex?view=net-9.0-pp) only provide implicit conversion from `nativeint`. Therefore, `nativeint` support is necessary.
 5. the default float type: `float`
-6. other built-in float types: `decimal` / `float32`
-7. for `t` in `float` / `decimal` / `float32`, any other type with an `op_Implicit` conversion from `t`.
+6. existing type-directed conversions from `float` as defined in FS-1093: any type with an `op_Implicit` conversion from `float`
+7. other built-in float types: `decimal` / `float32`
+8. for `t` in `decimal` / `float32`, any other type with an `op_Implicit` conversion from `t`.
     - `System.Numerics.Complex` does not have built-in support. It is supported using `float` conversion, if possible.
     - `System.Runtime.InteropServices.NFloat` does not have built-in support. It is supported using `float32` conversion, if possible.
-8. ~~any `NumericLiteralX` module in scope (custom QRZING suffixes), using existing numeric literal conversion functions.~~
-
+    
 Note that `char` is NOT included. Use a char literal instead of an integer literal.
 
 Note that when the compiler supports more built-in types in the future, there may be new types inserted into the overload lookup chain. However, it is also expected that `int32`, `int64` and `float` overloads are always chosen if available in that order, with `bigint` being the last in order due to performance considerations.
@@ -426,8 +439,7 @@ any other range | error
 
 Due to performance considerations, there is no default to `bigint`. Use an explicit type annotation to use `bigint` as the concrete type.
 
-## Changes to specification
-[Type Constraints](https://github.com/fsharp/fslang-spec/blob/1890512002c43f832cbdd6524587c22563589403/spec/types-and-type-constraints.md#type-constraints)
+## Changes to specification - [Type Constraints](https://github.com/fsharp/fslang-spec/blob/1890512002c43f832cbdd6524587c22563589403/spec/types-and-type-constraints.md#type-constraints)
 
 ```diff
 + token numeric-value-constraint :=
@@ -467,21 +479,23 @@ An _explicit numeric value constraint_ has the following form:
 ```
 static-typar : numeric-value-constraint
 ```
-During constraint solving (see §14.5), for the constraint `type : numeric-value-constraint`,
-`numeric-value-constraint` is assumed to be normalized to sign, mantissa and exponent form. Sign is 1 or -1. Mantissa is a decimal number between [1,10). Exponent is an integer. The value of the numeric value constraint is represented by `sign * mantissa * 10 ^ exponent`.
-
-1. If `type` is one of: `sbyte`, `byte`, `int16`, `uint16`, `int32`, `uint32`, `int64`, `uint64`, `float32`, `float`, `decimal`, `bigint`, and `numeric-value-constraint` is within `MinValue` of `type` to `MaxValue` of `type` inclusive (not applicable to `bigint`), then the constraint is satisfied.
-2. If `type` is `nativeint`, and `numeric-value-constraint` is within `MinValue` of `int32` to `MaxValue` of `int32` inclusive, then the constraint is satisfied.
-3. If `type` is `unativeint`, and `numeric-value-constraint` is within `MinValue` of `uint32` to `MaxValue` of `uint32` inclusive, then the constraint is satisfied.
-4. If `type` defines a static member `op_Implicit` from `base-type` to `type`, and when `base-type` used as `type` in steps 1 to 3 satisfies the constraint, then the constraint is satisfied.
-5. Otherwise, the constraint is not satisfied. 
+During constraint solving (see §14.5), for the constraint `type : numeric-value-constraint`, it is normalized to a new numeric range constraint by having the numeric value on both sides of the range constraint.
 
 ### Numeric range constraints
 An _explicit numeric range constraint_ has the following form:
 ```
 static-typar : numeric-value-constraint .. numeric-value-constraint
 ```
-During constraint solving (see §14.5), for the constraint `type : numeric-value-constraint .. numeric-value-constraint`, each `numeric-value-constraint` is solved using the steps described for numeric value constraints. If both `numeric-value-constraint`s satisfy the numeric value constraint, then the numeric range constraint is satisfied. The numeric slot of `LiteralConversionCost` is incremented with the same value as solving one of the `numeric-value-constraint`s as numeric value constraints.
+
+Each `numeric-value-constraint` is normalized to sign, mantissa and exponent form. Sign is 1 or -1. Mantissa is a decimal number in [1,10). Exponent is an arbitrarily sized integer. The value of the `numeric-value-constraint` is represented by `sign * mantissa * 10 ^ exponent`. If the right `numeric-value-constraint` has a smaller value than the left `numeric-value-constraint`, a compile-time error is reported.
+
+During constraint solving (see §14.5), for the constraint `type : numeric-value-constraint .. numeric-value-constraint`, 
+1. If `type` is one of: `sbyte`, `byte`, `int16`, `uint16`, `int32`, `uint32`, `int64`, `uint64`, `float32`, `float`, `decimal`: The constraint is satisfied when `MinValue` of  `type` <= left `numeric-value-constraint`, and right `numeric-value-constraint` <= `MaxValue` of `type`.
+2. If `type` is `bigint`: the constraint is satisfied.
+3. If `type` is `nativeint`: the constraint is satisfied when `MinValue` of `int32` <= left `numeric-value-constraint`, and right `numeric-value-constraint` <= `MaxValue` of `int32`.
+4. If `type` is `unativeint`: the constraint is satisfied when `MinValue` of `uint32` <= left `numeric-value-constraint`, and right `numeric-value-constraint` <= `MaxValue` of `uint32`.
+5. If `type` defines a static member `op_Implicit` from `base-type` to `type`: the constraint is satisfied when `base-type` used as `type` in steps 1 to 4 satisfies the constraint.
+6. Otherwise, the constraint is not satisfied.
 
 ### Float constraints
 An _explicit float constraint_ has the following form:
@@ -489,6 +503,55 @@ An _explicit float constraint_ has the following form:
 static-typar : 'float'
 ```
 During constraint solving (see §14.5), for the constraint `type : 'float'`, it is satisfied if `type` is `float`, `float32`, `decimal`, or a type that defines static member `op_Implicit` from `float`, `float32`, or `decimal`, to `type`.
+
+## Changes to specification - [Inference Procedures](https://github.com/fsharp/fslang-spec/blob/1890512002c43f832cbdd6524587c22563589403/spec/inference-procedures.md#constraint-solving)
+
+```diff
+typar :> type
+typar : null
+( type or ... or type ) : ( member-sig )
+typar : (new : unit -> 'T)
+typar : struct
+typar : unmanaged
+typar : comparison
+typar : equality
+typar : not struct
+typar : enum< type >
+typar : delegate< type, type >
++ typar : numeric-value-constraint .. numeric-value-constraint
++ typar : 'float'
+```
+### Solving numeric value and range constraints
+
+During constraint solving (see §14.5), for any new numeric value constraint `typar : numeric-value-constraint` or any new numeric range constraint `typar : numeric-value-constraint .. numeric-value-constraint`, the normalization procedure as described for each of the two constraints in Type Constraints (§5.2) occurs.
+
+If any existing numeric range constraints on the same type variable `typar` exist in the constraint set `typar: numeric-value-constraint .. numeric-value-constraint`, the new constraint unifies with the existing constraint, with left hand side numeric value being the minimum of the left hand side numeric value of the existing constraint and the new constraint, and with right hand side numeric value being the maximum of the left hand side numeric value of the existing constraint and the new constraint.
+
+When `type` is not a variable type in `type : numeric-value-constraint .. numeric-value-constraint`, it is resolved using the procedures for satisfying numeric range constraints as described in Type Constraints (§5.2).
+
+While resolving a numeric range constraint,
+- If there is not a float constraint on `type`:
+    - if constraint satisfaction occurs at steps 1 to 4, and `type` is `int64`, `nativeint` or `float`, then `NumericBackCompat` of the `LiteralConversionCost` vector is incremented.
+    - if constraint satisfaction occurs at steps 1 to 4, and `type` is not `int32`, `int64`, `nativeint` or `float`, then `Numeric` of the `LiteralConversionCost` vector is incremented.
+    - if constraint satisfaction occurs at steps 5, and `base-type` is `int32`, then `NumericBackCompat` of the `LiteralConversionCost` vector is incremented.
+    - if constraint satisfaction occurs at steps 5, and `base-type` is not `int32`, then `NumericTwoStep` of the `LiteralConversionCost` vector is incremented.
+- If there is a float constraint on `type`:
+    - if constraint satisfaction occurs at steps 1 to 4, and `type` is not `float`, then `Numeric` of the `LiteralConversionCost` vector is incremented.
+    - if constraint satisfaction occurs at steps 5, and `base-type` is `float`, then `NumericBackCompat` of the `LiteralConversionCost` vector is incremented.
+    - if constraint satisfaction occurs at steps 5, and `base-type` is not `float`, then `NumericTwoStep` of the `LiteralConversionCost` vector is incremented.
+
+### Solving Nullness, Struct, and Other Simple Constraints
+
+```diff
+type : null
+type : (new : unit -> 'T)
+type : struct
+type : not struct
+type : enum< type >
+type : delegate< type, type >
+type : unmanaged
++ type : 'float'
+```
 
 # FS-1150c Type-directed resolution of numeric literals
 
@@ -572,39 +635,15 @@ let e: byte array = [| 1; 2; 3 |] // The integer themselves are byte
 let f: float32 array = [| 1; 2; 3 |] // The integer themselves are float32
 ```
 
-## Changes to specification
-[Inference Procedures](https://github.com/fsharp/fslang-spec/blob/1890512002c43f832cbdd6524587c22563589403/spec/inference-procedures.md#constraint-solving)
+## Changes to specification - [Simple Constant Expressions](https://github.com/fsharp/fslang-spec/blob/1890512002c43f832cbdd6524587c22563589403/spec/expressions.md#simple-constant-expressions)
+
 ```diff
-typar :> type
-typar : null
-( type or ... or type ) : ( member-sig )
-typar : (new : unit -> 'T)
-typar : struct
-typar : unmanaged
-typar : comparison
-typar : equality
-typar : not struct
-typar : enum< type >
-typar : delegate< type, type >
-+ typar : numeric-value-constraint
-+ typar : numeric-value-constraint .. numeric-value-constraint
-+ typar : 'float'
+- 86              // int/int32
+- 1.              // float/double
+- 1.01            // float/double
+- 1.01e10         // float/double
 ```
-### Solving numeric value constraints
 
-During constraint solving (see §14.5), for the constraint `type : numeric-value-constraint`,
-`numeric-value-constraint` is assumed to be normalized to sign, mantissa and exponent form. Sign is 1 or -1. Mantissa is a decimal number between [1,10). Exponent is an integer. The value of the numeric value constraint is represented by `sign * mantissa * 10 ^ exponent`.
-
-1. If `type` is one of: `sbyte`, `byte`, `int16`, `uint16`, `int32`, `uint32`, `int64`, `uint64`, `float32`, `float`, `decimal`, `bigint`, and `numeric-value-constraint` is within `MinValue` of `type` to `MaxValue` of `type` inclusive (not applicable to `bigint`), then the constraint is satisfied.
-2. If `type` is `nativeint`, and `numeric-value-constraint` is within `MinValue` of `int32` to `MaxValue` of `int32` inclusive, then the constraint is satisfied.
-3. If `type` is `unativeint`, and `numeric-value-constraint` is within `MinValue` of `uint32` to `MaxValue` of `uint32` inclusive, then the constraint is satisfied.
-4. If `type` defines a static member `op_Implicit` from `base-type` to `type`, and when `base-type` used as `type` in steps 1 to 3 satisfies the constraint, then the constraint is satisfied.
-5. Otherwise, the constraint is not satisfied. 
-
-- If the constraint is satisfied at steps 1 to 3 and `type` is `int64` or `nativeint` or `float`, increment the numeric dimension of `LiteralConversionCost` by 5.
-- If the constraint is satisfied at steps 1 to 3 and `type` is not `int32` or `int64` or `nativeint` or `float`, increment the numeric dimension of `LiteralConversionCost` by 10.
-- If the constraint is satisfied at step 4, and `base-type` is `int32`, increment the numeric dimension of `LiteralConversionCost` by 5.
-- If the constraint is satisfied at step 4, and `base-type` is not `int32`, increment the numeric dimension of `LiteralConversionCost` by 20.
 
 ## Diagnostics
 
