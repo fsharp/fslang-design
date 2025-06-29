@@ -584,6 +584,8 @@ While resolving a numeric range constraint,
     - if constraint satisfaction occurs at steps 6, and `base-type` is `float`, then `NumericBackCompat` of the `LiteralConversionCost` vector is incremented.
     - if constraint satisfaction occurs at steps 6, and `base-type` is not `float`, then `NumericTwoStep` of the `LiteralConversionCost` vector is incremented.
 
+By the end of a type inference environment, if `typar` in `typar : numeric-value-constraint` and `typar : 'float'` fails to undergo generalization, the default type as described in Type Constraints (§5.2) is applied.
+
 ### Solving Nullness, Struct, and Other Simple Constraints
 
 ```diff
@@ -657,7 +659,7 @@ Error checking will happen on the literal for out-of-bounds, instead of silently
 ```fs
 let a: byte = 300 // error here
 match 2: System.Half with
-| 300 // error here (numeric literals are supported for System.Half for sbyte and byte range only)
+| 2000 // error here
     -> ()
 | _ -> ()
 let b: float32 = 1e100 // error here
@@ -665,6 +667,7 @@ match b with
 | 1e100 // error here
     -> ()
 | _ -> ()
+let c = 1e1000 // error here
 ```
 
 [FS-1093 Additional type directed conversions](https://github.com/fsharp/fslang-design/blob/main/FSharp-6.0/FS-1093-additional-conversions.md), added in F# 6, specifies existing conversions for literals:
