@@ -436,12 +436,10 @@ let inline f (a: ^a when ^a: -3 and ^a: 7.5 and ^a: 10 and ^a: float) = ()
 
 The numeric value constraint can be satisfied by the following types, in the order of method overload resolution preference for a single argument, generating a successful solution if the numeric value is in range:
 1. when without floating-point constraint, the default integer type: `int32`
-2. when without floating-point constraint, built-in types with existing type-directed conversions from `int32` as defined in FS-1093: `nativeint` (with `int32` range) / `int64` / `float` (with -2^53 to 2^53 range) / any type with an `op_Implicit` conversion from `int32`
-3. when without floating-point constraint, other built-in integer types: `uint32` / `unativeint` (with `uint32` range) / `uint64` / `decimal` (with -(2^96-1) to (2^96-1) range) / `int8` / `uint8` / `int16` / `uint16` / `bigint` (direct calls to `FSharp.Core.NumericLiterals.NumericLiteralI` will exist even if NumericLiteralI is shadowed) / `System.Half` (matching by namespace and type name)
-4. when without floating-point constraint, for `t` in `nativeint` (with `int32` range) / `int64` / `float` (with -2^53 to 2^53 range) / `unativeint` (with `uint32` range) / `uint32` / `uint64` / `decimal` (with -(2^96-1) to (2^96-1) range) / `int8` / `uint8` / `int16` / `uint16` / `bigint` / `System.Half`, any other type with an `op_Implicit` conversion from `t`. 
-    - `System.Half` is special cased as it cannot be easily supported via conversion from other types without huge limitations in functionality.
-    - `System.Int128` does not have built-in support. It is supported using `int32` conversion, then `int64` conversion, then `uint64` conversion, if possible.
-    - `System.UInt128` does not have built-in support. It is supported using `uint32` conversion, then `uint64` conversion, if possible.
+2. when without floating-point constraint, built-in types with existing type-directed conversions from `int32` as defined in FS-1093: `nativeint` (with `int32` range) / `int64` / `float` / any type with an `op_Implicit` conversion from `int32`
+3. when without floating-point constraint, other built-in integer types: `uint32` / `unativeint` (with `uint32` range) / `uint64` / `decimal` / `int8` / `uint8` / `int16` / `uint16` / `bigint` (direct calls to `FSharp.Core.NumericLiterals.NumericLiteralI` will exist even if NumericLiteralI is shadowed) / `System.Half` / `System.Int128` / `System.UInt128` (matching by namespace and type name)
+4. when without floating-point constraint, for `t` in `nativeint` (with `int32` range) / `int64` / `float` / `unativeint` (with `uint32` range) / `uint32` / `uint64` / `decimal` / `int8` / `uint8` / `int16` / `uint16` / `bigint` / `System.Half` / `System.Int128` / `System.UInt128`, any other type with an `op_Implicit` conversion from `t`. 
+    - `System.Half` / `System.Int128` / `System.UInt128` are special cased as their full ranges cannot be easily supported via conversion from other types without limitations in functionality.
     - `System.Numerics.Complex` does not have built-in support. It is supported using `int32` conversion, then `int64` conversion, then `uint64` conversion, if possible.
     - `System.Runtime.InteropServices.NFloat` does not have built-in support. It is supported using `int32` conversion, then `int64` conversion, then `uint64` conversion, if possible.
     - Note: Some types like [System.Buffers.NIndex](https://learn.microsoft.com/en-us/dotnet/api/system.buffers.nindex?view=net-9.0-pp) only provide implicit conversion from `nativeint`. Therefore, `nativeint` support is necessary.
@@ -528,8 +526,10 @@ During constraint solving (see §14.5), for the constraint `type : numeric-value
 3. If `type` is `nativeint`: the constraint is satisfied when `MinValue` of `int32` <= left `numeric-value-constraint`, and right `numeric-value-constraint` <= `MaxValue` of `int32`.
 4. If `type` is `unativeint`: the constraint is satisfied when `MinValue` of `uint32` <= left `numeric-value-constraint`, and right `numeric-value-constraint` <= `MaxValue` of `uint32`.
 5. If `type` is `System.Half` (matching a value type with this namespace and type name): the constraint is satisfied when -65504 (hardcoded, = `System.Half.MinValue`) <= left `numeric-value-constraint`, and right `numeric-value-constraint` <= 65504 (hardcoded, = `System.Half.MaxValue`), and a static member `op_Explicit` on `type` is defined that takes `float32` and outputs `System.Half`. 
-6. If `type` defines a static member `op_Implicit` from `base-type` to `type`: the constraint is satisfied when `base-type` used as `type` in steps 1 to 5 satisfies the constraint.
-7. Otherwise, the constraint is not satisfied.
+6. If `type` is `System.Int128` (matching a value type with this namespace and type name): the constraint is satisfied when -170,141,183,460,469,231,731,687,303,715,884,105,728 (hardcoded, = `System.Int128.MinValue`) <= left `numeric-value-constraint`, and right `numeric-value-constraint` <= 170,141,183,460,469,231,731,687,303,715,884,105,727 (hardcoded, = `System.Int128.MaxValue`), and a constructor `ulong * ulong` is defined.
+7. If `type` is `System.UInt128` (matching a value type with this namespace and type name): the constraint is satisfied when 0 (hardcoded, = `System.UInt128.MinValue`) <= left `numeric-value-constraint`, and right `numeric-value-constraint` <= 340,282,366,920,938,463,463,374,607,431,768,211,455 (hardcoded, = `System.UInt128.MaxValue`), and a constructor `ulong * ulong` is defined.
+8. If `type` defines a static member `op_Implicit` from `base-type` to `type`: the constraint is satisfied when `base-type` used as `type` in steps 1 to 7 satisfies the constraint.
+9. Otherwise, the constraint is not satisfied.
 
 After the above steps, an additional check on a _forced default_ flag is done. It is set during checking Function and Value Definitions in Modules (see §10.2.1) and checking Members (see §8.1). If the forced default flag is set and the constraint is not resolved to its default type (see below), a compiler warning is issued about forced default due to public visibility, with information on the default type and otherwise inferred type. The default type is then used instead of the inferred type.
 
@@ -575,14 +575,14 @@ When `type` is not a variable type in `type : numeric-value-constraint .. numeri
 
 While resolving a numeric range constraint,
 - If there is not a float constraint on `type`:
-    - if constraint satisfaction occurs at steps 1 to 5, and `type` is `int64`, `nativeint` or `float`, then `NumericBackCompat` of the `LiteralConversionCost` vector is incremented.
-    - if constraint satisfaction occurs at steps 1 to 5, and `type` is not `int32`, `int64`, `nativeint` or `float`, then `Numeric` of the `LiteralConversionCost` vector is incremented.
-    - if constraint satisfaction occurs at step 6, and `base-type` is `int32`, then `NumericBackCompat` of the `LiteralConversionCost` vector is incremented.
-    - if constraint satisfaction occurs at step 6, and `base-type` is not `int32`, then `NumericTwoStep` of the `LiteralConversionCost` vector is incremented.
+    - if constraint satisfaction occurs at steps 1 to 7, and `type` is `int64`, `nativeint` or `float`, then `NumericBackCompat` of the `LiteralConversionCost` vector is incremented.
+    - if constraint satisfaction occurs at steps 1 to 7, and `type` is not `int32`, `int64`, `nativeint` or `float`, then `Numeric` of the `LiteralConversionCost` vector is incremented.
+    - if constraint satisfaction occurs at step 8, and `base-type` is `int32`, then `NumericBackCompat` of the `LiteralConversionCost` vector is incremented.
+    - if constraint satisfaction occurs at step 8, and `base-type` is not `int32`, then `NumericTwoStep` of the `LiteralConversionCost` vector is incremented.
 - If there is a float constraint on `type`:
-    - if constraint satisfaction occurs at steps 1 to 5, and `type` is not `float`, then `Numeric` of the `LiteralConversionCost` vector is incremented.
-    - if constraint satisfaction occurs at steps 6, and `base-type` is `float`, then `NumericBackCompat` of the `LiteralConversionCost` vector is incremented.
-    - if constraint satisfaction occurs at steps 6, and `base-type` is not `float`, then `NumericTwoStep` of the `LiteralConversionCost` vector is incremented.
+    - if constraint satisfaction occurs at steps 1 to 7, and `type` is not `float`, then `Numeric` of the `LiteralConversionCost` vector is incremented.
+    - if constraint satisfaction occurs at steps 8, and `base-type` is `float`, then `NumericBackCompat` of the `LiteralConversionCost` vector is incremented.
+    - if constraint satisfaction occurs at steps 8, and `base-type` is not `float`, then `NumericTwoStep` of the `LiteralConversionCost` vector is incremented.
 
 By the end of a type inference environment, if `typar` in `typar : numeric-value-constraint` and `typar : 'float'` fails to undergo generalization, the default type as described in Type Constraints (§5.2) is applied.
 
@@ -726,7 +726,11 @@ When the numeric value constraint is satisfied at steps 1 to 4 of resolving the 
 
 When the numeric value constraint is satisfied at step 5 of resolving the equivalent numeric range constraint, a call to the `op_Explicit` static member discovered during type resolution should be used, with the argument as the closest value representable by `float32`.
 
-When the numeric value constraint is satisfied at step 6 of resolving the equivalent numeric range constraint, a call to the `op_Implicit` static member discovered during type resolution should be used, with the argument as the closest value representable by the base type.
+When the numeric value constraint is satisfied at step 6 or 7 of resolving the equivalent numeric range constraint, a call to the `ulong * ulong` constructor discovered during type resolution should be used, with the first `ulong` being the upper 64 bits of the 128 bit value and the second `ulong` being the lower 64 bits of the 128 bit value respectively.
+
+When the numeric value constraint is satisfied at step 8 of resolving the equivalent numeric range constraint, a call to the `op_Implicit` static member discovered during type resolution should be used, with the argument as the closest value representable by the base type. If there are multiple `op_Implicit` candidates, the compiler is free to choose from one of the base types arbitrarily for best performance.
+
+The compiler is free to assume that any `op_Implicit`, `op_Explicit` or constructor calls generated for resolving the equivalent numeric range constraints are idempotent and are free to cache.
 
 ## Diagnostics
 
