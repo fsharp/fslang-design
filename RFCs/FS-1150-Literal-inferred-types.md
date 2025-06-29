@@ -117,12 +117,11 @@ This can be mitigated with two potential approaches:
 1. a warning that type defaulting behaviour is used. For example, `let x = 1` without further type restriction.
 2. exposing the behaviour of type defaulting first-class. This is covered in a separate suggestion - [Display type defaulting](https://github.com/fsharp/fslang-suggestions/issues/1427).
 
-For people who prefer being explicit at the cost of succinctness, an opt-in warning can be introduced that warns whenever 
+For people who prefer being explicit at the cost of succinctness, an opt-in warning can be introduced that warns whenever the inferred type for a literal does not resolve to the default, for each kind of literal.
+
 ## Breaking changes
 
-There are potential breaking changes with interactions on previously defined type-directed conversions. Specifically, around 
-
-This can easily be solved with a recompilation of consuming code.
+There are potential breaking changes with interactions on previously defined type-directed conversions. 
 
 ```fs
 let f<'a> (x: 'a) = printfn $"{typeof<'a>}"; x
@@ -137,6 +136,14 @@ However, one can also argue that a better type is being picked. Since the types 
 let c: float = 1 / 2
 // before: 0
 // after: 0.5
+```
+
+Meanwhile, changes are also observable to reflection and boxing.
+
+```fs
+let a = ["1"; "2"; "3"]
+let b = a :> obj // Now errors because a is ReadOnlySpan instead of list
+let c = System.String.Concat(",", b)
 ```
 
 # Alternatives
@@ -318,23 +325,44 @@ During method overload resolution, there is a need to disambiguate between diffe
 
 Constraint solving will define a `LiteralConversionCost` vector. It defaults to 0, and each constraint will add to a dimension. Only a vector with lower values in some or all vector dimensions and same in other or no vector dimensions, is preferred, i.e. choose a Pareto front over other solutions. In addition, some partial ordering rules may also be defined at each constraint.
 
-## Changes to specification
-[Method Application Resolution](https://github.com/fsharp/fslang-spec/blob/1890512002c43f832cbdd6524587c22563589403/spec/inference-procedures.md#method-application-resolution)
+## Changes to specification - [Method Application Resolution](https://github.com/fsharp/fslang-spec/blob/1890512002c43f832cbdd6524587c22563589403/spec/inference-procedures.md#method-application-resolution)
 
-Before the [method overload preference rule introduced by FS-1093](https://github.com/fsharp/fslang-design/blob/b3cdb5805855a186195d677a266d358f4caf6032/FSharp-6.0/FS-1093-additional-conversions.md#interaction-with-method-overload-resolution), add a new rule that reads the `LiteralConversionCost` vector result from constraint solving, and prefers an overload that when compared to all other overloads, meets one of the following criteria:
-1. has lower values in some or all vector dimensions and same in other or no vector dimensions, i.e. choose a Pareto front over other solutions; or
-2. for each pairwise comparison `dim1`, `dim2` between
-    - `NumericBackCompat`, `Numeric`
-    - `Numeric`, `NumericTwoStep`
-    - `NumericBackCompat`, `NumericTwoStep`
+Before the [method overload preference rule introduced by FS-1093](https://github.com/fsharp/fslang-design/blob/b3cdb5805855a186195d677a266d358f4caf6032/FSharp-6.0/FS-1093-additional-conversions.md#interaction-with-method-overload-resolution), add a new rule that reads the `LiteralConversionCost` vector result from constraint solving, and prefers an overload that when compared to all other overloads, meets all of the following criteria:
+1. satisfies all of:
+    - less than or equal in `NumericTwoStep` dimension
+    - less than or equal in sum (`Numeric` + `NumericTwoStep`) dimensions
+    - less than or equal in sum (`NumericBackCompat` + `Numeric` + `NumericTwoStep`) dimensions
+  
+   i.e. preserves the preference of None (default `int` / `float`) < `NumericBackCompat` < `Numeric` < `NumericTwoStep` order within numeric type inference.
+2. satisfies all of:
+    - less than or equal in `TupleTwoStep` dimension
+    - less than or equal in sum (`Tuple` + `TupleTwoStep`) dimensions
 
-   when all other dimensions are equal, and sum (`dim1` + `dim2`) are equal, has more `dim1` than `dim2`.
+    i.e. preserves the preference of 
+> Note: If an overload dominates another in the above comparisons, the dominated overload can be removed from future comparisons. Up-sums can also be memoized.
+
+The above condition guarantees a unique choice only if `LiteralConversionCost` is all zero, i.e. resolves to all default types.
 
 The following dimensions are defined for `LiteralConversionCost` vector:
 - `NumericBackCompat`
 - `Numeric`
 - `NumericTwoStep`
+- ``
 
+## Changes to specification - [Function and Value Definitions in Modules](https://github.com/fsharp/fslang-spec/blob/1890512002c43f832cbdd6524587c22563589403/spec/namespaces-and-modules.md#function-and-value-definitions-in-modules)
+
+```diff
+Function and value definitions in modules are processed in the same way as function and value definitions in expressions (§14.6), with the following adjustments:
+
+* Each defined value may have an accessibility annotation (§10.5). By default, the accessibility annotation of a function or value definition in a module is public.
+* Each defined value is externally accessible if its accessibility annotation is public and it is not hidden by an explicit signature. Externally accessible values are guaranteed to have compiled CLI representations in compiled CLI binaries.
++ * If the function or value is not `inline` and is externally accessible and all containing modules are externally accessible, then all unresolved statically resolved type variables associated with numeric range constraints and float constraints, are marked as forced default as defined in Type Constraints (§5.2).
+```
+## Changes to specification - [Members](https://github.com/fsharp/fslang-spec/blob/1890512002c43f832cbdd6524587c22563589403/spec/type-definitions.md#members)
+
+```diff
++ * If the member is not `inline` and is externally accessible (§10.2.1) and all containing types and modules are externally accessible, then all unresolved statically resolved type variables associated with numeric range constraints and float constraints, are marked as forced default as defined in Type Constraints (§5.2).
+```
 
 # FS-1150b Numeric statically resolved type parameter constraints
 
@@ -409,18 +437,18 @@ let inline f (a: ^a when ^a: -3 and ^a: 7.5 and ^a: 10 and ^a: float) = ()
 The numeric value constraint can be satisfied by the following types, in the order of method overload resolution preference for a single argument, generating a successful solution if the numeric value is in range:
 1. when without floating-point constraint, the default integer type: `int32`
 2. when without floating-point constraint, built-in types with existing type-directed conversions from `int32` as defined in FS-1093: `nativeint` (with `int32` range) / `int64` / `float` (with -2^53 to 2^53 range) / any type with an `op_Implicit` conversion from `int32`
-3. when without floating-point constraint, other built-in integer types: `uint32` / `unativeint` (with `uint32` range) / `uint64` / `decimal` (with -(2^96-1) to (2^96-1) range) / `int8` / `uint8` / `int16` / `uint16` / `bigint` (direct calls to `FSharp.Core.NumericLiterals.NumericLiteralI` will exist even if NumericLiteralI is shadowed)
-4. when without floating-point constraint, for `t` in `nativeint` (with `int32` range) / `int64` / `float` (with -2^53 to 2^53 range) / `unativeint` (with `uint32` range) / `uint32` / `uint64` / `decimal` (with -(2^96-1) to (2^96-1) range) / `int8` / `uint8` / `int16` / `uint16` / `bigint`, any other type with an `op_Implicit` conversion from `t`. 
+3. when without floating-point constraint, other built-in integer types: `uint32` / `unativeint` (with `uint32` range) / `uint64` / `decimal` (with -(2^96-1) to (2^96-1) range) / `int8` / `uint8` / `int16` / `uint16` / `bigint` (direct calls to `FSharp.Core.NumericLiterals.NumericLiteralI` will exist even if NumericLiteralI is shadowed) / `System.Half` (matching by namespace and type name)
+4. when without floating-point constraint, for `t` in `nativeint` (with `int32` range) / `int64` / `float` (with -2^53 to 2^53 range) / `unativeint` (with `uint32` range) / `uint32` / `uint64` / `decimal` (with -(2^96-1) to (2^96-1) range) / `int8` / `uint8` / `int16` / `uint16` / `bigint` / `System.Half`, any other type with an `op_Implicit` conversion from `t`. 
+    - `System.Half` is special cased as it cannot be easily supported via conversion from other types without huge limitations in functionality.
     - `System.Int128` does not have built-in support. It is supported using `int32` conversion, then `int64` conversion, then `uint64` conversion, if possible.
     - `System.UInt128` does not have built-in support. It is supported using `uint32` conversion, then `uint64` conversion, if possible.
-    - `System.Half` does not have built-in support. It is supported using `int8` conversion, then `uint8` conversion, if possible.
     - `System.Numerics.Complex` does not have built-in support. It is supported using `int32` conversion, then `int64` conversion, then `uint64` conversion, if possible.
     - `System.Runtime.InteropServices.NFloat` does not have built-in support. It is supported using `int32` conversion, then `int64` conversion, then `uint64` conversion, if possible.
     - Note: Some types like [System.Buffers.NIndex](https://learn.microsoft.com/en-us/dotnet/api/system.buffers.nindex?view=net-9.0-pp) only provide implicit conversion from `nativeint`. Therefore, `nativeint` support is necessary.
 5. the default float type: `float`
 6. existing type-directed conversions from `float` as defined in FS-1093: any type with an `op_Implicit` conversion from `float`
-7. other built-in float types: `decimal` / `float32`
-8. for `t` in `decimal` / `float32`, any other type with an `op_Implicit` conversion from `t`.
+7. other built-in float types: `decimal` / `float32` / `System.Half`
+8. for `t` in `decimal` / `float32` / `System.Half`, any other type with an `op_Implicit` conversion from `t`.
     - `System.Numerics.Complex` does not have built-in support. It is supported using `float` conversion, if possible.
     - `System.Runtime.InteropServices.NFloat` does not have built-in support. It is supported using `float32` conversion, if possible.
     
@@ -428,7 +456,7 @@ Note that `char` is NOT included. Use a char literal instead of an integer liter
 
 Note that when the compiler supports more built-in types in the future, there may be new types inserted into the overload lookup chain. However, it is also expected that `int32`, `int64` and `float` overloads are always chosen if available in that order, with `bigint` being the last in order due to performance considerations.
 
-In the absence of type information or when public visibility is encountered, when outside an `inline` context, the numeric range constraints default to:
+In the absence of type information or when public visibility is encountered, when outside an `inline` context, the numeric range constraints default to, in this order:
 
 Range | Type
 -|-
@@ -438,6 +466,11 @@ Range | Type
 any other range | error
 
 Due to performance considerations, there is no default to `bigint`. Use an explicit type annotation to use `bigint` as the concrete type.
+
+This means that:
+```fs
+let a = 9e22 // This now becomes 
+```
 
 ## Changes to specification - [Type Constraints](https://github.com/fsharp/fslang-spec/blob/1890512002c43f832cbdd6524587c22563589403/spec/types-and-type-constraints.md#type-constraints)
 
@@ -494,15 +527,26 @@ During constraint solving (see §14.5), for the constraint `type : numeric-value
 2. If `type` is `bigint`: the constraint is satisfied.
 3. If `type` is `nativeint`: the constraint is satisfied when `MinValue` of `int32` <= left `numeric-value-constraint`, and right `numeric-value-constraint` <= `MaxValue` of `int32`.
 4. If `type` is `unativeint`: the constraint is satisfied when `MinValue` of `uint32` <= left `numeric-value-constraint`, and right `numeric-value-constraint` <= `MaxValue` of `uint32`.
-5. If `type` defines a static member `op_Implicit` from `base-type` to `type`: the constraint is satisfied when `base-type` used as `type` in steps 1 to 4 satisfies the constraint.
-6. Otherwise, the constraint is not satisfied.
+5. If `type` is `System.Half` (matching a value type with this namespace and type name): the constraint is satisfied when -65504 (hardcoded, = `System.Half.MinValue`) <= left `numeric-value-constraint`, and right `numeric-value-constraint` <= 65504 (hardcoded, = `System.Half.MaxValue`), and a static member `op_Explicit` on `type` is defined that takes `float32` and outputs `System.Half`. 
+6. If `type` defines a static member `op_Implicit` from `base-type` to `type`: the constraint is satisfied when `base-type` used as `type` in steps 1 to 5 satisfies the constraint.
+7. Otherwise, the constraint is not satisfied.
+
+After the above steps, an additional check on a _forced default_ flag is done. It is set during checking Function and Value Definitions in Modules (see §10.2.1) and checking Members (see §8.1). If the forced default flag is set and the constraint is not resolved to its default type (see below), a compiler warning is issued about forced default due to public visibility, with information on the default type and otherwise inferred type. The default type is then used instead of the inferred type.
+
+The _default type_ for a numeric range constraint and float constraint is as follows, in this order.
+Range | Type
+-|-
+`System.Int32.MinValue` <= range without float constraint <= `System.Int32.MaxValue` | `int32`
+`System.Int64.MinValue` <= range without float constraint <= `System.Int64.MaxValue` | `int64`
+-1.7976931348623157E+308 (`System.Double.MinValue`) <= range with float constraint <= 1.7976931348623157E+308 (`System.Double.MaxValue`) | `float`
+any other range | out of range error
 
 ### Float constraints
 An _explicit float constraint_ has the following form:
 ```
 static-typar : 'float'
 ```
-During constraint solving (see §14.5), for the constraint `type : 'float'`, it is satisfied if `type` is `float`, `float32`, `decimal`, or a type that defines static member `op_Implicit` from `float`, `float32`, or `decimal`, to `type`.
+During constraint solving (see §14.5), for the constraint `type : 'float'`, it is satisfied if `type` is `float`, `float32`, `decimal`, `System.Half`, or a type that defines static member `op_Implicit` from `float`, `float32`, `decimal` or `System.Half`, to `type`.
 
 ## Changes to specification - [Inference Procedures](https://github.com/fsharp/fslang-spec/blob/1890512002c43f832cbdd6524587c22563589403/spec/inference-procedures.md#constraint-solving)
 
@@ -531,14 +575,14 @@ When `type` is not a variable type in `type : numeric-value-constraint .. numeri
 
 While resolving a numeric range constraint,
 - If there is not a float constraint on `type`:
-    - if constraint satisfaction occurs at steps 1 to 4, and `type` is `int64`, `nativeint` or `float`, then `NumericBackCompat` of the `LiteralConversionCost` vector is incremented.
-    - if constraint satisfaction occurs at steps 1 to 4, and `type` is not `int32`, `int64`, `nativeint` or `float`, then `Numeric` of the `LiteralConversionCost` vector is incremented.
-    - if constraint satisfaction occurs at steps 5, and `base-type` is `int32`, then `NumericBackCompat` of the `LiteralConversionCost` vector is incremented.
-    - if constraint satisfaction occurs at steps 5, and `base-type` is not `int32`, then `NumericTwoStep` of the `LiteralConversionCost` vector is incremented.
+    - if constraint satisfaction occurs at steps 1 to 5, and `type` is `int64`, `nativeint` or `float`, then `NumericBackCompat` of the `LiteralConversionCost` vector is incremented.
+    - if constraint satisfaction occurs at steps 1 to 5, and `type` is not `int32`, `int64`, `nativeint` or `float`, then `Numeric` of the `LiteralConversionCost` vector is incremented.
+    - if constraint satisfaction occurs at step 6, and `base-type` is `int32`, then `NumericBackCompat` of the `LiteralConversionCost` vector is incremented.
+    - if constraint satisfaction occurs at step 6, and `base-type` is not `int32`, then `NumericTwoStep` of the `LiteralConversionCost` vector is incremented.
 - If there is a float constraint on `type`:
-    - if constraint satisfaction occurs at steps 1 to 4, and `type` is not `float`, then `Numeric` of the `LiteralConversionCost` vector is incremented.
-    - if constraint satisfaction occurs at steps 5, and `base-type` is `float`, then `NumericBackCompat` of the `LiteralConversionCost` vector is incremented.
-    - if constraint satisfaction occurs at steps 5, and `base-type` is not `float`, then `NumericTwoStep` of the `LiteralConversionCost` vector is incremented.
+    - if constraint satisfaction occurs at steps 1 to 5, and `type` is not `float`, then `Numeric` of the `LiteralConversionCost` vector is incremented.
+    - if constraint satisfaction occurs at steps 6, and `base-type` is `float`, then `NumericBackCompat` of the `LiteralConversionCost` vector is incremented.
+    - if constraint satisfaction occurs at steps 6, and `base-type` is not `float`, then `NumericTwoStep` of the `LiteralConversionCost` vector is incremented.
 
 ### Solving Nullness, Struct, and Other Simple Constraints
 
@@ -557,26 +601,36 @@ type : unmanaged
 
 The above constraints are to be inferred from numeric literals. For example, instead of always requiring `1` to have the type `int`, it now has the statically resolved type `^a when ^a: 1`. The same applies to numeric literals that currently infer the `float` type, for example `23e2` and `1.2`.
 
-When there are decimal digits specified after the unit place, zero or not, an additional floating point constraint is inferred.
+When there is a decimal point in the numeric literal declaring intention of floating point, or if the exponent part of the scientific notation is negative, a float constraint is automatically inferred.
 
 ```fs
 let inline a() = 1
 // val inline a: unit -> ^a when ^a: 1
-let inline b() = 1. // no digits after the unit place yet.
-// val inline b: unit -> ^a when ^a: 1
+let inline b() = 1. // decimal point detected; float required.
+// val inline b: unit -> ^a when ^a: 1 and ^a: float
 let inline c() = 1.0
 // val inline c: unit -> ^a when ^a: 1 and ^a: float
 let inline d() = 1.1
 // val inline d: unit -> ^a when ^a: 1.1 and ^a: float
-let inline e() = 1e+4
+let inline e() = 1e+4 // no decimal point - allow integer interpretation!
 // val inline e: unit -> ^a when ^a: 10000
-let inline f() = 1.00001e+4
-// val inline f: unit -> ^a when ^a: 10000.1 and ^a: float
-let inline g() = 1.0000e+4
-// val inline g: unit -> ^a when ^a: 10000
-let inline h() = 1.00000e+4 // Note the final 0 falls behind the unit place
-// val inline h: unit -> ^a when ^a: 10000 and ^a: float
+let inline f() = 1.e4
+// val inline f: unit -> ^a when ^a: 10000 and ^a: float
+let inline g() = 1e-1
+// val inline g: unit -> ^a when ^a: 0.1 and ^a: float
 ```
+
+Why look at the decimal point and require a float?
+- Expectation: `9.` must be a `float` before this RFC. It is a shorthand for `9.0`, which cannot be typed as an integer in almost all programming languages. The decimal point already represents imprecision.
+    ```fs
+    let bacterialPopulationInSeaWater = 1.20e9 // inherently imprecise, uncertainty +-0.05e9
+    ```
+    In contrast, integers are expected to be exact, without the use of the decimal point.
+    ```fs
+    let oneEther = 1e18 // exact value in Etherium wei
+    ```
+- Simpler rules: Decimal point infers float, that's it. This is compared to alternatives like looking at whether the last decimal place is past the unit place, or extra annotations aside from the decimal point to prevent `9.00e2` from being an integer.
+- Conciseness: Still, for large `bigint` values, one has to count and write out all the zeroes or use verbose multiplication and exponentiation operators to achieve the same thing as scientific notation. Allowing scientific notation without the decimal point improves this for exact integer values that have a large magnitude. 
 
 By type inference, declaring a `[<Literal>]` type without the type suffix will be possible.
 ```fs
@@ -644,16 +698,43 @@ let f: float32 array = [| 1; 2; 3 |] // The integer themselves are float32
 - 1.01e10         // float/double
 ```
 
+### Numeric literals
+
+An expression lexed ([§3](https://github.com/fsharp/fslang-spec/blob/1890512002c43f832cbdd6524587c22563589403/spec/lexical-analysis.md#lexical-analysis)) from any of the following tokens is a numeric literal:
+
+```
+int
+float
+xint
+```
+
+If `xint` is lexed, underscores are first removed from it, then parsed as a decimal number. Normalization procedures for the numeric range constraint in Type Constraints (§5.2) occurs.
+
+Type checking proceeds as follows:
+
+The expression is checked with initial type `ty`.
+A numeric value constraint is applied (§5.2.3):
+```
+static-typar: numeric-value-constraint
+```
+If the lexed numeric literal contains a decimal dot or the exponent part of scientific notation (with an `e`) is negative, a float constraint is also inferred.
+
+When the numeric value constraint is satisfied at steps 1 to 4 of resolving the equivalent numeric range constraint, this constraint ensures that the type directly supports the numeric values specified. Implementations should choose the closest value representable by the resolved type.
+
+When the numeric value constraint is satisfied at step 5 of resolving the equivalent numeric range constraint, a call to the `op_Explicit` static member discovered during type resolution should be used, with the argument as the closest value representable by `float32`.
+
+When the numeric value constraint is satisfied at step 6 of resolving the equivalent numeric range constraint, a call to the `op_Implicit` static member discovered during type resolution should be used, with the argument as the closest value representable by the base type.
 
 ## Diagnostics
 
 Hovering the cursor above the numeric literal should show the `op_Implicit` method if used, or the inferred type otherwise. Currently this action does not popup anything.
 
-Pressing Go To Definition on the numeric literal should navigate to the conversion function used from the `NumericLiteralX` module or the `op_Implicit` definition if used.
+Pressing Go To Definition on the numeric literal should navigate to the `op_Implicit` definition if used.
 
-# FS-1150d Type-directed resolution of infinity and nan
+# FS-1150d Type-directed resolution of special float values
 
-Similarly to float literals, the values `infinity` and `nan` would also become type-directed. Both would have the staticaly resolved type `^a when ^a: float`.
+Similarly to float literals, the values `infinity` and `nan` would also become type-directed. Both would have the statically resolved type `^a when ^a: float`.
+In addition, the new globally available inline type functions `pi`, `tau` and `e` are to be defined:
 
 ```fs
 // Sample implementation
@@ -661,6 +742,12 @@ let inline infinity<^a when ^a: float and ^a: (static member PositiveInfinity: ^
     'a.PositiveInfinity
 let inline nan<^a when ^a: float and ^a: (static member NaN: ^a)> =
     'a.NaN
+let inline pi<^a when ^a: float and ^a: (static member PI: ^a)> =
+    'a.PI
+let inline tau<^a when ^a: float and ^a: (static member PI: ^a)> =
+    'a.Tau
+let inline e<^a when ^a: float and ^a: (static member E: ^a)> =
+    'a.E
     
 // Usage
 let a: System.Half = infinity // Currently works
@@ -671,6 +758,55 @@ let e: System.Single = infinity // Currently errors
 let f: System.Single = nan // Currently errors
 ```
 All 6 value definitions as above should all work.
+
+The underlying issue is that infinity and nan are defined on `System.Single` and `System.Double` as constant fields. Fields do not satisfy statically resolved member constraints - suggestion [[SRTP] Allow field constraints on SRTP (val)](https://github.com/fsharp/fslang-suggestions/issues/1307). Fields should also satisfy member constraints for the above code to work.
+
+After changing this, the following modification can be done in [prim-types.fs](https://github.com/dotnet/fsharp/blob/e30b2da35395488ff52693884344f84ebae0e39e/src/FSharp.Core/prim-types.fs#L4993C1-L5004C1) of FSharp.Core:
+```diff
+  [<CompiledName("Infinity")>]
+- let infinity = Double.PositiveInfinity
++ [<System.ComponentModel.EditorBrowsable(System.ComponentModel.EditorBrowsableState.Never)>]
++ let infinityDouble = Double.PositiveInfinity
+
+  [<CompiledName("NaN")>]
+- let nan = Double.NaN
++ [<System.ComponentModel.EditorBrowsable(System.ComponentModel.EditorBrowsableState.Never)>]
++ let nanDouble = Double.NaN
+
++ [<CompiledName("InfinityGeneric")>]
++ let inline infinity<^a when ^a: float and ^a: (static member PositiveInfinity: ^a)> = 'a.PositiveInfinity
++ [<CompiledName("NaNGeneric")>]
++ let inline nan<^a when ^a: float and ^a: (static member NaN: ^a)> = 'a.NaN
++ [<CompiledName("PIGeneric")>]
++ let inline pi<^a when ^a: float and ^a: (static member PI: ^a)> = 'a.PI
++ [<CompiledName("TauGeneric")>]
++ let inline tau<^a when ^a: float and ^a: (static member PI: ^a)> = 'a.Tau
++ [<CompiledName("EGeneric")>]
++ let inline e<^a when ^a: float and ^a: (static member E: ^a)> = 'a.E
+
++ [<System.ComponentModel.EditorBrowsable(System.ComponentModel.EditorBrowsableState.Never)>]
+  [<CompiledName("InfinitySingle")>]
+  let infinityf = Single.PositiveInfinity
+
++ [<System.ComponentModel.EditorBrowsable(System.ComponentModel.EditorBrowsableState.Never)>]
+  [<CompiledName("NaNSingle")>]
+  let nanf = Single.NaN 
+
+```
+
+This will cause a new version of FSharp.Core to cause a source breakage on an old compiler that uses these two definitions but that's to be expected, it should be fine as long as it's not a binary breakage.
+
+## Changes to specification - [Solving member constraints](https://github.com/fsharp/fslang-spec/blob/1890512002c43f832cbdd6524587c22563589403/spec/inference-procedures.md#solving-member-constraints)
+
+```diff
+A member constraint is satisfied if one of the types in the support set type1 ... typen satisfies the member constraint. A static type type satisfies a member constraint in the form (static~opt member ident : arg-type1 * ... * arg-typen -> ret-type) if all of the following are true:
+
+* type is a named type whose type definition contains the following member, which takes n arguments: static~opt member ident : formal-arg-type1 * ... * formal-arg-typen -> ret-type
++ or type is a named type whose type definition contains the following field: static~opt val ident : ret-type
++ and the set of arg-types is empty.
+* The type and the constraint are both marked static or neither is marked static.
+* The assertion of type inference constraints on the arguments and return types does not result in a type inference error.
+```
 
 # FS-1150e Type-directed resolution of char literals
 The design suggestion [#1421](https://github.com/fsharp/fslang-suggestions/issues/1421) was marked "approved in principle" before.
