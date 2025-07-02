@@ -51,7 +51,7 @@ let zz = ["red"; "yellow"; "blue"] |> Set.ofList // Eliminates a List.toSeq call
 let vv: Set<string> = ["red"; "yellow"; "blue"] // This is the most readable. Is it helpful to reduce the concept count on grouping syntax, particularly with the curly for sequence.
 ```
 
-It's easier code with fewer boilerplate.
+It's easier code with fewer boilerplate. Moreover, F# 
 
 There have been similar efforts to reduce syntactic noise before:
 - [FS-1080 Dotless float32 literals](https://github.com/fsharp/fslang-design/blob/main/FSharp-5.0/FS-1080-float32-without-dot.md), implemented in F# 5.
@@ -945,6 +945,40 @@ After the above steps, an additional check on a _forced default_ flag is done. I
 
 The _default type_ for a tuple constraint is the tuple type `type * ... * type`.
 
+## Changes to specification - [Tuple expressions](https://github.com/fsharp/fslang-spec/blob/1890512002c43f832cbdd6524587c22563589403/spec/expressions.md)
+
+An expression of the form `expr1 , ..., exprn` is a _tuple expression_. For example:
+
+```fsharp
+let three = (1,2,"3")
+let blastoff = (10,9,8,7,6,5,4,3,2,1,0)
+```
+
+The expression has the type of a fresh statically resolved type variable `^S` and the type constraint `^S : (ty1 , ... , tyn)` for fresh types `ty1 ... tyn`. Each individual expression `expri` is checked using initial type `tyi`.
+
+An expression of the form `struct (expr1 , ..., exprn)` is a _struct tuple expression_. For example:
+
+```fsharp
+let pair = struct (1,2)
+```
+
+The expression has the type `struct (ty1 * ... * tyn)` for fresh types `ty1 ... tyn`. Each individual expression `expri` is checked using initial type `tyi`.
+
+Tuple types and expressions that have their type resolved to reference tuple `ty1 * ... * tyn` are translated into applications of a family of .NET types named
+[`System.Tuple`](https://learn.microsoft.com/dotnet/api/system.tuple). Tuple types `ty1 * ... * tyn` are translated as follows:
+
+(unchanged text omitted)
+
+Tuple types and expressions that have their type resolved to struct tuple `struct (ty1 * ... * tyn)` are translated in the same way to [`System.ValueTuple`](https://learn.microsoft.com/dotnet/api/system.valuetuple).
+
+(unchanged note omitted)
+
+Tuple expressions that have their type resolved to `System.Collections.Generic.KeyValuePair<ty1, ty2>` are translated to an invocation of the `ty1 * ty2` constructor of that type with the 2 tuple arguments applied.
+
+Tuple expressions that have their type resolved to a type that supports an `op_Implicit` conversion  are translated to an invocation of the `ty1 * ty2` constructor of that type with the 2 tuple arguments applied.
+
+
+
 # FS-1150g Type-directed resolution of tuple patterns
 The design suggestion [#751](https://github.com/fsharp/fslang-suggestions/issues/751) is marked "approved in principle".
 
@@ -1005,6 +1039,8 @@ The precise steps to determine a `Deconstruct` overload follows the same steps a
 Hovering the cursor above the tuple pattern should show `Deconstruct` overload used if available, or the inferred type otherwise. Currently this action does not popup anything.
 
 Pressing Go To Definition on the tuple pattern should navigate to any `Deconstruct` methods used under the hood if used.
+
+# FS-1150g Type-directed resolution of tuple patterns
 
 # FS-1150h Special support for pipeline operators to allow ref struct usage
 
