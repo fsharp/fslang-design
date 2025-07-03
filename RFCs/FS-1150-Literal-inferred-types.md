@@ -347,7 +347,11 @@ The following dimensions are defined for `LiteralConversionCost` vector:
 - `NumericBackCompat`
 - `Numeric`
 - `NumericTwoStep`
-- ``
+- `TupleStruct`
+- `Tuple1`
+- `Tuple1`
+- `Tuple1`
+- `Tuple1`
 
 ## Changes to specification - [Function and Value Definitions in Modules](https://github.com/fsharp/fslang-spec/blob/1890512002c43f832cbdd6524587c22563589403/spec/namespaces-and-modules.md#function-and-value-definitions-in-modules)
 
@@ -467,7 +471,7 @@ Due to performance considerations, there is no default to `bigint`. Use an expli
 
 This means that:
 ```fs
-let a = 9e22 // This now becomes 
+let a = 9e22 // This now errors because out of range for default integers
 ```
 
 ## Changes to specification - [Type Constraints](https://github.com/fsharp/fslang-spec/blob/1890512002c43f832cbdd6524587c22563589403/spec/types-and-type-constraints.md#type-constraints)
@@ -730,9 +734,11 @@ When the numeric value constraint is satisfied at step 5 of resolving the equiva
 
 When the numeric value constraint is satisfied at step 6 or 7 of resolving the equivalent numeric range constraint, a call to the `uint64 * uint64` constructor discovered during type resolution should be used, with the first `uint64` being the upper 64 bits of the 128 bit value and the second `uint64` being the lower 64 bits of the 128 bit value respectively.
 
-When the numeric value constraint is satisfied at step 8 of resolving the equivalent numeric range constraint, a call to the `op_Implicit` static member discovered during type resolution should be used, with the argument as the closest value representable by the base type. If there are multiple `op_Implicit` candidates, the compiler is free to choose from one of the base types arbitrarily for best performance.
+When the numeric value constraint is satisfied at step 8 of resolving the equivalent numeric range constraint, a call to the `op_Implicit` static member discovered during type resolution should be used, with the argument as the closest value representable by the base type. If there are multiple `op_Implicit` candidates, then the compiler prefers overloads in this order, using the first overload with type that fits the value:
+- if the numeric literal does not infer a float constraint: `int32`, `int64`, `nativeint` (if value within `int32` range), `sbyte`, `byte`, `int16`, `uint16`, `uint32`, `uint64`, `unativeint` (if value within `uint32` range), `System.Int128`, `System.UInt128`, `bigint`, `decimal`, `float`, `float32`, `System.Half`
+- if the numeric literal infers a float constraint: `decimal`, `float`, `float32`, `System.Half`
 
-The compiler is free to assume that any `op_Implicit`, `op_Explicit` or constructor calls generated for resolving the equivalent numeric range constraints are idempotent and are free to cache.
+The compiler is free to assume that any `op_Implicit` or constructor calls generated for resolving the equivalent numeric range constraints are idempotent and are free to cache.
 
 ## Diagnostics
 
@@ -855,6 +861,8 @@ token ieee64 =
 +| `float<_>`, `float64<_>` | Underlying representation `System.Double`, but accepts a unit of measure. |
 ```
 
+# FS-1150f 
+
 # FS-1150f Type-directed resolution of tuple literals
 The design suggestion [#988](https://github.com/fsharp/fslang-suggestions/issues/988) is marked "approved in principle".
 
@@ -975,9 +983,7 @@ Tuple types and expressions that have their type resolved to struct tuple `struc
 
 Tuple expressions that have their type resolved to `System.Collections.Generic.KeyValuePair<ty1, ty2>` are translated to an invocation of the `ty1 * ty2` constructor of that type with the 2 tuple arguments applied.
 
-Tuple expressions that have their type resolved to a type that supports an `op_Implicit` conversion  are translated to an invocation of the `ty1 * ty2` constructor of that type with the 2 tuple arguments applied.
-
-
+Tuple expressions that have their type resolved to a type that supports an `op_Implicit` conversion are translated to an invocation of the `ty1 * ty2` constructor of that type with the 2 tuple arguments applied. An `op_Implicit` conversion from struct tuple `struct (ty1 * ... * tyn)` is preferred over an `op_Implicit` conversion from `KeyValuePair<ty1, ty2>` is preferred over an `op_Implicit` conversion from the tuple type `ty1 * ... * tyn`.
 
 # FS-1150g Type-directed resolution of tuple patterns
 The design suggestion [#751](https://github.com/fsharp/fslang-suggestions/issues/751) is marked "approved in principle".
@@ -1189,7 +1195,11 @@ The design suggestion [#1377](https://github.com/fsharp/fslang-suggestions/issue
 
 Whenever there is a `[<ParamArray>]` parameter encountered (`params` in C#), instead of always inserting an array, wrap the variable-length parameter list inside a type-directed list literal behind  the scenes instead. Reuse all the previously defined rules for type-directed list literals.
 
-# FS-1150m Type-directed resolution of char literals
+# FS-1150m Type-directed resolution of tuple patterns with field patterns inside
+
+# FS-1150n Collection initializers
+
+# FS-1150o Type-directed resolution of char literals
 The design suggestion [#1421](https://github.com/fsharp/fslang-suggestions/issues/1421) was marked "approved in principle" before.
 
 - [x] [Suggestion](https://github.com/fsharp/fslang-suggestions/issues/1421)
@@ -1227,7 +1237,7 @@ Hovering the cursor above the char literal should show the inferred type. Curren
 
 Pressing Go To Definition on the char literal should navigate to the `op_Implicit` definition if used.
 
-# FS-1150n Type-directed resolution of string literals
+# FS-1150p Type-directed resolution of string literals
 The design suggestion [#1421](https://github.com/fsharp/fslang-suggestions/issues/1421) was marked "approved in principle" before.
 
 - [x] [Suggestion](https://github.com/fsharp/fslang-suggestions/issues/1421)
@@ -1267,7 +1277,7 @@ Hovering the cursor above the string literal should show the inferred type. Curr
 
 Pressing Go To Definition on the string literal should navigate to any conversion methods used under the hood.
 
-# FS-1150o Extending B-suffix string literals to be UTF-8 strings
+# FS-1150q Extending B-suffix string literals to be UTF-8 strings
 The design suggestion [#1421](https://github.com/fsharp/fslang-suggestions/issues/1421) was marked "approved in principle" before.
 
 - [x] [Suggestion](https://github.com/fsharp/fslang-suggestions/issues/1421)
@@ -1297,7 +1307,7 @@ This pattern is not customizable, use an active pattern instead for customizing 
 
 This subsumes suggestion [#1351](https://github.com/fsharp/fslang-suggestions/issues/1351).
 
-# FS-1150q Type-directed resolution of boolean literals and patterns
+# FS-1150r Type-directed resolution of boolean literals and patterns
 
 For uniformity with numeric, char, tuple, list and string literals, it also makes sense for boolean literals to undergo similar type-directed resolution.
 
