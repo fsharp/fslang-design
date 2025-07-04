@@ -17,6 +17,7 @@ F# string literals `"abc"` would not just be resolved to `string`, but also `Pri
 User types can be added to type resolution via `op_Implicit` conversions and `Deconstruct` methods. For example, if one wishes to define `System.Numerics.Vector3` via a tuple literal, it can be done with a type extension.
 
 ```fs
+// Proposed
 open System.Numerics
 type Vector3 with
     static member op_Implicit struct(x, y, z) = Vector3(x, y, z)
@@ -51,7 +52,37 @@ let zz = ["red"; "yellow"; "blue"] |> Set.ofList // Eliminates a List.toSeq call
 let vv: Set<string> = ["red"; "yellow"; "blue"] // This is the most readable. Is it helpful to reduce the concept count on grouping syntax, particularly with the curly for sequence.
 ```
 
-It's easier code with fewer boilerplate. Moreover, F# 
+It's easier code with fewer boilerplate. Moreover, the implementation of different literals can now be decoupled from their default types:
+```fs
+// Proposed
+let a = 1 // int (defaulted)
+let b = 1.5 // float (defaulted)
+let c = 1 + 1.5 // float + float (defaulted)
+let d: float32 = 1 + 1.5 // float32 + float32
+```
+The fact that the simplest integer literal without suffix, `1`, must attach another meaning of 32-bit signed implementation is an arbitrary decision. Ditto for `1.0` and 64-bit binary floating-point implementation. F# is readable for non-developers, except when [numeric suffixes obstruct readability](https://github.com/fsharp/fslang-suggestions/issues/737):
+```fs
+// Current
+let slope = -0.11m
+let consta = 0.5m
+let doSomething score =
+    let complement =
+        1m - (score * slope + consta)
+    if complement > 0.95m then 0.95m
+    elif complement < 0.85m then 0.85m
+    else complement
+
+// Proposed (when slope, consta, doSomething, are all not externally accessible - because binary compatibility)
+let slope = -0.11
+let consta = 0.5
+let doSomething score =
+    let complement =
+        1 - (score * slope + consta)
+    if complement > 0.95 then 0.95
+    elif complement < 0.85 then 0.85
+    else complement
+let result: decimal = doSomething 3 // backwards inference of decimal from the type-annotation of result
+```
 
 There have been similar efforts to reduce syntactic noise before:
 - [FS-1080 Dotless float32 literals](https://github.com/fsharp/fslang-design/blob/main/FSharp-5.0/FS-1080-float32-without-dot.md), implemented in F# 5.
@@ -81,6 +112,7 @@ System.String.Join(",", ["a", "b", "c"])
 Another example:
 
 ```fs
+// Current
 let a: Set<byte> = set [1uy..10uy]
 ```
 
@@ -92,6 +124,7 @@ let a: Set<byte> = set [1uy..10uy]
 Instead, type-directed resolution of the list literal can make use of more efficient operations, resulting in fewer runtime conversions. In addition, the `uy` type specifiers can also be eliminated.
 
 ```fs
+// Proposed
 let a: Set<byte> = [1..10]
 ```
 
@@ -109,7 +142,7 @@ There is also risk of introducing action-at-a-distance type resolution behaviour
 let a = 1 // Defaults to int
 let b = 2 // Without code below, this defaults to int.
 ...
-let c = b + 1.5 // Without code below, this defaults b and c to float instead of int,
+let c = b + 1.5 // Without code below, this defaults b and c to float instead of int
 ...
 let d: float32 = c // This fixes c, and therefore b, to float32.
 ```
@@ -338,7 +371,7 @@ Before the [method overload preference rule introduced by FS-1093](https://githu
     - less than or equal in `TupleTwoStep` dimension
     - less than or equal in sum (`Tuple` + `TupleTwoStep`) dimensions
 
-    i.e. preserves the preference of 
+    i.e. preserves the preference of [[[WIP]]]
 > Note: If an overload dominates another in the above comparisons, the dominated overload can be removed from future comparisons. Up-sums can also be memoized.
 
 The above condition guarantees a unique choice only if `LiteralConversionCost` is all zero, i.e. resolves to all default types.
@@ -351,7 +384,7 @@ The following dimensions are defined for `LiteralConversionCost` vector:
 - `Tuple1`
 - `Tuple1`
 - `Tuple1`
-- `Tuple1`
+- `Tuple1` [[[WIP]]]
 
 ## Changes to specification - [Function and Value Definitions in Modules](https://github.com/fsharp/fslang-spec/blob/1890512002c43f832cbdd6524587c22563589403/spec/namespaces-and-modules.md#function-and-value-definitions-in-modules)
 
@@ -474,6 +507,12 @@ This means that:
 let a = 9e22 // This now errors because out of range for default integers
 ```
 
+## Alternative - fractional instead of float
+
+The float constraint might be confused with the actual type of `float` which has a specific implementation of 64-bit binary floating point. A possible alternative name is `fractional`.
+
+Meanwhile, just as `int` type is just a default representation of the abstract concept of integers, the `float` type is also just a default representation of the abstract concept of floating-point numbers. `float` as a constraint - representing the abstract concept of floating-point numbers - would be different from `float` as a type which necessitates a default.
+
 ## Changes to specification - [Type Constraints](https://github.com/fsharp/fslang-spec/blob/1890512002c43f832cbdd6524587c22563589403/spec/types-and-type-constraints.md#type-constraints)
 
 ```diff
@@ -532,7 +571,7 @@ During constraint solving (see §14.5), for the constraint `type : numeric-value
 5. If `type` is `System.Half` (matching a value type with this namespace and type name): the constraint is satisfied when -65504 (hardcoded, = `System.Half.MinValue`) <= left `numeric-value-constraint`, and right `numeric-value-constraint` <= 65504 (hardcoded, = `System.Half.MaxValue`).
 6. If `type` is `System.Int128` (matching a value type with this namespace and type name): the constraint is satisfied when -170,141,183,460,469,231,731,687,303,715,884,105,728 (hardcoded, = `System.Int128.MinValue`) <= left `numeric-value-constraint`, and right `numeric-value-constraint` <= 170,141,183,460,469,231,731,687,303,715,884,105,727 (hardcoded, = `System.Int128.MaxValue`), and a constructor `uint64 * uint64` is defined.
 7. If `type` is `System.UInt128` (matching a value type with this namespace and type name): the constraint is satisfied when 0 (hardcoded, = `System.UInt128.MinValue`) <= left `numeric-value-constraint`, and right `numeric-value-constraint` <= 340,282,366,920,938,463,463,374,607,431,768,211,455 (hardcoded, = `System.UInt128.MaxValue`), and a constructor `uint64 * uint64` is defined.
-8. If `type` defines a static member `op_Implicit` from `base-type` to `type`: the constraint is satisfied when `base-type` used as `type` in steps 1 to 7 satisfies the constraint.
+8. If `type` defines a static member `op_Implicit` from `base-type` to `type`, intrinsically or by a type extension: the constraint is satisfied when `base-type` used as `type` in steps 1 to 7 satisfies the constraint.
 9. Otherwise, the constraint is not satisfied.
 
 After the above steps, an additional check on a _forced default_ flag is done. It is set during checking Function and Value Definitions in Modules (see §10.2.1) and checking Members (see §8.1). If the forced default flag is set and the constraint is not resolved to its default type (see below), a compiler warning is issued about forced default due to public visibility, with information on the default type and otherwise inferred type. The default type is then used instead of the inferred type.
@@ -550,7 +589,7 @@ An _explicit float constraint_ has the following form:
 ```
 static-typar : 'float'
 ```
-During constraint solving (see §14.5), for the constraint `type : 'float'`, it is satisfied if `type` is `float`, `float32`, `decimal`, `System.Half`, or a type that defines static member `op_Implicit` from `float`, `float32`, `decimal` or `System.Half`, to `type`.
+During constraint solving (see §14.5), for the constraint `type : 'float'`, it is satisfied if `type` is `float`, `float32`, `decimal`, `System.Half`, or a type that defines static member `op_Implicit`, intrinsically or by a type extension, from `float`, `float32`, `decimal` or `System.Half`, to `type`n.
 
 ## Changes to specification - [Inference Procedures](https://github.com/fsharp/fslang-spec/blob/1890512002c43f832cbdd6524587c22563589403/spec/inference-procedures.md#constraint-solving)
 
@@ -861,9 +900,51 @@ token ieee64 =
 +| `float<_>`, `float64<_>` | Underlying representation `System.Double`, but accepts a unit of measure. |
 ```
 
-# FS-1150f 
+# FS-1150f Units of measure on type-directed resolution of numeric literals
 
-# FS-1150f Type-directed resolution of tuple literals
+With the above defined type-directed resolution of numeric literals, their equivalents for [Constants Annotated with Measures](https://github.com/fsharp/fslang-spec/blob/main/spec/units-of-measure.md#constants-annotated-by-measures) remain unchanged. i.e. without additional changes,
+```fs
+[<Measure>] type m
+1 // ^a: when ^a: 1
+1<m> // int32<m>
+```
+This part of the RFC aims to make `1<m>` generically resolvable to any numeric type that supports a unit of measure parameter.
+
+A new statically resolved type constraint is added - "supports a unit of measure parameter".
+```
+^a: measurable
+```
+
+The default type of `1<m>` now becomes `^a<m> when ^a: 1 and ^a: ^a: measurable`. The existence of the statically resolved constraint `measurable` disambiguates `^a<m>` which is an application of a unit of measure from being a generic type application. The syntax `^a<m>` would only pass type checking if `^a` also has a type constraint of `^a: measurable`.
+
+The usage of a new statically resolved type constraint is necessary even if a unit-of-measure annotated type variable isn't exposed. This is because in F#, units of measure support needs to be declared using `[<MeasureAnnotatedAbbreviation>]`. For non-built-in types like `System.Half`, an equivalent needs to be declared using 
+```fs
+type half = System.Half
+[<MeasureAnnotatedAbbreviation>] type half<[<Measure>] 'Measure> = half
+```
+before it is usable with units of measure.
+
+While the current compiler hardcodes the relationships between numeric type abbreviations and measure-annotated abbreviations, like between `float` and `float<'Measure>`, we can also use the `[<MeasureAnnotatedAbbreviation>]` attribute to establish a relationship between `float<'Measure>` and `float`.
+
+`[<MeasureAnnotatedAbbreviation>]`'s only purpose today is to alleviate the deprecated error of unused type parameters for
+```fs
+type X<'a> = Y
+```
+which is intended for defining measure-annotated abbreviations. Here, we propose that this attribute gains a second purpose when applied to type abbreviations that define one measure parameter and does not apply it in the type abbreviation, to establish that the abbreviated type can be measure-annotated by this type abbreviation.
+
+Given this, the `^a: measurable` constraint can be satisfied by any type with another type abbreviation in scope with `[<MeasureAnnotatedAbbreviation>]` that defines a type abbreviation to it and taking one measure parameter. The additional statically available measure definition would be implicitly passed along with the type to satisfy the statically resolved `measurable` constraint.
+
+Sample code:
+```fs
+[<Measure>] type m
+let inline a() = 1<m> // val inline a: unit -> ^a<m> when ^a: 1 and ^a: measurable
+let b: float32<m> = a() // works
+let c: decimal = a() // errors
+let inline d() = (1<m> + 1.1<m>) * 2<m>
+// val inline d: unit -> ^a<m^2> when ^a: 1 .. 2 and ^a: float and ^a: measurable and ^a: (static member (+): ^a * ^a -> ^a) and ^a: (static member (*): ^a * ^a -> ^a)
+```
+
+# FS-1150g Type-directed resolution of tuple literals
 The design suggestion [#988](https://github.com/fsharp/fslang-suggestions/issues/988) is marked "approved in principle".
 
 - [x] [Suggestion](https://github.com/fsharp/fslang-suggestions/issues/988)
@@ -947,7 +1028,7 @@ During constraint solving (see §14.5), for the constraint `type : (type , ... ,
 1. if `type` is the tuple type `type * ... * type` or struct tuple type `struct(type * ... * type)`: the constraint is satisfied when the types in `type * ... * type` match the types in `type , ... , type` in order and the type counts are equal.
 2. if `type` is `System.Tuple<type , ... , type>` or `System.ValueTuple<type , ... , type>`: the constraint is satisfied when `type` converted to an F# tuple satisfies step 1.
 3. if `type` is `System.Collections.Generic.KeyValuePair<type1, type2>`: the constraint is satisfied when `type , ... , type` is of length 2 and the two types match `type1` and `type2` in that order.
-4. if `type` has a static member `op_Implicit` with `type`: the constraint is satisfied when the input type of this member satisfies one of steps 1 to 3.
+4. if `type` has a static member `op_Implicit` with `type`, intrinsically or by a type extension: the constraint is satisfied when the input type of this member satisfies one of steps 1 to 3.
 
 After the above steps, an additional check on a _forced default_ flag is done. It is set during checking Function and Value Definitions in Modules (see §10.2.1) and checking Members (see §8.1). If the forced default flag is set and the constraint is not resolved to its default type (see below), a compiler warning is issued about forced default due to public visibility, with information on the default type and otherwise inferred type. The default type is then used instead of the inferred type.
 
@@ -983,9 +1064,9 @@ Tuple types and expressions that have their type resolved to struct tuple `struc
 
 Tuple expressions that have their type resolved to `System.Collections.Generic.KeyValuePair<ty1, ty2>` are translated to an invocation of the `ty1 * ty2` constructor of that type with the 2 tuple arguments applied.
 
-Tuple expressions that have their type resolved to a type that supports an `op_Implicit` conversion are translated to an invocation of the `ty1 * ty2` constructor of that type with the 2 tuple arguments applied. An `op_Implicit` conversion from struct tuple `struct (ty1 * ... * tyn)` is preferred over an `op_Implicit` conversion from `KeyValuePair<ty1, ty2>` is preferred over an `op_Implicit` conversion from the tuple type `ty1 * ... * tyn`.
+Tuple expressions that have their type resolved to a type that supports an `op_Implicit` conversion, intrinsically or by a type extension, are translated to an invocation of the `ty1 * ty2` constructor of that type with the 2 tuple arguments applied. An `op_Implicit` conversion from struct tuple `struct (ty1 * ... * tyn)` is preferred over an `op_Implicit` conversion from `KeyValuePair<ty1, ty2>` is preferred over an `op_Implicit` conversion from the tuple type `ty1 * ... * tyn`.
 
-# FS-1150g Type-directed resolution of tuple patterns
+# FS-1150h Type-directed resolution of tuple patterns
 The design suggestion [#751](https://github.com/fsharp/fslang-suggestions/issues/751) is marked "approved in principle".
 
 - [x] [Suggestion](https://github.com/fsharp/fslang-suggestions/issues/988)
@@ -1046,9 +1127,9 @@ Hovering the cursor above the tuple pattern should show `Deconstruct` overload u
 
 Pressing Go To Definition on the tuple pattern should navigate to any `Deconstruct` methods used under the hood if used.
 
-# FS-1150g Type-directed resolution of tuple patterns
+# FS-1150i Field patterns in type-directed tuple patterns
 
-# FS-1150h Special support for pipeline operators to allow ref struct usage
+# FS-1150j Special support for pipeline operators to allow ref struct usage
 
 When the operators `|>` `||>` `|||>` `<|` `<||` `<|||` as defined in FSharp.Core are used in an infix place, and the tuple argument for multi-argument pipeline operators (`||>` `|||>` `<||` `<|||`) is a syntactical tuple (maximum 1 layer of surrounding parentheses), there will no longer be calls to the actual operators, rather direct syntactical translation before type inference will be done at compile-time. Full support of `allows ref struct` authoring from F# is outside of the scope of this RFC. This enables the most common pipline usages of `ReadOnlySpan` espeically when combined with type-directed resolution of list literals.
 
@@ -1081,7 +1162,7 @@ For multi-argument pipeline operators, the highlighted argument should be all of
 
 The type of the tuple applied immediately to the pipeline operators would lose their type. The tooltip for hovering over the syntactical tuple immediately applied to a pipeline operator should show the same tooltip as the pipeline operator as shown above.
 
-# FS-1150i Type-directed resolution of list literals
+# FS-1150k Type-directed resolution of list literals
 The design suggestion [#1086](https://github.com/fsharp/fslang-suggestions/issues/1086) was marked "approved in principle" before.
 
 - [x] [Suggestion](https://github.com/fsharp/fslang-suggestions/issues/1086)
@@ -1137,7 +1218,7 @@ Hovering the cursor above the list literal should show the inferred type. Curren
 
 Pressing Go To Definition on the list literal should navigate to any conversion methods used under the hood.
 
-# FS-1150j Constructor arguments for list literals
+# FS-1150l Constructor arguments for list literals
 
 - [ ] [Implementation](https://github.com/dotnet/fsharp/pull/FILL-ME-IN)
 
@@ -1166,7 +1247,7 @@ let y: MyDict2 = f()
 
 This feature is ideally implemented with the general mechanism ([FS-1023 - Allow type providers to generate types from types](https://github.com/fsharp/fslang-design/blob/b3cdb5805855a186195d677a266d358f4caf6032/RFCs/FS-1023-type-providers-generate-types-from-types.md)). It can also be implemented as a compiler intrinsic, but the benefits brought by directly implementing that proposal far outweighs implementing only this special case here.
 
-# FS-1150k Type-directed resolution of list patterns
+# FS-1150m Type-directed resolution of list patterns
 
 With type-directed resolution of list construction, it also makes sense to change list deconstruction to be type-directed too.
 
@@ -1184,7 +1265,7 @@ The reliance on indexing means that some types, e.g. sets, can be constructed us
 
 This pattern is not customizable, use an active pattern instead for customizing this behaviour.
 
-# FS-1150l Using type-directed list literals to fulfill params parameters
+# FS-1150n Using type-directed list literals to fulfill params parameters
 
 The design suggestion [#1377](https://github.com/fsharp/fslang-suggestions/issues/1377) is **not yet** marked "approved in principle".
 
@@ -1195,11 +1276,11 @@ The design suggestion [#1377](https://github.com/fsharp/fslang-suggestions/issue
 
 Whenever there is a `[<ParamArray>]` parameter encountered (`params` in C#), instead of always inserting an array, wrap the variable-length parameter list inside a type-directed list literal behind  the scenes instead. Reuse all the previously defined rules for type-directed list literals.
 
-# FS-1150m Type-directed resolution of tuple patterns with field patterns inside
+# FS-1150o Type-directed resolution of tuple patterns with field patterns inside
 
-# FS-1150n Collection initializers
+# FS-1150p Collection initializers
 
-# FS-1150o Type-directed resolution of char literals
+# FS-1150q Type-directed resolution of char literals
 The design suggestion [#1421](https://github.com/fsharp/fslang-suggestions/issues/1421) was marked "approved in principle" before.
 
 - [x] [Suggestion](https://github.com/fsharp/fslang-suggestions/issues/1421)
@@ -1237,7 +1318,7 @@ Hovering the cursor above the char literal should show the inferred type. Curren
 
 Pressing Go To Definition on the char literal should navigate to the `op_Implicit` definition if used.
 
-# FS-1150p Type-directed resolution of string literals
+# FS-1150r Type-directed resolution of string literals
 The design suggestion [#1421](https://github.com/fsharp/fslang-suggestions/issues/1421) was marked "approved in principle" before.
 
 - [x] [Suggestion](https://github.com/fsharp/fslang-suggestions/issues/1421)
@@ -1277,7 +1358,7 @@ Hovering the cursor above the string literal should show the inferred type. Curr
 
 Pressing Go To Definition on the string literal should navigate to any conversion methods used under the hood.
 
-# FS-1150q Extending B-suffix string literals to be UTF-8 strings
+# FS-1150s Extending B-suffix string literals to be UTF-8 strings
 The design suggestion [#1421](https://github.com/fsharp/fslang-suggestions/issues/1421) was marked "approved in principle" before.
 
 - [x] [Suggestion](https://github.com/fsharp/fslang-suggestions/issues/1421)
@@ -1291,7 +1372,7 @@ Currently, B-suffix string literals in F# only allow ASCII values. As UTF-8 is t
 let a = "你好"B
 ```
 
-# FS-1150p Type-directed resolution of string patterns
+# FS-1150t Type-directed resolution of string patterns
 
 With type-directed resolution of string construction, it also makes sense to change string deconstruction to be type-directed too.
 
@@ -1307,7 +1388,7 @@ This pattern is not customizable, use an active pattern instead for customizing 
 
 This subsumes suggestion [#1351](https://github.com/fsharp/fslang-suggestions/issues/1351).
 
-# FS-1150r Type-directed resolution of boolean literals and patterns
+# FS-1150u Type-directed resolution of boolean literals and patterns
 
 For uniformity with numeric, char, tuple, list and string literals, it also makes sense for boolean literals to undergo similar type-directed resolution.
 
