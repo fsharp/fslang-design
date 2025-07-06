@@ -918,7 +918,7 @@ After changing this, the following modification can be done in [prim-types.fs](h
 + [<CompiledName("PIGeneric")>]
 + let inline pi<^a when ^a: float and ^a: (static member PI: ^a)> = 'a.PI
 + [<CompiledName("TauGeneric")>]
-+ let inline tau<^a when ^a: float and ^a: (static member PI: ^a)> = 'a.Tau
++ let inline tau<^a when ^a: float and ^a: (static member Tau: ^a)> = 'a.Tau
 + [<CompiledName("EGeneric")>]
 + let inline e<^a when ^a: float and ^a: (static member E: ^a)> = 'a.E
 
@@ -1001,7 +1001,7 @@ A new statically resolved type constraint is added - "supports a unit of measure
 
 The default type of `1<m>` now becomes `^a<m> when ^a: 1 and ^a: measurable`. The existence of the statically resolved constraint `measurable` disambiguates `^a<m>` which is an application of a unit of measure from being a generic type application. The syntax `^a<m>` would only pass type checking if `^a` also has a type constraint of `^a: measurable`. `^a<1>` is equivalent to `^a`.
 
-While the current compiler hardcodes the relationships between numeric type abbreviations and measure-annotated abbreviations, like between `float` and `float<'Measure>`, the `measurable` type constraint is satisfied with a concrete instantiation with unit-of-measure parameter set to `1` or `_`, like `float<1>` and `float<_>` (which infers `_` as `1`). It is an error if a unit-of-measure other than `1` is specified. `^a<m>` would change the unit of measure variable from `1` to `m`. It is also an error if `float` is passed instead of `float<1>` because there would be a lack of type information to link `float` to its measure-annotated abbrevation `float<_>` otherwise (unless `[<MeasureAnnotatedAbbreviation>]` is specially handled; see Alternatives below).
+While the current compiler hardcodes the relationships between numeric type abbreviations and measure-annotated abbreviations, like between `float` and `float<'Measure>`, the `measurable` type constraint is satisfied with a concrete instantiation of a measure-annotated abbreviation with one unit-of-measure parameter and that unit-of-measure parameter is set to `1` or `_`, like `float<1>` and `float<_>` (which infers `_` as `1`). It is an error if any unit-of-measure which is not `1` is specified. `^a<m>` would change the unit of measure variable from `1` to `m`. It is also an error if `float` is passed instead of `float<1>` because there would be a lack of type information to link `float` to its measure-annotated abbrevation `float<_>` otherwise (unless `[<MeasureAnnotatedAbbreviation>]` is specially handled; see Alternatives below).
 
 While passing in a concrete unit-of-measure instantiation for satisfying the `measurable` constraint is confusing when a specific unit is placed at the generic type parameter and yet the generic type arguments get silently dropped, it is already done in `typedefof<_>` which is understood as `typeof<_>.GetGenericTypeDefinition()` for instantiated generic types and the generic type isn't propagated elsewhere.
 
@@ -1019,10 +1019,11 @@ let f = d<decimal>() // error: 'decimal' does not have a unit-of-measure paramet
 let g = d<decimal<m>>() // error: cannot supply a unit-of-measure parameter other than '1' for measureable constraint
 ```
 
-When `^a` or `^a<1>` with the `measureable` constraint is instantiated, e.g. `decimal<1>`, it is simplified to the underlying type represented by measure-annotated abbreviation, e.g. `decimal`.
+When `^a` or `^a<1>` with the `measureable` constraint is instantiated, e.g. `decimal<1>`, it is equivalent to the underlying type represented by measure-annotated abbreviation, e.g. `decimal`.
 
 For a type variable with the `measureable` constraint, all operations assumed by current measured type definitions apply:
 ```fs
+// Proposed
 let inline f() =
     let g = 9.81<m/s^2>
     atan2 g g |> ignore // works
@@ -1030,6 +1031,43 @@ let inline f() =
     g + 1<m> |> ignore // error - units-of-measure mismatch
     g + 1<m/s^2> // works
 ```
+
+Meanwhile, `[<MeasureAnnotatedAbbreviation>]` would also give the type abbreviations it is used on all operations assumed by current measured type definitions if there is one unit of measure parameter.
+
+```fs
+// Proposed
+type Vector3<'T, [<Measure>] 'U when 'T: measurable> =
+    { X: 'T<'U>
+      Y: 'T<'U>
+      Z: 'T<'U> }
+    static member inline (+)(a: Vector3<_, _>, b: Vector3<_, _>) =
+        { X = a.X + b.X; Y = a.Y + b.Y; Z = a.Z + b.Z }
+    static member inline (*)(a: Vector3<_, _>, b: Vector3<_, _>) =
+        { X = a.X * b.X; Y = a.Y * b.Y; Z = a.Z * b.Z }
+[<Measure>] type m
+let a =
+    { X = 1.<m>; Y = 2.<m>; Z = 3.<m> }
+    + { X = 1.<m>; Y = 2.<m>; Z = 3.<m> }
+// val a: Vector3<float, m>
+let b =
+    { X = 1<m>; Y = 2<m>; Z = 3<m> }
+    * { X = 1<m>; Y = 2<m>; Z = 3<m> }
+// val b: Vector3<int, m^2>
+
+type vector3<'T> =
+    { X: 'T
+      Y: 'T
+      Z: 'T }
+    static member op_Implicit(x: 'T) =
+        { X = x; Y = x; Z = x }
+    static member inline (*)(a: vector3<_>, b: vector3<_>) =
+        { X = a.X * b.X; Y = a.Y * b.Y; Z = a.Z * b.Z }
+[<MeasureAnnotatedAbbreviation>]
+type vector3<'T, [<Measure>] 'U> = vector3<'T>
+let c: vector3<float, m> = 2<m> // works
+let d = c * 3<m> // val d: vector3<float, m^2>
+```
+
 
 ## Alternative definitions for `measurable` constraint
 
