@@ -139,6 +139,7 @@ There would be a lot of hidden magic behind the process of type-directed resolut
 ## Diagnostics
 There is also risk of introducing action-at-a-distance type resolution behaviour when editing F# code. This RFC enables the following:
 ```fs
+// Proposed
 let a = 1 // Defaults to int
 let b = 2 // Without code below, this defaults to int.
 ...
@@ -193,11 +194,11 @@ C# has been adding type-directed features like [collection expressions](https://
 
 ```fs
 open System
-// before
+// Current
 do
     String.Join(",", [| "1"; "2"; "3" |].AsSpan()) |> printfn "%s"
     String.Join(",", [| "1"; "2"; "3" |]) |> printfn "%s"
-// after
+// Proposed
 do  // now calls (string * ReadOnlySpan<string>) overload with stack allocation.
     String.Join(",", ["1"; "2"; "3"]) |> printfn "%s"
     (String.Join: string * string array -> _)(",", ["1"; "2"; "3"]) |> printfn "%s"
@@ -297,11 +298,11 @@ let b = a + 1L
 
 Allowing more literals to fit different types makes the language more orthogonal. Literals can now be "implemented" with different types without the need to be explicit about conversions. The annotations that are required to denote a different numeric or collection type that is not the default can be eliminated.
 ```fs
-// before
+// Current
 let simple: int list = [1; 2; 3; 4]
 let moreSyntax: uint64 Set = set [1UL; 2UL; 3UL; 4UL]
 let evenMoreSyntax: ImmutableArray<byte> = ImmutableArray.Create [|1uy; 2uy; 3uy; 4uy|]
-// after
+// Proposed
 let simple: int list = [1; 2; 3; 4]
 let moreSyntax: uint64 Set = [1; 2; 3; 4]
 let evenMoreSyntax: ImmutableArray<byte> = [1; 2; 3; 4]
@@ -313,6 +314,7 @@ Meanwhile, this should also be as orthogonal as possible with type inference - t
 Ideally for all the new type-directed inference, the same rules for inference of statically resolved constraints should also be followed:
 
 ```fs
+// Current
 let f a b = a + b
 let g = f 1L 2L // Changes type of f to long -> long -> long
 ```
@@ -322,6 +324,7 @@ Ideally level 7 would result in the most orthogonality between type-directed res
 Targeting implementation level 6 instead of 7 means that a series of public `let` bindings in a module might work differently than a series of local `let` bindings or a series of non-public `let` bindings in a module.
 
 ```fs
+// Proposed
 do
     let x = ["1"; "2"; "3"] // ReadOnlySpan<string> (best type in a local context)
     printfn "%s" <| System.String.Concat(",", x)
@@ -342,6 +345,7 @@ module PublicModule =
 This is especially confusing if the series of `let` bindings is used in [anonymous implementation files](https://github.com/fsharp/fslang-spec/blob/main/spec/program-structure-and-execution.md#implementation-files). A warning should be implemented to warn against defaulting behaviour due to public visibility despite later code trying to infer it as a different type.
 
 ```fs
+// Proposed
 module PublicModule =
     let x = ["1"; "2"; "3"] // warn - defaulted to string list due to public visibility despite best type being string array
     printfn "%s" <| System.String.Concat(",", x)
@@ -453,6 +457,7 @@ When two numeric value constraints are combined, to avoid generating too many se
 The numeric values chosen are the minimum and maximum of the numeric value constraints to be combined. 
 
 ```fs
+// Proposed
 let inline f (a: ^a when ^a: -3 and ^a: 7.5 and ^a: 10) = ()
 // val inline f: a: ^a -> unit when ^a: -3 .. 10
 ```
@@ -466,6 +471,7 @@ Some numeric computations may want to declare that integer types are unsupported
 ```
 
 ```fs
+// Proposed
 let inline f (a: ^a when ^a: -3 and ^a: 7.5 and ^a: 10 and ^a: float) = ()
 // val inline f: a: ^a -> unit when ^a: -3 .. 10 and ^a: float
 // now integer types cannot satisfy this type constraint
@@ -504,8 +510,85 @@ Due to performance considerations, there is no default to `bigint`. Use an expli
 
 This means that:
 ```fs
-let a = 9e22 // This now errors because out of range for default integers
+let a: ^a when ^a: 9e22 = Unchecked.defaultof<_> // This errors because out of range for default integers
 ```
+
+## Implied homogeneity in arithmetic operators
+Also, note that there is a necessity for numeric range constraints to impose a limit on any arithmetic operator constraints to be homogeneous instead of heterogeneous. Consider the following for generic math today (numbers replaced with `GenericOne` and `GenericZero`):
+```fs
+// Current
+let inline doSomething score =
+    let slope = LanguagePrimitives.GenericOne
+    let consta = LanguagePrimitives.GenericZero
+    let complement =
+        LanguagePrimitives.GenericOne - (score * slope + consta)
+    if complement > LanguagePrimitives.GenericOne then LanguagePrimitives.GenericOne
+    elif complement < LanguagePrimitives.GenericZero then LanguagePrimitives.GenericZero
+    else complement
+```
+```fs
+val inline doSomething:
+  score: ^a -> ^g
+    when (^a or ^b) : (static member ( * ) : ^a * ^b -> ^c) and
+         ^b: (static member One: ^b) and
+         (^c or ^d) : (static member (+) : ^c * ^d -> ^e) and
+         ^d: (static member Zero: ^d) and
+         (^f or ^e) : (static member (-) : ^f * ^e -> ^g) and
+         ^f: (static member One: ^f) and ^g: (static member Zero: ^g) and
+         ^g: (static member One: ^g) and ^g: comparison
+```
+This signature is very complex for numeric types that should define arithmetic operators taking the same types and returning the same type. This also slows down constraint solving and overload resolution. Moreover, the constraints for different numeric values cannot be combined easily. All of these complex constraints just to allow arithmetic operators to be heterogeneous.
+
+When arithmetic operators become homogeneous:
+```fs
+// Current
+let inline (+) (a: ^a) (b: ^a) : ^a = a + b
+let inline (-) (a: ^a) (b: ^a) : ^a = a - b
+let inline (*) (a: ^a) (b: ^a) : ^a = a * b
+let inline doSomething score =
+    let slope = LanguagePrimitives.GenericOne
+    let consta = LanguagePrimitives.GenericZero
+    let complement =
+        LanguagePrimitives.GenericOne - (score * slope + consta)
+    if complement > LanguagePrimitives.GenericOne then LanguagePrimitives.GenericOne
+    elif complement < LanguagePrimitives.GenericZero then LanguagePrimitives.GenericZero
+    else complement
+```
+```fs
+val inline doSomething:
+  score: ^a -> ^a
+    when ^a: (static member Zero: ^a) and
+         ^a: (static member ( * ) : ^a * ^a -> ^a) and
+         ^a: (static member One: ^a) and
+         ^a: (static member (-) : ^a * ^a -> ^a) and
+         ^a: (static member (+) : ^a * ^a -> ^a) and ^a: comparison
+```
+Notice the requirements for `Zero` and `One` are now combined. A parallel can also be drawn for different numeric value constraints to combine as one numeric range constraint.
+
+Therefore, when applied to a numeric context, i.e. for statically resolved type variables with arithmetic operator constraints, it is proposed that the arithmetic operators are simplified to take the same types and output the same type. This restricts `Vector3` from being allowed in `let inline times4 x = x * 4` even though it defines `(*): Vector3 * float32 -> Vector3`, but this is justified as generic math in F# today already infers homogeneity from any numeric operand's operators.
+```fs
+let inline times4 x = x * 4
+// before (homogeneous (*)): val inline times4: x: int -> int
+// after (still homogeneous (*) - type-directed numeric literals to be defined below): val inline times4: x: ^a -> ^a when ^a: 4 and ^a: (static member (*): ^a * ^a -> ^a)
+
+// Current: homogeneous (*) for numeric operands
+open System.Numerics
+Vector3(1f, 2f, 3f) * 4f |> printfn "%A" // works
+let inline left x = Vector3(1f, 2f, 3f) * x
+// val inline left: x: ^a -> 'b when (Vector3 or ^a) : (static member ( * ) : Vector3 * ^a -> 'b)
+let inline right x = x * 4f
+// val inline right: x: float32 -> float32
+left 4f |> printfn "%A" // works
+right (Vector3(1f, 2f, 3f)) |> printfn "%A" // error FS0193: Type constraint mismatch. The type 'Vector3' is not compatible with type 'float32'    
+
+// Proposed: an easy workaround for Vector3 * float32 even with homogenous (*)
+type Vector3 with op_Implicit(x: float32) = Vector3(x, x, x)
+times4 (Vector3(1, 2, 3)) // works
+// ^a: 4 satisfied by extension op_Implicit: float32 -> Vector3
+// ^a: (static member (*): ^a * ^a -> ^a) satisfied by elementwise multiplication defined intrinsically:
+// Vector3.(*): Vector3 * Vector3 -> Vector3
+```
+More precisely, numeric value and range constraints will imply any arithmetic operators (`(+)`, `(-)`, `(*)`, `(/)`, `(%)`, `( ** )`) to take two values of the same type and output a value of the same type.
 
 ## Alternative - fractional instead of float
 
@@ -526,15 +609,7 @@ Meanwhile, just as `int` type is just a default representation of the abstract c
 + static-typar := ^ ident
 
 constraint :=
-    typar :> type                  -- coercion constraint
-    typar : null                   -- nullness constraint
-    static-typars : ( member-sig ) -- member "trait" constraint
-    typar : (new : unit -> 'T)     -- CLI default constructor constraint
-    typar : struct                 -- CLI non-Nullable struct
-    typar : not struct             -- CLI reference type
-    typar : enum< type >           -- enum decomposition constraint
-    typar : unmanaged              -- unmanaged constraint
-    typar : delegate<type, type>   -- delegate decomposition constraint
+    ...
     typar : equality
     typar : comparison
 +   static-typar : numeric-value-constraint -- numeric value constraint
@@ -589,7 +664,7 @@ An _explicit float constraint_ has the following form:
 ```
 static-typar : 'float'
 ```
-During constraint solving (see §14.5), for the constraint `type : 'float'`, it is satisfied if `type` is `float`, `float32`, `decimal`, `System.Half`, or a type that defines static member `op_Implicit`, intrinsically or by a type extension, from `float`, `float32`, `decimal` or `System.Half`, to `type`n.
+During constraint solving (see §14.5), for the constraint `type : 'float'`, it is satisfied if `type` is `float`, `float32`, `decimal`, `System.Half`, or a type that defines static member `op_Implicit`, intrinsically or by a type extension, from `float`, `float32`, `decimal` or `System.Half`, to `type`.
 
 ## Changes to specification - [Inference Procedures](https://github.com/fsharp/fslang-spec/blob/1890512002c43f832cbdd6524587c22563589403/spec/inference-procedures.md#constraint-solving)
 
@@ -612,7 +687,9 @@ typar : delegate< type, type >
 
 During constraint solving (see §14.5), for any new numeric value constraint `typar : numeric-value-constraint` or any new numeric range constraint `typar : numeric-value-constraint .. numeric-value-constraint`, the normalization procedure as described for each of the two constraints in Type Constraints (§5.2) occurs.
 
-If any existing numeric range constraints on the same type variable `typar` exist in the constraint set `typar: numeric-value-constraint .. numeric-value-constraint`, the new constraint unifies with the existing constraint, with left hand side numeric value being the minimum of the left hand side numeric value of the existing constraint and the new constraint, and with right hand side numeric value being the maximum of the left hand side numeric value of the existing constraint and the new constraint.
+If any existing static member constraint for `op_Addition`, `op_Subtraction`, `op_Multiply`, `op_Division`, `op_Modulus` or `Pow` on the same type variable `typar` exist in the constraint set with 2 input arguments `typar * typar2 -> typar3`, two new equational constraints `typar2 = typar` and `typar3 = typar` are added to the constraint set.
+
+If any existing numeric range constraints on the same type variable `typar` exist in the constraint set as `typar: numeric-value-constraint .. numeric-value-constraint`, the new constraint unifies with the existing constraint, with left hand side numeric value being the minimum of the left hand side numeric value of the existing constraint and the new constraint, and with right hand side numeric value being the maximum of the left hand side numeric value of the existing constraint and the new constraint.
 
 When `type` is not a variable type in `type : numeric-value-constraint .. numeric-value-constraint`, it is resolved using the procedures for satisfying numeric range constraints as described in Type Constraints (§5.2).
 
@@ -640,6 +717,13 @@ type : enum< type >
 type : delegate< type, type >
 type : unmanaged
 + type : 'float'
+```
+
+### Solving Member Constraints
+```diff
+... If a type variable is in the support set of more than one such constraint, the argument and return types are themselves constrained to be equal.
+
++ If a type variable has an existing numeric range constraint and there is a new static member constraint on `op_Addition`, `op_Subtraction`, `op_Multiply`, `op_Division`, `op_Modulus` or `Pow` with 2 input arguments `typar1 * typar2 -> typar3`, the argument and return types are themselves constrainted to be equal with 2 new equational constraints `typar2 = typar1` and `typar3 = typar1`.
 ```
 
 # FS-1150c Type-directed resolution of numeric literals
@@ -915,7 +999,49 @@ A new statically resolved type constraint is added - "supports a unit of measure
 ^a: measurable
 ```
 
-The default type of `1<m>` now becomes `^a<m> when ^a: 1 and ^a: ^a: measurable`. The existence of the statically resolved constraint `measurable` disambiguates `^a<m>` which is an application of a unit of measure from being a generic type application. The syntax `^a<m>` would only pass type checking if `^a` also has a type constraint of `^a: measurable`.
+The default type of `1<m>` now becomes `^a<m> when ^a: 1 and ^a: measurable`. The existence of the statically resolved constraint `measurable` disambiguates `^a<m>` which is an application of a unit of measure from being a generic type application. The syntax `^a<m>` would only pass type checking if `^a` also has a type constraint of `^a: measurable`. `^a<1>` is equivalent to `^a`.
+
+While the current compiler hardcodes the relationships between numeric type abbreviations and measure-annotated abbreviations, like between `float` and `float<'Measure>`, the `measurable` type constraint is satisfied with a concrete instantiation with unit-of-measure parameter set to `1` or `_`, like `float<1>` and `float<_>` (which infers `_` as `1`). It is an error if a unit-of-measure other than `1` is specified. `^a<m>` would change the unit of measure variable from `1` to `m`. It is also an error if `float` is passed instead of `float<1>` because there would be a lack of type information to link `float` to its measure-annotated abbrevation `float<_>` otherwise (unless `[<MeasureAnnotatedAbbreviation>]` is specially handled; see Alternatives below).
+
+While passing in a concrete unit-of-measure instantiation for satisfying the `measurable` constraint is confusing when a specific unit is placed at the generic type parameter and yet the generic type arguments get silently dropped, it is already done in `typedefof<_>` which is understood as `typeof<_>.GetGenericTypeDefinition()` for instantiated generic types and the generic type isn't propagated elsewhere.
+
+Sample code:
+```fs
+// Proposed
+[<Measure>] type m
+let inline a() = 1<m> // val inline a: unit -> ^a<m> when ^a: 1 and ^a: measurable
+let b: float32<m> = a() // works
+let c: decimal = a() // errors
+let inline d() = (1<m> + 1.1<m>) * 2<m>
+// val inline d: unit -> ^a<m^2> when ^a: 1 .. 2 and ^a: float and ^a: measurable and ^a: (static member (+): ^a * ^a -> ^a) and ^a: (static member (*): ^a * ^a -> ^a)
+let e = d<decimal<1>>() // val e: decimal<m^2>
+let f = d<decimal>() // error: 'decimal' does not have a unit-of-measure parameter
+let g = d<decimal<m>>() // error: cannot supply a unit-of-measure parameter other than '1' for measureable constraint
+```
+
+When `^a` or `^a<1>` with the `measureable` constraint is instantiated, e.g. `decimal<1>`, it is simplified to the underlying type represented by measure-annotated abbreviation, e.g. `decimal`.
+
+For a type variable with the `measureable` constraint, all operations assumed by current measured type definitions apply:
+```fs
+let inline f() =
+    let g = 9.81<m/s^2>
+    atan2 g g |> ignore // works
+    atan2 1<m> g |> ignore // error - units-of-measure mismatch
+    g + 1<m> |> ignore // error - units-of-measure mismatch
+    g + 1<m/s^2> // works
+```
+
+## Alternative definitions for `measurable` constraint
+
+### Using the `[<MeasureAnnotatedAbbreviation>]` attribute to establish a relationship between `float<'Measure>` and `float`
+
+`[<MeasureAnnotatedAbbreviation>]`'s only purpose today is to alleviate the deprecated error of unused type parameters for
+```fs
+type X<'a> = Y
+```
+which is intended for defining measure-annotated abbreviations. Here, we propose that this attribute gains a second purpose when applied to type abbreviations that define one measure parameter and does not apply it in the type abbreviation, to establish that the abbreviated type can be measure-annotated by this type abbreviation.
+
+Given this, the `^a: measurable` constraint can be satisfied by any type with another type abbreviation in scope with `[<MeasureAnnotatedAbbreviation>]` that defines a type abbreviation to it and taking one measure parameter. The additional statically available measure definition would be implicitly passed along with the type to satisfy the statically resolved `measurable` constraint. This means that `float` satisfies the `measurable` constraint and the compiler will search for `float<_>` from all `[<MeasureAnnotatedAbbreviation>]`s visible.
 
 The usage of a new statically resolved type constraint is necessary even if a unit-of-measure annotated type variable isn't exposed. This is because in F#, units of measure support needs to be declared using `[<MeasureAnnotatedAbbreviation>]`. For non-built-in types like `System.Half`, an equivalent needs to be declared using 
 ```fs
@@ -924,25 +1050,33 @@ type half = System.Half
 ```
 before it is usable with units of measure.
 
-While the current compiler hardcodes the relationships between numeric type abbreviations and measure-annotated abbreviations, like between `float` and `float<'Measure>`, we can also use the `[<MeasureAnnotatedAbbreviation>]` attribute to establish a relationship between `float<'Measure>` and `float`.
+The downside of this approach is the magic implicit resolution of `float<_>` from `float`. While `float` without type parameters is not confusing, choosing a specific measure-annotated abbreviation is arbitrary when there is more than one abbreviation for the same type, this is a many-to-one relationship.
 
-`[<MeasureAnnotatedAbbreviation>]`'s only purpose today is to alleviate the deprecated error of unused type parameters for
-```fs
-type X<'a> = Y
+### Other approaches
+- modification of name resolution such that `float<_>` is passed where `float` is specified for `measurable` constrained parameters, but type constraint information isn't processed yet at name resolution
+- introducing new syntax to specify uninstantiated measure-annotated abbreviation like `float<>` which complicates parsing as `<>` is parsed as the inequality operator today. Moreover, `< >` with at least one space inside currently specifies **no** type arguments, e.g. in `let a = System.Char< >()` unlike in C# where `typeof(System.Span< >)` gets the Span type with **one** type argument. Changing `<>` to mean one type argment would be inconsistent.
+    - on top of this, introducing new syntax that will fit the syntax for constraining higher-kinded types instead of specifically for measurable types:
+        ```fs
+        ^a when ^a: <[<Measure>]>
+        ```
+        The outer `<>` indicates `^a` is of generic type arity of 1 and the first parameter is a measure type parameter. This syntax can always be introduced later when F# does get higher-kinded types.
+
+## Changes to specification - [Type Constraints](https://github.com/fsharp/fslang-spec/blob/1890512002c43f832cbdd6524587c22563589403/spec/types-and-type-constraints.md#type-constraints)
+
+```diff
+constraint :=
+    ...
+    typar : equality
+    typar : comparison
++   static-typar : 'measurable'
 ```
-which is intended for defining measure-annotated abbreviations. Here, we propose that this attribute gains a second purpose when applied to type abbreviations that define one measure parameter and does not apply it in the type abbreviation, to establish that the abbreviated type can be measure-annotated by this type abbreviation.
 
-Given this, the `^a: measurable` constraint can be satisfied by any type with another type abbreviation in scope with `[<MeasureAnnotatedAbbreviation>]` that defines a type abbreviation to it and taking one measure parameter. The additional statically available measure definition would be implicitly passed along with the type to satisfy the statically resolved `measurable` constraint.
-
-Sample code:
-```fs
-[<Measure>] type m
-let inline a() = 1<m> // val inline a: unit -> ^a<m> when ^a: 1 and ^a: measurable
-let b: float32<m> = a() // works
-let c: decimal = a() // errors
-let inline d() = (1<m> + 1.1<m>) * 2<m>
-// val inline d: unit -> ^a<m^2> when ^a: 1 .. 2 and ^a: float and ^a: measurable and ^a: (static member (+): ^a * ^a -> ^a) and ^a: (static member (*): ^a * ^a -> ^a)
+```diff
+F# supports the following type constraints:
++ - Measurable constraints
 ```
+
+### 
 
 # FS-1150g Type-directed resolution of tuple literals
 The design suggestion [#988](https://github.com/fsharp/fslang-suggestions/issues/988) is marked "approved in principle".
@@ -1002,15 +1136,7 @@ match 1, 2: KeyValuePair<int, int> with
 
 ```diff
 constraint :=
-    typar :> type                  -- coercion constraint
-    typar : null                   -- nullness constraint
-    static-typars : ( member-sig ) -- member "trait" constraint
-    typar : (new : unit -> 'T)     -- CLI default constructor constraint
-    typar : struct                 -- CLI non-Nullable struct
-    typar : not struct             -- CLI reference type
-    typar : enum< type >           -- enum decomposition constraint
-    typar : unmanaged              -- unmanaged constraint
-    typar : delegate<type, type>   -- delegate decomposition constraint
+    ...
     typar : equality
     typar : comparison
 +   static-typar : (type , ... , type) -- tuple constraint
