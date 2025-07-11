@@ -7,7 +7,7 @@ This RFC covers the detailed proposal for this suggestion.
 - [x] [Spread operator for F#](https://github.com/fsharp/fslang-suggestions/issues/1253)
 - [x] Approved in principle
 - [ ] [Implementation](https://github.com/dotnet/fsharp/pull/TODO)
-- [ ] [Discussion](https://github.com/fsharp/fslang-design/discussions/TODO)
+- [x] [Discussion](https://github.com/fsharp/fslang-design/discussions/806)
 
 # Summary
 
