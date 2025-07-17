@@ -999,29 +999,63 @@ A new statically resolved type constraint is added - "supports a unit of measure
 ^a: measurable
 ```
 
-The default type of `1<m>` now becomes `^a<m> when ^a: 1 and ^a: measurable`. The existence of the statically resolved constraint `measurable` disambiguates `^a<m>` which is an application of a unit of measure from being a generic type application. The syntax `^a<m>` would only pass type checking if `^a` also has a type constraint of `^a: measurable`. `^a<1>` is equivalent to `^a`.
+The default type of `1<m>` now becomes `^a<m> when ^a: 1 and ^a: measurable`. The existence of the statically resolved constraint `measurable` disambiguates `^a<m>` which is an application of a unit of measure from being a generic type application. The syntax `^a<m>` would only pass type checking if `^a` also has a type constraint of `^a: measurable`. `^a<1>` is equivalent to `^a` because 
+when `^a` or `^a<1>` with the `measurable` constraint is instantiated, e.g. `decimal<1>`, it is equivalent to the underlying type represented by measure-annotated abbreviation, e.g. `decimal`.
 
-While the current compiler hardcodes the relationships between numeric type abbreviations and measure-annotated abbreviations, like between `float` and `float<'Measure>`, the `measurable` type constraint is satisfied with a concrete instantiation of a measure-annotated abbreviation with one unit-of-measure parameter and that unit-of-measure parameter is set to `1` or `_`, like `float<1>` and `float<_>` (which infers `_` as `1`). It is an error if any unit-of-measure which is not `1` is specified. `^a<m>` would change the unit of measure variable from `1` to `m`. It is also an error if `float` is passed instead of `float<1>` because there would be a lack of type information to link `float` to its measure-annotated abbrevation `float<_>` otherwise (unless `[<MeasureAnnotatedAbbreviation>]` is specially handled; see Alternatives below).
+While the current compiler hardcodes the relationships between numeric type abbreviations and measure-annotated abbreviations, like between `float` and `float<'Measure>`, the `measurable` type constraint is satisfied with any type with a `[<MeasureAnnotatedAbbreviation>]`-annotated type abbreviation that takes one measure parameter and abbreviates to this type. 
 
-While passing in a concrete unit-of-measure instantiation for satisfying the `measurable` constraint is confusing when a specific unit is placed at the generic type parameter and yet the generic type arguments get silently dropped, it is already done in `typedefof<_>` which is understood as `typeof<_>.GetGenericTypeDefinition()` for instantiated generic types and the generic type isn't propagated elsewhere.
+For example, when `float` is applied as a generic type argument to a generic type parameter with the `measurable` constraint, the `[<MeasureAnnotatedAbbreviation>]`-annotated type abbreviation is `float<_>` as it is defined as
+```fs
+[<MeasureAnnotatedAbbreviation>] type float<[<Measure>] 'Measure> = float 
+```
+which takes one measure parameter and has `float` on the right hand side.
 
-Sample code:
 ```fs
 // Proposed
 [<Measure>] type m
+let inline f x = x * 3<m>
+// val inline f: x:^a<'b> -> ^a<'b * m> when ^a: measurable and ^a: 3
+let x: float = 1
+let y = f x // calls f with ^a = float, looking up float<_> from available measure-annotated abbreviations
+// val y: float<m> 
+let z = f 3</m> // calls f with ^a = float, it is the underlying type of float<_>
+// val z: float
+
 let inline a() = 1<m> // val inline a: unit -> ^a<m> when ^a: 1 and ^a: measurable
 let b: float32<m> = a() // works
 let c: decimal = a() // errors
 let inline d() = (1<m> + 1.1<m>) * 2<m>
 // val inline d: unit -> ^a<m^2> when ^a: 1 .. 2 and ^a: float and ^a: measurable and ^a: (static member (+): ^a * ^a -> ^a) and ^a: (static member (*): ^a * ^a -> ^a)
-let e = d<decimal<1>>() // val e: decimal<m^2>
-let f = d<decimal>() // error: 'decimal' does not have a unit-of-measure parameter
-let g = d<decimal<m>>() // error: cannot supply a unit-of-measure parameter other than '1' for measureable constraint
+let e = d<decimal<1>>() // val e: decimal<m^2>, decimal<1> = decimal
+let f = d<decimal>() // val f: decimal<m^2>
+let g = d<decimal<m>>() // error: cannot supply a unit-of-measure parameter other than '1' for measurable constraint
+
+let inline withMeasure<^a, [<Measure>] ^b> (x: ^a when ^a: measurable): ^a<^b> = x * 1<_>
+// val inline withMeasure: x: ^a -> ^a<^b> when ^a: measurable
+withMeasure<_, m> 1.0 // calls withMeasure with ^a = float (defaulted) and ^b = m, returns float<m>
+let inline withoutMeasure (x: ^a<^b> when ^a: measurable): ^a = x / 1<_>
+// val inline withoutMeasure: x: ^a<^b> -> ^a when ^a: measurable
+withoutMeasure 1<m> // calls withoutMeasure with ^a = int (defaulted) and ^b = m, returns int
 ```
 
-When `^a` or `^a<1>` with the `measureable` constraint is instantiated, e.g. `decimal<1>`, it is equivalent to the underlying type represented by measure-annotated abbreviation, e.g. `decimal`.
+`[<MeasureAnnotatedAbbreviation>]`'s only purpose today is to alleviate the deprecated error of unused type parameters for
+```fs
+type X<'a> = Y
+```
+which is intended for defining measure-annotated abbreviations. Here, we propose that this attribute gains a second purpose when applied to type abbreviations that define one measure parameter and does not apply it in the type abbreviation, to establish that the abbreviated type can be measure-annotated by this type abbreviation.
 
-For a type variable with the `measureable` constraint, all operations assumed by current measured type definitions apply:
+Given this, the `^a: measurable` constraint can be satisfied by any type with another type abbreviation in scope with `[<MeasureAnnotatedAbbreviation>]` that defines a type abbreviation to it and taking one measure parameter. The additional statically available measure definition would be implicitly passed along with the type to satisfy the statically resolved `measurable` constraint. This means that `float` satisfies the `measurable` constraint and the compiler will search for `float<_>` from all `[<MeasureAnnotatedAbbreviation>]`s visible.
+
+The usage of a new statically resolved type constraint is necessary even if a unit-of-measure annotated type variable isn't exposed. This is because in F#, units of measure support needs to be declared using `[<MeasureAnnotatedAbbreviation>]`. For non-built-in types like `System.Half`, an equivalent needs to be declared using 
+```fs
+type half = System.Half
+[<MeasureAnnotatedAbbreviation>] type half<[<Measure>] 'Measure> = half
+```
+before it is usable with units of measure.
+
+The downside of this approach is the magic implicit resolution of `float<_>` from `float`. While `float` without type parameters is not confusing, choosing a specific measure-annotated abbreviation is arbitrary when there is more than one abbreviation for the same type, this is a many-to-one relationship.
+
+For a type variable with the `measurable` constraint, all operations assumed by current measured type definitions apply:
 ```fs
 // Proposed
 let inline f() =
@@ -1068,30 +1102,41 @@ let c: vector3<float, m> = 2<m> // works
 let d = c * 3<m> // val d: vector3<float, m^2>
 ```
 
+Eliminating `error FS0634: Non-zero constants cannot have generic units. For generic zero, write 0.0<_>.`, i.e. allowing `1<'u>`, can also be done. Today, all numeric literals must either have no units of measure, have an anonymous unit of measure `_`, or have explicit units of measure without unit variables. Workarounds like `(1<_>: ^a<'u>)` will certainly exist - but why not simplify it?
 
 ## Alternative definitions for `measurable` constraint
 
-### Using the `[<MeasureAnnotatedAbbreviation>]` attribute to establish a relationship between `float<'Measure>` and `float`
+### Alternative: Requiring passing in the measure-annotated abbreviation as generic type argument
 
-`[<MeasureAnnotatedAbbreviation>]`'s only purpose today is to alleviate the deprecated error of unused type parameters for
+The type that satisfies the `measurable` constraint must be a concrete instantiation of a measure-annotated abbreviation with one unit-of-measure parameter and that unit-of-measure parameter is set to `1` or `_`, like `float<1>` and `float<_>` (which infers `_` as `1`). It is an error if any unit-of-measure which is not `1` is specified. `^a<m>` would change the unit of measure variable from `1` to `m`. It is also an error if `float` is passed instead of `float<1>` because there would be a lack of type information to link `float` to its measure-annotated abbrevation `float<_>` otherwise (unless `[<MeasureAnnotatedAbbreviation>]` is specially handled; see Alternatives below).
+
+While passing in a concrete unit-of-measure instantiation for satisfying the `measurable` constraint is confusing when a specific unit is placed at the generic type parameter and yet the generic type arguments get silently dropped, it is already done in `typedefof<_>` which is understood as `typeof<_>.GetGenericTypeDefinition()` for instantiated generic types and the generic type isn't propagated elsewhere.
+
+Sample code:
 ```fs
-type X<'a> = Y
+// Proposed
+[<Measure>] type m
+let inline a() = 1<m> // val inline a: unit -> ^a<m> when ^a: 1 and ^a: measurable
+let b: float32<m> = a() // works
+let c: decimal = a() // errors
+let inline d() = (1<m> + 1.1<m>) * 2<m>
+// val inline d: unit -> ^a<m^2> when ^a: 1 .. 2 and ^a: float and ^a: measurable and ^a: (static member (+): ^a * ^a -> ^a) and ^a: (static member (*): ^a * ^a -> ^a)
+let e = d<decimal<1>>() // val e: decimal<m^2>
+let f = d<decimal>() // error: 'decimal' does not have a unit-of-measure parameter
+let g = d<decimal<m>>() // error: cannot supply a unit-of-measure parameter other than '1' for measurable constraint
 ```
-which is intended for defining measure-annotated abbreviations. Here, we propose that this attribute gains a second purpose when applied to type abbreviations that define one measure parameter and does not apply it in the type abbreviation, to establish that the abbreviated type can be measure-annotated by this type abbreviation.
 
-Given this, the `^a: measurable` constraint can be satisfied by any type with another type abbreviation in scope with `[<MeasureAnnotatedAbbreviation>]` that defines a type abbreviation to it and taking one measure parameter. The additional statically available measure definition would be implicitly passed along with the type to satisfy the statically resolved `measurable` constraint. This means that `float` satisfies the `measurable` constraint and the compiler will search for `float<_>` from all `[<MeasureAnnotatedAbbreviation>]`s visible.
-
-The usage of a new statically resolved type constraint is necessary even if a unit-of-measure annotated type variable isn't exposed. This is because in F#, units of measure support needs to be declared using `[<MeasureAnnotatedAbbreviation>]`. For non-built-in types like `System.Half`, an equivalent needs to be declared using 
+The major downside of this approach is:
 ```fs
-type half = System.Half
-[<MeasureAnnotatedAbbreviation>] type half<[<Measure>] 'Measure> = half
+[<Measure>] type m
+let a: float = 1 // float
+let b = 1 * 1<m> // float<m>
+// How do we know float<_> from float? An explicit type annotation is required.
 ```
-before it is usable with units of measure.
 
-The downside of this approach is the magic implicit resolution of `float<_>` from `float`. While `float` without type parameters is not confusing, choosing a specific measure-annotated abbreviation is arbitrary when there is more than one abbreviation for the same type, this is a many-to-one relationship.
-
-### Other approaches
-- modification of name resolution such that `float<_>` is passed where `float` is specified for `measurable` constrained parameters, but type constraint information isn't processed yet at name resolution
+### Other alternatives
+- denoting measurable type parameters as `[<MeasureAnnotatedAbbreviation>]`, i.e. `let inline one<[<MeasureAnnotatedAbbreviation>] ^a, [<Measure>] ^b>(): ^a<^b> = 1<_>` instead of `let inline one<^a, [<Measure>] ^b when ^a: measurable>(): ^a<^b> = 1<_>`. This risks ambiguity when the type parameters aren't explicitly specified. How would raw `^a<^b>` in `let inline one(): ^a<^b> = 1<_>` be disambiguated from a generic type application later if it were to be supported? Or one must somehow allow both measure application and generic type application in this syntax? It quickly becomes complicated. Instead, the `measurable` type constraint allows explicit specification of intention that `^a<^b>` is a measure application.
+- modification of name resolution such that `float<_>` is passed where `float` is specified for `measurable` constrained parameters, but type constraint information isn't processed yet at name resolution.
 - introducing new syntax to specify uninstantiated measure-annotated abbreviation like `float<>` which complicates parsing as `<>` is parsed as the inequality operator today. Moreover, `< >` with at least one space inside currently specifies **no** type arguments, e.g. in `let a = System.Char< >()` unlike in C# where `typeof(System.Span< >)` gets the Span type with **one** type argument. Changing `<>` to mean one type argment would be inconsistent.
     - on top of this, introducing new syntax that will fit the syntax for constraining higher-kinded types instead of specifically for measurable types:
         ```fs
@@ -1099,6 +1144,20 @@ The downside of this approach is the magic implicit resolution of `float<_>` fro
         ```
         The outer `<>` indicates `^a` is of generic type arity of 1 and the first parameter is a measure type parameter. This syntax can always be introduced later when F# does get higher-kinded types.
 
+## Changes to specification - [Name Environments](https://github.com/fsharp/fslang-spec/blob/1890512002c43f832cbdd6524587c22563589403/spec/inference-procedures.md#name-environments)
+
+```diff
+Types : a table that maps names to type definitions. 
+-Two queries are supported on this table:
++Three querties are supported on this table:
+
+Find a type by name alone. This query may return multiple types. For example, in the default type-checking environment, the resolution of System.Tuple returns multiple tuple types.
+
+Find a type by name and generic arity n. This query returns at most one type. For example, in the default type-checking environment, the resolution of System.Tuple with n = 2 returns a single type.
+
++Find a [<MeasureAnnotatedAbbreviation>]-annotated type by abbreviation target. This query may return multiple types.
+```
+[[[WIP]]]
 ## Changes to specification - [Type Constraints](https://github.com/fsharp/fslang-spec/blob/1890512002c43f832cbdd6524587c22563589403/spec/types-and-type-constraints.md#type-constraints)
 
 ```diff
@@ -1114,7 +1173,16 @@ F# supports the following type constraints:
 + - Measurable constraints
 ```
 
-### 
+### Measurable constraints
+An _explicit measurable constraint_ has the following form:
+```
+static-typar : 'measurable'
+```
+During constraint solving (see §14.5), for the constraint `type : 'measurable'`, it is satisfied if there exists a type abbreviation, with `[<MeasureAnnotatedAbbreviation>]`, that abbreviates to `type`. 
+
+### Solving measurable constraints
+
+During constraint solving (see §14.5), for any measurable constraint `type : 'measurable'`
 
 # FS-1150g Type-directed resolution of tuple literals
 The design suggestion [#988](https://github.com/fsharp/fslang-suggestions/issues/988) is marked "approved in principle".
