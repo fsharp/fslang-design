@@ -1361,6 +1361,15 @@ Pressing Go To Definition on the tuple pattern should navigate to any `Deconstru
 
 # FS-1150i Field patterns in type-directed tuple patterns
 
+Field patterns `identifier = pattern`, delimited by `,`, will be allowed in tuple patterns to match Deconstruct method parameter names. They can also match tuple field names if defined.
+
+```fs
+type Person(name: string, age: int) =
+    member _.Deconstruct(n: _ outref, a: _ outref) = n <- name; a <- age
+let n, a = Person("John Doe", 69)
+Person("John Doe", 69) |> fun (n = n, a = a) (* here *) -> ()
+```
+
 # FS-1150j Special support for pipeline operators to allow ref struct usage
 
 When the operators `|>` `||>` `|||>` `<|` `<||` `<|||` as defined in FSharp.Core are used in an infix place, and the tuple argument for multi-argument pipeline operators (`||>` `|||>` `<||` `<|||`) is a syntactical tuple (maximum 1 layer of surrounding parentheses), there will no longer be calls to the actual operators, rather direct syntactical translation before type inference will be done at compile-time. Full support of `allows ref struct` authoring from F# is outside of the scope of this RFC. This enables the most common pipline usages of `ReadOnlySpan` espeically when combined with type-directed resolution of list literals.
@@ -1368,7 +1377,7 @@ When the operators `|>` `||>` `|||>` `<|` `<||` `<|||` as defined in FSharp.Core
 ## Diagnostics
 
 Currently, this is the tooltip when hovering over the pipeline operator in `let f a = a in 1 |> f`
-```
+```fs
 val inline (|>): arg : 'T1 -> func: ('T1 -> 'U) -> 'U
 
 Apply a function to a value, the value being on the left, the function on the right.
@@ -1385,7 +1394,7 @@ Full name: Microsoft.FSharp.Core.Operators.(|>)
 
 It should be changed to the tooltip for argument application.
 
-```
+```fs
 val f: x: 'a -> 'b
 'a
 ```
@@ -1508,11 +1517,554 @@ The design suggestion [#1377](https://github.com/fsharp/fslang-suggestions/issue
 
 Whenever there is a `[<ParamArray>]` parameter encountered (`params` in C#), instead of always inserting an array, wrap the variable-length parameter list inside a type-directed list literal behind  the scenes instead. Reuse all the previously defined rules for type-directed list literals.
 
-# FS-1150o Type-directed resolution of tuple patterns with field patterns inside
+# FS-1150o Compile-time optimization of type-directed list literals for maps and sets
 
-# FS-1150p Collection initializers
+If a syntactic list literal only consists of `[<Literal>]` expressions (defined in [F# RFC FS-1133 - Arithmetic in Literals](https://github.com/fsharp/fslang-design/blob/main/FSharp-7.0/FS-1133-arithmetic-in-literals.md)) or ranges between `[<Literal>]` expressions, and target `Set`/`Map` ("built-in collection") with generic type parameters as types eligible for being `[<Literal>]`, there are optimizations available.
 
-# FS-1150q Type-directed resolution of char literals
+The F# Set and Map are both binary search trees. To minimize rebalancing during deserialization (i.e. constructing the Set or Map in memory), the insertion order will minimize rebalancing by following level-order. For example, for the binary search tree of `[1..8]`
+
+```
+      4
+    /   \
+   2     6
+  / \   / \
+ 1   3 5   7
+            \
+             8
+```
+
+the level-order is
+```fs
+[4; 2; 6; 1; 3; 5; 7; 8]
+```
+
+Inserting in this order gives the fastest performance. 
+
+## contains -> binary search
+
+Calls to `Set.contains`/`Map.containsKey`/`Map.exists` or `Map.find` can even be statically optimized as binary search too. Taking an example from https://github.com/fsharp/fslang-suggestions/issues/264#issuecomment-2700513670
+```fs
+open System.Text
+let isCJK (cp: Rune) =
+  Set.contains cp.Value [ // Also applicable to (List/Array/Seq).contains?
+    0x1100 .. 0x11ff
+    0x20a9
+    0x2329 .. 0x232a
+    0x2630 .. 0x2637
+    0x268a .. 0x268f
+    0x2e80 .. 0x2e99
+    0x2e9b .. 0x2ef3
+    0x2f00 .. 0x2fd5
+    0x2ff0 .. 0x303e
+    0x3041 .. 0x3096
+    0x3099 .. 0x30ff
+    0x3105 .. 0x312f
+    0x3131 .. 0x318e
+    0x3190 .. 0x31e5
+    0x31ef .. 0x321e
+    0x3220 .. 0x3247
+    0x3250 .. 0xa48c
+    0xa490 .. 0xa4c6
+    0xa960 .. 0xa97c
+    0xac00 .. 0xd7a3
+    0xd7b0 .. 0xd7c6
+    0xd7cb .. 0xd7fb
+    0xf900 .. 0xfaff
+    0xfe10 .. 0xfe19
+    0xfe30 .. 0xfe52
+    0xfe54 .. 0xfe66
+    0xfe68 .. 0xfe6b
+    0xff01 .. 0xffbe
+    0xffc2 .. 0xffc7
+    0xffca .. 0xffcf
+    0xffd2 .. 0xffd7
+    0xffda .. 0xffdc
+    0xffe0 .. 0xffe6
+    0xffe8 .. 0xffee
+    0x16fe0 .. 0x16fe4
+    0x16ff0 .. 0x16ff1
+    0x17000 .. 0x187f7
+    0x18800 .. 0x18cd5
+    0x18cff .. 0x18d08
+    0x1aff0 .. 0x1aff3
+    0x1aff5 .. 0x1affb
+    0x1affd .. 0x1affe
+    0x1b000 .. 0x1b122
+    0x1b132
+    0x1b150 .. 0x1b152
+    0x1b155
+    0x1b164 .. 0x1b167
+    0x1b170 .. 0x1b2fb
+    0x1d300 .. 0x1d356
+    0x1d360 .. 0x1d376
+    0x1f200
+    0x1f202
+    0x1f210 .. 0x1f219
+    0x1f21b .. 0x1f22e
+    0x1f230 .. 0x1f231
+    0x1f237
+    0x1f23b
+    0x1f240 .. 0x1f248
+    0x1f260 .. 0x1f265
+    0x20000 .. 0x3fffd
+  ] // optimized to binary search
+```
+
+<details>
+<summary>Equivalent C#</summary>
+
+```cs
+public static bool IsCJK(Rune cp) {
+    return cp.Value is 
+        >= 0x1100 and <= 0x11ff
+        or 0x20a9
+        or >= 0x2329 and <= 0x232a
+        or >= 0x2630 and <= 0x2637
+        or >= 0x268a and <= 0x268f
+        or >= 0x2e80 and <= 0x2e99
+        or >= 0x2e9b and <= 0x2ef3
+        or >= 0x2f00 and <= 0x2fd5
+        or >= 0x2ff0 and <= 0x303e
+        or >= 0x3041 and <= 0x3096
+        or >= 0x3099 and <= 0x30ff
+        or >= 0x3105 and <= 0x312f
+        or >= 0x3131 and <= 0x318e
+        or >= 0x3190 and <= 0x31e5
+        or >= 0x31ef and <= 0x321e
+        or >= 0x3220 and <= 0x3247
+        or >= 0x3250 and <= 0xa48c
+        or >= 0xa490 and <= 0xa4c6
+        or >= 0xa960 and <= 0xa97c
+        or >= 0xac00 and <= 0xd7a3
+        or >= 0xd7b0 and <= 0xd7c6
+        or >= 0xd7cb and <= 0xd7fb
+        or >= 0xf900 and <= 0xfaff
+        or >= 0xfe10 and <= 0xfe19
+        or >= 0xfe30 and <= 0xfe52
+        or >= 0xfe54 and <= 0xfe66
+        or >= 0xfe68 and <= 0xfe6b
+        or >= 0xff01 and <= 0xffbe
+        or >= 0xffc2 and <= 0xffc7
+        or >= 0xffca and <= 0xffcf
+        or >= 0xffd2 and <= 0xffd7
+        or >= 0xffda and <= 0xffdc
+        or >= 0xffe0 and <= 0xffe6
+        or >= 0xffe8 and <= 0xffee
+        or >= 0x16fe0 and <= 0x16fe4
+        or >= 0x16ff0 and <= 0x16ff1
+        or >= 0x17000 and <= 0x187f7
+        or >= 0x18800 and <= 0x18cd5
+        or >= 0x18cff and <= 0x18d08
+        or >= 0x1aff0 and <= 0x1aff3
+        or >= 0x1aff5 and <= 0x1affb
+        or >= 0x1affd and <= 0x1affe
+        or >= 0x1b000 and <= 0x1b122
+        or 0x1b132
+        or >= 0x1b150 and <= 0x1b152
+        or 0x1b155
+        or >= 0x1b164 and <= 0x1b167
+        or >= 0x1b170 and <= 0x1b2fb
+        or >= 0x1d300 and <= 0x1d356
+        or >= 0x1d360 and <= 0x1d376
+        or 0x1f200
+        or 0x1f202
+        or >= 0x1f210 and <= 0x1f219
+        or >= 0x1f21b and <= 0x1f22e
+        or >= 0x1f230 and <= 0x1f231
+        or 0x1f237
+        or 0x1f23b
+        or >= 0x1f240 and <= 0x1f248
+        or >= 0x1f260 and <= 0x1f265
+        or >= 0x20000 and <= 0x3fffd;
+}
+```
+
+</details>
+
+<details>
+<summary>Generated C# equivalent (current output by Roslyn)</summary>
+
+```cs
+public static bool IsCJK(Rune cp)
+{
+    int value = cp.Value;
+    if (value >= 63744)
+    {
+        if (value >= 101631)
+        {
+            if (value >= 119552)
+            {
+                if (value >= 127536)
+                {
+                    if (value >= 127584)
+                    {
+                        if (value >= 131072)
+                        {
+                            if (value <= 262141)
+                            {
+                                goto IL_0530;
+                            }
+                        }
+                        else if (value <= 127589)
+                        {
+                            goto IL_0530;
+                        }
+                    }
+                    else if (value >= 127552)
+                    {
+                        if (value <= 127560)
+                        {
+                            goto IL_0530;
+                        }
+                    }
+                    else if (value <= 127537 || value == 127543 || value == 127547)
+                    {
+                        goto IL_0530;
+                    }
+                }
+                else if (value >= 127504)
+                {
+                    if (value >= 127515)
+                    {
+                        if (value <= 127534)
+                        {
+                            goto IL_0530;
+                        }
+                    }
+                    else if (value <= 127513)
+                    {
+                        goto IL_0530;
+                    }
+                }
+                else if (value >= 119648)
+                {
+                    if (value <= 119670 || value == 127488 || value == 127490)
+                    {
+                        goto IL_0530;
+                    }
+                }
+                else if (value <= 119638)
+                {
+                    goto IL_0530;
+                }
+            }
+            else if (value >= 110592)
+            {
+                if (value >= 110948)
+                {
+                    if (value >= 110960)
+                    {
+                        if (value <= 111355)
+                        {
+                            goto IL_0530;
+                        }
+                    }
+                    else if (value <= 110951)
+                    {
+                        goto IL_0530;
+                    }
+                }
+                else if (value >= 110928)
+                {
+                    if (value <= 110930 || value == 110933)
+                    {
+                        goto IL_0530;
+                    }
+                }
+                else if (value <= 110882 || value == 110898)
+                {
+                    goto IL_0530;
+                }
+            }
+            else if (value >= 110581)
+            {
+                if (value >= 110589)
+                {
+                    if (value <= 110590)
+                    {
+                        goto IL_0530;
+                    }
+                }
+                else if (value <= 110587)
+                {
+                    goto IL_0530;
+                }
+            }
+            else if (value >= 110576)
+            {
+                if (value <= 110579)
+                {
+                    goto IL_0530;
+                }
+            }
+            else if (value <= 101640)
+            {
+                goto IL_0530;
+            }
+        }
+        else if (value >= 65490)
+        {
+            if (value >= 94176)
+            {
+                if (value >= 94208)
+                {
+                    if (value >= 100352)
+                    {
+                        if (value <= 101589)
+                        {
+                            goto IL_0530;
+                        }
+                    }
+                    else if (value <= 100343)
+                    {
+                        goto IL_0530;
+                    }
+                }
+                else if (value >= 94192)
+                {
+                    if (value <= 94193)
+                    {
+                        goto IL_0530;
+                    }
+                }
+                else if (value <= 94180)
+                {
+                    goto IL_0530;
+                }
+            }
+            else if (value >= 65504)
+            {
+                if (value >= 65512)
+                {
+                    if (value <= 65518)
+                    {
+                        goto IL_0530;
+                    }
+                }
+                else if (value <= 65510)
+                {
+                    goto IL_0530;
+                }
+            }
+            else if (value >= 65498)
+            {
+                if (value <= 65500)
+                {
+                    goto IL_0530;
+                }
+            }
+            else if (value <= 65495)
+            {
+                goto IL_0530;
+            }
+        }
+        else if (value >= 65128)
+        {
+            if (value >= 65474)
+            {
+                if (value >= 65482)
+                {
+                    if (value <= 65487)
+                    {
+                        goto IL_0530;
+                    }
+                }
+                else if (value <= 65479)
+                {
+                    goto IL_0530;
+                }
+            }
+            else if (value >= 65281)
+            {
+                if (value <= 65470)
+                {
+                    goto IL_0530;
+                }
+            }
+            else if (value <= 65131)
+            {
+                goto IL_0530;
+            }
+        }
+        else if (value >= 65072)
+        {
+            if (value >= 65108)
+            {
+                if (value <= 65126)
+                {
+                    goto IL_0530;
+                }
+            }
+            else if (value <= 65106)
+            {
+                goto IL_0530;
+            }
+        }
+        else if (value >= 65040)
+        {
+            if (value <= 65049)
+            {
+                goto IL_0530;
+            }
+        }
+        else if (value <= 64255)
+        {
+            goto IL_0530;
+        }
+    }
+    else if (value >= 12783)
+    {
+        if (value >= 43360)
+        {
+            if (value >= 55216)
+            {
+                if (value >= 55243)
+                {
+                    if (value <= 55291)
+                    {
+                        goto IL_0530;
+                    }
+                }
+                else if (value <= 55238)
+                {
+                    goto IL_0530;
+                }
+            }
+            else if (value >= 44032)
+            {
+                if (value <= 55203)
+                {
+                    goto IL_0530;
+                }
+            }
+            else if (value <= 43388)
+            {
+                goto IL_0530;
+            }
+        }
+        else if (value >= 12880)
+        {
+            if (value >= 42128)
+            {
+                if (value <= 42182)
+                {
+                    goto IL_0530;
+                }
+            }
+            else if (value <= 42124)
+            {
+                goto IL_0530;
+            }
+        }
+        else if (value >= 12832)
+        {
+            if (value <= 12871)
+            {
+                goto IL_0530;
+            }
+        }
+        else if (value <= 12830)
+        {
+            goto IL_0530;
+        }
+    }
+    else if (value >= 11931)
+    {
+        if (value >= 12441)
+        {
+            if (value >= 12593)
+            {
+                if (value >= 12688)
+                {
+                    if (value <= 12773)
+                    {
+                        goto IL_0530;
+                    }
+                }
+                else if (value <= 12686)
+                {
+                    goto IL_0530;
+                }
+            }
+            else if (value >= 12549)
+            {
+                if (value <= 12591)
+                {
+                    goto IL_0530;
+                }
+            }
+            else if (value <= 12543)
+            {
+                goto IL_0530;
+            }
+        }
+        else if (value >= 12272)
+        {
+            if (value >= 12353)
+            {
+                if (value <= 12438)
+                {
+                    goto IL_0530;
+                }
+            }
+            else if (value <= 12350)
+            {
+                goto IL_0530;
+            }
+        }
+        else if (value >= 12032)
+        {
+            if (value <= 12245)
+            {
+                goto IL_0530;
+            }
+        }
+        else if (value <= 12019)
+        {
+            goto IL_0530;
+        }
+    }
+    else if (value >= 9866)
+    {
+        if (value >= 11904)
+        {
+            if (value <= 11929)
+            {
+                goto IL_0530;
+            }
+        }
+        else if (value <= 9871)
+        {
+            goto IL_0530;
+        }
+    }
+    else if (value >= 9001)
+    {
+        if (value >= 9776)
+        {
+            if (value <= 9783)
+            {
+                goto IL_0530;
+            }
+        }
+        else if (value <= 9002)
+        {
+            goto IL_0530;
+        }
+    }
+    else if (value >= 4352 && (value <= 4607 || value == 8361))
+    {
+        goto IL_0530;
+    }
+    return false;
+    IL_0530:
+    return true;
+}
+```
+
+</details>
+
+# FS-1150p Type-directed resolution of char literals
 The design suggestion [#1421](https://github.com/fsharp/fslang-suggestions/issues/1421) was marked "approved in principle" before.
 
 - [x] [Suggestion](https://github.com/fsharp/fslang-suggestions/issues/1421)
@@ -1550,7 +2102,7 @@ Hovering the cursor above the char literal should show the inferred type. Curren
 
 Pressing Go To Definition on the char literal should navigate to the `op_Implicit` definition if used.
 
-# FS-1150r Type-directed resolution of string literals
+# FS-1150q Type-directed resolution of string literals
 The design suggestion [#1421](https://github.com/fsharp/fslang-suggestions/issues/1421) was marked "approved in principle" before.
 
 - [x] [Suggestion](https://github.com/fsharp/fslang-suggestions/issues/1421)
@@ -1590,7 +2142,7 @@ Hovering the cursor above the string literal should show the inferred type. Curr
 
 Pressing Go To Definition on the string literal should navigate to any conversion methods used under the hood.
 
-# FS-1150s Extending B-suffix string literals to be UTF-8 strings
+# FS-1150r Extending B-suffix string literals to be UTF-8 strings
 The design suggestion [#1421](https://github.com/fsharp/fslang-suggestions/issues/1421) was marked "approved in principle" before.
 
 - [x] [Suggestion](https://github.com/fsharp/fslang-suggestions/issues/1421)
@@ -1604,7 +2156,7 @@ Currently, B-suffix string literals in F# only allow ASCII values. As UTF-8 is t
 let a = "你好"B
 ```
 
-# FS-1150t Type-directed resolution of string patterns
+# FS-1150s Type-directed resolution of string patterns
 
 With type-directed resolution of string construction, it also makes sense to change string deconstruction to be type-directed too.
 
@@ -1620,7 +2172,7 @@ This pattern is not customizable, use an active pattern instead for customizing 
 
 This subsumes suggestion [#1351](https://github.com/fsharp/fslang-suggestions/issues/1351).
 
-# FS-1150u Type-directed resolution of boolean literals and patterns
+# FS-1150t Type-directed resolution of boolean literals and patterns
 
 For uniformity with numeric, char, tuple, list and string literals, it also makes sense for boolean literals to undergo similar type-directed resolution.
 
