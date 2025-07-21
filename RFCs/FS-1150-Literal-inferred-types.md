@@ -1147,17 +1147,19 @@ let b = 1 * 1<m> // float<m>
 ## Changes to specification - [Name Environments](https://github.com/fsharp/fslang-spec/blob/1890512002c43f832cbdd6524587c22563589403/spec/inference-procedures.md#name-environments)
 
 ```diff
-Types : a table that maps names to type definitions. 
--Two queries are supported on this table:
-+Three querties are supported on this table:
-
-Find a type by name alone. This query may return multiple types. For example, in the default type-checking environment, the resolution of System.Tuple returns multiple tuple types.
-
-Find a type by name and generic arity n. This query returns at most one type. For example, in the default type-checking environment, the resolution of System.Tuple with n = 2 returns a single type.
-
-+Find a [<MeasureAnnotatedAbbreviation>]-annotated type by abbreviation target. This query may return multiple types.
+Name Environments
+Each point in the interpretation of an F# program is subject to an environment. The environment encompasses:
+...
++_MeasureAnnotatedAbbreviationsInScope_ : a table that maps type names to one or more [<MeasureAnnotatedAbbreviation>]-annotated type abbreviations with one measure parameter.
 ```
-[[[WIP]]]
+
+## Changes to specification - [Opening Modules and Namespace Declaration Groups](https://github.com/fsharp/fslang-spec/blob/1890512002c43f832cbdd6524587c22563589403/spec/inference-procedures.md#opening-modules-and-namespace-declaration-groups)
+
+```diff
+2. Add each type definition in the original order of declaration in `F`. Adding a type definition involves the following procedure:
++If the type is a type abbreivation, has one measure parameter and is marked with `FSharp.Core.MeasureAnnotatedAbbreviation` attribute, add it to the  _MeasureAnnotatedAbbreviationsInScope_ table with the abbreviated type as key.
+```
+
 ## Changes to specification - [Type Constraints](https://github.com/fsharp/fslang-spec/blob/1890512002c43f832cbdd6524587c22563589403/spec/types-and-type-constraints.md#type-constraints)
 
 ```diff
@@ -1178,11 +1180,103 @@ An _explicit measurable constraint_ has the following form:
 ```
 static-typar : 'measurable'
 ```
-During constraint solving (see §14.5), for the constraint `type : 'measurable'`, it is satisfied if there exists a type abbreviation, with `[<MeasureAnnotatedAbbreviation>]`, that abbreviates to `type`. 
+During constraint solving (see §14.5), for the constraint `type : 'measurable'`, it is satisfied if `type` is a type abbreviation with one measure parameter with its argument set to `1`, or the _MeasureAnnotatedAbbreviationsInScope_ table of the type inference environment (§14.1.1) contains `type` as key. 
 
-### Solving measurable constraints
+## Changes to specification - [Solving Nullness, Struct, and Other Simple Constraints](https://github.com/fsharp/fslang-spec/blob/1890512002c43f832cbdd6524587c22563589403/spec/inference-procedures.md#solving-nullness-struct-and-other-simple-constraints)
 
-During constraint solving (see §14.5), for any measurable constraint `type : 'measurable'`
+```diff
+type : null
+type : (new : unit -> 'T)
+type : struct
+type : not struct
+type : enum< type >
+type : delegate< type, type >
+type : unmanaged
++type : 'measurable'
+```
+
+## Changes to specification - [Variable types](https://github.com/fsharp/fslang-spec/blob/1890512002c43f832cbdd6524587c22563589403/releases/chapters-latest/types-and-type-constraints.md#512-variable-types)
+
+A statically resolved type variable can have a type application if that type application is a measure (§9.1) such as `^a<m>`. This syntax will only pass type checking if the statically resolved type variable which the measure is applied on, also has a measurable constraint.
+
+## Changes to specification - [Type Definitions with Measures in the F# Core Library](https://github.com/fsharp/fslang-spec/blob/1890512002c43f832cbdd6524587c22563589403/releases/chapters-latest/units-of-measure.md#97-type-definitions-with-measures-in-the-f-core-library)
+
+###### The section name will be changed to "Type Definitions with Measures". The entire section is to be replaced with the following.
+
+The F# core library defines the following type abbreviations with `MeasureAnnotatedAbbreviation` attribute applied:
+
+```fs
+type float<[<Measure>] 'U>
+type float32<[<Measure>] 'U>
+type float64<[<Measure>] 'U>
+type single<[<Measure>] 'U>
+type double<[<Measure>] 'U>
+type decimal<[<Measure>] 'U>
+type int<[<Measure>] 'U>
+type int8<[<Measure>] 'U>
+type int16<[<Measure>] 'U>
+type int32<[<Measure>] 'U>
+type int64<[<Measure>] 'U>
+type uint<[<Measure>] 'U>
+type uint8<[<Measure>] 'U>
+type uint16<[<Measure>] 'U>
+type uint32<[<Measure>] 'U>
+type uint64<[<Measure>] 'U>
+type sbyte<[<Measure>] 'U>
+type byte<[<Measure>] 'U>
+type nativeint<[<Measure>] 'U>
+type unativeint<[<Measure>] 'U>
+```
+
+These definitions are called measure-annotated abbreviations. User-defined type abbreviations may also apply the `MeasureAnnotatedAbbreviation` attribute to gain the same behaviors on type abbreviations.
+
+Type abbreviations with one measure parameter and with `MeasureAnnotatedAbbreviation` attribute applied, gain the following special properties:
+- They extend the base type of the abbreviated type.
+- They explicitly implement `System.IFormattable`, `System.IComparable`, `System.IConvertible`, and corresponding generic interfaces if the abbreviated type implements them, instantiated at the given type—for example, `System.IComparable<float<'u>>` and `System.IEquatable<float<'u>>` (so that you can invoke, for example, `CompareTo` after an explicit upcast).
+- As a result of erasure, their compiled form is the abbreviated type.
+- For the purposes of constraint solving and other logical operations on types, a type equivalence holds between the abbreviated type and the corresponding measure-annotated abbreviation that is instantiated at `<1>`. For example:
+
+    ```fs
+    sbyte = sbyte<1>
+    int16 = int16<1>
+    int = int<1>
+    int64 = int64<1>
+    byte = byte<1>
+    uint16 = uint16<1>
+    uint = uint<1>
+    uint64 = uint64<1>
+    float = float<1>
+    float32 = float32<1>
+    decimal = decimal<1>
+    ```
+
+- The measure-annotated abbreviation has the following members if the abbreviated type, labelled as `N` in the following table, has a member of the same name and signature without measure parameters.
+
+| Name                                              | Signature                     |
+| ------------------------------------------------- | ----------------------------- |
+| `Sqrt`                                            | `N<'U^2> -> N<'U>`            |
+| `Atan2`                                           | `N<'U> -> N<'U> -> N<1>`      |
+| `op_Addition`<br>`op_Subtraction`<br>`op_Modulus` | `N<'U> -> N<'U> -> N<'U>`     |
+| `op_Multiply`                                     | `N<'U> -> N<'V> -> N<'U 'V>`  |
+| `op_Division`                                     | `N<'U> -> N<'V> -> N<'U/'V>`  |
+| `Abs`<br>`op_UnaryNegation`<br>`op_UnaryPlus`     | `N<'U> -> N<'U>`              |
+| `Sign`                                            | `N<'U> -> int`                |
+
+This mechanism is used to support units of measure in the following math functions of the F# library:
+`(+)`, `(-)`, `(*)`, `(/)`, `(%)`, `(~+)`, `(~-)`, `abs`, `sign`, `atan2` and `sqrt`.
+
+Additionally, the F# core library provides the following measure-annotated aliases, which are functionally equivalent to the previously-listed measure-annotated types, and which are included for the sake of completeness:
+
+[[[WIP]]]
+
+```fsharp
+type double<[<Measure>] 'U> // aliases float<'U>
+type single<[<Measure>] 'U> // aliases float32<'U>
+type int8<[<Measure>] 'U>   // aliases sbyte<'U>
+type int32<[<Measure>] 'U>  // aliases int<'U>
+type uint8<[<Measure>] 'U>  // aliases byte<'U>
+type uint32<[<Measure>] 'U> // aliases uint<'U>
+```
 
 # FS-1150g Type-directed resolution of tuple literals
 The design suggestion [#988](https://github.com/fsharp/fslang-suggestions/issues/988) is marked "approved in principle".
