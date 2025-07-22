@@ -2268,10 +2268,10 @@ This pattern is not customizable, use an active pattern instead for customizing 
 
 This subsumes suggestion [Pattern matching spans of chars against constant strings](https://github.com/fsharp/fslang-suggestions/issues/1351).
 
-# FS-1150t Type-directed resolution of records
-The design suggestion [C# record interop](https://github.com/fsharp/fslang-suggestions/issues/904) is marked "approved in principle".
+# FS-1150t Type-directed resolution of record updates
+The design suggestion [Support for F# record syntaxes for C# defined records](https://github.com/fsharp/fslang-suggestions/issues/1138) is not yet marked "approved in principle".
 
-- [x] [Suggestion](https://github.com/fsharp/fslang-suggestions/issues/904)
+- [ ] [Suggestion](https://github.com/fsharp/fslang-suggestions/issues/1138)
 - [ ] Approved in principle
 - [ ] [Implementation](https://github.com/dotnet/fsharp/pull/FILL-ME-IN)
 - [ ] [Discussion](https://github.com/fsharp/fslang-design/discussions/FILL-ME-IN)
@@ -2288,24 +2288,9 @@ The Clone method is defined as a method that [satisfies the following](https://g
 - contained in a `[<Sealed>]` type (for example a `struct`) OR is an `override` method OR is a `virtual` method OR is an `abstract` method
 - contained in a type that is equal to or derived from the method return type
 
-In addition to existing F# records, any type that has a Clone method should also be regarded as a record in F# with `[<CustomEquality>]` using the provided `IEquatable<'T>` implementation. If it implements `IComparable` (`IComparable<'T>` will be supported when it can satisfy the `comparison` constraint in the future), then `[<CustomComparison>]` is also assumed, `[<NoComparison>]` otherwise. They would support record creation and update syntax.
+The record update syntax `{ expr with Field = expr2 }` will also be supported on cases where `expr` produces a C# record. Valid fields include all `set`table or `init`ializable properties.
 
-The set of record fields interpreted from a C# record [[[WIP]]]
-
-# FS-1150u Type-directed resolution of record patterns
-
-The record pattern will also be updated to consider C# records but without record field inference.
-
-# FS-1150v Additional properties and methods for F# records to improve C# usage
-
-The design suggestion [Add To Record Codegen CLI shape to allow C# 9.0 `with` keyword interop](https://github.com/fsharp/fslang-suggestions/issues/903) is marked "approved in principle".
-
-- [x] [Suggestion](https://github.com/fsharp/fslang-suggestions/issues/903)
-- [ ] Approved in principle
-- [ ] [Implementation](https://github.com/dotnet/fsharp/pull/FILL-ME-IN)
-- [ ] [Discussion](https://github.com/fsharp/fslang-design/discussions/FILL-ME-IN)
-
-# FS-1150w Type-directed resolution of boolean literals and patterns
+# FS-1150u Type-directed resolution of boolean literals and patterns
 
 For uniformity with numeric, char, tuple, list and string literals, it also makes sense for boolean literals to undergo similar type-directed resolution.
 
