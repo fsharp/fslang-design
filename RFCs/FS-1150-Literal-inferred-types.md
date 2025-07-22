@@ -407,7 +407,7 @@ Function and value definitions in modules are processed in the same way as funct
 
 # FS-1150b Numeric statically resolved type parameter constraints
 
-The design suggestion [#1421](https://github.com/fsharp/fslang-suggestions/issues/1421) was marked "approved in principle" before.
+The design suggestion [Type-directed resolution of numeric literals](https://github.com/fsharp/fslang-suggestions/issues/1421) was marked "approved in principle" before.
 
 - [x] [Suggestion](https://github.com/fsharp/fslang-suggestions/issues/1421)
 - [ ] Approved in principle
@@ -1279,7 +1279,7 @@ type uint32<[<Measure>] 'U> // aliases uint<'U>
 ```
 
 # FS-1150g Type-directed resolution of tuple literals
-The design suggestion [#988](https://github.com/fsharp/fslang-suggestions/issues/988) is marked "approved in principle".
+The design suggestion [More struct tuple inference](https://github.com/fsharp/fslang-suggestions/issues/988) is marked "approved in principle".
 
 - [x] [Suggestion](https://github.com/fsharp/fslang-suggestions/issues/988)
 - [x] Approved in principle
@@ -1393,9 +1393,9 @@ Tuple expressions that have their type resolved to `System.Collections.Generic.K
 Tuple expressions that have their type resolved to a type that supports an `op_Implicit` conversion, intrinsically or by a type extension, are translated to an invocation of the `ty1 * ty2` constructor of that type with the 2 tuple arguments applied. An `op_Implicit` conversion from struct tuple `struct (ty1 * ... * tyn)` is preferred over an `op_Implicit` conversion from `KeyValuePair<ty1, ty2>` is preferred over an `op_Implicit` conversion from the tuple type `ty1 * ... * tyn`.
 
 # FS-1150h Type-directed resolution of tuple patterns
-The design suggestion [#751](https://github.com/fsharp/fslang-suggestions/issues/751) is marked "approved in principle".
+The design suggestions [Support C#-style Deconstruct method based pattern matching](https://github.com/fsharp/fslang-suggestions/issues/751) and [Object/property/field patterns](https://github.com/fsharp/fslang-suggestions/issues/968#issuecomment-1182239319) are marked "approved in principle".
 
-- [x] [Suggestion](https://github.com/fsharp/fslang-suggestions/issues/988)
+- [x] [Suggestion](https://github.com/fsharp/fslang-suggestions/issues/751) and [Suggestion](https://github.com/fsharp/fslang-suggestions/issues/968#issuecomment-1182239319)
 - [x] Approved in principle
 - [ ] [Implementation](https://github.com/dotnet/fsharp/pull/FILL-ME-IN)
 - [ ] [Discussion](https://github.com/fsharp/fslang-design/discussions/FILL-ME-IN)
@@ -1446,6 +1446,8 @@ For the second point, conversion operators also support return type overloading,
 Implicit conversions to tuples do a lot more than just deconstruction and change the way that a given type can be consumed. Conversion operators focus on constructing the destination type, which other references to `op_Implicit` in this RFC do. However, even though a `Rectangle` for example can be deconstructed into width and height, constructing a tuple storing the same values as width and height would lose this context, as opposed to constructing a tuple from a `Point2D` for example, as a point is nothing more than the tuple of its coordinates. This is about API design flexibility rather than these behaviours being intrinsically unpreferable.
 
 The precise steps to determine a `Deconstruct` overload follows the same steps as in C#. This means that when multiple `Deconstruct` methods of the same number of parameters is encountered, an ambiguity error is issued regardless of the concrete types.
+
+On top of `Deconstruct` methods, properties and fields can also be matched by name, positionally after the `Deconstruct` output, corresponding to the constructor syntax.
 
 ## Diagnostics
 
@@ -1498,7 +1500,7 @@ For multi-argument pipeline operators, the highlighted argument should be all of
 The type of the tuple applied immediately to the pipeline operators would lose their type. The tooltip for hovering over the syntactical tuple immediately applied to a pipeline operator should show the same tooltip as the pipeline operator as shown above.
 
 # FS-1150k Type-directed resolution of list literals
-The design suggestion [#1086](https://github.com/fsharp/fslang-suggestions/issues/1086) was marked "approved in principle" before.
+The design suggestion [Type-directed resolution of [ .. ] syntax](https://github.com/fsharp/fslang-suggestions/issues/1086) was marked "approved in principle" before.
 
 - [x] [Suggestion](https://github.com/fsharp/fslang-suggestions/issues/1086)
 - [x] Approved in principle
@@ -1602,7 +1604,7 @@ This pattern is not customizable, use an active pattern instead for customizing 
 
 # FS-1150n Using type-directed list literals to fulfill params parameters
 
-The design suggestion [#1377](https://github.com/fsharp/fslang-suggestions/issues/1377) is **not yet** marked "approved in principle".
+The design suggestion [Native interop for C#13 params enhancements](https://github.com/fsharp/fslang-suggestions/issues/1377) is **not yet** marked "approved in principle".
 
 - [x] [Suggestion](https://github.com/fsharp/fslang-suggestions/issues/1377)
 - [ ] Approved in principle
@@ -2159,7 +2161,7 @@ public static bool IsCJK(Rune cp)
 </details>
 
 # FS-1150p Type-directed resolution of char literals
-The design suggestion [#1421](https://github.com/fsharp/fslang-suggestions/issues/1421) was marked "approved in principle" before.
+The design suggestion [Type-directed resolution of string literals](https://github.com/fsharp/fslang-suggestions/issues/1421) was marked "approved in principle" before.
 
 - [x] [Suggestion](https://github.com/fsharp/fslang-suggestions/issues/1421)
 - [ ] Approved in principle
@@ -2197,7 +2199,7 @@ Hovering the cursor above the char literal should show the inferred type. Curren
 Pressing Go To Definition on the char literal should navigate to the `op_Implicit` definition if used.
 
 # FS-1150q Type-directed resolution of string literals
-The design suggestion [#1421](https://github.com/fsharp/fslang-suggestions/issues/1421) was marked "approved in principle" before.
+The design suggestion [Type-directed resolution of string literals](https://github.com/fsharp/fslang-suggestions/issues/1421) was marked "approved in principle" before.
 
 - [x] [Suggestion](https://github.com/fsharp/fslang-suggestions/issues/1421)
 - [ ] Approved in principle
@@ -2237,7 +2239,7 @@ Hovering the cursor above the string literal should show the inferred type. Curr
 Pressing Go To Definition on the string literal should navigate to any conversion methods used under the hood.
 
 # FS-1150r Extending B-suffix string literals to be UTF-8 strings
-The design suggestion [#1421](https://github.com/fsharp/fslang-suggestions/issues/1421) was marked "approved in principle" before.
+The design suggestion [Extending `B` string suffix to be UTF8 strings](https://github.com/fsharp/fslang-suggestions/issues/1421) was marked "approved in principle" before.
 
 - [x] [Suggestion](https://github.com/fsharp/fslang-suggestions/issues/1421)
 - [ ] Approved in principle
@@ -2264,9 +2266,46 @@ match [97; 98; 99]: ReadOnlySpan<byte> with
 
 This pattern is not customizable, use an active pattern instead for customizing this behaviour.
 
-This subsumes suggestion [#1351](https://github.com/fsharp/fslang-suggestions/issues/1351).
+This subsumes suggestion [Pattern matching spans of chars against constant strings](https://github.com/fsharp/fslang-suggestions/issues/1351).
 
-# FS-1150t Type-directed resolution of boolean literals and patterns
+# FS-1150t Type-directed resolution of records
+The design suggestion [C# record interop](https://github.com/fsharp/fslang-suggestions/issues/904) is marked "approved in principle".
+
+- [x] [Suggestion](https://github.com/fsharp/fslang-suggestions/issues/904)
+- [ ] Approved in principle
+- [ ] [Implementation](https://github.com/dotnet/fsharp/pull/FILL-ME-IN)
+- [ ] [Discussion](https://github.com/fsharp/fslang-design/discussions/FILL-ME-IN)
+
+A C# record is detected based on [the existence of the Clone method](https://github.com/dotnet/roslyn/blob/f25ae8e02a91169f45060951a168b233ad588ed3/src/Compilers/CSharp/Portable/Symbols/Source/SourceNamedTypeSymbol_Bases.cs#L123-L142). 
+
+The Clone method is defined as a method that [satisfies the following](https://github.com/dotnet/roslyn/blob/f25ae8e02a91169f45060951a168b233ad588ed3/src/Compilers/CSharp/Portable/Symbols/Synthesized/Records/SynthesizedRecordClone.cs#L141-L189):
+- is named [`<Clone>$`](https://github.com/dotnet/roslyn/blob/f25ae8e02a91169f45060951a168b233ad588ed3/src/Compilers/Core/Portable/Symbols/WellKnownMemberNames.cs#L480)
+- has `public` accessibility
+- is not `static`
+- has no parameters
+- is not generic
+- is not overloaded
+- contained in a `[<Sealed>]` type (for example a `struct`) OR is an `override` method OR is a `virtual` method OR is an `abstract` method
+- contained in a type that is equal to or derived from the method return type
+
+In addition to existing F# records, any type that has a Clone method should also be regarded as a record in F# with `[<CustomEquality>]` using the provided `IEquatable<'T>` implementation. If it implements `IComparable` (`IComparable<'T>` will be supported when it can satisfy the `comparison` constraint in the future), then `[<CustomComparison>]` is also assumed, `[<NoComparison>]` otherwise. They would support record creation and update syntax.
+
+The set of record fields interpreted from a C# record [[[WIP]]]
+
+# FS-1150u Type-directed resolution of record patterns
+
+The record pattern will also be updated to consider C# records but without record field inference.
+
+# FS-1150v Additional properties and methods for F# records to improve C# usage
+
+The design suggestion [Add To Record Codegen CLI shape to allow C# 9.0 `with` keyword interop](https://github.com/fsharp/fslang-suggestions/issues/903) is marked "approved in principle".
+
+- [x] [Suggestion](https://github.com/fsharp/fslang-suggestions/issues/903)
+- [ ] Approved in principle
+- [ ] [Implementation](https://github.com/dotnet/fsharp/pull/FILL-ME-IN)
+- [ ] [Discussion](https://github.com/fsharp/fslang-design/discussions/FILL-ME-IN)
+
+# FS-1150w Type-directed resolution of boolean literals and patterns
 
 For uniformity with numeric, char, tuple, list and string literals, it also makes sense for boolean literals to undergo similar type-directed resolution.
 
@@ -2275,4 +2314,5 @@ open System
 let nil = Nullable<bool>()
 let a = [true; nil; false]
 ```
+
 
