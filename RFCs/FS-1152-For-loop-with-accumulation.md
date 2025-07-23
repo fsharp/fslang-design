@@ -110,6 +110,15 @@ for s, p = 0, 0 with t in ts and u in us do
     s + t, p + u
 ```
 
+Also, there exists a [computation expression implementation](https://gist.github.com/brianrourkeboll/830408adf29fa35c2d027178b9f08e3c) that can mimic this syntax -
+```fs
+let sum xs = fold 0 { for x in xs -> (+) x } // variation 1
+let sum xs = fold 0 { for acc, x in xs -> acc + x } // variation 2
+let sum xs = fold { for acc, x in 0, xs -> acc + x } // variation 3
+```
+But this is not orthogonal to an existing computation expression context unlike the for loop which allows `let!` inside that refer to the outer context. Moreover, error messages for overloaded computation expression methods are hard to understand, and computation expressions are [notoriously difficult to debug](https://github.com/dotnet/fsharp/issues/13342). Computation expressions also show a heavily different syntax compared to for loops and folds which add hinderance to understanding.
+
+
 # Compatibility
 
 Please address all necessary compatibility questions:
