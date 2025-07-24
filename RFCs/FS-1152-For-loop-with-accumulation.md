@@ -99,6 +99,18 @@ let result = [
 ]
 ```
 
+### Unresolved question
+
+There are a few choices that can be made for `<exprs>` -
+- Allow implicit yields before the final value
+- Warn with implicit yield behaviour
+- Warn with discard behaviour
+- Error because it's ambiguous
+
+Allowing implicit yields before the final value might not be the best choice here.
+
+Warning with discard is also a valid choice when inside this kind of for loop. Explicit `yield`s are always available if needed.
+
 # Drawbacks
 
 It's another syntax to learn.
