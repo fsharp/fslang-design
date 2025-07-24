@@ -70,9 +70,12 @@ for <pat2> in <expr2> do
 <accum>
 ```
 where `<accum>` is a compiler-generated accumulation variable that cannot be used outside the loop,
-and `<exprs>` match any number of expressions before the final expression in the loop body.
+and `<exprs>` match any expressions inside a sequence expression before the final expression in the loop body,
+or any `if` and `match` permitting computation expression syntax inside.
 
-This means that `<accum>` is the value of this loop. It is also the accumulator which gets updated each iteration.
+If the final expression `<expr3>` is contained inside `if` or `match`, then each branch must return the same value and `<expr3>` is searched recursively with the final expression of each branch for `<accum> <-` application.
+
+The result of the syntactical translation shows that `<accum>` is the value of this loop. It is also the accumulator which gets updated each iteration.
 
 Note that `<exprs>` are subject to usual treatment by computation expressions including application of implicit yields,
 which is different from the final expression `<expr3>`.
@@ -117,7 +120,6 @@ let sum xs = fold 0 { for acc, x in xs -> acc + x } // variation 2
 let sum xs = fold { for acc, x in 0, xs -> acc + x } // variation 3
 ```
 But this is not orthogonal to an existing computation expression context unlike the for loop which allows `let!` inside that refer to the outer context. Moreover, error messages for overloaded computation expression methods are hard to understand, and computation expressions are [notoriously difficult to debug](https://github.com/dotnet/fsharp/issues/13342). Computation expressions also show a heavily different syntax compared to for loops and folds which add hinderance to understanding.
-
 
 # Compatibility
 
