@@ -1195,10 +1195,6 @@ type : unmanaged
 +type : 'measurable'
 ```
 
-## Changes to specification - [Variable types](https://github.com/fsharp/fslang-spec/blob/1890512002c43f832cbdd6524587c22563589403/releases/chapters-latest/types-and-type-constraints.md#512-variable-types)
-
-A statically resolved type variable can have a type application if that type application is a measure (§9.1) such as `^a<m>`. This syntax will only pass type checking if the statically resolved type variable which the measure is applied on, also has a measurable constraint.
-
 ## Changes to specification - [Type Definitions with Measures in the F# Core Library](https://github.com/fsharp/fslang-spec/blob/1890512002c43f832cbdd6524587c22563589403/releases/chapters-latest/units-of-measure.md#97-type-definitions-with-measures-in-the-f-core-library)
 
 ###### The section name will be changed to "Type Definitions with Measures". The entire section is to be replaced with the following.
@@ -1208,24 +1204,29 @@ The F# core library defines the following type abbreviations with `MeasureAnnota
 ```fs
 type float<[<Measure>] 'U>
 type float32<[<Measure>] 'U>
-type float64<[<Measure>] 'U>
-type single<[<Measure>] 'U>
-type double<[<Measure>] 'U>
 type decimal<[<Measure>] 'U>
-type int<[<Measure>] 'U>
-type int8<[<Measure>] 'U>
-type int16<[<Measure>] 'U>
-type int32<[<Measure>] 'U>
-type int64<[<Measure>] 'U>
-type uint<[<Measure>] 'U>
-type uint8<[<Measure>] 'U>
-type uint16<[<Measure>] 'U>
-type uint32<[<Measure>] 'U>
-type uint64<[<Measure>] 'U>
 type sbyte<[<Measure>] 'U>
+type int16<[<Measure>] 'U>
+type int<[<Measure>] 'U>
+type int64<[<Measure>] 'U>
 type byte<[<Measure>] 'U>
+type uint16<[<Measure>] 'U>
+type uint<[<Measure>] 'U>
+type uint64<[<Measure>] 'U>
 type nativeint<[<Measure>] 'U>
 type unativeint<[<Measure>] 'U>
+```
+
+Additionally, the F# core library provides the following measure-annotated aliases, which are functionally equivalent to the previously-listed measure-annotated types, and which are included for the sake of completeness:
+
+```fsharp
+type double<[<Measure>] 'U> // aliases float<'U>
+type float64<[<Measure>] 'U> // aliases float<'U>
+type single<[<Measure>] 'U> // aliases float32<'U>
+type int8<[<Measure>] 'U>   // aliases sbyte<'U>
+type int32<[<Measure>] 'U>  // aliases int<'U>
+type uint8<[<Measure>] 'U>  // aliases byte<'U>
+type uint32<[<Measure>] 'U> // aliases uint<'U>
 ```
 
 These definitions are called measure-annotated abbreviations. User-defined type abbreviations may also apply the `MeasureAnnotatedAbbreviation` attribute to gain the same behaviors on type abbreviations.
@@ -1265,18 +1266,11 @@ Type abbreviations with one measure parameter and with `MeasureAnnotatedAbbrevia
 This mechanism is used to support units of measure in the following math functions of the F# library:
 `(+)`, `(-)`, `(*)`, `(/)`, `(%)`, `(~+)`, `(~-)`, `abs`, `sign`, `atan2` and `sqrt`.
 
-Additionally, the F# core library provides the following measure-annotated aliases, which are functionally equivalent to the previously-listed measure-annotated types, and which are included for the sake of completeness:
+## Changes to specification - [Variable types](https://github.com/fsharp/fslang-spec/blob/1890512002c43f832cbdd6524587c22563589403/releases/chapters-latest/types-and-type-constraints.md#512-variable-types)
+
+A statically resolved type variable can have a type application if that type application is a measure (§9.1) such as `^a<m>`. This syntax will only pass type checking if the statically resolved type variable which the measure is applied on, also has a measurable constraint. A variable type with a measure cannot be used as a variable type without a measure unless the measure is `1`.
 
 [[[WIP]]]
-
-```fsharp
-type double<[<Measure>] 'U> // aliases float<'U>
-type single<[<Measure>] 'U> // aliases float32<'U>
-type int8<[<Measure>] 'U>   // aliases sbyte<'U>
-type int32<[<Measure>] 'U>  // aliases int<'U>
-type uint8<[<Measure>] 'U>  // aliases byte<'U>
-type uint32<[<Measure>] 'U> // aliases uint<'U>
-```
 
 # FS-1150g Type-directed resolution of tuple literals
 The design suggestion [More struct tuple inference](https://github.com/fsharp/fslang-suggestions/issues/988) is marked "approved in principle".
@@ -2276,7 +2270,7 @@ The design suggestion [Support for F# record syntaxes for C# defined records](ht
 - [ ] [Implementation](https://github.com/dotnet/fsharp/pull/FILL-ME-IN)
 - [ ] [Discussion](https://github.com/fsharp/fslang-design/discussions/FILL-ME-IN)
 
-A C# record is detected based on [the existence of the Clone method](https://github.com/dotnet/roslyn/blob/f25ae8e02a91169f45060951a168b233ad588ed3/src/Compilers/CSharp/Portable/Symbols/Source/SourceNamedTypeSymbol_Bases.cs#L123-L142). 
+A C# record class is detected based on [the existence of the Clone method](https://github.com/dotnet/roslyn/blob/f25ae8e02a91169f45060951a168b233ad588ed3/src/Compilers/CSharp/Portable/Symbols/Source/SourceNamedTypeSymbol_Bases.cs#L123-L142). 
 
 The Clone method is defined as a method that [satisfies the following](https://github.com/dotnet/roslyn/blob/f25ae8e02a91169f45060951a168b233ad588ed3/src/Compilers/CSharp/Portable/Symbols/Synthesized/Records/SynthesizedRecordClone.cs#L141-L189):
 - is named [`<Clone>$`](https://github.com/dotnet/roslyn/blob/f25ae8e02a91169f45060951a168b233ad588ed3/src/Compilers/Core/Portable/Symbols/WellKnownMemberNames.cs#L480)
@@ -2288,7 +2282,9 @@ The Clone method is defined as a method that [satisfies the following](https://g
 - contained in a `[<Sealed>]` type (for example a `struct`) OR is an `override` method OR is a `virtual` method OR is an `abstract` method
 - contained in a type that is equal to or derived from the method return type
 
-The record update syntax `{ expr with Field = expr2 }` will also be supported on cases where `expr` produces a C# record. Valid fields include all `set`table or `init`ializable properties.
+The record update syntax `{ expr with Field = expr2 }` will also be supported on cases where `expr` produces a C# record class, or a struct type. Valid target fields include all `set`table or `init`ializable properties.
+
+Since this uses name resolution, the same rules as member lookup apply - not applicable to generic contexts, only usable on concrete types.
 
 # FS-1150u Type-directed resolution of boolean literals and patterns
 
