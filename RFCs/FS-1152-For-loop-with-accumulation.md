@@ -49,6 +49,96 @@ Meanwhile, folds are hard to understand and the body cannot be use computation e
 ```
 which suggests a missed opportunity to make them more familiar to people who know `for` loops.
 
+## Doesn't FSharp.Core already provide better functions for this example?
+
+The benefits of this syntax start to compound when there are nested folds and folds over tuples.
+
+```fs
+```fs
+// Example MVU model
+type Item = { Name: string; Count: int }
+type Category = { Name: string; Items: Item list }
+type Model = { Categories: Category list }
+
+// Compute (total items, total count) in all categories
+// Current
+let stats model =
+    model.Categories
+    |> List.fold (fun (totalItems, totalCount) category ->
+        let items, count =
+            category.Items
+            |> List.fold (fun (items, count) item ->
+                (items + 1, count + item.Count) // Fold over inner items
+            ) (0, 0)
+        (totalItems + items, totalCount + count)
+    ) (0, 0) // Initial state
+// Proposed
+let stats' model =
+    for totalItems, totalCount = 0, 0 with category in model.Categories do
+        let items, count =
+            for items, count = 0, 0 with item in category.Items do
+                items + 1, count + item.Count
+        totalItems + items, totalCount + count
+```
+
+In a regular `fold`, it's very hard just to get the white space alignment and closing parentheses right when you need a fold within a fold.
+Folding over tuples with a lambda also becomes pretty confusing very quickly.
+Using the new fold syntax, this becomes much easier to write and understand.
+
+## How about `||>`?
+
+```fs
+// Current
+let stats'' model = // ||>
+    ((0, 0), model.Categories) // ugh - nested tuples
+    ||> List.fold (fun (totalItems, totalCount) category ->
+        let categoryStats =
+            ((0, 0), category.Items) // ugh - nested tuples
+            ||> List.fold (fun (items, count) item ->
+                (items + 1, count + item.Count) // Fold over inner items
+            ) 
+        (totalItems + fst categoryStats, totalCount + snd categoryStats)
+    )
+```
+
+`||>`s make it hard to thread the pair through the lambda without screwing up the types.
+
+Let's look at another example:
+
+```fs
+// Current
+let effects, model =
+    Seq.fold (fun (effects, model) item ->
+        let effect, model = Model.action item model
+        let model = Model.action2 model
+        effect :: effects, model)
+        ([], model)
+        items
+let effects', model' = // ||>
+    (([], model), items) // ugh - nested tuples
+    ||> Seq.fold (fun (effects, model) item ->
+        let effect, model = Model.action item model
+        let model = Model.action2 model
+        effect :: effects, model)
+```
+
+It is easy to accidentally do `(model, effect :: effects)` or `(model, [])` - especially for people new to functional programming, tupling like this is hard to get right.
+This even happens for experienced F# programmers. 
+
+If the user doesn't get them right, the problem is figuring out what they got wrong from the type errors.
+
+People also often get the parameter order mixed up, such as doing items `([], model)` instead of `([], model) items`.
+There are far fewer likely points of failure using the `for` loop with accumulation.
+
+```fs
+// Proposed
+let effects, model =
+    for effects, model = [], model with item in items do
+        let effect, model = Model.action item model
+        let model = Model.action2 model
+        effect :: effects, model
+```
+
 # Detailed design
 
 For this syntax
