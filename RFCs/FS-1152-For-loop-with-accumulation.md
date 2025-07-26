@@ -153,7 +153,7 @@ The `for` loop with accumulation is superior to the `fold`s because:
 - Much easier to place loop parameters correctly, fewer points of failure compared to ordering fold arguments / types
 - More precise error messages from type inference especially for newcomers
 
-The only caveat is the unfamiliarity with a loop that has a return value where existing loops must return unit, but over time, this can he overcome.
+The only caveat is the unfamiliarity with a loop that has a return value where existing loops must return unit, but over time, this can be overcome with stressing the existence of an accumulator vs not having one.
 
 # Detailed design
 
