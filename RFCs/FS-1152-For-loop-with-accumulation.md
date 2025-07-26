@@ -127,7 +127,7 @@ This even happens for experienced F# programmers.
 
 If the user doesn't get them right, the problem is figuring out what they got wrong from the type errors.
 
-People also often get the parameter order mixed up, such as doing items `([], model)` instead of `([], model) items`.
+People also often get the parameter order mixed up, such as doing `items ([], model)` instead of `([], model) items`.
 There are far fewer likely points of failure using the `for` loop with accumulation.
 
 ```fs
@@ -152,6 +152,8 @@ The `for` loop with accumulation is superior to the `fold`s because:
 - Much easier to attain whitespace alignment and omission of the closing parenthesis
 - Much easier to place loop parameters correctly, fewer points of failure compared to ordering fold arguments / types
 - More precise error messages from type inference especially for newcomers
+
+The only caveat is the unfamiliarity with a loop that has a return value where existing loops must return unit, but over time, this can he overcome.
 
 # Detailed design
 
