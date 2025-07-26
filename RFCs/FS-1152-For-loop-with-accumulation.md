@@ -139,6 +139,20 @@ let effects, model =
         effect :: effects, model
 ```
 
+## Summary
+
+The `for` loop with accumulation is superior to mutable variables with imperative `for` loops because:
+- More succinct from elision of accumulator variable
+- Better scoping without variable leakage outside loop
+- Preservation of functional immutable semantics lost from a mutable variable
+
+The `for` loop with accumulation is superior to the `fold`s because:
+- Orthogonality to computation expression contexts
+- Much easier to understand with loop syntax
+- Much easier to attain whitespace alignment and omission of the closing parenthesis
+- Much easier to place loop parameters correctly
+- More precise error messages from type inference especially for newcomers
+
 # Detailed design
 
 For this syntax
