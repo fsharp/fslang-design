@@ -71,9 +71,9 @@ for <pat2> in <expr2> do
 ```
 where `<accum>` is a compiler-generated accumulation variable that cannot be used outside the loop,
 and `<exprs>` match any expressions inside a sequence expression before the final expression in the loop body,
-or any `if` and `match` and `try` permitting computation expression syntax inside.
+or any `if` and `match` and `try`-`with` permitting computation expression syntax inside.
 
-If the final expression `<expr3>` is contained inside `if` or `match` or `try`, then each branch must return the same value and `<expr3>` is searched recursively with the final expression of each branch for `<accum> <-` application.
+If the final expression `<expr3>` is contained inside `if` or `match` or `try`-`with`, then each branch must return the same value and `<expr3>` is searched recursively with the final expression of each branch for `<accum> <-` application.
 
 The result of the syntactical translation shows that `<accum>` is the value of this loop. It is also the accumulator which gets updated each iteration.
 
