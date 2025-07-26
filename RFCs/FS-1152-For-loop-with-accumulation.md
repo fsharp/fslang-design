@@ -109,7 +109,7 @@ There are a few choices that can be made for `<exprs>` -
 
 Allowing implicit yields before the final value might not be the best choice here.
 
-Warning with discard is also a valid choice when inside this kind of for loop. Explicit `yield`s are always available if needed.
+Warning with discard is also a valid choice when inside this kind of for loop. Explicit `yield`s are always available if needed inside this loop, and if we choose to warn, explicit `yield`s in this kind of loop shouldn't interfere with the ability to use implicit `yield`s outside.
 
 # Drawbacks
 
