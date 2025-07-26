@@ -7,7 +7,7 @@ This RFC covers the detailed proposal for this suggestion.
 - [x] [Suggestion](https://github.com/fsharp/fslang-suggestions/issues/1362)
 - [ ] Approved in principle
 - [ ] [Implementation](https://github.com/dotnet/fsharp/pull/FILL-ME-IN)
-- [ ] [Discussion](https://github.com/fsharp/fslang-design/discussions/FILL-ME-IN)
+- [x] [Discussion](https://github.com/fsharp/fslang-design/discussions/808)
 
 # Summary
 
