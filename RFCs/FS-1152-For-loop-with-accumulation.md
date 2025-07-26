@@ -54,7 +54,6 @@ which suggests a missed opportunity to make them more familiar to people who kno
 The benefits of this syntax start to compound when there are nested folds and folds over tuples.
 
 ```fs
-```fs
 // Example MVU model
 type Item = { Name: string; Count: int }
 type Category = { Name: string; Items: Item list }
@@ -227,8 +226,14 @@ Doing nothing - we miss an opportunity to bridge regular for loops with lambda f
 
 There is a potential extension to folding across multiple sequences with the `and` keyword in the future -
 ```fs
-for s, p = 0, 0 with t in ts and u in us do
-    s + t, p + u
+// n-dimensional Euclidian distance between A and B
+let pointACoordinates = [ 1.5; 2.; -3.4; -1.2 ]
+let pointBCoordinates = [ -3.1; 3.1; 1.; -0.2 ]
+
+let euclidianDistance =
+    for acc = 0. with an in pointACoordinates and bn in pointBCoordinates do
+        acc + (an - bn) ** 2.
+    |> sqrt
 ```
 
 Also, there exists a [computation expression implementation](https://gist.github.com/brianrourkeboll/830408adf29fa35c2d027178b9f08e3c) that can mimic this syntax -
