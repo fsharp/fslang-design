@@ -150,7 +150,7 @@ The `for` loop with accumulation is superior to the `fold`s because:
 - Orthogonality to computation expression contexts
 - Much easier to understand with loop syntax
 - Much easier to attain whitespace alignment and omission of the closing parenthesis
-- Much easier to place loop parameters correctly
+- Much easier to place loop parameters correctly, fewer points of failure compared to ordering fold arguments / types
 - More precise error messages from type inference especially for newcomers
 
 # Detailed design
