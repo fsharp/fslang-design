@@ -23,7 +23,7 @@ The value of the loop body is used to update the accumulator which is returned i
 Currently, to do this, we need an additional mutable variable. For example,
 ```fs
 let mutable sentence = "" // mutable accumulator
-for word in ["Hello", " ", "World", "!"] do
+for word in ["Hello"; " "; "World"; "!"] do
     sentence <- sentence + word
 printfn "%s" sentence
 ```
@@ -33,7 +33,7 @@ Moreover, the accumulator must be mutable - which is against functional immutabl
 
 It is proposed that the accumulator be embeddable into the loop itself:
 ```fs
-for sentence = "" with word in ["Hello", " ", "World", "!"] do
+for sentence = "" with word in ["Hello"; " "; "World"; "!"] do
     sentence + word
 |> printfn "%s"
 ```
@@ -43,7 +43,7 @@ and purely functional `fold`s that must be in lambda form.
 
 Meanwhile, folds are hard to understand and the body cannot be use computation expression functionality.
 ```fs
-["Hello", " ", "World", "!"]
+["Hello"; " "; "World"; "!"]
 |> Seq.fold (fun sentence -> sentence + word (*loop body, and yet we lose the ability to do let!*)) "" // initial state is placed last??
 |> printfn "%s"
 ```
@@ -83,7 +83,7 @@ which is different from the final expression `<expr3>`.
 Therefore, this may happen:
 ```fs
 let result = [
-    for sentence = "" with word in ["Hello", " ", "World", "!"] do
+    for sentence = "" with word in ["Hello"; " "; "World"; "!"] do
         sentence
         sentence + word
     |> printfn "%s"
@@ -91,7 +91,7 @@ let result = [
 // expands to
 let result = [
     let mutable <accum> = ""
-    for word in ["Hello", " ", "World", "!"] do
+    for word in ["Hello"; " "; "World"; "!"] do
         sentence // Implicit yield here
         <accum> <- sentence + word // But not for the final expression of the loop body
     <accum>
