@@ -1,4 +1,4 @@
-# F# RFC FS-1152 - For loop with accumulation
+# F# RFC FS-1152 - Fold loops
 
 The design suggestion ["for-with" syntactic sugar for folds](https://github.com/fsharp/fslang-suggestions/issues/1362) has not yet been marked "approved in principle".
 
@@ -11,8 +11,8 @@ This RFC covers the detailed proposal for this suggestion.
 
 # Summary
 
-A new syntax for `for`-loops that allow accumulation is introduced.
-```
+A new syntax for `for`-loops that allow accumulation is introduced that is intuitive, initially teachable, and without too much unexpected behavior.
+```fs
 for <pat> = <expr> with <pat> in <expr> do
     <expr>
 ```
@@ -41,13 +41,40 @@ The return value of the loop body updates the accumulator.
 This offers a desirable middle ground between `for` loops that must only have side-effects (returning `unit`)
 and purely functional `fold`s that must be in lambda form.
 
-Meanwhile, folds are hard to understand and the body cannot be use computation expression functionality.
+Meanwhile, folds are hard to understand.
 ```fs
 ["Hello"; " "; "World"; "!"]
-|> Seq.fold (fun sentence -> sentence + word (*loop body, and yet we lose the ability to do let!*)) "" // initial state is placed last??
+|> Seq.fold (fun sentence -> sentence + word (*loop body but shown as a lambda!*)) "" // initial state is placed last??
 |> printfn "%s"
 ```
 which suggests a missed opportunity to make them more familiar to people who know `for` loops.
+
+Some may also suggest that recursive functions may show the logic more clearly than a `fold`.
+
+```fs
+let rec processWords words =
+    match words with
+    | [] -> "" // Empty list means empty string,
+    | word::words -> word + processWords words // and we do append for each element!
+["Hello"; " "; "World"; "!"]
+|> processWords
+|> printfn "%s"
+```
+
+Whoops, this function isn't tail recursive! If you run this for long inputs, it blows up unlike the loop.
+The function needs to be rewritten using the accumulator parameter.
+
+```fs
+let rec [<TailCall>] processWords accum words = // [<TailCall>] with no warning to verify we have a tail call
+    match words with
+    | [] -> accum // Empty list means accumulator,
+    | word::words -> processWords (accum + word) words // and we do append on the accumulator!
+["Hello"; " "; "World"; "!"]
+|> processWords "" // Accumulator is applied away from the function or yet another wrapper function needs to be defined verbosely...
+|> printfn "%s"
+```
+
+A recursive function is just harder to write correctly and is more verbose.
 
 ## Doesn't FSharp.Core already provide better functions for this example?
 
@@ -67,9 +94,9 @@ let stats model =
         let items, count =
             category.Items
             |> List.fold (fun (items, count) item ->
-                (items + 1, count + item.Count) // Fold over inner items
+                items + 1, count + item.Count // Fold over inner items
             ) (0, 0)
-        (totalItems + items, totalCount + count)
+        totalItems + items, totalCount + count
     ) (0, 0) // Initial state
 // Proposed
 let stats' model =
@@ -138,23 +165,111 @@ let effects, model =
         effect :: effects, model
 ```
 
+## Computation expressions already provide a similar syntax, right?
+
+Indeed there exists a [computation expression implementation](https://gist.github.com/brianrourkeboll/830408adf29fa35c2d027178b9f08e3c) that can mimic this syntax -
+```fs
+let sum xs = fold 0 { for x in xs -> (+) x } // variation 1
+let sum xs = fold 0 { for acc, x in xs -> acc + x } // variation 2
+let sum xs = fold { for acc, x in 0, xs -> acc + x } // variation 3
+```
+But this is not orthogonal to an existing computation expression context unlike the for loop which allows `let!` inside that refer to the outer context. Moreover, error messages for overloaded computation expression methods are hard to understand, and computation expressions are [notoriously difficult to debug](https://github.com/dotnet/fsharp/issues/13342). Computation expressions also show a heavily different syntax compared to for loops and folds which add hinderance to understanding.
+
 ## Summary
 
-The `for` loop with accumulation is superior to mutable variables with imperative `for` loops because:
+The fold loop is superior to `mutable` variables with imperative `for` loops because:
 - More succinct from elision of accumulator variable
 - Better scoping without variable leakage outside loop
 - Preservation of functional immutable semantics lost from a mutable variable
 
-The `for` loop with accumulation is superior to the `fold`s because:
-- Orthogonality to computation expression contexts
+The fold loop is superior to `fold` calls because:
+- Potential orthogonality to outer computation expression contexts
 - Much easier to understand with loop syntax
-- Much easier to attain whitespace alignment and omission of the closing parenthesis
+- Much easier to attain whitespace alignment and omission of the closing parenthesis. When indentation is wrong, you also have to consider the parens as a possible cause, vice versa.
 - Much easier to place loop parameters correctly, fewer points of failure compared to ordering fold arguments / types
 - More precise error messages from type inference especially for newcomers
+- More logical cohesion with the accumulator starting value located next to the looping logic
+
+The fold loop is superior to `rec`ursive functions because:
+- Potential orthogonality to outer computation expression contexts
+- Much easier to write correctly without the need to think about tail recursion
+- Much more succinct without requiring the recursive function identifier or a wrapper function to hide the accumulator parameter
+- More logical cohesion with the accumulator starting value located next to the looping logic
+
+The fold loop is superior to computation expression imitations because:
+- Potential orthogonality to outer computation expression contexts
+- Universiality without needing to learn parameter placements from the concrete computation expression implementation localized in each project
+- Availability by default for newcomers to learn easily
+- More precise error messages compared to overloaded computation expression methods especially for newcomers
+- Much easier to perform debugging especially for step debugging
+- Preserves syntactical familiarity with other loops without invoking the need for braces
 
 The only caveat is the unfamiliarity with a loop that has a return value where existing loops must return unit, but over time, this can be overcome with stressing the existence of an accumulator vs not having one.
 
 # Detailed design
+
+`for` is used as the loop keyword because the fold loop behaves identical to the `for` loop with accumulation. Ideally, `fold` would be usable as the loop keyword, but it obviously clashes with existing uses of it as an identifier.
+
+## Alternative 1 - Loop body is a value without CE context
+
+For this syntax
+
+```fs
+for <pat1> = <expr1> with <pat2> in <expr2> do
+    <expr3>
+```
+
+it undergoes a simple syntactical expansion to
+
+```fs
+let mutable <accum> = <expr1>
+for <pat2> in <expr2> do
+    let <pat1> = <accum>
+    <accum> <- <expr3>
+<accum>
+```
+where `<accum>` is a compiler-generated accumulation variable that cannot be used outside the loop. The entire loop body `<expr3>` is assigned to `<accum>`.
+
+The result of the syntactical translation shows that `<accum>` is the value of this loop. It is also the accumulator which gets updated each iteration.
+
+Note that since the loop body is assigned to the accumulator, the loop body is not a computation expression context.
+```fs
+let result = [
+    for sentence = "" with word in ["Hello"; " "; "World"; "!"] do
+        sentence // this is NOT an implicit yield. This warns with a discard behavior.
+        // yield sentence // Error: CE syntax cannot be used here.
+        sentence + word
+    |> printfn "%s" // |> can be used on the loop result
+]
+```
+
+The reason is as follows:
+
+```fs
+let result = [
+    printfn "%s" (
+        ":D" // this is also NOT an implicit yield as it is a subexpression.
+        for sentence = "" with word in ["Hello"; " "; "World"; "!"] do
+            sentence // Warns with discard
+            // yield sentence // Error: CE syntax cannot be used here.
+            sentence + word
+    )
+]
+```
+
+## Alternative 2 - Loop body is a CE context with final expression updating the accumulator
+
+The above alternative loses expressiveness compared to for loops with mutable accumulators. For example, `scan`s cannot be written with the fold loop.
+
+```fs
+let scanned =
+  [ for s = 0 with t in ts do
+      yield s + t
+      s + t
+  ]
+```
+
+However, interactions with CEs start to get complicated.
 
 For this syntax
 
@@ -182,6 +297,8 @@ If the final expression `<expr3>` is contained inside `if` or `match` or `try`-`
 
 The result of the syntactical translation shows that `<accum>` is the value of this loop. It is also the accumulator which gets updated each iteration.
 
+### Alternative 2.1 - Implicit yields in loop body
+
 Note that `<exprs>` are subject to usual treatment by computation expressions including application of implicit yields,
 which is different from the final expression `<expr3>`.
 
@@ -199,22 +316,122 @@ let result = [
     for word in ["Hello"; " "; "World"; "!"] do
         sentence // Implicit yield here
         <accum> <- sentence + word // But not for the final expression of the loop body
-    <accum>
+    <accum> // The fact that the accumulator value is usable is unrelated to the above loop!
     |> printfn "%s"
 ]
 ```
 
-### Unresolved question
+### Alternative 2.2 - Warn with discard in loop body
 
-There are a few choices that can be made for `<exprs>` -
-- Allow implicit yields before the final value
-- Warn with implicit yield behaviour
-- Warn with discard behaviour
-- Error because it's ambiguous
+It might be the case that two seemingly similar lines behaving distinctly is too dangerous.
 
-Allowing implicit yields before the final value might not be the best choice here.
+```fs
+// Alternative 2.1
+let q = seq { for i in 1..10 do s + i } // int seq, 10 values
+let w = seq { for s = 0 with i in 1..10 do s + i } // int seq, but now only 1 value is yielded because it's collected to accumulator
 
-Warning with discard is also a valid choice when inside this kind of for loop. Explicit `yield`s are always available if needed inside this loop, and if we choose to warn, explicit `yield`s in this kind of loop shouldn't interfere with the ability to use implicit `yield`s outside.
+let q1 = seq { for i in 1..10 do s + i; s + i } // int seq, 20 values
+let w1 = seq { for s = 0 with i in 1..10 do s + i; s + i } // int seq, 11 values now?
+```
+
+To resolve this, the syntactical translation of `<exprs>` would automatically insert `; ()` after any expression not bound with a CE keyword or `let` and `use` (or equivalent implementation that implements warn with discard behaviour by default). Meanwhile, explicit usages of the `yield` keyword will not affect implicit yield availability outside of the fold loop.
+
+```fs
+// Alternative 2.2
+let q = seq { for i in 1..10 do s + i } // int seq, 10 values
+let w = seq { for s = 0 with i in 1..10 do s + i } // int seq, but now only 1 value is yielded because it's collected to accumulator
+
+let q1 = seq { for i in 1..10 do s + i; s + i } // int seq, 20 values
+let w1 = seq { for s = 0 with i in 1..10 do s + i; s + i } // int seq, 1 value, warn at first "s + i" with discard by default
+let w2 = seq { for s = 0 with i in 1..10 do yield s + i; s + i } // int seq, 11 values
+```
+
+### Alternative 2.3 - Warn with implicit yield in loop body
+
+Above but instead of discard by default, it's yield by default with warning about ambiguity. It might make more sense to align with the default behaviour in CEs rather than outside? The auto-insertion would be `yield` before instead of `; ()` after.
+
+### Alternative 2.4 - Ambiguity error for unbound expressions
+
+Or it might be best to just error about the ambiguity instead of defaulting to any behaviour after all.
+
+## Alternative A - Loop itself returns the value
+
+All above assumes that the loop itself returns the value. This alternative is more preferable if we assume that the fold accumulated value doesn't need further processing (returning for function) or can easily be piped.
+
+## Alternative B - Loop bindings exposed to code below
+
+It might also be the case that the same deconstruction is needed for the accumulator value after processing after all.
+
+```fs
+// Alternative A
+let effects, model = // This seems repetitive with the loop accumulator...
+    for effects, model = [], model with item in items do
+        let effect, model = Model.action item model
+        let model = Model.action2 model
+        effect :: effects, model
+printfn $"{effects}"
+printfn $"{model}"
+```
+
+It might be more ergonomic to just leak the pattern bindings in the accumulator below the loop for further processing of accumulated results.
+
+```fs
+// Alternative B
+for effects, model = [], model with item in items do
+    let effect, model = Model.action item model
+    let model = Model.action2 model
+    effect :: effects, model
+printfn $"{effects}" // refers to "effects" of the above fold loop
+printfn $"{model}"
+```
+
+The loop itself would return `unit` just like a regular `for` loop does - eliminating the unfamiliarity with a loop that has a return value. However, the tradeoff is that exposing loop bindings like this is even more unfamiliar than the loop modification itself.
+
+The syntactical translation would be modified as follows. For
+
+```fs
+for <pat1> = <expr1> with <pat2> in <expr2> do
+    <exprs>
+    <expr3>
+```
+
+it undergoes a simple syntactical expansion to
+
+### Alternative Ba - Loop returns unit
+
+```fs
+let mutable <accum> = <expr1>
+for <pat2> in <expr2> do
+    let <pat1> = <accum>
+    <exprs>
+    <accum> <- <expr3>
+let <pat1> = <accum> // <accum> deconstructed with <pat1> again
+() // loop returns unit if isolated
+```
+
+This alternative maintains the familiarity with loops returning unit.
+
+### Alternative Bb - Loop requires a following expression and cannot be isolated
+```fs
+let mutable <accum> = <expr1>
+for <pat2> in <expr2> do
+    let <pat1> = <accum>
+    <exprs>
+    <accum> <- <expr3>
+let <pat1> = <accum> // <accum> deconstructed with <pat1> again
+// loop requires an expression following it!
+```
+
+For this alternative, an error message will be raised like `let`s do.
+```
+error FS0588: The block following this 'for' with accumulation is unfinished. Every code block is an expression and must have a result. 'for' with accumulation cannot be the final code element in a block. Consider giving this block an explicit result.
+```
+This alternative maintains the robustness that `let`s requiring following expressions do.
+
+## Summary
+
+There exists the combination of these alternatives to choose from:
+(A or Ba or Bb) and (1 or 2.1 or 2.2 or 2.3 or 2.4)
 
 # Drawbacks
 
@@ -235,14 +452,6 @@ let euclidianDistance =
         acc + (an - bn) ** 2.
     |> sqrt
 ```
-
-Also, there exists a [computation expression implementation](https://gist.github.com/brianrourkeboll/830408adf29fa35c2d027178b9f08e3c) that can mimic this syntax -
-```fs
-let sum xs = fold 0 { for x in xs -> (+) x } // variation 1
-let sum xs = fold 0 { for acc, x in xs -> acc + x } // variation 2
-let sum xs = fold { for acc, x in 0, xs -> acc + x } // variation 3
-```
-But this is not orthogonal to an existing computation expression context unlike the for loop which allows `let!` inside that refer to the outer context. Moreover, error messages for overloaded computation expression methods are hard to understand, and computation expressions are [notoriously difficult to debug](https://github.com/dotnet/fsharp/issues/13342). Computation expressions also show a heavily different syntax compared to for loops and folds which add hinderance to understanding.
 
 # Compatibility
 
