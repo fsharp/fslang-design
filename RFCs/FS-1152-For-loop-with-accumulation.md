@@ -11,7 +11,7 @@ This RFC covers the detailed proposal for this suggestion.
 
 # Summary
 
-A new syntax for `for`-loops that allow accumulation is introduced that is intuitive, teachable to new users, easily documentable and without too much unexpected behavior (all 3 phrases are just [Principle of Least Surprise](https://en.wikipedia.org/wiki/Principle_of_least_astonishment)). It also derives and provides for useful semantics (a reasonably learned F# programmer will reliably reach for in practice, enabling the developers to make their lives easier). It is also rigorous ( other features rely on this being sensible and future features may build on it).
+A new syntax for `for`-loops that allow accumulation is introduced that is intuitive, teachable to new users, easily documentable and without too much unexpected behavior (all 4 phrases are just [Principle of Least Surprise](https://en.wikipedia.org/wiki/Principle_of_least_astonishment)). It also derives and provides for useful semantics (a reasonably learned F# programmer will reliably reach for in practice, enabling the developers to make their lives easier). It is also rigorous (other features rely on this being sensible and future features may build on it).
 ```fs
 for <pat> = <expr> with <pat> in <expr> do
     <expr>
