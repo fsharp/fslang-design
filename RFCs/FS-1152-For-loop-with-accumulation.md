@@ -179,11 +179,11 @@ But this is not orthogonal to an existing computation expression context unlike 
 
 The fold loop is superior to `mutable` variables with imperative `for` loops because:
 - More succinct from elision of accumulator variable definition and assignment boilerplate that becomes more apparent with tuple accumulators
-- Better scoping without variable leakage outside loop
+- (Alternative 1) Better scoping without variable leakage outside loop
 - Preservation of functional immutable semantics lost from a mutable variable
 
 The fold loop is superior to `fold` calls because:
-- Potential orthogonality to outer computation expression contexts
+- (Alternative 2) rthogonality to outer computation expression contexts
 - Much easier to understand with loop syntax
 - Much easier to attain whitespace alignment and omission of the closing parenthesis. When indentation is wrong, you also have to consider the parens as a possible cause, vice versa.
 - Much easier to place loop parameters correctly, fewer points of failure compared to ordering fold arguments / types
@@ -191,13 +191,13 @@ The fold loop is superior to `fold` calls because:
 - More logical cohesion with the accumulator starting value located next to the looping logic
 
 The fold loop is superior to `rec`ursive functions because:
-- Potential orthogonality to outer computation expression contexts
+- (Alternative 2) Orthogonality to outer computation expression contexts
 - Much easier to write correctly without the need to think about tail recursion
 - Much more succinct without requiring the recursive function identifier or a wrapper function to hide the accumulator parameter
 - More logical cohesion with the accumulator starting value located next to the looping logic
 
 The fold loop is superior to computation expression imitations because:
-- Potential orthogonality to outer computation expression contexts
+- (Alternative 2) Orthogonality to outer computation expression contexts
 - Universiality without needing to learn parameter placements from the concrete computation expression implementation localized in each project
 - Availability by default for newcomers to learn easily
 - More precise error messages compared to overloaded computation expression methods especially for newcomers
