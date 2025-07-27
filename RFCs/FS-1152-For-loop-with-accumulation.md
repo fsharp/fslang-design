@@ -385,7 +385,7 @@ printfn $"{effects}" // refers to "effects" of the above fold loop
 printfn $"{model}"
 ```
 
-The loop itself would return `unit` just like a regular `for` loop does - eliminating the unfamiliarity with a loop that has a return value. However, the tradeoff is that exposing loop bindings like this is even more unfamiliar than the loop modification itself.
+The loop itself would return `unit` just like a regular `for` loop does - eliminating the unfamiliarity with a loop that has a return value. Moreover, the fact that a pipe argument can be a CE context (shown in Alternative 2.1) is also inconsistent with other kinds of expressions that lose compuation expression context when piped! However, the tradeoff is that exposing loop bindings like this is even more unfamiliar than the loop modification itself.
 
 The syntactical translation would be modified as follows. For
 
