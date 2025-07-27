@@ -11,7 +11,7 @@ This RFC covers the detailed proposal for this suggestion.
 
 # Summary
 
-A new syntax for `for`-loops that allow accumulation is introduced that is intuitive, initially teachable, and without too much unexpected behavior.
+A new syntax for `for`-loops that allow accumulation is introduced that is intuitive, initially teachable, and without too much unexpected behavior (all 3 phrases are just [Principle of Least Surprise](https://en.wikipedia.org/wiki/Principle_of_least_astonishment)). It is easy to document and teach to new users.
 ```fs
 for <pat> = <expr> with <pat> in <expr> do
     <expr>
