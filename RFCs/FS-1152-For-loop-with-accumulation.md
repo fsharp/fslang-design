@@ -181,6 +181,7 @@ The fold loop is superior to `mutable` variables with imperative `for` loops bec
 - More succinct from elision of accumulator variable
 - Better scoping without variable leakage outside loop
 - Preservation of functional immutable semantics lost from a mutable variable
+- Avoidance of mutable definition and assignment boilerplate that becomes more apparent with tuple accumulators
 
 The fold loop is superior to `fold` calls because:
 - Potential orthogonality to outer computation expression contexts
