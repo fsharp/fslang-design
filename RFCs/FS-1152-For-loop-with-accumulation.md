@@ -183,7 +183,7 @@ The fold loop is superior to `mutable` variables with imperative `for` loops bec
 - Preservation of functional immutable semantics lost from a mutable variable
 
 The fold loop is superior to `fold` calls because:
-- (Alternative 2) rthogonality to outer computation expression contexts
+- (Alternative 2) Orthogonality to outer computation expression contexts
 - Much easier to understand with loop syntax
 - Much easier to attain whitespace alignment and omission of the closing parenthesis. When indentation is wrong, you also have to consider the parens as a possible cause, vice versa.
 - Much easier to place loop parameters correctly, fewer points of failure compared to ordering fold arguments / types
