@@ -210,7 +210,7 @@ The only caveat is the unfamiliarity with a loop that has a return value where e
 
 `for` is used as the loop keyword because the fold loop behaves identical to the `for` loop with accumulation. Ideally, `fold` would be usable as the loop keyword, but it obviously clashes with existing uses of it as an identifier.
 
-## Alternative 1 - Loop body is a value without CE context
+## Alternative 1 - Loop returns the accumulated value and loop body is a value without CE context
 
 For this syntax
 
@@ -257,113 +257,23 @@ let result = [
 ]
 ```
 
-## Alternative 2 - Loop body is a CE context with final expression updating the accumulator
+Even though the specific syntactic expansion can be used to support value processing via `|>` while making the `for` loop applicable to CE contexts, it cannot be bound by `let` without necessitating arbitrary CE operations in subexpressions in `let`.
 
-The above alternative loses expressiveness compared to for loops with mutable accumulators. For example, `scan`s cannot be written with the fold loop.
+## Alternative 2 - Loop accumulator bindings exposed to code below
+
+The loop itself returning the value is more preferable if we assume that the fold accumulated value doesn't need further processing (returning in function) or can easily be piped. Moreover, it is surprising that this form of `for` loops cannot be used in CEs which loses expressiveness compared to for loops with mutable accumulators. For example, `scan`s cannot be written with the fold loop.
 
 ```fs
+// Alternative 1
 let scanned =
   [ for s = 0 with t in ts do
-      yield s + t
+      yield s + t // Error: CE operations invalid in subexpressions
       s + t
   ]
 ```
 
-However, interactions with CEs start to get complicated.
-
-For this syntax
-
 ```fs
-for <pat1> = <expr1> with <pat2> in <expr2> do
-    <exprs>
-    <expr3>
-```
-
-it undergoes a simple syntactical expansion to
-
-```fs
-let mutable <accum> = <expr1>
-for <pat2> in <expr2> do
-    let <pat1> = <accum>
-    <exprs>
-    <accum> <- <expr3>
-<accum>
-```
-where `<accum>` is a compiler-generated accumulation variable that cannot be used outside the loop,
-and `<exprs>` match any expressions inside a sequence expression before the final expression in the loop body,
-or any `if` and `match` and `try`-`with` permitting computation expression syntax inside.
-
-If the final expression `<expr3>` is contained inside `if` or `match` or `try`-`with`, then each branch must return the same value and `<expr3>` is searched recursively with the final expression of each branch for `<accum> <-` application.
-
-The result of the syntactical translation shows that `<accum>` is the value of this loop. It is also the accumulator which gets updated each iteration.
-
-### Alternative 2.1 - Implicit yields in loop body
-
-Note that `<exprs>` are subject to usual treatment by computation expressions including application of implicit yields,
-which is different from the final expression `<expr3>`.
-
-Therefore, this may happen:
-```fs
-let result = [
-    for sentence = "" with word in ["Hello"; " "; "World"; "!"] do
-        sentence
-        sentence + word
-    |> printfn "%s"
-]
-// expands to
-let result = [
-    let mutable <accum> = ""
-    for word in ["Hello"; " "; "World"; "!"] do
-        sentence // Implicit yield here
-        <accum> <- sentence + word // But not for the final expression of the loop body
-    <accum> // The fact that the accumulator value is usable is unrelated to the above loop!
-    |> printfn "%s"
-]
-```
-
-### Alternative 2.2 - Warn with discard in loop body
-
-It might be the case that two seemingly similar lines behaving distinctly is too dangerous.
-
-```fs
-// Alternative 2.1
-let q = seq { for i in 1..10 do s + i } // int seq, 10 values
-let w = seq { for s = 0 with i in 1..10 do s + i } // int seq, but now only 1 value is yielded because it's collected to accumulator
-
-let q1 = seq { for i in 1..10 do s + i; s + i } // int seq, 20 values
-let w1 = seq { for s = 0 with i in 1..10 do s + i; s + i } // int seq, 11 values now?
-```
-
-To resolve this, the syntactical translation of `<exprs>` would automatically insert `; ()` after any expression not bound with a CE keyword or `let` and `use` (or equivalent implementation that implements warn with discard behaviour by default). Meanwhile, explicit usages of the `yield` keyword will not affect implicit yield availability outside of the fold loop.
-
-```fs
-// Alternative 2.2
-let q = seq { for i in 1..10 do s + i } // int seq, 10 values
-let w = seq { for s = 0 with i in 1..10 do s + i } // int seq, but now only 1 value is yielded because it's collected to accumulator
-
-let q1 = seq { for i in 1..10 do s + i; s + i } // int seq, 20 values
-let w1 = seq { for s = 0 with i in 1..10 do s + i; s + i } // int seq, 1 value, warn at first "s + i" with discard by default
-let w2 = seq { for s = 0 with i in 1..10 do yield s + i; s + i } // int seq, 11 values
-```
-
-### Alternative 2.3 - Warn with implicit yield in loop body
-
-Above but instead of discard by default, it's yield by default with warning about ambiguity. It might make more sense to align with the default behaviour in CEs rather than outside? The auto-insertion would be `yield` before instead of `; ()` after.
-
-### Alternative 2.4 - Ambiguity error for unbound expressions
-
-Or it might be best to just error about the ambiguity instead of defaulting to any behaviour after all.
-
-## Alternative A - Loop itself returns the value
-
-All above assumes that the loop itself returns the value. This alternative is more preferable if we assume that the fold accumulated value doesn't need further processing (returning for function) or can easily be piped.
-
-## Alternative B - Loop bindings exposed to code below
-
-It might also be the case that the same deconstruction is needed for the accumulator value after processing after all. Moreover, the fact that a pipe argument can be a CE context (shown in Alternative 2.1) is also inconsistent with other kinds of expressions that lose compuation expression context when piped!
-
-```fs
-// Alternative A
+// Alternative 1
 let effects, model = // This seems repetitive with the loop accumulator...
     for effects, model = [], model with item in items do
         let effect, model = Model.action item model
@@ -373,10 +283,10 @@ printfn $"{effects}"
 printfn $"{model}"
 ```
 
-It might be more ergonomic to just leak the pattern bindings in the accumulator below the loop for further processing of accumulated results.
+However, it might also be the case that the same deconstruction for the accumulator each iteration is needed for the accumulated value after all. The same bindings for accumulator deconstruction each iteration can just be exposed below the loop. If the loop itself didn't return the value, we enable interactions with CEs like a regular `for` loop can - also eliminating the unfamiliarity with a loop that has a return value. 
 
 ```fs
-// Alternative B
+// Alternative 2
 for effects, model = [], model with item in items do
     let effect, model = Model.action item model
     let model = Model.action2 model
@@ -385,19 +295,24 @@ printfn $"{effects}" // refers to "effects" of the above fold loop
 printfn $"{model}"
 ```
 
-The loop itself would return `unit` just like a regular `for` loop does - eliminating the unfamiliarity with a loop that has a return value. However, the tradeoff is that exposing loop bindings like this is even more unfamiliar than the loop modification itself.
+However, the tradeoff is that exposing loop bindings like this is even more unfamiliar than the loop modification itself.
 
-The syntactical translation would be modified as follows. For
+The syntactical translation would be modified as follows.
 
+Let `<accum>` is a compiler-generated accumulation variable that cannot be used outside the loop, which gets updated each iteration;
+let `<exprs>` match any expressions inside a sequence expression before the final expression in the loop body,
+or any `if` and `match` and `try`-`with` permitting computation expression syntax inside;
+let `<expr3>` be the final expression which if contained inside `if` or `match` or `try`-`with`, then each branch must return the same value and searched recursively with the final expression of each branch for `<accum> <-` application.
+
+Then
 ```fs
 for <pat1> = <expr1> with <pat2> in <expr2> do
     <exprs>
     <expr3>
 ```
+undergoes a simple syntactical expansion to
 
-it undergoes a simple syntactical expansion to
-
-### Alternative Ba - Loop returns unit
+### Alternative unit - Loop returns unit
 
 ```fs
 let mutable <accum> = <expr1>
@@ -411,7 +326,7 @@ let <pat1> = <accum> // <accum> deconstructed with <pat1> again
 
 This alternative maintains the familiarity with loops returning unit.
 
-### Alternative Bb - Loop requires a following expression and cannot be isolated
+### Alternative let - Loop requires a following expression and cannot be isolated
 ```fs
 let mutable <accum> = <expr1>
 for <pat2> in <expr2> do
@@ -428,10 +343,71 @@ error FS0588: The block following this 'for' with accumulation is unfinished. Ev
 ```
 This alternative maintains the robustness that `let`s requiring following expressions do.
 
+### Alternative 2.1 - Implicit yields in loop body
+
+Note that `<exprs>` are subject to usual treatment by computation expressions including application of implicit yields,
+which is different from the final expression `<expr3>`.
+
+Therefore, this may happen:
+```fs
+let result = [
+    for sentence = "" with word in ["Hello"; " "; "World"; "!"] do
+        sentence
+        sentence + word
+    printfn "%s" sentence
+]
+// expands to
+let result = [
+    let mutable <accum> = ""
+    for word in ["Hello"; " "; "World"; "!"] do
+        let sentence = <accum>
+        sentence // Implicit yield here
+        <accum> <- sentence + word // But not for the final expression of the loop body
+    let sentence = <accum>
+    printfn "%s" sentence
+]
+```
+
+### Alternative 2.2 - Warn with discard in loop body
+
+It might be the case that the intersection of implicit yields and the fold loop is too difficult to understand.
+
+```fs
+// Alternative 2.1
+let q = seq { for i in 1..10 do s + i } // int seq, 10 values
+let w = seq { for s = 0 with i in 1..10 do s + i } // Alternative unit: error value restriction (no yields); Alternative let: error no expression following 'for'
+let w = seq { for s = 0 with i in 1..10 do s + i done; s } // int seq, but now only 1 value is yielded because it's collected to accumulator
+
+let q1 = seq { for i in 1..10 do s + i; s + i } // int seq, 20 values
+let w1 = seq { for s = 0 with i in 1..10 do s + i; s + i } // Alternative unit: 10 values; Alternative let: error no expression following 'for'
+let w1 = seq { for s = 0 with i in 1..10 do s + i; s + i done; s } // int seq, 11 values
+```
+
+To resolve this, the syntactical translation of `<exprs>` would automatically insert `; ()` after any expression not bound with a CE keyword or `let` and `use` (or equivalent implementation that implements warn with discard behaviour by default). Meanwhile, explicit usages of the `yield` keyword will not affect implicit yield availability outside of the fold loop.
+
+```fs
+// Alternative 2.2
+let q = seq { for i in 1..10 do s + i } // int seq, 10 values
+let w = seq { for s = 0 with i in 1..10 do s + i } // Alternative unit: error value restriction (no yields); Alternative let: error no expression following 'for'
+let w = seq { for s = 0 with i in 1..10 do s + i done; s } // int seq, but now only 1 value is yielded because it's collected to accumulator
+
+let q1 = seq { for i in 1..10 do s + i; s + i } // int seq, 20 values
+let w1 = seq { for s = 0 with i in 1..10 do s + i; s + i } // Warn at first "s + i" with discard by default. Alternative unit: 10 values; Alternative let: error no expression following 'for'
+let w1 = seq { for s = 0 with i in 1..10 do yield s + i; s + i done; s } // int seq, 11 values
+```
+
+### Alternative 2.3 - Warn with implicit yield in loop body
+
+Above but instead of discard by default, it's yield by default with warning about ambiguity. It might make more sense to align with the default behaviour in CEs rather than outside? The auto-insertion would be `yield` before instead of `; ()` after.
+
+### Alternative 2.4 - Ambiguity error for unbound expressions
+
+Or it might be best to just error about the ambiguity instead of defaulting to any behaviour after all.
+
 ## Summary
 
 There exists the combination of these alternatives to choose from:
-(A or Ba or Bb) and (1 or 2.1 or 2.2 or 2.3 or 2.4)
+1 or ((2.1 or 2.2 or 2.3 or 2.4) and (unit or let))
 
 # Drawbacks
 
