@@ -29,19 +29,22 @@ printfn "%s" sentence
 ```
 
 However, the mutable variable leaks outside the loop body, which is undesirable.
-Moreover, the accumulator must be mutable - which is against functional immutable semantics.
 
-It is proposed that the accumulator be embeddable into the loop itself:
+Moreover, the accumulator must be mutable - which is against functional immutable semantics.
+The danger with mutable stateful objects is that it further encourages globally mutable state against functionally immutable design. This is why `fold` exists: to encapsulate mutability and temporary variables as well.
+
+It is proposed that the accumulator be embeddable into the loop itself, with a familiar and sensible parameter order the same as the fold lambda body, i.e. accumulator first, sequence second, such that refactors from `fold`s are easy:
 ```fs
 for sentence = "" with word in ["Hello"; " "; "World"; "!"] do
     sentence + word
 |> printfn "%s"
 ```
-The return value of the loop body updates the accumulator.
-This offers a desirable middle ground between `for` loops that must only have side-effects (returning `unit`)
-and purely functional `fold`s that must be in lambda form.
+The return value of the loop body updates the accumulator. This is a synthesis of `fold`s with loops, therefore it can be called a "fold loop". There is no direct equivalent in other languages, they either have `fold` with a lambda or `for` loops with no accumulator.
 
-Meanwhile, folds are hard to understand.
+This offers a desirable middle ground between `for` loops that must only have side-effects (returning `unit`)
+and purely functional `fold`s that must be in lambda form. It is declarative which removes concerns about order of operations. It encourages functional pureness without the shortcomings of `fold`.
+
+`fold` is inferior to this syntax because it is hard to understand.
 ```fs
 ["Hello"; " "; "World"; "!"]
 |> Seq.fold (fun sentence -> sentence + word (*loop body but shown as a lambda!*)) "" // initial state is placed last??
@@ -154,7 +157,7 @@ This even happens for experienced F# programmers.
 If the user doesn't get them right, the problem is figuring out what they got wrong from the type errors.
 
 People also often get the parameter order mixed up, such as doing `items ([], model)` instead of `([], model) items`.
-There are far fewer likely points of failure using the `for` loop with accumulation.
+There are far fewer likely points of failure using the fold loop.
 
 ```fs
 // Proposed
@@ -180,7 +183,8 @@ But this is not orthogonal to an existing computation expression context unlike 
 The fold loop is superior to `mutable` variables with imperative `for` loops because:
 - More succinct from elision of accumulator variable definition and assignment boilerplate that becomes more apparent with tuple accumulators
 - (Alternative 1) Better scoping without variable leakage outside loop
-- Preservation of functional immutable semantics lost from a mutable variable
+- Being declarative which omits the necessity to think about the order of assignments to mutable variables
+- Encourages staying within the realm of functionally pure architecture instead of encouraging a mutable architecture
 
 The fold loop is superior to `fold` calls because:
 - (Alternative 2) Orthogonality to outer computation expression contexts
