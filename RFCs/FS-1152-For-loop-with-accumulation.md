@@ -33,13 +33,25 @@ However, the mutable variable leaks outside the loop body, which is undesirable.
 Moreover, the accumulator must be mutable - which is against functional immutable semantics.
 The danger with mutable stateful objects is that it further encourages globally mutable state against functionally immutable design. This is why `fold` exists: to encapsulate mutability and temporary variables as well.
 
-It is proposed that the accumulator be embeddable into the loop itself, with a familiar and sensible parameter order the same as the fold lambda body, i.e. accumulator first, sequence second, such that refactors from `fold`s are easy:
+It is proposed that the accumulator be embeddable into the loop itself:
 ```fs
 for sentence = "" with word in ["Hello"; " "; "World"; "!"] do
     sentence + word
 |> printfn "%s"
 ```
 The return value of the loop body updates the accumulator. This is a synthesis of `fold`s with loops, therefore it can be called a "fold loop". There is no direct equivalent in other languages, they either have `fold` with a lambda or `for` loops with no accumulator.
+
+The accumulator is placed before the enumeration item because enumeration state must exist before it is used to get an item from the sequence. It is also why the `fold` lambda body takes the accumulator before the sequence item, making refactors from `fold` easy.
+```fs
+let mutable state_accum = "" // accumulator state
+let state_iterator = sequence.GetEnumerator() // enumerator state
+let sequence = ["Hello"; " "; "World"; "!"] // sequence
+while state_iterator.MoveNext() do
+    let word = state_iterator.Current // state must be defined before the iteration item is retrieved
+    state_accum <- state_accum + word
+printfn "%s" state_accum
+```
+This also highlights that while `for i = 1 to 10 do` and `for i in 1 .. 10 do` enumerate on the same items, they are semantically very different: `for i = 1 to 10 do` has `i` as the enumeration state, while `for i in 1 .. 10 do` hides the enumeration state and `i` is the enumeration item. Meanwhile, `for i = 1 with j in 1 .. 10 do` has two enumeration states: `i` and the enumerator of `1 .. 10` which must exist before `j` is retrieved. Therefore, it makes less sense to put the accumulator after the enumeration item.
 
 This offers a desirable middle ground between `for` loops that must only have side-effects (returning `unit`)
 and purely functional `fold`s that must be in lambda form. It is declarative which removes concerns about order of operations. It encourages functional pureness without the shortcomings of `fold`.
