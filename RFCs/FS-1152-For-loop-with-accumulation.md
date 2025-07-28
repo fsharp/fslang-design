@@ -180,6 +180,14 @@ But this is not orthogonal to an existing computation expression context unlike 
 
 ## Summary
 
+The fold loop is the natural synthesis of `for` loops with `fold`s. It is desirable because:
+- Principle of Least Surprise
+  - Intuitive: Fold loops are just a regular `for` loop with an accumulator, maintaining an expression loop body. The parameter order is the same as `fold`.
+  - Teachable for new users and easily documentable: Fold loops are as easy as adding an accumulator with a `with` keyword.
+  - Without too much unexpected behaviour: There are no tricks with indentation nor parentheses.
+- Semantically useful: an expert F# user will prefer the fold loop over alternatives.
+- Rigorous: other F# features, like multi-folds, will be mixable with this syntax.
+
 The fold loop is superior to `mutable` variables with imperative `for` loops because:
 - More succinct from elision of accumulator variable definition and assignment boilerplate that becomes more apparent with tuple accumulators
 - (Alternative 1) Better scoping without variable leakage outside loop
