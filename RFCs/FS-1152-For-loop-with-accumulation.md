@@ -59,7 +59,7 @@ and purely functional `fold`s that must be in lambda form. It is declarative whi
 `fold` is inferior to this syntax because it is hard to understand.
 ```fs
 ["Hello"; " "; "World"; "!"]
-|> Seq.fold (fun word sentence -> sentence + word (*loop body but shown as a lambda!*)) "" // initial state is placed last??
+|> Seq.fold (fun sentence word -> sentence + word (*loop body but shown as a lambda!*)) "" // initial state is placed last??
 |> printfn "%s"
 ```
 which suggests a missed opportunity to make them more familiar to people who know `for` loops.
