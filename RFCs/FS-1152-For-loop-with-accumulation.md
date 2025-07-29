@@ -60,9 +60,9 @@ let effects, model =
 // Proposed fold loop 1 - loop with value 
 let effects, model =
     for effects, model = [], model with item in items do // simple
-            let effect, model = Model.action item model // Pure function
-                    let model = Model.action2 model // Pure function
-                            effect :: effects, model
+        let effect, model = Model.action item model // Pure function
+        let model = Model.action2 model // Pure function
+        effect :: effects, model
 // Proposed fold loop 2 - loop leaks accumulator bindings below
 for effects, model = [], model with item in items do // even more ergonomic
     let effect, model = Model.action item model // Pure function
