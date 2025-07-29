@@ -28,10 +28,11 @@ for word in ["Hello"; " "; "World"; "!"] do
 printfn "%s" sentence
 ```
 
-However, the mutable variable leaks outside the loop body, which is undesirable.
+However,
+- the mutable variable leaks outside the loop body, which is undesirable.
+- the accumulator must be mutable - which is against functional immutable semantics. The danger with mutable stateful objects is that it further encourages globally mutable state against functionally immutable design. This is why `fold` exists: to encapsulate mutability and temporary variables as well.
 
-Moreover, the accumulator must be mutable - which is against functional immutable semantics.
-The danger with mutable stateful objects is that it further encourages globally mutable state against functionally immutable design. This is why `fold` exists: to encapsulate mutability and temporary variables as well.
+Even if the above two points are minor in this simple example, the summarization of a sequence into a value is a common logic pattern that deserves simplicity. See the section of "Doesn't FSharp.Core already provide better functions for this example?" below for a concrete picture.
 
 It is proposed that the accumulator be embeddable into the loop itself:
 ```fs
@@ -39,7 +40,7 @@ for sentence = "" with word in ["Hello"; " "; "World"; "!"] do
     sentence + word
 |> printfn "%s"
 ```
-The return value of the loop body updates the accumulator. This is a synthesis of `fold`s with loops, therefore it can be called a "fold loop". There is no direct equivalent in other languages, they either have `fold` with a lambda or `for` loops with no accumulator.
+The return value of the loop body updates the accumulator. This is a synthesis of `fold`s with loops, therefore it can be called a "fold loop". There is no direct equivalent in other languages, they either have `fold` with a lambda or `for` loops that require a mutable accumulator.
 
 The accumulator is placed before the enumeration item because enumeration state must exist before it is used to get an item from the sequence. It is also why the `fold` lambda body takes the accumulator before the sequence item, making refactors from `fold` easy.
 ```fs
@@ -102,7 +103,7 @@ type Category = { Name: string; Items: Item list }
 type Model = { Categories: Category list }
 
 // Compute (total items, total count) in all categories
-// Current
+// Current - using folds
 let stats model =
     model.Categories
     |> List.fold (fun (totalItems, totalCount) category ->
@@ -113,13 +114,29 @@ let stats model =
             ) (0, 0)
         totalItems + items, totalCount + count
     ) (0, 0) // Initial state
-// Proposed
-let stats' model =
+// Current - using mutable accumulators
+let stats model =
+    let mutable totalItems = 0
+    let mutable totalCount = 0
+    for category in model.Categories do
+        for items in category.Items do
+            totalItems <- totalItems + 1
+            totalCount <- totalCount + items.Count
+    totalItems, totalCount
+// Proposed - Alternative 1
+let stats model =
     for totalItems, totalCount = 0, 0 with category in model.Categories do
         let items, count =
             for items, count = 0, 0 with item in category.Items do
                 items + 1, count + item.Count
         totalItems + items, totalCount + count
+// Proposed - Alternative 2
+let stats model =
+    for totalItems, totalCount = 0, 0 with category in model.Categories do
+        for items, count = 0, 0 with item in category.Items do
+            items + 1, count + item.Count
+        totalItems + items, totalCount + count
+    totalItems, totalCount
 ```
 
 In a regular `fold`, it's very hard just to get the white space alignment and closing parentheses right when you need a fold within a fold.
@@ -129,8 +146,8 @@ Using the new fold syntax, this becomes much easier to write and understand.
 ## How about `||>`?
 
 ```fs
-// Current
-let stats'' model = // ||>
+// Current - ||>
+let stats model =
     ((0, 0), model.Categories) // ugh - nested tuples
     ||> List.fold (fun (totalItems, totalCount) category ->
         let categoryStats =
@@ -144,39 +161,53 @@ let stats'' model = // ||>
 
 `||>`s make it hard to thread the pair through the lambda without screwing up the types.
 
-Let's look at another example:
+## A practical comparison
 
-```fs
-// Current
-let effects, model =
-    Seq.fold (fun (effects, model) item ->
-        let effect, model = Model.action item model
-        let model = Model.action2 model
-        effect :: effects, model)
-        ([], model)
-        items
-let effects', model' = // ||>
-    (([], model), items) // ugh - nested tuples
-    ||> Seq.fold (fun (effects, model) item ->
-        let effect, model = Model.action item model
-        let model = Model.action2 model
-        effect :: effects, model)
-```
-
-It is easy to accidentally do `(model, effect :: effects)` or `(model, [])` - especially for people new to functional programming, tupling like this is hard to get right.
-This even happens for experienced F# programmers. 
-
-If the user doesn't get them right, the problem is figuring out what they got wrong from the type errors.
-
+Notice that for `fold`s, it is easy to accidentally do `(model, effect :: effects)` or `(model, [])` - especially for people new to functional programming, tupling like this is hard to get right.
+This even happens for experienced F# programmers. If the user doesn't get them right, the problem is figuring out what they got wrong from the type errors.
 People also often get the parameter order mixed up, such as doing `items ([], model)` instead of `([], model) items`.
 There are far fewer likely points of failure using the fold loop.
 
 ```fs
-// Proposed
+// Current - fold
+let effects, model =
+    Seq.fold (fun (effects, model) item ->
+        let effect, model = Model.action item model // Pure function
+        let model = Model.action2 model // Pure function
+        effect :: effects, model)
+        ([], model) // ugh - hard to get order and parentheses right
+        items
+// Current - ||> fold
+let effects, model =
+    (([], model), items) // ugh - nested tuples and hard to get order and parentheses right
+    ||> Seq.fold (fun (effects, model) item ->
+        let effect, model = Model.action item model // Pure function
+        let model = Model.action2 model // Pure function
+        effect :: effects, model)
+// Current - recursive function
+let effects, model =
+    let rec [<TailCall>] processItems (effects, model) items = // boilerplate, hard to write correctly
+        match items with // boilerplate and specific to lists - can't do this for other collections
+        | [] -> effects, model // boilerplate
+        | item::items -> // boilerplate
+            let effect, model = Model.action item model // Pure function
+            let model = Model.action2 model // Pure function
+            processItems (effect :: effects, model) items
+    processItems ([], model) items
+// Current - mutable accumulator
+let effects, model =
+    let mutable accum = [], model // hmm, a mutable variable is required even in an architecture of pure functions and it needs the most boilerplate
+    for item in items do
+        let effects, model = accum // boilerplate
+        let effect, model = Model.action item model // Pure function
+        let model = Model.action2 model // Pure function
+        accum <- effect :: effects, model
+    accum // boilerplate
+// Proposed - fold loop (simplest this can be)
 let effects, model =
     for effects, model = [], model with item in items do
-        let effect, model = Model.action item model
-        let model = Model.action2 model
+        let effect, model = Model.action item model // Pure function
+        let model = Model.action2 model // Pure function
         effect :: effects, model
 ```
 
