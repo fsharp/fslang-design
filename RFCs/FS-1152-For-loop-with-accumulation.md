@@ -162,9 +162,9 @@ let effects, model =
 
 A recursive function is just harder to write correctly and is more verbose.
 
-## Doesn't FSharp.Core already provide better functions for this example?
+## But I don't use pure functions in my design architecture.
 
-The benefits of this syntax start to compound when there are nested folds and folds over tuples.
+This syntax also shows benefits when there are nested folds and folds over tuples.
 
 ```fs
 // Example MVU model
