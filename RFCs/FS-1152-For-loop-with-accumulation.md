@@ -69,11 +69,13 @@ This even happens for experienced F# programmers. If the user doesn't get them r
 People also often get the parameter order mixed up, such as doing `items ([], model)` instead of `([], model) items`.
 There are far fewer likely points of failure using the fold loop.
 
-Now, drilling down to specific points of comparison using a very simple scenario:
+Now, drilling down to specific points of comparison:
 ```fs
-for sentence = "" with word in ["Hello"; " "; "World"; "!"] do
-    sentence + word
-|> printfn "%s"
+let effects, model =
+    for effects, model = [], model with item in items do
+        let effect, model = Model.action item model // Pure function
+        let model = Model.action2 model // Pure function
+        effect :: effects, model
 ```
 The return value of the loop body updates the accumulator. This is a synthesis of `fold`s with loops, therefore it can be called a "fold loop". There is no direct equivalent in other languages, they either have `fold` with a lambda or `for` loops that require a mutable accumulator.
 
@@ -82,13 +84,16 @@ and purely functional `fold`s that must be in lambda form. It is declarative whi
 
 The accumulator is placed before the enumeration item because enumeration state must exist before it is used to get an item from the sequence. It is also why the `fold` lambda body takes the accumulator before the sequence item, making refactors from `fold` easy.
 ```fs
-let mutable state_accum = "" // accumulator state
-let state_enumerator = sequence.GetEnumerator() // enumerator state
-let sequence = ["Hello"; " "; "World"; "!"] // sequence
-while state_enumerator.MoveNext() do
-    let word = state_enumerator.Current // state must be defined before the enumeration item is retrieved
-    state_accum <- state_accum + word
-printfn "%s" state_accum
+let effects, model =
+    let sequence = items // sequence
+    let mutable state_accum = [], model // accumulator state
+    let state_enumerator = sequence.GetEnumerator() // enumerator state
+    while state_enumerator.MoveNext() do
+        let item = state_enumerator.Current // state must be defined before the enumeration item is retrieved
+        let effect, model = Model.action item model
+        let model = Model.action2 model
+        state_accum <- effect :: effects, model
+    state_accum
 ```
 This also highlights that while `for i = 1 to 10 do` and `for i in 1 .. 10 do` enumerate on the same items, they are semantically very different: `for i = 1 to 10 do` has `i` as the enumeration state, while `for i in 1 .. 10 do` hides the enumeration state and `i` is the enumeration item. Meanwhile, `for i = 1 with j in 1 .. 10 do` has two enumeration states: `i` and the enumerator of `1 .. 10` which must exist before `j` is retrieved. Therefore, it makes less sense to put the accumulator after the enumeration item.
 
@@ -96,10 +101,14 @@ This also highlights that while `for i = 1 to 10 do` and `for i in 1 .. 10 do` e
 
 If a mutable accumulator is used, it must be defined separately from the loop.
 ```fs
-let mutable sentence = "" // mutable accumulator
-for word in ["Hello"; " "; "World"; "!"] do
-    sentence <- sentence + word
-printfn "%s" sentence
+let effects, model =
+    let mutable accum = [], model // hmm, a mutable variable is required even in an architecture of pure functions
+    for item in items do
+        let effects, model = accum // boilerplate
+        let effect, model = Model.action item model // Pure function
+        let model = Model.action2 model // Pure function
+        accum <- effect :: effects, model
+    accum
 ```
 Notice that
 - the accumulator is boilerplate that was hidden in the `fold`, simplified away in the fold loop.
@@ -110,35 +119,45 @@ Notice that
 
 `fold` is inferior to this syntax because it is hard to understand.
 ```fs
-["Hello"; " "; "World"; "!"]
-|> Seq.fold (fun sentence word -> sentence + word (*loop body but shown as a lambda!*)) "" // initial state is placed away from the loop body!
-|> printfn "%s"
+let effects, model =
+    Seq.fold (fun (effects, model) item ->
+        let effect, model = Model.action item model // Pure function
+        let model = Model.action2 model // Pure function
+        effect :: effects, model)
+        ([], model) // ugh - hard to get order and parentheses right
+        items
 ```
 which suggests a missed opportunity to make them more familiar to people who know `for` loops.
 
 Some may also suggest that recursive functions may show the logic more clearly than a `fold`.
 
 ```fs
-let rec processWords words =
-    match words with
-    | [] -> "" // Empty list means empty string,
-    | word::words -> word + processWords words // and we do append for each element!
-["Hello"; " "; "World"; "!"]
-|> processWords
-|> printfn "%s"
+// Current - recursive function
+let effects, model =
+    let rec processItems model items = // boilerplate
+        match items with // boilerplate and specific to lists - can't do this for other collections
+        | [] -> [], model // boilerplate
+        | item::items -> // boilerplate
+            let effect, model = Model.action item model // Pure function
+            let model = Model.action2 model // Pure function
+            let effects, model = processItems model items
+            effect :: effects, model
+    processItems model items
 ```
 
 Whoops, this function isn't tail recursive! If you run this for long inputs, it blows up unlike the loop.
 The function needs to be rewritten using the accumulator parameter.
 
 ```fs
-let rec [<TailCall>] processWords accum words = // [<TailCall>] with no warning to verify we have a tail call
-    match words with
-    | [] -> accum // Empty list means accumulator,
-    | word::words -> processWords (accum + word) words // and we do append on the accumulator!
-["Hello"; " "; "World"; "!"]
-|> processWords "" // Accumulator is applied away from the function or yet another wrapper function needs to be defined verbosely...
-|> printfn "%s"
+let effects, model =
+    let rec [<TailCall>] processItems (effects, model) items = // boilerplate, hard to write correctly
+        match items with // boilerplate and specific to lists - can't do this for other collections
+        | [] -> effects, model // boilerplate
+        | item::items -> // boilerplate
+            let effect, model = Model.action item model // Pure function
+            let model = Model.action2 model // Pure function
+            processItems (effect :: effects, model) items
+    processItems ([], model) items
 ```
 
 A recursive function is just harder to write correctly and is more verbose.
