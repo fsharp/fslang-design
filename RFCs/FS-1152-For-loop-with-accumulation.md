@@ -83,10 +83,10 @@ and purely functional `fold`s that must be in lambda form. It is declarative whi
 The accumulator is placed before the enumeration item because enumeration state must exist before it is used to get an item from the sequence. It is also why the `fold` lambda body takes the accumulator before the sequence item, making refactors from `fold` easy.
 ```fs
 let mutable state_accum = "" // accumulator state
-let state_iterator = sequence.GetEnumerator() // enumerator state
+let state_enumerator = sequence.GetEnumerator() // enumerator state
 let sequence = ["Hello"; " "; "World"; "!"] // sequence
-while state_iterator.MoveNext() do
-    let word = state_iterator.Current // state must be defined before the iteration item is retrieved
+while state_enumerator.MoveNext() do
+    let word = state_enumerator.Current // state must be defined before the enumeration item is retrieved
     state_accum <- state_accum + word
 printfn "%s" state_accum
 ```
@@ -286,7 +286,7 @@ for <pat2> in <expr2> do
 ```
 where `<accum>` is a compiler-generated accumulation variable that cannot be used outside the loop. The entire loop body `<expr3>` is assigned to `<accum>`.
 
-The result of the syntactical translation shows that `<accum>` is the value of this loop. It is also the accumulator which gets updated each iteration.
+The result of the syntactical translation shows that `<accum>` is the value of this loop. It is also the accumulator which gets updated each enumeration.
 
 Note that since the loop body is assigned to the accumulator, the loop body is not a computation expression context.
 ```fs
@@ -339,7 +339,7 @@ printfn $"{effects}"
 printfn $"{model}"
 ```
 
-However, it might also be the case that the same deconstruction for the accumulator each iteration is needed for the accumulated value after all. The same bindings for accumulator deconstruction each iteration can just be exposed below the loop. If the loop itself didn't return the value, we enable interactions with CEs like a regular `for` loop can - also eliminating the unfamiliarity with a loop that has a return value. 
+However, it might also be the case that the same deconstruction for the accumulator each enumeration is needed for the accumulated value after all. The same bindings for accumulator deconstruction each enumeration can just be exposed below the loop. If the loop itself didn't return the value, we enable interactions with CEs like a regular `for` loop can - also eliminating the unfamiliarity with a loop that has a return value. 
 
 ```fs
 // Alternative 2
@@ -355,7 +355,7 @@ However, the tradeoff is that exposing loop bindings like this is even more unfa
 
 The syntactical translation would be modified as follows.
 
-Let `<accum>` is a compiler-generated accumulation variable that cannot be used outside the loop, which gets updated each iteration;
+Let `<accum>` is a compiler-generated accumulation variable that cannot be used outside the loop, which gets updated each enumeration;
 let `<exprs>` match any expressions inside a sequence expression before the final expression in the loop body,
 or any `if` and `match` and `try`-`with` permitting computation expression syntax inside;
 let `<expr3>` be the final expression which if contained inside `if` or `match` or `try`-`with`, then each branch must return the same value and searched recursively with the final expression of each branch for `<accum> <-` application.
