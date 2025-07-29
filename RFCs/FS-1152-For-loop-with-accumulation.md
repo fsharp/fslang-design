@@ -164,7 +164,7 @@ A recursive function is just harder to write correctly and is more verbose.
 
 ## But I don't use pure functions in my design architecture.
 
-This syntax also shows benefits when there are nested folds and folds over tuples.
+This syntax also shows benefits when there exists logic equivalent to nested folds and folds over tuples.
 
 ```fs
 // Example MVU model
@@ -180,13 +180,13 @@ let stats model =
         let items, count =
             category.Items
             |> List.fold (fun (items, count) item ->
-                items + 1, count + item.Count // Fold over inner items
+                items + 1, count + item.Count // Nested fold, tuple accumulator
             ) (0, 0)
         totalItems + items, totalCount + count
-    ) (0, 0) // Initial state
+    ) (0, 0) // Weird parentheses placement
 // Current - using mutable accumulators
 let stats model =
-    let mutable totalItems = 0
+    let mutable totalItems = 0 // The more accumulators you use, the more lines these take
     let mutable totalCount = 0
     for category in model.Categories do
         for items in category.Items do
