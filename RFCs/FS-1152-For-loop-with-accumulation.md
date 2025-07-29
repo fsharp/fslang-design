@@ -511,6 +511,8 @@ let euclidianDistance =
     |> sqrt
 ```
 
+There is also potential undentation for `with` here, alongside `in`, `to` etc, these belong to a different suggestion - https://github.com/dotnet/fsharp/issues/18754#issuecomment-3101793041
+
 # Compatibility
 
 Please address all necessary compatibility questions:
