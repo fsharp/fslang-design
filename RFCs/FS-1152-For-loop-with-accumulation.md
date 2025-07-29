@@ -57,19 +57,24 @@ let effects, model =
         let model = Model.action2 model // Pure function
         accum <- effect :: effects, model
     accum // boilerplate
-// Proposed - fold loop (simplest this can be)
+// Proposed fold loop 1 - loop with value 
 let effects, model =
-    for effects, model = [], model with item in items do
+    for effects, model = [], model with item in items do // simple
         let effect, model = Model.action item model // Pure function
         let model = Model.action2 model // Pure function
         effect :: effects, model
+// Proposed fold loop 2 - loop leaks accumulator bindings below
+for effects, model = [], model with item in items do // even more ergonomic
+    let effect, model = Model.action item model // Pure function
+    let model = Model.action2 model // Pure function
+    effect :: effects, model
 ```
 Notice that for `fold`s, it is easy to accidentally do `(model, effect :: effects)` or `(model, [])` - especially for people new to functional programming, tupling like this is hard to get right.
 This even happens for experienced F# programmers. If the user doesn't get them right, the problem is figuring out what they got wrong from the type errors.
 People also often get the parameter order mixed up, such as doing `items ([], model)` instead of `([], model) items`.
 There are far fewer likely points of failure using the fold loop.
 
-Now, drilling down to specific points of comparison:
+Now, drilling down to specific points of comparison (focusing on the first proposal for now):
 ```fs
 let effects, model =
     for effects, model = [], model with item in items do
