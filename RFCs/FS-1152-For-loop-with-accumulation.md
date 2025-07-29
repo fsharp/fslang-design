@@ -60,9 +60,9 @@ let effects, model =
 // Proposed fold loop 1 - loop with value 
 let effects, model =
     for effects, model = [], model with item in items do // simple
-        let effect, model = Model.action item model // Pure function
-        let model = Model.action2 model // Pure function
-        effect :: effects, model
+            let effect, model = Model.action item model // Pure function
+                    let model = Model.action2 model // Pure function
+                            effect :: effects, model
 // Proposed fold loop 2 - loop leaks accumulator bindings below
 for effects, model = [], model with item in items do // even more ergonomic
     let effect, model = Model.action item model // Pure function
@@ -244,7 +244,9 @@ let sum xs = fold 0 { for x in xs -> (+) x } // variation 1
 let sum xs = fold 0 { for acc, x in xs -> acc + x } // variation 2
 let sum xs = fold { for acc, x in 0, xs -> acc + x } // variation 3
 ```
-But this is not orthogonal to an existing computation expression context unlike the for loop which allows `let!` inside that refer to the outer context. Moreover, error messages for overloaded computation expression methods are hard to understand, and computation expressions are [notoriously difficult to debug](https://github.com/dotnet/fsharp/issues/13342). Computation expressions also show a heavily different syntax compared to for loops and folds which add hinderance to understanding.
+Generally, computation expressions have hard to understand error messages for overloaded computation expression methods and are are [notoriously difficult to debug](https://github.com/dotnet/fsharp/issues/13342). These are fixable with enough investments in CEs.
+
+What's unfixable is the non-orthogonality to an existing computation expression context unlike the for loop which allows `yield` inside to yield to an outer list expression instead of being limited by a fold CE. Moreover, CEs also show a heavily different syntax compared to for loops and folds which add hinderance to understanding - each CE usage requires following CE methods which add indirection to understanding, only hiding large chunks of logic like `async` or `task` should worth CE usage. It would be much simpler to just write the underlying code (this critique also applies to `option` and `result` CEs for example). Since folds are so common in pure functional programming, they deserve a simple-to-use syntax as fold loops provide, instead of tucked away in hard-to-understand CE syntax.
 
 ## Summary
 
