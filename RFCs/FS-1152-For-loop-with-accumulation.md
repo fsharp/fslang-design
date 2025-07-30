@@ -143,6 +143,16 @@ let effects, model =
 ```
 which suggests a missed opportunity to make them more familiar to people who know `for` loops.
 
+Some may suggest using `||>` but `||>`s make it hard to thread the pair through the lambda without screwing up the types.
+```fs
+let effects, model =
+    (([], model), items) // ugh - nested tuples and hard to get order and parentheses right
+    ||> Seq.fold (fun (effects, model) item ->
+        let effect, model = Model.action item model // Pure function
+        let model = Model.action2 model // Pure function
+        effect :: effects, model)
+```
+
 Some may also suggest that recursive functions may show the logic more clearly than a `fold`.
 
 ```fs
@@ -243,6 +253,17 @@ let stats model =
             ) (0, 0)
         totalItems + items, totalCount + count
     ) (0, 0) // Weird parentheses placement
+// Current - using ||> folds
+let stats model =
+    ((0, 0), model.Categories) // ugh - nested tuples
+    ||> List.fold (fun (totalItems, totalCount) category ->
+        let categoryStats =
+            ((0, 0), category.Items) // ugh - nested tuples
+            ||> List.fold (fun (items, count) item ->
+                (items + 1, count + item.Count) // Fold over inner items
+            ) 
+        (totalItems + fst categoryStats, totalCount + snd categoryStats)
+    )
 // Current - using mutable accumulators
 let stats model =
     let mutable totalItems = 0 // The more accumulators you use, the more lines these take
@@ -271,24 +292,6 @@ let stats model =
 In a regular `fold`, it's very hard just to get the white space alignment and closing parentheses right when you need a fold within a fold.
 Folding over tuples with a lambda also becomes pretty confusing very quickly.
 Using the new fold syntax, this becomes much easier to write and understand.
-
-## How about `||>`?
-
-```fs
-// Current - ||>
-let stats model =
-    ((0, 0), model.Categories) // ugh - nested tuples
-    ||> List.fold (fun (totalItems, totalCount) category ->
-        let categoryStats =
-            ((0, 0), category.Items) // ugh - nested tuples
-            ||> List.fold (fun (items, count) item ->
-                (items + 1, count + item.Count) // Fold over inner items
-            ) 
-        (totalItems + fst categoryStats, totalCount + snd categoryStats)
-    )
-```
-
-`||>`s make it hard to thread the pair through the lambda without screwing up the types.
 
 ## Computation expressions already provide a similar syntax, right?
 
