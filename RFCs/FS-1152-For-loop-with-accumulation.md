@@ -11,7 +11,7 @@ This RFC covers the detailed proposal for this suggestion.
 
 # Summary
 
-A new syntax for `for`-loops that allow accumulation is introduced that is intuitive, teachable to new users, easily documentable and without too much unexpected behavior (all 4 phrases are just [Principle of Least Surprise](https://en.wikipedia.org/wiki/Principle_of_least_astonishment)). It also derives and provides for useful semantics (a reasonably learned F# programmer will reliably reach for in practice, enabling the developers to make their lives easier). It is also rigorous (other features rely on this being sensible and future features may build on it).
+Fold is a fundamental operation in pure functional programming. It deserves a better syntax that what fold functions currently provide. To solve this, a new syntax for `for`-loops that allow accumulation is introduced that is intuitive, teachable to new users, easily documentable and without too much unexpected behavior (all 4 phrases are just [Principle of Least Surprise](https://en.wikipedia.org/wiki/Principle_of_least_astonishment)). It also derives and provides for useful semantics (a reasonably learned F# programmer will reliably reach for in practice, enabling the developers to make their lives easier). It is also rigorous (other features rely on this being sensible and future features may build on it).
 ```fs
 for <pat> = <expr> with <pat> in <expr> do
     <expr>
@@ -20,7 +20,7 @@ The value of the loop body is used to update the accumulator which is returned i
 
 # Motivation
 
-Let's start with how this is used in practice - the summarization of a sequence into a value is a common logic pattern that deserves simplicity.
+Let's start with how this is used in practice - the summarization of a sequence into a value, aka the fold operation, compared across different language features.
 
 ```fs
 // Current - fold
@@ -74,7 +74,7 @@ This even happens for experienced F# programmers. If the user doesn't get them r
 People also often get the parameter order mixed up, such as doing `items ([], model)` instead of `([], model) items`.
 There are far fewer likely points of failure using the fold loop.
 
-Now, drilling down to specific points of comparison (focusing on the first proposal for now):
+Now, drilling down to specific points of comparison (focusing on the alternative 1 for now):
 ```fs
 let effects, model =
     for effects, model = [], model with item in items do
@@ -83,6 +83,11 @@ let effects, model =
         effect :: effects, model
 ```
 The return value of the loop body updates the accumulator. This is a synthesis of `fold`s with loops, therefore it can be called a "fold loop". There is no direct equivalent in other languages, they either have `fold` with a lambda or `for` loops that require a mutable accumulator.
+
+It is:
+1. **Conceptually simple** - just accumulate while iterating.
+2. **Boilerplate-heavy** in current syntax.
+3. **Error-prone** in current syntax even for experienced developers.
 
 This offers a desirable middle ground between `for` loops that must only have side-effects (returning `unit`)
 and purely functional `fold`s that must be in lambda form. It is declarative which removes concerns about order of operations. It encourages functional pureness without the shortcomings of `fold`.
@@ -101,6 +106,8 @@ let effects, model =
     state_accum
 ```
 This also highlights that while `for i = 1 to 10 do` and `for i in 1 .. 10 do` enumerate on the same items, they are semantically very different: `for i = 1 to 10 do` has `i` as the enumeration state, while `for i in 1 .. 10 do` hides the enumeration state and `i` is the enumeration item. Meanwhile, `for i = 1 with j in 1 .. 10 do` has two enumeration states: `i` and the enumerator of `1 .. 10` which must exist before `j` is retrieved. Therefore, it makes less sense to put the accumulator after the enumeration item.
+
+Note that there may be more efficient functions when needed, like `reduce` and `sum`, but they are only specialized versions of `fold`. 
 
 ## Comparison to imperative programming
 
@@ -166,6 +173,51 @@ let effects, model =
 ```
 
 A recursive function is just harder to write correctly and is more verbose.
+
+## Can you just abstract the fold?
+
+While abstraction can solve specific problems, the MVU example reveals fundamental limitations with abstracting accumulation patterns:
+
+```fs
+type MVULoop<'Model, 'Msg>(init: unit -> 'Model, update) =
+    let effects = Queue<unit -> 'Msg>() // effects might be async
+    let mutable state = init()
+    member _.Current = state
+    member _.Dispatch(items: 'Msg seq) =
+        for item in items do
+            let effect, model = update state item
+            state <- model
+            effects.Enqueue effect
+        state
+```
+
+This abstraction attempts to solve three problems at once:
+- Effect ordering (queue vs list)
+- State management
+- Accumulation pattern
+
+But it introduces new issues:
+- Composition rigidity: The `'Msg` requirement inhibits model extension
+- Premature optimization: Queue implementation assumes specific effect handling needs
+- Abstraction leakage: Mutability remains visible in public API
+- Conceptual overhead: New types to understand for a fundamental pattern
+
+The fold loop solution addresses the core accumulation need directly:
+```fs
+let effects, model =
+    for effects, model = [], model with item in items do
+        let effect, model = Model.action item model
+        let model = Model.action2 model
+        effect :: effects, model
+```
+
+This approach:
+- Maintains flexibility: Accumulation logic can evolve freely at usage
+- Minimizes commitment: No persistent types or interfaces
+- Keeps focus: Logic remains where it's used
+- Simplifies composition: Works with any model/effect types
+
+Jon Blow's principle of "Just write the damn code" applies perfectly here - solve accumulation problems directly using language-provided tools, not custom abstraction. Fold loops provide exactly the right level of language support for these fundamental patterns.
 
 ## But I don't use pure functions in my design architecture.
 
@@ -257,6 +309,8 @@ The fold loop is the natural synthesis of `for` loops with `fold`s. It is desira
   - Without too much unexpected behaviour: There are no tricks with indentation nor parentheses.
 - Semantically useful: an expert F# user will prefer the fold loop over alternatives.
 - Rigorous: other F# features, like multi-folds, will be mixable with this syntax.
+
+An operation as fundamental as `fold` in pure functional programming should not warrant any abstract data types, and in fact should be supported directly by the language.
 
 The fold loop is superior to `mutable` variables with imperative `for` loops because:
 - More succinct from elision of accumulator variable definition and assignment boilerplate that becomes more apparent with tuple accumulators
