@@ -107,7 +107,9 @@ let effects, model =
 ```
 This also highlights that while `for i = 1 to 10 do` and `for i in 1 .. 10 do` enumerate on the same items, they are semantically very different: `for i = 1 to 10 do` has `i` as the enumeration state, while `for i in 1 .. 10 do` hides the enumeration state and `i` is the enumeration item. Meanwhile, `for i = 1 with j in 1 .. 10 do` has two enumeration states: `i` and the enumerator of `1 .. 10` which must exist before `j` is retrieved. Therefore, it makes less sense to put the accumulator after the enumeration item.
 
-Note that there may be more efficient functions when needed, like `reduce` and `sum`, but they are only specialized versions of `fold`. 
+Note that there may be more efficient and potentially parallelizable functions when needed, like `reduce` and `sum`, but they are only specialized versions of `fold`. Using folds to aggregate effects should not need specialized functions - use the right tool for the right job.
+
+Some may question the use of `=` without `mutable` for accumulator initialization and `do` on an expression instead of `unit`-returning actions. `=` already has precedence in `for i = 1 to 10 do` which initializes loop state `i` to `1` and modified across loop iterations. `do` on an expression also has precedence in implicit yields - `[for i in 1 .. 10 do i]` yields 10 integers despite an integer cannot be "done" - just interpret `do` here as "do an evaluation of".
 
 ## Comparison to imperative programming
 
