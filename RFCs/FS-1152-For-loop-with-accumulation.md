@@ -13,10 +13,10 @@ This RFC covers the detailed proposal for this suggestion.
 
 Fold is a fundamental operation in pure functional programming. It deserves a better syntax that what fold functions currently provide. To solve this, a new syntax for `for`-loops that allow accumulation is introduced that is intuitive, teachable to new users, easily documentable and without too much unexpected behavior (all 4 phrases are just [Principle of Least Surprise](https://en.wikipedia.org/wiki/Principle_of_least_astonishment)). It also derives and provides for useful semantics (a reasonably learned F# programmer will reliably reach for in practice, enabling the developers to make their lives easier). It is also rigorous (other features rely on this being sensible and future features may build on it).
 ```fs
-for <pat> = <expr> with <pat> in <expr> do
+for <pat> in <expr> with <pat> = <expr> do
     <expr>
 ```
-The value of the loop body is used to update the accumulator which is returned in the end.
+Extending the `for <pat> in <expr> do` syntax, a new optional clause with an accumulator initializer, denoted by `with`, is introduced. The presence of the `with` clause enables the value of the loop body to update the accumulator (placed after `with`), which is the loop return value (for Alternative 1) or available to code after the loop as bindings (for Alternative 2).
 
 # Motivation
 
@@ -57,14 +57,14 @@ let effects, model =
         let model = Model.action2 model // Pure function
         accum <- effect :: effects, model
     accum // boilerplate
-// Proposed fold loop 1 - loop with value 
+// Proposed fold loop - Alternative 1: loop with value 
 let effects, model =
-    for effects, model = [], model with item in items do // simple
+    for item in items with effects, model = [], model do // look at how simple the same code can become!
         let effect, model = Model.action item model // Pure function
         let model = Model.action2 model // Pure function
         effect :: effects, model
-// Proposed fold loop 2 - loop leaks accumulator bindings below
-for effects, model = [], model with item in items do // even more ergonomic
+// Proposed fold loop - Alternative 2: loop leaks accumulator bindings below
+for item in items with effects, model = [], model do // extra "let" elided, even more ergonomic!
     let effect, model = Model.action item model // Pure function
     let model = Model.action2 model // Pure function
     effect :: effects, model
@@ -77,7 +77,7 @@ There are far fewer likely points of failure using the fold loop.
 Now, drilling down to specific points of comparison (focusing on the alternative 1 for now):
 ```fs
 let effects, model =
-    for effects, model = [], model with item in items do
+    for item in items with effects, model = [], model do
         let effect, model = Model.action item model // Pure function
         let model = Model.action2 model // Pure function
         effect :: effects, model
@@ -91,21 +91,6 @@ It is:
 
 This offers a desirable middle ground between `for` loops that must only have side-effects (returning `unit`)
 and purely functional `fold`s that must be in lambda form. It is declarative which removes concerns about order of operations. It encourages functional pureness without the shortcomings of `fold`.
-
-The accumulator is placed before the enumeration item because enumeration state must exist before it is used to get an item from the sequence. It is also why the `fold` lambda body takes the accumulator before the sequence item, making refactors from `fold` easy.
-```fs
-let effects, model =
-    let sequence = items // sequence
-    let mutable state_accum = [], model // accumulator state
-    let state_enumerator = sequence.GetEnumerator() // enumerator state
-    while state_enumerator.MoveNext() do
-        let item = state_enumerator.Current // state must be defined before the enumeration item is retrieved
-        let effect, model = Model.action item model
-        let model = Model.action2 model
-        state_accum <- effect :: effects, model
-    state_accum
-```
-This also highlights that while `for i = 1 to 10 do` and `for i in 1 .. 10 do` enumerate on the same items, they are semantically very different: `for i = 1 to 10 do` has `i` as the enumeration state, while `for i in 1 .. 10 do` hides the enumeration state and `i` is the enumeration item. Meanwhile, `for i = 1 with j in 1 .. 10 do` has two enumeration states: `i` and the enumerator of `1 .. 10` which must exist before `j` is retrieved. Therefore, it makes less sense to put the accumulator after the enumeration item.
 
 Note that there may be more efficient and potentially parallelizable functions when needed, like `reduce` and `sum`, but they are only specialized versions of `fold`. Using folds to aggregate effects should not need specialized functions - use the right tool for the right job.
 
@@ -275,15 +260,15 @@ let stats model =
     totalItems, totalCount
 // Proposed - Alternative 1
 let stats model =
-    for totalItems, totalCount = 0, 0 with category in model.Categories do
+    for category in model.Categories with totalItems, totalCount = 0, 0 do
         let items, count =
-            for items, count = 0, 0 with item in category.Items do
+            for item in category.Items with items, count = 0, 0 do
                 items + 1, count + item.Count
         totalItems + items, totalCount + count
 // Proposed - Alternative 2
 let stats model =
-    for totalItems, totalCount = 0, 0 with category in model.Categories do
-        for items, count = 0, 0 with item in category.Items do
+    for category in model.Categories with totalItems, totalCount = 0, 0 do
+        for item in category.Items with items, count = 0, 0 do
             items + 1, count + item.Count
         totalItems + items, totalCount + count
     totalItems, totalCount
@@ -349,23 +334,65 @@ The only caveat is the unfamiliarity with a loop that has a return value where e
 
 # Detailed design
 
-`for` is used as the loop keyword because the fold loop behaves identical to the `for` loop with accumulation. Ideally, `fold` would be usable as the loop keyword, but it obviously clashes with existing uses of it as an identifier.
+How to best write a fold operation? There are 3 inputs to a `fold` function - the folder (lambda function `fun state element -> folder_body` to update the state given the input elements, with type `'State -> 'T -> 'State`), then the initial state (with type `'State`), then the input sequence (with type `'T seq`). Using the `=` initializer to embed the initial state into the folder state parameter, `in` relation to embed the input sequence into the folder element parameter, and `with` relation to chain the the two folder parameters together, one may come up with a syntax like this:
+```fs
+fold <pattern_accumulator> = <expression_initial_state> with <pattern_enumeration_item> in <expression_sequence> ->
+    <expression_folder_body>
+```
+This form enables the use of indentation to eliminate parentheses scoping required by the folder as a lambda.
+
+One can immediately notice that `fold` is not usable as a keyword, it is a valid identifier today. The closest keyword available that represents sequence enumeration is `for`. Therefore, we replace `fold` with `for`.
+```fs
+for <pattern_accumulator> = <expression_initial_state> with <pattern_enumeration_item> in <expression_sequence> ->
+    <expression_folder_body>
+```
+
+This form emphasises that the state comes before the enumeration item as the `fold` function does, making refactors from `fold` functions easy. One may argue that the enumeration state must exist before it is used to get an item from the sequence - just as `for i = 1 to 10 do` has `i` as the enumeration state and `for i in 1..10 do` hides the enumeration state which must appear before the enumeration item does.
+```fs
+let effects, model =
+    let sequence = items // sequence
+    let mutable state_accum = [], model // accumulator state
+    let state_enumerator = sequence.GetEnumerator() // enumerator state
+    while state_enumerator.MoveNext() do
+        let item = state_enumerator.Current // state must be defined before the enumeration item is retrieved
+        let effect, model = Model.action item model
+        let model = Model.action2 model
+        state_accum <- effect :: effects, model
+    state_accum
+```
+However, this argument doesn't explain the fact that the sequence also must exist before the enumeration item and yet the sequence is syntactically after the enumeration item. Another argument may point to placing enumerands after `in`s allowing easier parsing of potentially variadic structures via `and` at the end as variadics are usually easier to deal with at the tail: `for s = initial with t in ts and v in vs`. However, we already need to parse a separator like `->` or `do` before parsing the folder body, which can easily be changed to detect the presence of a `with`. In fact, the parameter order of `fold` functions have another important consideration: partial application and piping, which results in the sequence, therefore enumeration item, always being placed last.
+
+When designing the best way to write a fold, we should omit the constraint of partial application and piping, which means that the parameter order should be considered indepedently from the existing `fold` function. Is the natural idea of a fold operation really about the state primarily, "with" the enumeration being the secondary? In natural language, we would [say](https://github.com/fsharp/fslang-suggestions/issues/1362#issuecomment-3132553106) that "the code is folding over ..._collection_... while using ..._state accumulation_...". This points to an emphasis on iteration first, "with" some additional state to be kept around.
+
+```fs
+for <pattern_enumeration_item> in <expression_sequence> with <pattern_accumulator> = <expression_initial_state> ->
+    <expression_folder_body>
+```
+
+This form is now very similar to existing `for` loops with an optional `with` clause. In fact, we can even replace the `->` with `do`. Some may point to the fact that `do` is associated with actions and not expressions, but after the implementation of implicit yields, there is already precedence for `do` meaning "do an evaluation of" too: `[for word in ["Hello"; " "; "World"; "!"] do sentence + word]`. 
+
+```fs
+for <pattern_enumeration_item> in <expression_sequence> with <pattern_accumulator> = <expression_initial_state> do
+    <expression_folder_body>
+```
+
+This reveals an insight that the fold loop behaves identically to the `for` loop `with` accumulation.
 
 ## Alternative 1 - Loop returns the accumulated value and loop body is a value without CE context
 
 For this syntax
 
 ```fs
-for <pat1> = <expr1> with <pat2> in <expr2> do
+for <pat1> in <expr1> with <pat2> = <expr2> do
     <expr3>
 ```
 
 it undergoes a simple syntactical expansion to
 
 ```fs
-let mutable <accum> = <expr1>
-for <pat2> in <expr2> do
-    let <pat1> = <accum>
+let mutable <accum> = <expr2>
+for <pat1> in <expr1> do
+    let <pat2> = <accum>
     <accum> <- <expr3>
 <accum>
 ```
@@ -376,7 +403,7 @@ The result of the syntactical translation shows that `<accum>` is the value of t
 Note that since the loop body is assigned to the accumulator, the loop body is not a computation expression context.
 ```fs
 let result = [
-    for sentence = "" with word in ["Hello"; " "; "World"; "!"] do
+    for word in ["Hello"; " "; "World"; "!"] with sentence = "" do
         sentence // this is NOT an implicit yield. This warns with a discard behavior.
         // yield sentence // Error: CE syntax cannot be used here.
         sentence + word
@@ -390,7 +417,7 @@ The reason is as follows:
 let result = [
     printfn "%s" (
         ":D" // this is also NOT an implicit yield as it is a subexpression.
-        for sentence = "" with word in ["Hello"; " "; "World"; "!"] do
+        for word in ["Hello"; " "; "World"; "!"] with sentence = "" do
             sentence // Warns with discard
             // yield sentence // Error: CE syntax cannot be used here.
             sentence + word
@@ -407,7 +434,7 @@ The loop itself returning the value is more preferable if we assume that the fol
 ```fs
 // Alternative 1
 let scanned =
-  [ for s = 0 with t in ts do
+  [ for t in ts with s = 0 do
       yield s + t // Error: CE operations invalid in subexpressions
       s + t
   ]
@@ -416,7 +443,7 @@ let scanned =
 ```fs
 // Alternative 1
 let effects, model = // This seems repetitive with the loop accumulator...
-    for effects, model = [], model with item in items do
+    for item in items with effects, model = [], model do
         let effect, model = Model.action item model
         let model = Model.action2 model
         effect :: effects, model
@@ -428,7 +455,7 @@ However, it might also be the case that the same deconstruction for the accumula
 
 ```fs
 // Alternative 2
-for effects, model = [], model with item in items do
+for item in items with effects, model = [], model do
     let effect, model = Model.action item model
     let model = Model.action2 model
     effect :: effects, model
@@ -447,7 +474,7 @@ let `<expr3>` be the final expression which if contained inside `if` or `match` 
 
 Then
 ```fs
-for <pat1> = <expr1> with <pat2> in <expr2> do
+for <pat1> in <expr1> with <pat2> = <expr2> do
     <exprs>
     <expr3>
 ```
@@ -456,12 +483,12 @@ undergoes a simple syntactical expansion to
 ### Alternative unit - Loop returns unit
 
 ```fs
-let mutable <accum> = <expr1>
-for <pat2> in <expr2> do
-    let <pat1> = <accum>
+let mutable <accum> = <expr2>
+for <pat1> in <expr1> do
+    let <pat2> = <accum>
     <exprs>
     <accum> <- <expr3>
-let <pat1> = <accum> // <accum> deconstructed with <pat1> again
+let <pat2> = <accum> // <accum> deconstructed with <pat2> again
 () // loop returns unit if isolated
 ```
 
@@ -469,12 +496,12 @@ This alternative maintains the familiarity with loops returning unit.
 
 ### Alternative let - Loop requires a following expression and cannot be isolated
 ```fs
-let mutable <accum> = <expr1>
-for <pat2> in <expr2> do
-    let <pat1> = <accum>
+let mutable <accum> = <expr2>
+for <pat1> in <expr1> do
+    let <pat2> = <accum>
     <exprs>
     <accum> <- <expr3>
-let <pat1> = <accum> // <accum> deconstructed with <pat1> again
+let <pat2> = <accum> // <accum> deconstructed with <pat2> again
 // loop requires an expression following it!
 ```
 
@@ -492,7 +519,7 @@ which is different from the final expression `<expr3>`.
 Therefore, this may happen:
 ```fs
 let result = [
-    for sentence = "" with word in ["Hello"; " "; "World"; "!"] do
+    for word in ["Hello"; " "; "World"; "!"] with sentence = "" do
         sentence
         sentence + word
     printfn "%s" sentence
@@ -516,12 +543,12 @@ It might be the case that the intersection of implicit yields and the fold loop 
 ```fs
 // Alternative 2.1
 let q = seq { for i in 1..10 do s + i } // int seq, 10 values
-let w = seq { for s = 0 with i in 1..10 do s + i } // Alternative unit: error value restriction (no yields); Alternative let: error no expression following 'for'
-let w = seq { for s = 0 with i in 1..10 do s + i done; s } // int seq, but now only 1 value is yielded because it's collected to accumulator
+let w = seq { for i in 1..10 with s = 0 do s + i } // Alternative unit: error value restriction (no yields); Alternative let: error no expression following 'for'
+let e = seq { for i in 1..10 with s = 0 do s + i done; s } // int seq, but now only 1 value is yielded because it's collected to accumulator
 
 let q1 = seq { for i in 1..10 do s + i; s + i } // int seq, 20 values
-let w1 = seq { for s = 0 with i in 1..10 do s + i; s + i } // Alternative unit: 10 values; Alternative let: error no expression following 'for'
-let w1 = seq { for s = 0 with i in 1..10 do s + i; s + i done; s } // int seq, 11 values
+let w1 = seq { for i in 1..10 with s = 0 do s + i; s + i } // Alternative unit: 10 values; Alternative let: error no expression following 'for'
+let e1 = seq { for i in 1..10 with s = 0 do s + i; s + i done; s } // int seq, 11 values
 ```
 
 To resolve this, the syntactical translation of `<exprs>` would automatically insert `; ()` after any expression not bound with a CE keyword or `let` and `use` (or equivalent implementation that implements warn with discard behaviour by default). Meanwhile, explicit usages of the `yield` keyword will not affect implicit yield availability outside of the fold loop.
@@ -529,12 +556,12 @@ To resolve this, the syntactical translation of `<exprs>` would automatically in
 ```fs
 // Alternative 2.2
 let q = seq { for i in 1..10 do s + i } // int seq, 10 values
-let w = seq { for s = 0 with i in 1..10 do s + i } // Alternative unit: error value restriction (no yields); Alternative let: error no expression following 'for'
-let w = seq { for s = 0 with i in 1..10 do s + i done; s } // int seq, but now only 1 value is yielded because it's collected to accumulator
+let w = seq { for i in 1..10 with s = 0 do s + i } // Alternative unit: error value restriction (no yields); Alternative let: error no expression following 'for'
+let e = seq { for i in 1..10 with s = 0 do s + i done; s } // int seq, but now only 1 value is yielded because it's collected to accumulator
 
 let q1 = seq { for i in 1..10 do s + i; s + i } // int seq, 20 values
-let w1 = seq { for s = 0 with i in 1..10 do s + i; s + i } // Warn at first "s + i" with discard by default. Alternative unit: 10 values; Alternative let: error no expression following 'for'
-let w1 = seq { for s = 0 with i in 1..10 do yield s + i; s + i done; s } // int seq, 11 values
+let w1 = seq { for i in 1..10 with s = 0 do s + i; s + i } // Warn at first "s + i" with discard by default. Alternative unit: 10 values; Alternative let: error no expression following 'for'
+let e1 = seq { for i in 1..10 with s = 0 do s + i; s + i done; s } // int seq, 11 values
 ```
 
 ### Alternative 2.3 - Warn with implicit yield in loop body
@@ -565,7 +592,7 @@ let pointACoordinates = [ 1.5; 2.; -3.4; -1.2 ]
 let pointBCoordinates = [ -3.1; 3.1; 1.; -0.2 ]
 
 let euclidianDistance =
-    for acc = 0. with an in pointACoordinates and bn in pointBCoordinates do
+    for an in pointACoordinates and bn in pointBCoordinates with acc = 0. do
         acc + (an - bn) ** 2.
     |> sqrt
 ```
