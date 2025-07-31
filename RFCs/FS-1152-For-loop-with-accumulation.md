@@ -369,7 +369,7 @@ for <pattern_enumeration_item> in <expression_sequence> with <pattern_accumulato
     <expression_folder_body>
 ```
 
-This form is now very similar to existing `for` loops with an optional `with` clause. In fact, we can even replace the `->` with `do`. Some may point to the fact that `do` is associated with actions and not expressions, but after the implementation of implicit yields, there is already precedence for `do` meaning "do an evaluation of" too: `[for word in ["Hello"; " "; "World"; "!"] do sentence + word]`. 
+This form is now very similar to existing `for` loops with an optional `with` clause. In fact, we can even replace the `->` with `do`. Some may point to the fact that `do` is associated with actions and not expressions, but after the implementation of implicit yields, there is already precedence for `do` meaning "do an evaluation of" too: `[for word in ["Hello"; " "; "World"; "!"] do word]`. 
 
 ```fs
 for <pattern_enumeration_item> in <expression_sequence> with <pattern_accumulator> = <expression_initial_state> do
