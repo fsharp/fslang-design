@@ -388,7 +388,7 @@ Some may further suggest that the general `with` relation can even be replaced w
 ```fs
 for x in xs return    s = init do ... // Misleading (suggests early exit) and conflicts with existing use in computation expressions
 for x in xs select    s = init do ... // SQL/LINQ connotations (projection ≠ accumulation)
-for x in xs ->        s = init do ... // Conflicts with lambda/matching syntax that expect an expression on the right hand side
+for x in xs ->        s = init do ... // Conflicts with lambda/matching syntaxes that expect an expression on the right hand side
 for x in xs to        s = init do ... // Collides with "for-to" numeric iterators
 for x in xs in to     s = init do ... // Using two consecutive keywords doesn't fit the rest of the language (even "else if" is replaced with "elif"), and has awkward phrasing using "in" twice
 for x in xs fold to   s = init do ... // Feels verbose and redundant with explicit state present already implying fold
