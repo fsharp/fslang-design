@@ -85,7 +85,7 @@ let effects, model =
 The return value of the loop body updates the accumulator. This is a synthesis of `fold`s with loops, therefore it can be called a "fold loop". There is no direct equivalent in other languages, they either have `fold` with a lambda or `for` loops that require a mutable accumulator.
 
 It is:
-1. **Conceptually simple** - just accumulate while iterating.
+1. **Conceptually simple** - just accumulate while enumerating.
 2. **Boilerplate-heavy** in current syntax.
 3. **Error-prone** in current syntax even for experienced developers.
 
@@ -372,7 +372,9 @@ let effects, model =
 ```
 However, this argument doesn't explain the fact that the sequence also must exist before the enumeration item and yet the sequence is syntactically after the enumeration item. Another argument may point to placing enumerands after `in`s allowing easier parsing of potentially variadic structures via `and` at the end as variadics are usually easier to deal with at the tail: `for s = initial with t in ts and v in vs`. However, we already need to parse a separator like `->` or `do` before parsing the folder body, which can easily be changed to detect the presence of a `with`. In fact, the parameter order of `fold` functions have another important consideration: partial application and piping, which results in the sequence, therefore enumeration item, always being placed last.
 
-When designing the best way to write a fold, we should omit the constraint of partial application and piping, which means that the parameter order should be considered indepedently from the existing `fold` function. Is the natural idea of a fold operation really about the state primarily, "with" the enumeration being the secondary? In natural language, we would [say](https://github.com/fsharp/fslang-suggestions/issues/1362#issuecomment-3132553106) that "the code is folding over ..._collection_... while using ..._state accumulation_...". This points to an emphasis on iteration first, "with" some additional state to be kept around.
+When designing the best way to write a fold, we should omit the constraint of partial application and piping, which means that the parameter order should be considered indepedently from the existing `fold` function. Is the natural idea of a fold operation really about the state primarily, "with" the enumeration being the secondary? In natural language, we would [say](https://github.com/fsharp/fslang-suggestions/issues/1362#issuecomment-3132553106) that "the code is folding over ..._collection_... while using ..._state accumulation_...". This points to an emphasis on enumeration first, "with" some additional state to be kept around.
+
+It is also more readable: when reading from left to right in `for i = 1`, it would have been unclear what `i` is until `to`/`downto` (integer enumerator) or `with` (accumulator) is seen. Putting the accumulator after `with` avoids this ambiguity.
 
 ```fs
 for <pattern_enumeration_item> in <expression_sequence> with <pattern_accumulator> = <expression_initial_state> ->
@@ -386,24 +388,33 @@ for <pattern_enumeration_item> in <expression_sequence> with <pattern_accumulato
     <expression_folder_body>
 ```
 
-This semantic analysis reveals an insight that the fold loop behaves identically to the `for` loop `with` accumulation.
+This syntax analysis reveals an insight that the fold loop behaves identically to the `for` loop `with` accumulation. Note that the design process started from `fold` functions, then used an overload on `for`, then naturally evolved to an extension on existing `for` loops. We did not force the idea of folding onto an extension of existing `for` loops, instead maintaining the orthogonality between fold loops and existing usages of the `for` keyword. This shows the design of an extension on the `for` loop is coincidental from overloading the `for` keyword, instead of tacking on the meaning of `fold` as with an extension of the `for` loop as the starting point - an important semantic difference.
 
 Some may further suggest that the general `with` relation can even be replaced with another keyword that highlights the "fold into" relation between the sequence and accumulator. These alternatives were considered:
 ```fs
-for x in xs return    s = init do ... // Misleading (suggests early exit) and conflicts with existing use in computation expressions
-for x in xs select    s = init do ... // SQL/LINQ connotations (projection ≠ accumulation)
-for x in xs ->        s = init do ... // Conflicts with lambda/matching syntaxes that expect an expression on the right hand side
-for x in xs to        s = init do ... // Collides with "for-to" numeric iterators
-for x in xs in to     s = init do ... // Using two consecutive keywords doesn't fit the rest of the language (even "else if" is replaced with "elif"), and has awkward phrasing using "in" twice
-for x in xs fold to   s = init do ... // Feels verbose and redundant with explicit state present already implying fold
-for x in xs fold into s = init do ... // Feels verbose and redundant with explicit state present already implying fold
+for x in xs return      s = init do ... // Misleading (suggests early exit) and conflicts with existing use in computation expressions
+for x in xs select      s = init do ... // SQL/LINQ connotations (projection ≠ accumulation)
+for x in xs ->          s = init do ... // Conflicts with lambda/matching syntaxes that expect an expression on the right hand side
+for x in xs to          s = init do ... // Collides with "for-to" numeric iterators
+for x in xs in to       s = init do ... // Using two consecutive keywords to convey one meaning doesn't fit the rest of the language (even "else if" is replaced with "elif"), and has awkward phrasing using "in" twice
+for x in xs fold to     s = init do ... // Feels verbose and redundant with explicit state present already implying fold
+for x in xs fold into   s = init do ... // Feels verbose and redundant with explicit state present already implying fold
+for x in xs let         s = init do ... // Implies immutable binding, but subsequent enumerations don't use initial state
+for x in xs let mutable s = init do ... // 100% clear but it's extremely verbose, discouraging its use. Also mutability is against functional semantics of the fold operation
+for x in xs mutable     s = init do ... // "mutable" isn't used without "let" anywhere else so it's confusing 
 ```
 
 `with` is the best choice because:
 - Existing Semantic Flexibility: It is semantically just a construct-delimiting keyword adaptive to context, in object expressions `{ new Class() with member _.ToString() = "" }`, record updates `{ record with Field = value }`, pattern matching `match x with Pattern -> value`, exception handling `try x with ...`, type extensions `type X with ...`, interface implementations `interface Interface with ...`, and property definitions with explicit getters and setters `member _.Prop with get() = ... and set x = ...`.
 - Natural Language Flow: It intuitively follows natural language flow "For each item in this sequence, **with** the accumulator starting at X, do this operation", highlighting the optionality of the accumulator after the sequence, just like how the `with` clause is sometimes optional in object expressions (when no overrides), interface implementations (when all members have default implementations), type extensions (DUs and records with no additional members) and property definitions (when there is only a getter).
 - Unambiguous Positioning: It is unambiguous when preceded by a `for` because it only has meaning when preceded by `{`, `{ new`, `match`, `try`, `type`, `interface`, or `member` today, unlike some alternatives which are already valid identifiers.
-- Fits Existing Expectations: It has a parallel to pattern matching `match x with Pattern` where a pattern comes after `with`, and accepting a pattern instead of requiring an identifier here allows the use of tuple or record accumulators easily, empowering complex real-world scenarios.
+- Fits Existing Expectations: It has a parallel to pattern matching `match x with Pattern`/`try x with Pattern` where a pattern comes after `with`, and accepting a pattern instead of requiring an identifier here allows the use of tuple or record accumulators easily, empowering complex real-world scenarios.
+
+Some may also suggest that re-declaring the accumulator initial state is redundant in the case of folding over different sequences one after another.
+```fs
+for x in xs with effects, model = effects, model (*redundant?*) do ...
+```
+However, a direct abbreviation from `effects, model = effects, model` to `effects, model` would require mixing patterns and expressions in the same syntax. This has a precedence in parsing active pattern arguments, where each active pattern argument is parsed as a pattern first then translated to expressions during type checking, because the pattern for the active pattern result can be dropped for a unit type. However, since there is a [design mistake that pattern and expression syntaxes are not unifiable from having small differences](https://github.com/fsharp/fslang-suggestions/issues/1018#issuecomment-854066070), for example `(a, b : t)` parses as `(a, (b : t))` in a pattern but `((a, b) : t)` in an expression. It was not fixed in the early days of F# for being a corner case in active pattern arguments compared to other work, and it is [not easy to solve today without duplicating the entire expression grammar for patterns or making a severely breaking change to the language](https://github.com/dotnet/fsharp/blob/a70f3beacfe46bcd653cc6d525bd79497e6dd58e/src/fsharp/pars.fsy#L3238-L3241). As a result, active pattern arguments cannot accept arbitrary expressions as input. A shared subset of patterns and expressions might be allowable in this case, e.g. for simple identifiers, constant patterns, tuple patterns and record patterns, without type patterns, but it would also be unexpected that not all pattern and expression forms can be unified. In practice, truncated names (e.g. `e, m`) are usable as the accumulator identifiers inside the fold loop, so it is not worth trading a few characters for a messy design with unintuitive special cases. Explicit semantics and correctness outweighs conciseness and convenience here.
 
 The whole design has captured
 - keyword contextual meanings
@@ -417,6 +428,10 @@ and the whole analysis has
 - resolved all identified ambiguities
 
 This is a textbook example of rigorous language design reasoning. The proposal for `for...in...with...do...` emerges as the clear, logical winner from every angle: syntactic, semantic, and ergonomic.
+
+Could this analysis have been more formal? Sure - arguing using syntax instead of semantics is extremely limited and ambiguous, and may cause inflexibility for future design decisions. Only semantics provides the level of precision needed to avoid painting oneself into a corner in the long run. One may even argue that emphasizing syntax over semantic precision is generally bad practice in language design. But in this particular case, given that F# is already a mature language, the emphasis on syntax here will work out well enough - we have backward compatibility constraints, existing keywords must be preferred over introducing new ones from existing identifiers.
+
+Theoretically, a better analysis would follow the design of F#'s roots - the ML language. As the metalanguage for the LCF theorem prover, early ML code compiled to LISP S-expressions which have syntactic minimalism and can scaffold semantics compositionally. Robin Milner's team focused on semantic foundations (polymorphic type inference, algebraic data types) before standardizing syntax and its translation to S-expressions - making ML one of the first languages with a complete formal specification (operational and denotational semantics), enabling type safety proofs and multiple implementations. Semantic-first design in ML is a huge inspiration in future languages like Haskell/Rust/TypeScript. However, F#, while inheriting OCaml's core which traces to SML formalisms, its .NET integration required compromises, shifting focus from semantic rigor to usability like computation expressions. Unlike SML, F# lacks a machine-checked semantic definition, relying on .NET runtime behavior. This is also reflected in other modern programming languages with design favoring syntax over semantics, causing misunderstanding, unnecessary arguments, and unresolvable ambiguities. This semantic neglect is seen in ad-hoc type systems (e.g. TypeScript's `any`) introducing runtime errors, contrasting ML's proven safety; languages like JavaScript lack operational semantics for edge cases e.g. `==` coercion is underspecified. F# preserved ML's features but not its methodology of formal specification. This trade-off accelerated adoption but introduced technical debt (e.g., unresolvable compiler bugs). Languages like Rust show that semantic precision (e.g. ownership formalized via operational semantics) can coexist with ergonomic syntax, bridging ML's legacy with modern needs. Still, instead of operational and denotational semantics, using ad-hoc s-expressions to represent semantics (i.e. the F# AST) would have resulted in a design at least an order of magnitude more formal and precise than anything happening in the above syntax analysis, which is filled with feels (e.g. when considering alternatives of `with`) and argumentum ad populum (appeal to popularity - most people think `with` is the right keyword therefore it must be the correct keyword for adding the accumulator).
 
 ## Alternative 1 - Loop returns the accumulated value and loop body is a value without CE context
 
