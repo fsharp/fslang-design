@@ -21,14 +21,12 @@ By allowing this, we can
 
 # Detailed design
 
-1. Expression-scoped `open`
-
-The expression-scoped `open` is an expression that opens a module in the body expression scope, and its type is the body's type.
+1. Expression-scoped `open` is an expression that opens a module in the body expression scope, and its type is the body's type.
 
 ```fsharp
-let a: int =
-  open System
+((open System
   Int32.MaxValue + 1   // The body expression
+): int)
 
 let test () =
     open global.System
@@ -39,9 +37,7 @@ let test () =
     printfn "%d" (MaxValue + 1)
 ```
 
-2. Type-scoped `open`
-
-The type-scoped `open` is a statement that opens a module in the type's following scope. It can be used any type definitions, type expressions and the `with` section of a record/union/exception type.
+2. Type-scoped `open` is a statement that opens a module in the type's following scope. It can be used any type definitions, type expressions and the `with` section of a record/union/exception type.
 
 
 ```fsharp
@@ -82,13 +78,13 @@ This RFC is based on the first option.
 Please address all necessary compatibility questions:
 
 * Is this a breaking change?
-No.
+> No.
 
 * What happens when previous versions of the F# compiler encounter this design addition as source code?
-It will fail to compile, as `open` is not allowed in type and expression scopes in previous versions.
+> It will fail to compile, as `open` is not allowed in type and expression scopes in previous versions.
 
 * What happens when previous versions of the F# compiler encounter this design addition in compiled binaries?
-It should work fine, as `open`s are code-level constructs.
+> It should work fine, as `open`s are code-level constructs.
 
 # Pragmatics
 
