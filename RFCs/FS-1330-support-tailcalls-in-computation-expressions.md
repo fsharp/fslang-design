@@ -79,7 +79,8 @@ Please address all necessary compatibility questions:
 > Possibly, if a builder already defines `ReturnFromFinal`/`YieldFromFinal` methods.
 
 * What happens when previous versions of the F# compiler encounter this design addition as source code?
->N/A
+> CE authors should be aware that older compilers (older SDKs) will not call the FromFinal methods.
+The CE should work in a progressive enhancement kind of way - making sure it stays correct even when the FromFinal is not called.
 
 * What happens when previous versions of the F# compiler encounter this design addition in compiled binaries?
 >N/A
