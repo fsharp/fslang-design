@@ -6,8 +6,8 @@ This RFC covers the detailed proposal for this suggestion.
 
 - [x] [Suggestion](https://github.com/fsharp/fslang-suggestions/issues/96)
 - [x] Approved in principle
-- [ ] [Implementation](https://github.com/dotnet/fsharp/pull/FILL-ME-IN)
-- [ ] [Discussion](https://github.com/fsharp/fslang-design/discussions/FILL-ME-IN)
+- [x] [Implementation](https://github.com/dotnet/fsharp/pull/18814)
+- [x] [Discussion](https://github.com/fsharp/fslang-design/discussions/812)
 
 # Summary
 
@@ -96,3 +96,4 @@ Please list the reasonable expectations for tooling for this feature, including 
   * Breakpoints/stepping
     make sure that cannot set breakpoints in the `open` statement
 * Error recovery (wrong, incomplete code)
+* Auto-complete
