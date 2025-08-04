@@ -94,6 +94,16 @@ Please list the reasonable expectations for tooling for this feature, including 
 
 * Debugging
   * Breakpoints/stepping
-    make sure that cannot set breakpoints in the `open` statement
+    Make sure that cannot set breakpoints in the `open` statement
 * Error recovery (wrong, incomplete code)
 * Auto-complete
+    Check if the completion list after the expression/type-scoped `open` is same as the module-scoped `open`.
+* Code fixes
+  * `AddOpenCodeFixProvider`
+    It should works like before, that is, append the missing `open` to the nearest module/namespace-scoped `open`s.
+
+  * `ConvertCSharpUsingToFSharpOpen`
+    It should works like before.
+
+  * `RemoveUnusedOpens`
+    It should be able to recognize `open`s on expression/type level and remove unused items.
