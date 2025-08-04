@@ -19,9 +19,46 @@ Allow CE builders to support tailcalls easier by detecting tailcalls during chec
 
 # Detailed design
 
-Naming TBD
+If a computation expression builder provides a `YieldFromFinal` method
+```fsharp
+    // The implementation of `yield!`
+    member inline _.YieldFrom (other: Coroutine) : CoroutineCode = 
+        ResumableCode.While((fun () -> not other.IsCompleted), CoroutineCode(fun sm -> 
+            other.MoveNext()
+            let __stack_other_fin = other.IsCompleted
+            if not __stack_other_fin then
+                // This will yield with __stack_yield_fin = false
+                // This will resume with __stack_yield_fin = true
+                let __stack_yield_fin = ResumableCode.Yield().Invoke(&sm)
+                __stack_yield_fin
+            else
+               printfn "done YieldFrom"
+               yieldFromCount <- yieldFromCount + 1
+               true))
 
-See example usage in coroutines.fsx (TODO: add link here)
+    // The implementation of `yield!`, non-standard for tailcalls
+    member inline _.YieldFromFinal (other: Coroutine) : CoroutineCode =
+        ResumableCode<_,_>(fun sm ->
+            sm.Data.TailcallTarget <- Some other
+            false)
+```
+it will be picked instead of `YieldFrom` when `yield!` is in a tail-call position:
+```fsharp
+let testTailcallTiny () = 
+    coroutine {
+        printfn "in testTailcallTiny"
+        yield! t1() // will desugar to YieldFromFinal
+    }
+
+let testNonTailcall () = 
+    coroutine {
+        try 
+            yield! t1() // will desugar to YieldFrom
+        finally ()
+    }
+```
+
+If a `do!` is in a tail-call position it will get translated to `ReturnFromFinal` or to `YieldFromFinal` if the former is not defined.
 
 # Drawbacks
 
@@ -29,14 +66,17 @@ Why should we *not* do this?
 
 # Alternatives
 
-What other designs have been considered? What is the impact of not doing this?
+What other designs have been considered?
+
+What is the impact of not doing this?
+> CE Builders have no easy way to detect tail-calls.
 
 # Compatibility
 
 Please address all necessary compatibility questions:
 
 * Is this a breaking change?
-> Possibly, if a builder already defines ReturnFromFinal`/`YieldFromFinal` methods.
+> Possibly, if a builder already defines `ReturnFromFinal`/`YieldFromFinal` methods.
 
 * What happens when previous versions of the F# compiler encounter this design addition as source code?
 >N/A
