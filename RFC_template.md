@@ -31,6 +31,14 @@ Example code:
 let add x y = x + y
 ```
 
+# Changes to the F# spec
+
+List the necessary changes or additions to the F# spec (4.1 pdf [here](https://fsharp.org/specs/language-spec/4.1/FSharpSpec-4.1-latest.pdf), latest markdown doc [here](https://github.com/fsharp/fslang-spec/blob/main/releases/FSharp-Spec-latest.md)).
+For each change, mention the section numbers and the required change.
+Here are two examples:
+- [Class names as functions](https://github.com/fsharp/fslang-design/blob/main/FSharp-4.0/ClassNamesAsFunctionsDesignAndSpec.md#specification)
+- [Scoped nowarn](https://github.com/fsharp/fslang-design/blob/main/RFCs/FS-1146-scoped-nowarn.md#detailed-specification)
+
 # Drawbacks
 
 Why should we *not* do this?
