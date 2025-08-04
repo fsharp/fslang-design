@@ -27,7 +27,11 @@ By allowing this, we can
 ((open System
   Int32.MaxValue + 1   // The body expression
 ): int)
+```
 
+It can be used in any expression.
+
+```fsharp
 let test () =
     open global.System
     printfn "%d" (Int32.MaxValue + 1)
@@ -35,6 +39,48 @@ let test () =
     open type System.Int32
     open Checked
     printfn "%d" (MaxValue + 1)
+
+// In `match`
+match Some 1 with
+| Some 1 when open System; Int32.MinValue < 0 -> 
+  open type System.Console
+  WriteLine "Is 1"
+| _ -> ()
+
+// In `for`
+for _ in open System.Linq; Enumerable.Range(0, 10) do
+  open type System.Console
+  WriteLine "Hello, World!"
+
+// In `while`
+while
+  open type System.Int32
+  MaxValue < 0
+do
+  open type System.Console
+  WriteLine "MaxValue is negative"
+
+// In `if`
+if open type System.Int32; MaxValue <> MinValue then
+  open type System.Console
+  WriteLine "MaxValue is not equal to MinValue"
+elif open type System.Int32; MaxValue < 0 then
+  open type System.Console
+  WriteLine "MaxValue is negative"
+else
+  open type System.Console
+  WriteLine "MaxValue is positive"
+
+// In `try`
+try
+  open type System.Int32
+  open Checked
+  MaxValue + 1
+with | exn -> open type System.Console; WriteLine exn.Message; 0
+
+// In lambdas
+let f = fun x -> open System; x + 1
+let f2 = function x -> open type System.Int32; x + MinValue
 
 // In computation expressions
 let res = async {
@@ -52,7 +98,19 @@ type C() =
     member _.M() = open type Int32; MaxValue
 ```
 
-1. Type-scoped `open` is a statement that opens a module in the type's following scope. It can be used any type definitions, type expressions and the `with` section of a record/union/exception type.
+It cannot be used in a pattern.
+
+```fsharp
+match Some 1 with
+| Some (open System; Int32.MaxValue) -> ()  // <- Error
+
+module M =
+  let (|Id|) x = x
+
+let (open M; Id x) = 1  // <- Error
+```
+
+2. Type-scoped `open` is a statement that opens a module in the type's following scope. It can be used any type definitions, type expressions and the `with` section of a record/union/exception type.
 
 
 ```fsharp
