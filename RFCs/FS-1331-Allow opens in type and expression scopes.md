@@ -35,9 +35,24 @@ let test () =
     open type System.Int32
     open Checked
     printfn "%d" (MaxValue + 1)
+
+// In computation expressions
+let res = async {
+    open System
+    Console.WriteLine("Hello, World!")
+    let! x = Async.Sleep 1000
+    return x
+}
+
+// In type and member's definitions 
+type C() =
+    do 
+        open System
+        printfn "%d" Int32.MaxValue
+    member _.M() = open type Int32; MaxValue
 ```
 
-2. Type-scoped `open` is a statement that opens a module in the type's following scope. It can be used any type definitions, type expressions and the `with` section of a record/union/exception type.
+1. Type-scoped `open` is a statement that opens a module in the type's following scope. It can be used any type definitions, type expressions and the `with` section of a record/union/exception type.
 
 
 ```fsharp
@@ -46,6 +61,10 @@ type C() =
     open System
     do printfn "%d" Int32.MaxValue
     member _.M() = open type Int32; MaxValue
+    
+    member _.M2() = List<int>()     // <- Cannot find the `List` here
+    open System.Collections.Generic
+    member _.M3() = List<int>()
 
 
 type System.Int32 with
