@@ -23,112 +23,125 @@ By allowing this, we can
 
 1. Expression-scoped `open` is an expression that opens a module in the body expression scope, and its type is the body's type.
 
-```fsharp
-((open System
-  Int32.MaxValue + 1   // The body expression
-): int)
-```
+    ```fsharp
+    ((open System
+      Int32.MaxValue + 1   // The body expression
+    ): int)
+    ```
 
-It can be used in any expression.
+    It can be used in any expression.
 
-```fsharp
-let test () =
-    open global.System
-    printfn "%d" (Int32.MaxValue + 1)
+    ```fsharp
+    let test () =
+        open global.System
+        printfn "%d" (Int32.MaxValue + 1)
 
-    open type System.Int32
-    open Checked
-    printfn "%d" (MaxValue + 1)
+        open type System.Int32
+        open Checked
+        printfn "%d" (MaxValue + 1)
 
-// In `match`
-match Some 1 with
-| Some 1 when open System; Int32.MinValue < 0 -> 
-  open type System.Console
-  WriteLine "Is 1"
-| _ -> ()
+    // In `match`
+    match Some 1 with
+    | Some 1 when open System; Int32.MinValue < 0 -> 
+      open type System.Console
+      WriteLine "Is 1"
+    | _ -> ()
 
-// In `for`
-for _ in open System.Linq; Enumerable.Range(0, 10) do
-  open type System.Console
-  WriteLine "Hello, World!"
+    // In `for`
+    for _ in open System.Linq; Enumerable.Range(0, 10) do
+      open type System.Console
+      WriteLine "Hello, World!"
 
-// In `while`
-while
-  open type System.Int32
-  MaxValue < 0
-do
-  open type System.Console
-  WriteLine "MaxValue is negative"
+    // In `while`
+    while
+      (open type System.Int32
+       MaxValue < 0) do
+      open type System.Console
+      WriteLine "MaxValue is negative"
 
-// In `if`
-if open type System.Int32; MaxValue <> MinValue then
-  open type System.Console
-  WriteLine "MaxValue is not equal to MinValue"
-elif open type System.Int32; MaxValue < 0 then
-  open type System.Console
-  WriteLine "MaxValue is negative"
-else
-  open type System.Console
-  WriteLine "MaxValue is positive"
+    // In `if`
+    if (open type System.Int32; MaxValue <> MinValue) then
+      open type System.Console
+      WriteLine "MaxValue is not equal to MinValue"
+    elif (open type System.Int32; MaxValue < 0) then
+      open type System.Console
+      WriteLine "MaxValue is negative"
+    else
+      open type System.Console
+      WriteLine "MaxValue is positive"
 
-// In `try`
-try
-  open type System.Int32
-  open Checked
-  MaxValue + 1
-with | exn -> open type System.Console; WriteLine exn.Message; 0
+    // In `try`
+    try
+      open type System.Int32
+      open Checked
+      MaxValue + 1
+    with | exn -> open type System.Console; WriteLine exn.Message; 0
 
-// In lambdas
-let f = fun x -> open System; x + 1
-let f2 = function x -> open type System.Int32; x + MinValue
+    // In lambdas
+    let f = fun x -> open System; x + 1
+    let f2 = function x -> open type System.Int32; x + MinValue
 
-// In computation expressions
-let res = async {
-    open System
-    Console.WriteLine("Hello, World!")
-    let! x = Async.Sleep 1000
-    return x
-}
-
-// In type and member's definitions 
-type C() =
-    do 
+    // In computation expressions
+    let res = async {
         open System
-        printfn "%d" Int32.MaxValue
-    member _.M() = open type Int32; MaxValue
-```
+        Console.WriteLine("Hello, World!")
+        let! x = Async.Sleep 1000
+        return x
+    }
 
-It cannot be used in a pattern.
+    // In type and member's definitions 
+    type C() =
+        do 
+            open System
+            printfn "%d" Int32.MaxValue
+        member _.M() = open type Int32; MaxValue
+    ```
 
-```fsharp
-match Some 1 with
-| Some (open System; Int32.MaxValue) -> ()  // <- Error
+    It cannot be used in a pattern.
 
-module M =
-  let (|Id|) x = x
+    ```fsharp
+    match Some 1 with
+    | Some (open System; Int32.MaxValue) -> ()  // <- Error
 
-let (open M; Id x) = 1  // <- Error
-```
+    module M =
+      let (|Id|) x = x
 
-2. Type-scoped `open` is a statement that opens a module in the type's following scope. It can be used any type definitions, type expressions and the `with` section of a record/union/exception type.
+    let (open M; Id x) = 1  // <- Error
+    ```
 
+2. Type-scoped `open` is a statement that opens a module in the type's following scope. It can be used any type definitions, type expressions and the `with` section of a record/union/exception type. 
+
+    Due to the complexity of implementing this feature, the type-scoped `open` can only be placed at the beginning of the type definition.
+
+    This feature is only available in implementation files.
 
 ```fsharp
 type C() =
-    do printfn "%d" Int32.MaxValue   // <- Cannot find the `Int32` here
     open System
+    inherit Object()
+
+    let maxValue = Int32.MaxValue
+    [<DefaultValue>] val mutable minValue: Int32
+    
     do printfn "%d" Int32.MaxValue
     member _.M() = open type Int32; MaxValue
     
-    member _.M2() = List<int>()     // <- Cannot find the `List` here
-    open System.Collections.Generic
+    open System.Collections.Generic    // <- Error, must be at the beginning of the type definition
     member _.M3() = List<int>()
 
+    interface IDisposable with
+        member this.Dispose (): unit = raise (NotImplementedException())
+ 
+[<Struct>]
+type ABC =
+    open System
+    val a: Int32
+    val b: Int32
+    new (a) = { a = Int32.MaxValue; b = 0 }
 
 type System.Int32 with
     open type System.Math
     member this.Abs111 = Abs(this)
-
 
 type A = A of int
     with
@@ -138,7 +151,20 @@ type A = A of int
 
 # Drawbacks
 
-TODO
+The expression/type-scoped `open` cannot have a `type` keyword not on the same line, which is different from module-scoped `open`.
+
+```fsharp
+open
+  type
+    System.Console    // this is ok
+
+(open
+  type
+    System.Console)   // this is not ok
+
+(open type
+    System.Console)   // this is ok
+```
 
 # Alternatives
 
@@ -164,6 +190,10 @@ Please address all necessary compatibility questions:
 > It should work fine, as `open`s are code-level constructs.
 
 # Pragmatics
+
+## Diagnostics
+
+1. 'open' declarations must come before all other definitions in type definitions or augmentation
 
 ## Tooling
 
