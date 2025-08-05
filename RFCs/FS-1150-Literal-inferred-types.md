@@ -177,7 +177,7 @@ Meanwhile, changes are also observable to reflection and boxing.
 ```fs
 let a = ["1"; "2"; "3"]
 let b = a :> obj // Now errors because a is ReadOnlySpan instead of list
-let c = System.String.Concat(",", b)
+let c = System.String.Concat(",", a)
 ```
 
 # Alternatives
