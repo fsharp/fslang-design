@@ -1450,8 +1450,14 @@ Hovering the cursor above the tuple pattern should show `Deconstruct` overload u
 Pressing Go To Definition on the tuple pattern should navigate to any `Deconstruct` methods used under the hood if used.
 
 # FS-1150i Field patterns in type-directed tuple patterns
+The design suggestion [Add "," as separator for pattern matching on multiple named discriminated unions fields and deprecate ";"](https://github.com/fsharp/fslang-suggestions/issues/957) is marked "approved in principle".
 
-Field patterns `identifier = pattern`, delimited by `,`, will be allowed in tuple patterns to match Deconstruct method parameter names. They can also match tuple field names if defined.
+- [x] [Suggestion](https://github.com/fsharp/fslang-suggestions/issues/957)
+- [x] Approved in principle
+- [ ] [Implementation](https://github.com/dotnet/fsharp/pull/FILL-ME-IN)
+- [ ] [Discussion](https://github.com/fsharp/fslang-design/discussions/FILL-ME-IN)
+
+Field patterns `identifier = pattern`, delimited by `,`, will be allowed in tuple patterns to match Deconstruct method parameter names. They can also match tuple field names or DU case fields if defined.
 
 ```fs
 type Person(name: string, age: int) =
