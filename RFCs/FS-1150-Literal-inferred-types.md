@@ -385,10 +385,7 @@ The following dimensions are defined for `LiteralConversionCost` vector:
 - `Numeric`
 - `NumericTwoStep`
 - `TupleStruct`
-- `Tuple1`
-- `Tuple1`
-- `Tuple1`
-- `Tuple1` [[[WIP]]]
+- other dimensions for tuple, list, char, string, bool [[[WIP]]]
 
 ## Changes to specification - [Function and Value Definitions in Modules](https://github.com/fsharp/fslang-spec/blob/1890512002c43f832cbdd6524587c22563589403/spec/namespaces-and-modules.md#function-and-value-definitions-in-modules)
 
