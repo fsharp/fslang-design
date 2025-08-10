@@ -304,12 +304,11 @@ An operation as fundamental as `fold` in pure functional programming should not 
 
 The fold loop is superior to `mutable` variables with imperative `for` loops because:
 - More succinct from elision of accumulator variable definition and assignment boilerplate that becomes more apparent with tuple accumulators
-- (Alternative 1) Better scoping without variable leakage outside loop
+- Better scoping without variable leakage outside loop
 - Being declarative which omits the necessity to think about the order of assignments to mutable variables
 - Encourages staying within the realm of functionally pure architecture instead of encouraging a mutable architecture
 
 The fold loop is superior to `fold` calls because:
-- (Alternative 2) Orthogonality to outer computation expression contexts
 - Much easier to understand with loop syntax
 - Much easier to attain whitespace alignment and omission of the closing parenthesis. When indentation is wrong, you also have to consider the parens as a possible cause, vice versa.
 - Much easier to place loop parameters correctly, fewer points of failure compared to ordering fold arguments / types
@@ -317,13 +316,11 @@ The fold loop is superior to `fold` calls because:
 - More logical cohesion with the accumulator starting value located next to the looping logic
 
 The fold loop is superior to `rec`ursive functions because:
-- (Alternative 2) Orthogonality to outer computation expression contexts
 - Much easier to write correctly without the need to think about tail recursion
 - Much more succinct without requiring the recursive function identifier or a wrapper function to hide the accumulator parameter
 - More logical cohesion with the accumulator starting value located next to the looping logic
 
 The fold loop is superior to computation expression imitations because:
-- (Alternative 2) Orthogonality to outer computation expression contexts
 - Universiality without needing to learn parameter placements from the concrete computation expression implementation localized in each project
 - Availability by default for newcomers to learn easily
 - More precise error messages compared to overloaded computation expression methods especially for newcomers
@@ -390,6 +387,10 @@ for <pattern_enumeration_item> in <expression_sequence> with <pattern_accumulato
 
 This syntax analysis reveals an insight that the fold loop behaves identically to the `for` loop `with` accumulation. Note that the design process started from `fold` functions, then used an overload on `for`, then naturally evolved to an extension on existing `for` loops. We did not force the idea of folding onto an extension of existing `for` loops, instead maintaining the orthogonality between fold loops and existing usages of the `for` keyword. This shows the design of an extension on the `for` loop is coincidental from overloading the `for` keyword, instead of tacking on the meaning of `fold` as with an extension of the `for` loop as the starting point - an important semantic difference.
 
+## Are there better alternatives to `with` keyword?
+
+tl;dr No.
+
 Some may further suggest that the general `with` relation can even be replaced with another keyword that highlights the "fold into" relation between the sequence and accumulator. These alternatives were considered:
 ```fs
 for x in xs return      s = init do ... // Misleading (suggests early exit) and conflicts with existing use in computation expressions
@@ -410,11 +411,131 @@ for x in xs mutable     s = init do ... // "mutable" isn't used without "let" an
 - Unambiguous Positioning: It is unambiguous when preceded by a `for` because it only has meaning when preceded by `{`, `{ new`, `match`, `try`, `type`, `interface`, or `member` today, unlike some alternatives which are already valid identifiers.
 - Fits Existing Expectations: It has a parallel to pattern matching `match x with Pattern`/`try x with Pattern` where a pattern comes after `with`, and accepting a pattern instead of requiring an identifier here allows the use of tuple or record accumulators easily, empowering complex real-world scenarios.
 
+## Can the accumulator initializer be simplified?
+
+tl;dr No.
+
 Some may also suggest that re-declaring the accumulator initial state is redundant in the case of folding over different sequences one after another.
 ```fs
 for x in xs with effects, model = effects, model (*redundant?*) do ...
 ```
 However, a direct abbreviation from `effects, model = effects, model` to `effects, model` would require mixing patterns and expressions in the same syntax. This has a precedence in parsing active pattern arguments, where each active pattern argument is parsed as a pattern first then translated to expressions during type checking, because the pattern for the active pattern result can be dropped for a unit type. However, since there is a [design mistake that pattern and expression syntaxes are not unifiable from having small differences](https://github.com/fsharp/fslang-suggestions/issues/1018#issuecomment-854066070), for example `(a, b : t)` parses as `(a, (b : t))` in a pattern but `((a, b) : t)` in an expression. It was not fixed in the early days of F# for being a corner case in active pattern arguments compared to other work, and it is [not easy to solve today without duplicating the entire expression grammar for patterns or making a severely breaking change to the language](https://github.com/dotnet/fsharp/blob/a70f3beacfe46bcd653cc6d525bd79497e6dd58e/src/fsharp/pars.fsy#L3238-L3241). As a result, active pattern arguments cannot accept arbitrary expressions as input. A shared subset of patterns and expressions might be allowable in this case, e.g. for simple identifiers, constant patterns, tuple patterns and record patterns, without type patterns, but it would also be unexpected that not all pattern and expression forms can be unified. In practice, truncated names (e.g. `e, m`) are usable as the accumulator identifiers inside the fold loop, so it is not worth trading a few characters for a messy design with unintuitive special cases. Explicit semantics and correctness outweighs conciseness and convenience here.
+
+## Can it be used with computation expressions?
+
+**tl;dr No.** The fold loop body cannot contain computation expression operations, as it's designed as a pure accumulation expression. This maintains consistency with how subexpressions work throughout F#.
+
+### Why CE operations are excluded
+```fsharp
+// Fold loop in CE context - NOT supported
+let scanned = [
+    for t in ts with s = 0 do
+        yield s  // Error: CE operations invalid in subexpressions
+        s + t
+]
+```
+
+This behavior matches existing F# semantics where subexpressions don't support CE operations:
+```fsharp
+// Parallel example: CE operations not allowed in subexpressions
+let result = [
+    printfn "%s" (
+        yield ":D"  // Same error
+        "Hello world!"
+    )
+]
+```
+
+### An ergonomic alternative
+While an alternative design could leak accumulator bindings to support CEs:
+```fsharp
+// Alternative proposal
+for item in items with effects, model = [], model do
+    // Loop body would not be a subexpression
+    let effect, model = Model.action item model
+    let model = Model.action2 model
+    yield item  // Would be allowed in this design
+    effect :: effects, model
+// loop returns unit just like other "for" loops
+printfn $"{effects}" // Accumulator bindings leaked below the fold loop, with outer "let" and a layer of indentation elided
+```
+
+The syntactical translation of this variant would be:
+
+Let `<accum>` is a compiler-generated accumulation variable that cannot be used outside the loop, which gets updated each enumeration;
+let `<exprs>` match any expressions inside a sequence expression before the final expression in the loop body,
+or any `if` and `match` and `try`-`with` permitting computation expression syntax inside;
+let `<expr3>` be the final expression which if contained inside `if` or `match` or `try`-`with`, then each branch must return the same value and searched recursively with the final expression of each branch for `<accum> <-` application.
+
+Then
+```fs
+for <pat1> in <expr1> with <pat2> = <expr2> do
+    <exprs>
+    <expr3>
+```
+undergoes a simple syntactical expansion to
+```fs
+let mutable <accum> = <expr2>
+for <pat1> in <expr1> do
+    let <pat2> = <accum>
+    <exprs>
+    <accum> <- <expr3>
+let <pat2> = <accum> // <accum> deconstructed with <pat2> again
+() // loop returns unit if isolated as other loops do, unlike "let" which cannot be the final code element in a block and an explicit result must be given below it.
+```
+
+In this variant, allowing implicit yields in the loop body would be confusing with the accumulator update, therefore the `yield` keyword would be required in the loop body. The syntactical translation of `<exprs>` would automatically insert `; ()` after any expression not bound with a CE keyword or `let` and `use` (or equivalent implementation that implements warn with discard behaviour by default). Meanwhile, explicit usages of the `yield` keyword in the loop body will not affect implicit yield availability outside of the fold loop.
+
+```fs
+let q = seq { for i in 1..10 do s + i } // int seq, 10 values
+let w = seq { for i in 1..10 with s = 0 do s + i } // error value restriction (no yields)
+let e = seq { for i in 1..10 with s = 0 do s + i done; s } // int seq, but now only 1 value is yielded because it's collected to accumulator
+
+let q1 = seq { for i in 1..10 do s + i; s + i } // int seq, 20 values
+let w1 = seq { for i in 1..10 with s = 0 do s + i; s + i } // Warn at first "s + i" with discard by default. 10 values
+let e1 = seq { for i in 1..10 with s = 0 do s + i; s + i done; s } // int seq, 11 values
+```
+
+### Rejecting that ergonomic alternative
+The given arguments for this variant are:
+- Ergonomics with elision of outer `let` and one layer of indentation: However, this explicitness is acceptable and common. The inner accumulator `effects, model` shadows the outer `effects, model`, but the outer one is not used in the loop body anyway. Mixing them violates functional scoping principles where identifiers (`let`) are given separately from expressions, as this visual duplication actually represents separate scopes. Fold loops should be expressions that return values, not imperative constructs that leak bindings. 
+- Ability to write `scan`: However, `fold` and `scan` are really distinct concepts and should not be merged as one. Even with the binding leaking variant, there must be two yields, either initial state with after the update operation, or before the update operation with final state, so it's not a perfect fit with the fold loop - the primary use case for fold loops is accumulation, not generating sequences. The correct way to write a `scan` should actually be a list accumulator (or `ListCollector` for better performance):
+   ```fs
+    let s, items =
+        for t in ts with s, items = 0, [] do
+            s + t, s::items // instead of yield
+    let scanned = List.rev (s::items)
+   ```
+- Integration with computation expressions: If not for yielding, the fold loop body should define inner computation expression contexts and unwrap the accumulator. For example, with `task`:
+    ```fs
+    task { // outer context
+        let! sum =
+            for x in xs with t = Task.FromResult 0 do
+                task { // inner context
+                    let! a = t // unwrap the accumulator
+                    // do task operations...
+                    return a + x // update the accumulator
+                }
+        // use the sum...
+    }
+   ```
+
+The original design wins over this variant because:
+- Semantic Correctness: The original design is more in line with functional programming because the loop is an expression that yields a value, and it doesn't introduce bindings beyond their necessary scope. The duplicate naming issue in `effects, model` example can be mitigated by using shorter names for accumulator bindings like `e, m`. Also, in many cases, the result is used immediately and not needed again, so the duplicate name might not be a problem.
+- Robustness: It avoids the binding leakage which is a potential source of bugs.
+- Consistency with Language: Introducing a new kind of expression (a loop that returns a value) is more consistent with F#'s expression-oriented design than introducing a new scoping rule that leaks bindings.
+- Refactoring and Maintenance: Not leaking bindings avoids accidental shadowing and makes code easier to reason about. It is easier to reason about. The accumulator scope is really confusing in the binding leaking variant whereas the original design with the fold loop returning the value makes it apparent what the scope of each binding is.
+
+### Design Rationale
+The fold loop prioritizes:
+- Semantic correctness - as a pure accumulation expression
+- Consistency - with F#'s expression-oriented design
+- Avoiding scope pollution - that enables subtle bugs
+- Clear separation of concerns - between accumulation and generation
+
+While this means `scan` operations require different constructs, this maintains the fold loop's focus on its core purpose: providing elegant syntax for pure accumulation without compromising F#'s functional foundations. One should focus on what the feature is for rather than what it can't do.
+
+## Summary
 
 The whole design has captured
 - keyword contextual meanings
@@ -433,7 +554,7 @@ Could this analysis have been more formal? Sure - arguing using syntax instead o
 
 Theoretically, a better analysis would follow the design of F#'s roots - the ML language. As the metalanguage for the LCF theorem prover, early ML code compiled to LISP S-expressions which have syntactic minimalism and can scaffold semantics compositionally. Robin Milner's team focused on semantic foundations (polymorphic type inference, algebraic data types) before standardizing syntax and its translation to S-expressions - making ML one of the first languages with a complete formal specification (operational and denotational semantics), enabling type safety proofs and multiple implementations. Semantic-first design in ML is a huge inspiration in future languages like Haskell/Rust/TypeScript. However, F#, while inheriting OCaml's core which traces to SML formalisms, its .NET integration required compromises, shifting focus from semantic rigor to usability like computation expressions. Unlike SML, F# lacks a machine-checked semantic definition, relying on .NET runtime behavior. This is also reflected in other modern programming languages with design favoring syntax over semantics, causing misunderstanding, unnecessary arguments, and unresolvable ambiguities. This semantic neglect is seen in ad-hoc type systems (e.g. TypeScript's `any`) introducing runtime errors, contrasting ML's proven safety; languages like JavaScript lack operational semantics for edge cases e.g. `==` coercion is underspecified. F# preserved ML's features but not its methodology of formal specification. This trade-off accelerated adoption but introduced technical debt (e.g., unresolvable compiler bugs). Languages like Rust show that semantic precision (e.g. ownership formalized via operational semantics) can coexist with ergonomic syntax, bridging ML's legacy with modern needs. Still, instead of operational and denotational semantics, using ad-hoc s-expressions to represent semantics (i.e. the F# AST) would have resulted in a design at least an order of magnitude more formal and precise than anything happening in the above syntax analysis, which is filled with feels (e.g. when considering alternatives of `with`) and argumentum ad populum (appeal to popularity - most people think `with` is the right keyword therefore it must be the correct keyword for adding the accumulator).
 
-## Alternative 1 - Loop returns the accumulated value and loop body is a value without CE context
+## Final design
 
 For this syntax
 
@@ -454,183 +575,6 @@ for <pat1> in <expr1> do
 where `<accum>` is a compiler-generated accumulation variable that cannot be used outside the loop. The entire loop body `<expr3>` is assigned to `<accum>`.
 
 The result of the syntactical translation shows that `<accum>` is the value of this loop - evaluating to the final accumulator state, applying the `do` body to the `with` accumulator preceding it. It is also the accumulator which gets updated each enumeration.
-
-Note that since the loop body is assigned to the accumulator, the loop body is not a computation expression context.
-```fs
-let result = [
-    for word in ["Hello"; " "; "World"; "!"] with sentence = "" do
-        sentence // this is NOT an implicit yield. This warns with a discard behavior.
-        // yield sentence // Error: CE syntax cannot be used here.
-        sentence + word
-    |> printfn "%s" // |> can be used on the loop result
-]
-```
-
-The reason is as follows:
-
-```fs
-let result = [
-    printfn "%s" (
-        ":D" // this is also NOT an implicit yield as it is a subexpression.
-        for word in ["Hello"; " "; "World"; "!"] with sentence = "" do
-            sentence // Warns with discard
-            // yield sentence // Error: CE syntax cannot be used here.
-            sentence + word
-    )
-]
-```
-
-Even though the specific syntactic expansion can be used to support value processing via `|>` while making the `for` loop applicable to CE contexts, it cannot be bound by `let` without necessitating arbitrary CE operations in subexpressions in `let`.
-
-## Alternative 2 - Loop accumulator bindings exposed to code below
-
-The loop itself returning the value is more preferable if we assume that the fold accumulated value doesn't need further processing (returning in function) or can easily be piped. Moreover, it is surprising that this form of `for` loops cannot be used in CEs which loses expressiveness compared to for loops with mutable accumulators. For example, `scan`s cannot be written with the fold loop.
-
-```fs
-// Alternative 1
-let scanned =
-  [ for t in ts with s = 0 do
-      yield s + t // Error: CE operations invalid in subexpressions
-      s + t
-  ]
-```
-
-```fs
-// Alternative 1
-let effects, model = // This seems repetitive with the loop accumulator...
-    for item in items with effects, model = [], model do
-        let effect, model = Model.action item model
-        let model = Model.action2 model
-        effect :: effects, model
-printfn $"{effects}"
-printfn $"{model}"
-```
-
-However, it might also be the case that the same deconstruction for the accumulator each enumeration is needed for the accumulated value after all. The same bindings for accumulator deconstruction each enumeration can just be exposed below the loop. If the loop itself didn't return the value, we enable interactions with CEs like a regular `for` loop can - also eliminating the unfamiliarity with a loop that has a return value. 
-
-```fs
-// Alternative 2
-for item in items with effects, model = [], model do
-    let effect, model = Model.action item model
-    let model = Model.action2 model
-    effect :: effects, model
-printfn $"{effects}" // refers to "effects" of the above fold loop
-printfn $"{model}"
-```
-
-However, the tradeoff is that exposing loop bindings like this is even more unfamiliar than the loop modification itself.
-
-The syntactical translation would be modified as follows.
-
-Let `<accum>` is a compiler-generated accumulation variable that cannot be used outside the loop, which gets updated each enumeration;
-let `<exprs>` match any expressions inside a sequence expression before the final expression in the loop body,
-or any `if` and `match` and `try`-`with` permitting computation expression syntax inside;
-let `<expr3>` be the final expression which if contained inside `if` or `match` or `try`-`with`, then each branch must return the same value and searched recursively with the final expression of each branch for `<accum> <-` application.
-
-Then
-```fs
-for <pat1> in <expr1> with <pat2> = <expr2> do
-    <exprs>
-    <expr3>
-```
-undergoes a simple syntactical expansion to
-
-### Alternative unit - Loop returns unit
-
-```fs
-let mutable <accum> = <expr2>
-for <pat1> in <expr1> do
-    let <pat2> = <accum>
-    <exprs>
-    <accum> <- <expr3>
-let <pat2> = <accum> // <accum> deconstructed with <pat2> again
-() // loop returns unit if isolated
-```
-
-This alternative maintains the familiarity with loops returning unit.
-
-### Alternative let - Loop requires a following expression and cannot be isolated
-```fs
-let mutable <accum> = <expr2>
-for <pat1> in <expr1> do
-    let <pat2> = <accum>
-    <exprs>
-    <accum> <- <expr3>
-let <pat2> = <accum> // <accum> deconstructed with <pat2> again
-// loop requires an expression following it!
-```
-
-For this alternative, an error message will be raised like `let`s do.
-```
-error FS0588: The block following this 'for' with accumulation is unfinished. Every code block is an expression and must have a result. 'for' with accumulation cannot be the final code element in a block. Consider giving this block an explicit result.
-```
-This alternative maintains the robustness that `let`s requiring following expressions do.
-
-### Alternative 2.1 - Implicit yields in loop body
-
-Note that `<exprs>` are subject to usual treatment by computation expressions including application of implicit yields,
-which is different from the final expression `<expr3>`.
-
-Therefore, this may happen:
-```fs
-let result = [
-    for word in ["Hello"; " "; "World"; "!"] with sentence = "" do
-        sentence
-        sentence + word
-    printfn "%s" sentence
-]
-// expands to
-let result = [
-    let mutable <accum> = ""
-    for word in ["Hello"; " "; "World"; "!"] do
-        let sentence = <accum>
-        sentence // Implicit yield here
-        <accum> <- sentence + word // But not for the final expression of the loop body
-    let sentence = <accum>
-    printfn "%s" sentence
-]
-```
-
-### Alternative 2.2 - Warn with discard in loop body
-
-It might be the case that the intersection of implicit yields and the fold loop is too difficult to understand.
-
-```fs
-// Alternative 2.1
-let q = seq { for i in 1..10 do s + i } // int seq, 10 values
-let w = seq { for i in 1..10 with s = 0 do s + i } // Alternative unit: error value restriction (no yields); Alternative let: error no expression following 'for'
-let e = seq { for i in 1..10 with s = 0 do s + i done; s } // int seq, but now only 1 value is yielded because it's collected to accumulator
-
-let q1 = seq { for i in 1..10 do s + i; s + i } // int seq, 20 values
-let w1 = seq { for i in 1..10 with s = 0 do s + i; s + i } // Alternative unit: 10 values; Alternative let: error no expression following 'for'
-let e1 = seq { for i in 1..10 with s = 0 do s + i; s + i done; s } // int seq, 11 values
-```
-
-To resolve this, the syntactical translation of `<exprs>` would automatically insert `; ()` after any expression not bound with a CE keyword or `let` and `use` (or equivalent implementation that implements warn with discard behaviour by default). Meanwhile, explicit usages of the `yield` keyword will not affect implicit yield availability outside of the fold loop.
-
-```fs
-// Alternative 2.2
-let q = seq { for i in 1..10 do s + i } // int seq, 10 values
-let w = seq { for i in 1..10 with s = 0 do s + i } // Alternative unit: error value restriction (no yields); Alternative let: error no expression following 'for'
-let e = seq { for i in 1..10 with s = 0 do s + i done; s } // int seq, but now only 1 value is yielded because it's collected to accumulator
-
-let q1 = seq { for i in 1..10 do s + i; s + i } // int seq, 20 values
-let w1 = seq { for i in 1..10 with s = 0 do s + i; s + i } // Warn at first "s + i" with discard by default. Alternative unit: 10 values; Alternative let: error no expression following 'for'
-let e1 = seq { for i in 1..10 with s = 0 do s + i; s + i done; s } // int seq, 11 values
-```
-
-### Alternative 2.3 - Warn with implicit yield in loop body
-
-Above but instead of discard by default, it's yield by default with warning about ambiguity. It might make more sense to align with the default behaviour in CEs rather than outside? The auto-insertion would be `yield` before instead of `; ()` after.
-
-### Alternative 2.4 - Ambiguity error for unbound expressions
-
-Or it might be best to just error about the ambiguity instead of defaulting to any behaviour after all.
-
-## Summary
-
-There exists the combination of these alternatives to choose from:
-1 or ((2.1 or 2.2 or 2.3 or 2.4) and (unit or let))
 
 # Drawbacks
 
