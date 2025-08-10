@@ -77,7 +77,7 @@ let effects, model =
         let model = Model.action2 model // Pure function
         effect :: effects, model
 ```
-The return value of the loop body updates the accumulator. This is a synthesis of `fold`s with loops, therefore it can be called a "fold loop". There is no direct equivalent in other languages, they either have `fold` with a lambda or `for` loops that require a mutable accumulator.
+The return value of the loop body updates the accumulator. This is a synthesis of `fold`s with loops, therefore it can be called a "fold loop".
 
 It is:
 1. **Conceptually simple** - just accumulate while enumerating.
@@ -90,6 +90,73 @@ and purely functional `fold`s that must be in lambda form. It is declarative whi
 Note that there may be more efficient and potentially parallelizable functions when needed, like `reduce` and `sum`, but they are only specialized versions of `fold`. Using folds to aggregate effects should not need specialized functions - use the right tool for the right job.
 
 Some may question the use of `=` without `mutable` for accumulator initialization and `do` on an expression instead of `unit`-returning actions. `=` already has precedence in `for i = 1 to 10 do` which initializes loop state `i` to `1` and modified across loop iterations. `do` on an expression also has precedence in implicit yields - `[for i in 1 .. 10 do i]` yields 10 integers despite an integer cannot be "done" - just interpret `do` here as "do an evaluation of".
+
+## Existing implementations in other programming languages
+
+While most languages implement folds either as library functions (lambda-based) or mutable accumulators in loops, the Lisp family provides closer analogs to F#'s proposed fold loop:
+
+### Racket: `for/fold`
+```racket
+;; Explicit fold-loop construct
+(for/fold ([sum 0] [product 1])      ; Accumulators
+          ([x (in-list '(1 2 3 4))]) ; Sequence
+  (values (+ sum x)                  ; Update sum
+          (* product x)))            ; Update product
+```
+- Key similarities: Dedicated fold-loop syntax, multiple accumulators
+- Differences from F#:
+  - Requires explicit `values` wrapper for multiple accumulators
+  - Accumulators appear before the sequence
+  - No pattern matching support
+  - Less concise syntax
+
+### Common Lisp: `loop` macro
+```commonlisp
+(loop for i in '(1 2 3 4)          ; Sequence
+      with sum = 0                  ; Accumulator
+      with product = 1              ; Accumulator
+      do (setf sum (+ sum i)        ; Imperative mutation
+          product (* product i)     ; Imperative mutation
+      finally (return (values sum product))) ; Explicit return
+```
+- Key similarities: `with` clause for accumulator initialization
+- Differences from F#:
+  - Requires explicit mutation (`setf`)
+  - Imperative rather than functional style
+  - Needs explicit `return` statement
+  - No pattern matching
+
+### Clojure: `loop`/`recur`
+```clojure
+(loop [[x & xs] [1 2 3 4] ; Sequence destructuring
+       sum 0               ; Accumulator
+       product 1]          ; Accumulator
+  (if x
+    (recur xs             ; Recursive iteration
+           (+ sum x)      ; Update
+           (* product x)) ; Update
+    [sum product]))       ; Vector result
+```
+- Key similarities: Functional style, destructuring support
+- Differences from F#:
+  - Uses recursion rather than true iteration
+  - Requires explicit sequence termination check
+  - Returns vector instead of native tuple
+  - More verbose syntax
+
+### F# Proposal Advantages
+```fsharp
+for x in [1; 2; 3; 4] with (sum, product) = (0, 1) do
+    (sum + x, product * x)  // Returns (10, 24)
+```
+Compared to Lisp implementations, F#'s design offers:
+1. More concise syntax - No wrappers (`values`), terminators (`return`), or recursion markers (`recur`)
+2. Pattern matching - Native tuple support instead of special return types
+3. True iteration - Leverages .NET sequences without recursion
+4. Implicit immutability - No mutation operators required
+5. Type inference - Accumulator types automatically deduced
+
+This positions F#'s fold loop as both a novel language feature and an ergonomic improvement over existing approaches.
 
 ## Comparison to imperative programming
 
