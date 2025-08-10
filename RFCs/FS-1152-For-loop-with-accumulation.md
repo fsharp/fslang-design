@@ -16,7 +16,7 @@ Fold is a fundamental operation in pure functional programming. It deserves a be
 for <pat> in <expr> with <pat> = <expr> do
     <expr>
 ```
-Extending the `for <pat> in <expr> do` syntax, a new optional clause with an accumulator initializer, denoted by `with`, is introduced. The presence of the `with` clause enables the value of the loop body to update the accumulator (placed after `with`), which is the loop return value (for Alternative 1) or available to code after the loop as bindings (for Alternative 2).
+Extending the `for <pat> in <expr> do` syntax, a new optional clause with an accumulator initializer, denoted by `with`, is introduced. The presence of the `with` clause enables the value of the loop body to update the accumulator (placed after `with`), which is the loop return value.
 
 # Motivation
 
@@ -57,24 +57,19 @@ let effects, model =
         let model = Model.action2 model // Pure function
         accum <- effect :: effects, model
     accum // boilerplate
-// Proposed fold loop - Alternative 1: loop with value 
+// Proposed fold loop 
 let effects, model =
     for item in items with effects, model = [], model do // look at how simple the same code can become!
         let effect, model = Model.action item model // Pure function
         let model = Model.action2 model // Pure function
         effect :: effects, model
-// Proposed fold loop - Alternative 2: loop leaks accumulator bindings below
-for item in items with effects, model = [], model do // extra "let" elided, even more ergonomic!
-    let effect, model = Model.action item model // Pure function
-    let model = Model.action2 model // Pure function
-    effect :: effects, model
 ```
 Notice that for `fold`s, it is easy to accidentally do `(model, effect :: effects)` or `(model, [])` - especially for people new to functional programming, tupling like this is hard to get right.
 This even happens for experienced F# programmers. If the user doesn't get them right, the problem is figuring out what they got wrong from the type errors.
 People also often get the parameter order mixed up, such as doing `items ([], model)` instead of `([], model) items`.
 There are far fewer likely points of failure using the fold loop.
 
-Now, drilling down to specific points of comparison (focusing on the alternative 1 for now):
+Now, drilling down to specific points of comparison:
 ```fs
 let effects, model =
     for item in items with effects, model = [], model do
@@ -258,20 +253,13 @@ let stats model =
             totalItems <- totalItems + 1
             totalCount <- totalCount + items.Count
     totalItems, totalCount
-// Proposed - Alternative 1
+// Proposed
 let stats model =
     for category in model.Categories with totalItems, totalCount = 0, 0 do
         let items, count =
             for item in category.Items with items, count = 0, 0 do
                 items + 1, count + item.Count
         totalItems + items, totalCount + count
-// Proposed - Alternative 2
-let stats model =
-    for category in model.Categories with totalItems, totalCount = 0, 0 do
-        for item in category.Items with items, count = 0, 0 do
-            items + 1, count + item.Count
-        totalItems + items, totalCount + count
-    totalItems, totalCount
 ```
 
 In a regular `fold`, it's very hard just to get the white space alignment and closing parentheses right when you need a fold within a fold.
