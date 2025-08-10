@@ -111,7 +111,7 @@ While most languages implement folds either as library functions (lambda-based) 
   - Less concise syntax
 
 ### Common Lisp: `loop` macro
-```commonlisp
+```lisp
 (loop for i in '(1 2 3 4)          ; Sequence
       with sum = 0                  ; Accumulator
       with product = 1              ; Accumulator
