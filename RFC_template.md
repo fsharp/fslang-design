@@ -31,6 +31,14 @@ Example code:
 let add x y = x + y
 ```
 
+# Changes to the F# spec
+
+List the necessary changes or additions to the F# spec (4.1 pdf [here](https://fsharp.org/specs/language-spec/4.1/FSharpSpec-4.1-latest.pdf), latest markdown doc [here](https://github.com/fsharp/fslang-spec/blob/main/releases/FSharp-Spec-latest.md)).
+For each change, mention the section numbers and the required change.
+Here are two examples:
+- [Class names as functions](https://github.com/fsharp/fslang-design/blob/main/FSharp-4.0/ClassNamesAsFunctionsDesignAndSpec.md#specification)
+- [Scoped nowarn](https://github.com/fsharp/fslang-design/blob/main/RFCs/FS-1146-scoped-nowarn.md#detailed-specification)
+
 # Drawbacks
 
 Why should we *not* do this?
@@ -38,6 +46,10 @@ Why should we *not* do this?
 # Alternatives
 
 What other designs have been considered? What is the impact of not doing this?
+
+# Prior art
+
+Has a similar feature been proposed or implemented for other programming languages (e.g., [C#](https://github.com/dotnet/csharplang), [OCaml](https://github.com/ocaml/RFCs), etc.)? Is there any wisdom to be gained from these proposals, designs, implementations, or from real-world usage?
 
 # Compatibility
 
@@ -47,6 +59,11 @@ Please address all necessary compatibility questions:
 * What happens when previous versions of the F# compiler encounter this design addition as source code?
 * What happens when previous versions of the F# compiler encounter this design addition in compiled binaries?
 * If this is a change or extension to FSharp.Core, what happens when previous versions of the F# compiler encounter this construct?
+
+# Interop
+
+* What happens when this feature is consumed by another .NET language?
+* Are there any planned or proposed features for another .NET language (e.g., [C#](https://github.com/dotnet/csharplang)) that we would want this feature to interoperate with?
 
 # Pragmatics
 

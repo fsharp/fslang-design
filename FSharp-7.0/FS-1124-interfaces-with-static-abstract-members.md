@@ -3,7 +3,7 @@
 The design suggestion [Support static abstract members in interfaces](https://github.com/fsharp/fslang-suggestions/issues/1151) has been marked "approved in principle". This RFC covers the detailed proposal for this suggestion.
 
 * [Discussion](https://github.com/fsharp/fslang-design/discussions/677)
-* Implementation: [In progress](https://github.com/dotnet/fsharp/pull/13119)
+* Implementation: [Completed](https://github.com/dotnet/fsharp/pull/13119)
 
 Two other suggestions/RFCs are effectively incorporated into this RFC:
 * [Allow static constraints to be named and reused](https://github.com/fsharp/fslang-suggestions/issues/1089)
