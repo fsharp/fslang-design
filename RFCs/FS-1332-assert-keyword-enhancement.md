@@ -1,6 +1,6 @@
 # F# RFC FS-1332 - `assert` keyword enhancement
 
-The design suggestion [`assert` keyword: have compiler emit call to `Debug.Assert` overload with CallerArgumentExpression where possible](https://github.com/dotnet/fsharp/issues/18489) has been marked "approved in principle".
+The design suggestion [`assert` keyword: have compiler emit call to `Debug.Assert` overload with CallerArgumentExpression when possible](https://github.com/dotnet/fsharp/issues/18489) has been marked "approved in principle".
 
 This RFC covers the detailed proposal for this suggestion.
 
@@ -15,15 +15,14 @@ When an `assert` expression failed, it will shows the text of the expression in 
 
 # Motivation
 
-When the `assert` expression failed, it does not provide the details of the expression, but the plain `System.Diagnostics.Debug.Assert` does.
+When the `assert` expression failed, it does not provide the details of the expression, but the `System.Diagnostics.Debug.Assert` does.
 
 # Detailed design
 
 `assert <bool expression>` will be translated into `System.Diagnostics.Debug.Assert(<bool expression>, "<bool expression>")`.
 
 ```fsharp
-// The below 2 lines are equivalent
-assert (1 + 1 = 2)
+assert (1 + 1 = 2) // This will be translated into
 System.Diagnostics.Debug.Assert((1 + 1 = 2), "(1 + 1 = 2)")
 ```
 
@@ -70,7 +69,7 @@ Please address all necessary compatibility questions:
 
 ## Performance
 
-This feature may impact the performance when the code file is too large and has many `assert` expressions, since it needs get substrings from the file.
+This feature may impact the compilation speed when the code file is too large and has many `assert` expressions, since it needs get substrings from the file.
 
 ## Scaling
 
