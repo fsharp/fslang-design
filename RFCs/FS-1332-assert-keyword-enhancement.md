@@ -27,7 +27,7 @@ assert (1 + 1 = 2)
 System.Diagnostics.Debug.Assert((1 + 1 = 2), "(1 + 1 = 2)")
 ```
 
-Since the [Debug.Assert(Boolean, String)](https://learn.microsoft.com/en-us/dotnet/api/system.diagnostics.debug.assert?view=net-8.0#system-diagnostics-debug-assert(system-boolean-system-string)) overload has the same supporting runtime as the [Debug.Assert(Boolean)](https://learn.microsoft.com/en-us/dotnet/api/system.diagnostics.debug.assert?view=net-8.0#system-diagnostics-debug-assert(system-boolean)), changing the `assert` expression to be the former overload will not cause runtime errors.
+Since the [Debug.Assert(Boolean, String)](https://learn.microsoft.com/en-us/dotnet/api/system.diagnostics.debug.assert?view=net-8.0#system-diagnostics-debug-assert(system-boolean-system-string)) overload has the same supporting runtime as the [Debug.Assert(Boolean)](https://learn.microsoft.com/en-us/dotnet/api/system.diagnostics.debug.assert?view=net-8.0#system-diagnostics-debug-assert(system-boolean)), changing the `assert` expression to the former overload will not cause runtime errors.
 
 # Changes to the F# spec
 
@@ -39,7 +39,9 @@ No.
 
 # Alternatives
 
-By supporting `[<OverloadResolutionPriorityAttribute>]`, the compiler can auto take the overload with `CallerArgumentExpression` when possible, and will not need this particular RFC. See [the comment](https://github.com/dotnet/fsharp/issues/18489#issuecomment-2831042424) from the original suggestion.
+By supporting [`[<OverloadResolutionPriorityAttribute>]` introduced in .NET 9](https://learn.microsoft.com/en-us/dotnet/api/system.runtime.compilerservices.overloadresolutionpriorityattribute?view=net-9.0), the compiler can auto take the overload with `CallerArgumentExpression` when possible, and will not need this particular RFC. See [the comment](https://github.com/dotnet/fsharp/issues/18489#issuecomment-2831042424) from the original suggestion.
+
+The drawback of this alternative is that it will not work with .NET 8 and below.
 
 # Prior art
 
