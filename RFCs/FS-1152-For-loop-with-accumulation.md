@@ -24,6 +24,7 @@ Why `fold`s in particular instead of coming up with a proposal that improves on 
 - `map`: [176k files](https://github.com/search?type=code&q=language%3Afsharp+map) (includes the `Map` type)
 - `iter`: [103k files](https://github.com/search?type=code&q=language%3Afsharp+iter)
 - _**`fold`: [90.1k files](https://github.com/search?type=code&q=language%3Afsharp+fold)**_
+- `sum`: [56.8k files](https://github.com/search?type=code&q=language%3Afsharp+sum)
 - `toList`: [49.2k files](https://github.com/search?type=code&q=language%3Afsharp+toList)
 - `choose`: [40.7k files](https://github.com/search?type=code&q=language%3Afsharp+choose)
 - `toArray`: [33.5k files](https://github.com/search?type=code&q=language%3Afsharp+toArray)
