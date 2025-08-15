@@ -1,3 +1,8 @@
+To do:
+- Justification of the fundamentality of folds by counting usage - why improve folds specifically?
+- More on dismissing CE alternative
+- Looks too similar to a for loop? 
+
 # F# RFC FS-1152 - Fold loops
 
 The design suggestion ["for-with" syntactic sugar for folds](https://github.com/fsharp/fslang-suggestions/issues/1362) has not yet been marked "approved in principle".
@@ -442,6 +447,51 @@ for <pattern_enumeration_item> in <expression_sequence> with <pattern_accumulato
 
 This syntax analysis reveals an insight that the fold loop behaves identically to the `for` loop `with` accumulation. Note that the design process started from `fold` functions, then used an overload on `for`, then naturally evolved to an extension on existing `for` loops. We did not force the idea of folding onto an extension of existing `for` loops, instead maintaining the orthogonality between fold loops and existing usages of the `for` keyword. This shows the design of an extension on the `for` loop is coincidental from overloading the `for` keyword, instead of tacking on the meaning of `fold` as with an extension of the `for` loop as the starting point - an important semantic difference.
 
+## Doesn't this look too similar to a regular `for` loop despite the differences?
+
+tl;dr Yes, and this is intentional - it reveals a fundamental unification.
+
+On the surface, this proposal is overloading the `for` keyword into two forms, one that evaluates to unit and another new form that actually evaluates to a real value, which is final accumulator state, while threading the accumulator each iteration. It seems a bit surprising that the `with` keyword and accumulator state changes the type of the whole for expression. Adding a `with` clause might seem like a superficial change to regular `for` loops.
+
+However, this syntax highlights a profound realization: traditional `for` loops are actually a specialized case of fold loops with a unit accumulator.
+
+```fsharp
+// Traditional for loop
+for x in xs do 
+    printfn $"{x}"
+
+// Is equivalent to:
+for x in xs with _ = () do 
+    printfn $"{x}"  // Body must return unit
+```
+
+where the accumulator binding is discarded `_`, with its initial value set to the unit value `()`, and the new accumulator value is the value of the loop body which can only be the unit value `()`.
+
+This is consistent in two ways:
+- For discards
+   ```fsharp
+   // Regular expression in do position
+   do 1  // Warning: result implicitly ignored
+   
+   // Traditional for loop
+   for x in xs do 1  // Warning: result implicitly ignored
+   
+   // Unit-accumulator fold loop
+   for x in xs with () = () do 1  // Same warning
+   ```
+
+- For types
+   ```fsharp
+   let y = 1  // y : int
+   
+   // Non-unit fold loop
+   for x in xs with y = 1 do 
+       y + x  // accumulator : int
+   ```
+   The `with` clause changes the loop body from an implicit `unit -> unit` (traditional loop) to arbitrary `'State -> 'State` (fold loop). The presence of the `with` clause doesn't just add an accumulator - it adds flexibility to the loop from a side-effect-only construct (`unit -> unit`) to a value-producing operation (`'State -> 'State`).
+
+This explains why the loop's return type changes: it's not an arbitrary overload but a natural consequence of the accumulator type. The syntactic similarity is actually a strength - it reveals the deep connection between iteration and accumulation that was previously obscured.
+
 ## Are there better alternatives to `with` keyword?
 
 tl;dr No.
@@ -468,7 +518,7 @@ for x in xs mutable     s = init do ... // "mutable" isn't used without "let" an
 
 ## Can the accumulator initializer be simplified?
 
-tl;dr No.
+tl;dr No, it's technically infeasible.
 
 Some may also suggest that re-declaring the accumulator initial state is redundant in the case of folding over different sequences one after another.
 ```fs
@@ -478,7 +528,7 @@ However, a direct abbreviation from `effects, model = effects, model` to `effect
 
 ## Can it be used with computation expressions?
 
-**tl;dr No.** The fold loop body cannot contain computation expression operations, as it's designed as a pure accumulation expression. This maintains consistency with how subexpressions work throughout F#.
+tl;dr No. The fold loop body cannot contain computation expression operations, as it's designed as a pure accumulation expression. This maintains consistency with how subexpressions work throughout F#.
 
 ### Why CE operations are excluded
 ```fsharp
