@@ -24,10 +24,13 @@ Why `fold`s in particular instead of coming up with a proposal that improves on 
 - `map`: [176k files](https://github.com/search?type=code&q=language%3Afsharp+map) (includes the `Map` type)
 - `iter`: [103k files](https://github.com/search?type=code&q=language%3Afsharp+iter)
 - **`fold`: [90.1k files](https://github.com/search?type=code&q=language%3Afsharp+fold)**
+- `toList`: [49.2k files](https://github.com/search?type=code&q=language%3Afsharp+toList)
 - `choose`: [40.7k files](https://github.com/search?type=code&q=language%3Afsharp+choose)
+- `toArray`: [33.5k files](https://github.com/search?type=code&q=language%3Afsharp+toArray)
 - `collect`: 26.1k files = [106k files](https://github.com/search?type=code&q=language%3Afsharp+collect) raw - [79.9k files](https://github.com/search?type=code&q=language%3Afsharp+collection) for `System.Collections`
 - `reduce`: [17.8k files](https://github.com/search?type=code&q=language%3Afsharp+reduce)
 - `scan`: [14.8k files](https://github.com/search?type=code&q=language%3Afsharp+scan)
+- `toSeq`: [11.3k files](https://github.com/search?type=code&q=language%3Afsharp+toSeq)
 - `map2`: [10k files](https://github.com/search?type=code&q=language%3Afsharp+map2)
 - `map3`: [10k files](https://github.com/search?type=code&q=language%3Afsharp+map3)
 - `fold2`: [2.9k files](https://github.com/search?type=code&q=language%3Afsharp+fold2)
