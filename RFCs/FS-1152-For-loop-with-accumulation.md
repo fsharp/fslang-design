@@ -32,7 +32,7 @@ Why `fold`s in particular instead of coming up with a proposal that improves on 
 - `scan`: [14.8k files](https://github.com/search?type=code&q=language%3Afsharp+scan)
 - `toSeq`: [11.3k files](https://github.com/search?type=code&q=language%3Afsharp+toSeq)
 - `map2`: [10k files](https://github.com/search?type=code&q=language%3Afsharp+map2)
-- `map3`: [10k files](https://github.com/search?type=code&q=language%3Afsharp+map3)
+- `map3`: [3.5k files](https://github.com/search?type=code&q=language%3Afsharp+map3)
 - `fold2`: [2.9k files](https://github.com/search?type=code&q=language%3Afsharp+fold2)
 - `mapFold`: [2.3k files](https://github.com/search?type=code&q=language%3Afsharp+mapFold)
 
