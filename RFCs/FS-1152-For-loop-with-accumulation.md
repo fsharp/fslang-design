@@ -1,8 +1,3 @@
-To do:
-- Justification of the fundamentality of folds by counting usage - why improve folds specifically?
-- More on dismissing CE alternative
-- Looks too similar to a for loop? 
-
 # F# RFC FS-1152 - Fold loops
 
 The design suggestion ["for-with" syntactic sugar for folds](https://github.com/fsharp/fslang-suggestions/issues/1362) has not yet been marked "approved in principle".
@@ -24,6 +19,23 @@ for <pat> in <expr> with <pat> = <expr> do
 Extending the `for <pat> in <expr> do` syntax, a new optional clause with an accumulator initializer, denoted by `with`, is introduced. The presence of the `with` clause enables the value of the loop body to update the accumulator (placed after `with`), which is the loop return value.
 
 # Motivation
+
+Why `fold`s in particular instead of coming up with a proposal that improves on more collection functions? Let's see how much `fold` is used compared to other collection functions:
+- `map`: [176k files](https://github.com/search?type=code&q=language%3Afsharp+map) (includes the `Map` type)
+- `iter`: [103k files](https://github.com/search?type=code&q=language%3Afsharp+iter)
+- **`fold`: [90.1k files](https://github.com/search?type=code&q=language%3Afsharp+fold)**
+- `choose`: [40.7k files](https://github.com/search?type=code&q=language%3Afsharp+choose)
+- `collect`: 26.1k files = [106k files](https://github.com/search?type=code&q=language%3Afsharp+collect) raw - [79.9k files](https://github.com/search?type=code&q=language%3Afsharp+collection) for `System.Collections`
+- `reduce`: [17.8k files](https://github.com/search?type=code&q=language%3Afsharp+reduce)
+- `scan`: [14.8k files](https://github.com/search?type=code&q=language%3Afsharp+scan)
+- `map2`: [10k files](https://github.com/search?type=code&q=language%3Afsharp+map2)
+- `map3`: [10k files](https://github.com/search?type=code&q=language%3Afsharp+map3)
+- `fold2`: [2.9k files](https://github.com/search?type=code&q=language%3Afsharp+fold2)
+- `mapFold`: [2.3k files](https://github.com/search?type=code&q=language%3Afsharp+mapFold)
+
+`fold` stands out in terms of actual usage - and yet it has an abysmal syntax. Other highly common functions like `map`, `choose`, `collect` already have a nice syntax, and yet `fold` does not.
+
+Moreover, `fold` is a fundamental operation in pure functional programming because it is a general-purpose function that can define many other collection functions like `map`, `reduce`, and `choose`, just like how `iter` corresponds to the imperative `for` loop. This suggests an opportunity to improve on the usage of `fold`s to make them palatable.
 
 Let's start with how this is used in practice - the summarization of a sequence into a value, aka the fold operation, compared across different language features.
 
@@ -346,9 +358,17 @@ let sum xs = fold 0 { for x in xs -> (+) x } // variation 1
 let sum xs = fold 0 { for acc, x in xs -> acc + x } // variation 2
 let sum xs = fold { for acc, x in 0, xs -> acc + x } // variation 3
 ```
-Generally, computation expressions have hard to understand error messages for overloaded computation expression methods and are are [notoriously difficult to debug](https://github.com/dotnet/fsharp/issues/13342). These are fixable with enough investments in CEs.
+The variations that abuse tuple syntax don't help diagnose tuple ordering or placement. 
 
-What's unfixable is the non-orthogonality to an existing computation expression context unlike the for loop which allows `yield` inside to yield to an outer list expression instead of being limited by a fold CE. Moreover, CEs also show a heavily different syntax compared to for loops and folds which add hinderance to understanding - each CE usage requires following CE methods which add indirection to understanding, only hiding large chunks of logic like `async` or `task` should worth CE usage. It would be much simpler to just write the underlying code (this critique also applies to `option` and `result` CEs for example). Since folds are so common in pure functional programming, they deserve a simple-to-use syntax as fold loops provide, instead of tucked away in hard-to-understand CE syntax.
+One can even argue that computation expressions offer the opportunity to not just improve on folds but also other forms like `reduce` and `scan`, with support for custom operation keywords:
+```fs
+let sum xs = fold 0 { for x in xs -> accumulator + x } // 'accumulator' being a custom operation keyword
+```
+This specific example does not play well with tuple accumulators unless F# adds tuple member access by index. 
+
+Generally, computation expressions have hard to understand error messages for overloaded computation expression methods and are are [notoriously difficult to debug](https://github.com/dotnet/fsharp/issues/13342). These are fixable with enough investments in CEs, but the Microsoft F# team size got reduced from 6 to 2 + Copilot on March 2025, this work takes much much longer than just adding a `with` clause to `for` loops.
+
+What's unfixable is that CEs also show a heavily different syntax compared to `for` loops and folds which add hinderance to understanding - each CE usage requires following CE methods which add indirection to understanding, only hiding large chunks of logic like `async` or `task` should worth CE usage. It would be much simpler to just write the underlying code (this critique also applies to `option` and `result` CEs for example). Since folds are so common in pure functional programming, they deserve a simple-to-use syntax as fold loops provide, instead of tucked away in hard-to-understand CE syntax.
 
 ## Summary
 
