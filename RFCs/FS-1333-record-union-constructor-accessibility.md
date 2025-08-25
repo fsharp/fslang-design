@@ -7,7 +7,7 @@ This RFC covers the detailed proposal for this suggestion.
 - [x] [Suggestion](https://github.com/fsharp/fslang-suggestions/issues/852)
 - [x] Approved in principle
 - [ ] Implementation
-- [ ] [Discussion](https://github.com/fsharp/fslang-design/discussions/FILL-ME-IN)
+- [x] [Discussion](https://github.com/fsharp/fslang-design/discussions/817)
 
 # Summary
 
@@ -165,7 +165,7 @@ In contrast, the following constructs are _not_ subject to this accessibility:
     private new
     static member Default = { x = 1 }
 
-  let r = {| R.Default with y = "a" } // OK
+  let r = {| R.Default with y = "a" |} // OK
   // val r: {| x: int; y: string |} = { x = 1; y = "a" }
   ```
 
