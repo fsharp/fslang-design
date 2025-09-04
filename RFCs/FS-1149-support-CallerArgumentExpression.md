@@ -30,13 +30,13 @@ The motivation, pros, and cons can be seen in the [C# proposal](https://github.c
 2. When making method call, the compiler should do the following things to the optional parameters marked with the `[<CallerArgumentExpression>]` attribute:
    1. Determine if the method call has has syntactic arguments since we can know the argument expression range only when the method call has syntactic arguments.
     The following table show some examples:
-      |Cases|Allowed?|What will be applied to the method call? |
-      |:-|:-|:-|
-      |`System.ArgumentException.ThrowIfNullOrEmpty(null)`|Yes | the argument expression |
-      |`(System.ArgumentException.ThrowIfNullOrEmpty) null`|No | the parameter default value|
-      |`System.ArgumentException.ThrowIfNullOrEmpty <\| null`|No | the parameter default value|
-      |`null \|> System.ArgumentException.ThrowIfNullOrEmpty`|No | the parameter default value|
-      |`let f = System.ArgumentException.ThrowIfNullOrEmpty in f(null)`|No | the parameter default value|
+      | Cases                                                            | Allowed? | What will be applied to the method call? |
+      | :--------------------------------------------------------------- | :------- | :--------------------------------------- |
+      | `System.ArgumentException.ThrowIfNullOrEmpty(null)`              | Yes      | the argument expression                  |
+      | `(System.ArgumentException.ThrowIfNullOrEmpty) null`             | No       | the parameter default value              |
+      | `System.ArgumentException.ThrowIfNullOrEmpty <\| null`           | No       | the parameter default value              |
+      | `null \|> System.ArgumentException.ThrowIfNullOrEmpty`           | No       | the parameter default value              |
+      | `let f = System.ArgumentException.ThrowIfNullOrEmpty in f(null)` | No       | the parameter default value              |
 
    2. Attempt to identify the argument which the attribute references.
    3. Determine the textual range of the argument expression in the source code.
@@ -98,6 +98,18 @@ type MyClass =
 MyClass.MyMethod(1 + 1, 2.) // "1 + 1", "2."
 ```
 
+# Changes to the F# spec
+
+Under "10. Build the resulting elaborated expression by following these steps:" in [14.4 Method Application Resolution](https://github.com/fsharp/fslang-spec/blob/main/releases/FSharp-Spec-latest.md#144-method-application-resolution):
+> ~~Passing a None value for each argument that corresponds to an `ImplicitlySuppliedFormalArgs`~~
+> 
+> Passing the default value for each argument that corresponds to an `ImplicitlySuppliedFormalArgs`, that is:
+> - The corresponding caller information if the parameter has caller-info attribute (`CallerLineNumber`, `CallerFileName`, `CallerCallerName`, `CallerArgumentExpression`)
+> 
+>   Note: The `CallerArgumentExpression` infomation applies only if the method call has syntactic argument, otherwise the default parameter value will be used.
+> - The default value for C# optional parameter
+> - `None` for F# optional parameter
+
 # Drawbacks
 
 No.
@@ -143,5 +155,3 @@ The feature requires the compiler to read and store all the code text in memory,
 # Unresolved questions
 
 What parts of the design are still TBD?
-
-> Should this attribute can be applied to the computation expression builders?
