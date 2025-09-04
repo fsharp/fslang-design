@@ -110,7 +110,7 @@ Under "10. Build the resulting elaborated expression by following these steps:" 
 > - The default value for C# optional parameter
 > - `None` for F# optional parameter
 
-In [17.1 Custom Attributes Recognized by F#](https://github.com/fsharp/fslang-spec/blob/main/releases/FSharp-Spec-2025-04-07.md#171-custom-attributes-recognized-by-f) add `System.Runtime.CompilerServices.CallerArgumentExpressionAttribute`
+In [17.1 Custom Attributes Recognized by F#](https://github.com/fsharp/fslang-spec/blob/main/releases/FSharp-Spec-latest.md#171-custom-attributes-recognized-by-f) add `System.Runtime.CompilerServices.CallerArgumentExpressionAttribute`
 
 # Drawbacks
 
