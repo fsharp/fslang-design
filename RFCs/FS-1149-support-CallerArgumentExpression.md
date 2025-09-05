@@ -29,7 +29,10 @@ The motivation, pros, and cons can be seen in the [C# proposal](https://github.c
 1. The compiler should be able to retrieve the original source code text within the specified text range during compilation, even if the range is affected by `#line` directives.
 2. When making method call, the compiler should do the following things to the optional parameters marked with the `[<CallerArgumentExpression>]` attribute:
    1. Determine if the method call has has syntactic arguments since we can know the argument expression range only when the method call has syntactic arguments.
-    The following table show some examples:
+
+      An informational warning will be emitted when the method call does not have syntactic arguments.
+
+      The following table show some examples:
       | Cases                                                            | Allowed? | What will be applied to the method call? |
       | :--------------------------------------------------------------- | :------- | :--------------------------------------- |
       | `System.ArgumentException.ThrowIfNullOrEmpty(null)`              | Yes      | the argument expression                  |
@@ -144,11 +147,12 @@ Please address all necessary compatibility questions:
 
 ## Diagnostics
 
-- Error when the attribute is applied to a non-optional parameter.
-- Error when the attribute is applied to a parameter whose type is not `string`.
-- Warn if the attribute is referencing a non-existing parameter name.
-- Warn if the attribute is referencing the parameter that the attribute is applied to.
-- Warn when the attribute is applied to a parameter with `[<CallerMemberName>]` or `[<CallerFilePath>]`.
+- **Error** when the attribute is applied to a non-optional parameter.
+- **Error** when the attribute is applied to a parameter whose type is not `string`.
+- **Warn** if the attribute is referencing a non-existing parameter name.
+- **Warn** if the attribute is referencing the parameter that the attribute is applied to.
+- **Warn** when the attribute is applied to a parameter with `[<CallerMemberName>]` or `[<CallerFilePath>]`.
+- **Informational Warn** when a method call has no syntactic argument, but the method parameters have the `[<CallerArgumentExpression>]` attribute.
 
 ## Performance
 
