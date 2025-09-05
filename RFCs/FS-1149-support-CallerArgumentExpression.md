@@ -27,7 +27,7 @@ The motivation, pros, and cons can be seen in the [C# proposal](https://github.c
 ### When invoking existing methods (in BCL or C# or F#)
 
 1. The compiler should be able to retrieve the original source code text within the specified text range during compilation, even if the range is affected by `#line` directives.
-2. When making method call, the compiler should do the following things to the optional parameters marked with the `[<CallerArgumentExpression>]` attribute:
+2. When making method call, the compiler should do the following things to the optional parameters marked with the `[<CallerArgumentExpression>]` attribute (and no other caller info attributes):
    1. Determine if the method call has has syntactic arguments since we can know the argument expression range only when the method call has syntactic arguments.
 
       An informational warning will be emitted when the method call does not have syntactic arguments.
