@@ -147,12 +147,17 @@ Please address all necessary compatibility questions:
 
 ## Diagnostics
 
-- **Error** when the attribute is applied to a non-optional parameter.
-- **Error** when the attribute is applied to a parameter whose type is not `string`.
-- **Warn** if the attribute is referencing a non-existing parameter name.
-- **Warn** if the attribute is referencing the parameter that the attribute is applied to.
-- **Warn** when the attribute is applied to a parameter with `[<CallerMemberName>]` or `[<CallerFilePath>]`.
-- **Informational Warn** when a method call has no syntactic argument, but the method parameters have the `[<CallerArgumentExpression>]` attribute.
+### Errors
+- (FS1246) 'CallerArgumentExpression ".."' must be applied to an argument of type 'string', but has been applied to an argument of type '%s'
+- (FS1247) 'CallerArgumentExpression ".."' can only be applied to optional arguments
+
+### Warnings
+- The [\<CallerArgumentExpression\>] on this parameter will have no effect because it's self-referential.
+- The [\<CallerArgumentExpression\>] on this parameter will have no effect because it's applied with an invalid parameter name.
+- The [\<CallerArgumentExpression\>] on this parameter will have no effect because it's overridden by the [\<%s>].
+
+### Informational warnings
+- This usage blocks passing string representations of arguments to parameters annotated with [\<CallerArgumentExpression\>]. The default values of these parameters will be passed. Only the usages like `Method(arguments)` can capture the string representation of arguments.
 
 ## Performance
 
