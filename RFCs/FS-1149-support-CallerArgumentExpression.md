@@ -12,6 +12,7 @@ This RFC covers the detailed proposal for this suggestion.
 # Summary
 
 Support the [[\<CallerArgumentExpression\>]](https://docs.microsoft.com/en-us/dotnet/api/system.runtime.compilerservices.callerargumentexpressionattribute), including:
+
 1. When invoking existing methods in BCL or C#, pass the code text of the specified argument.
 2. Allow the use of this attribute when defining F# class methods.
 
@@ -23,26 +24,46 @@ The motivation, pros, and cons can be seen in the [C# proposal](https://github.c
 
 # Detailed design
 
-### When invoking existing methods in BCL or C#
+### When invoking existing methods (in BCL or C# or F#)
 
 1. The compiler should be able to retrieve the original source code text within the specified text range during compilation, even if the range is affected by `#line` directives.
-2. When making method call, the compiler should do the following things to the optional parameters marked with the `[<CallerArgumentExpression>]` attribute:
-   1. Attempt to identify the argument which the attribute references.
-   2. Determine the textual range of the argument expression in the source code.
-   3. Use the retrieved text range to extract the source code snippet corresponding to the argument expression.
-   4. Bind the extracted code text to the parameter and propagate it as part of the method call.
-   5. If any step above fails, the optional parameter will use its declared default value.
+2. When making method call, the compiler should do the following things to the optional parameters marked with the `[<CallerArgumentExpression>]` attribute (and no other caller info attributes):
+   1. Determine if the method call has has syntactic arguments since we can know the argument expression range only when the method call has syntactic arguments.
+
+      An informational warning will be emitted when the method call does not have syntactic arguments.
+
+      The following table show some examples:
+      | Cases                                                            | Allowed? | What will be applied to the method call? |
+      | :--------------------------------------------------------------- | :------- | :--------------------------------------- |
+      | `System.ArgumentException.ThrowIfNullOrEmpty(null)`              | Yes      | the argument expression                  |
+      | `(System.ArgumentException.ThrowIfNullOrEmpty) null`             | No       | the parameter default value              |
+      | `System.ArgumentException.ThrowIfNullOrEmpty <\| null`           | No       | the parameter default value              |
+      | `null \|> System.ArgumentException.ThrowIfNullOrEmpty`           | No       | the parameter default value              |
+      | `let f = System.ArgumentException.ThrowIfNullOrEmpty in f(null)` | No       | the parameter default value              |
+
+   2. Attempt to identify the argument which the attribute references.
+   3. Determine the textual range of the argument expression in the source code.
+   4. Use the retrieved text range to extract the source code snippet corresponding to the argument expression.
+   5. Bind the extracted code text to the parameter and propagate it as part of the method call.
+   6. If any step above fails, the optional parameter will use its declared default value.
 
 The following examples show the expected behavior:
+
 ```fsharp
+// The allowed cases
 System.ArgumentException.ThrowIfNullOrEmpty null  // paramName = "null"
 System.ArgumentException.ThrowIfNullOrEmpty(argument = null) // paramName = "null"
 System.ArgumentException.ThrowIfNullOrEmpty(null: string) // paramName = "null: string"
 System.ArgumentException.ThrowIfNullOrEmpty(null
 #line 1
   : string)  // paramName = "null\n#line 1\n  : string"
-```
 
+// The not allowed cases
+(System.ArgumentException.ThrowIfNullOrEmpty) null // paramName = ""
+System.ArgumentException.ThrowIfNullOrEmpty <| null // paramName = ""
+null |> System.ArgumentException.ThrowIfNullOrEmpty // paramName = ""
+let f = System.ArgumentException.ThrowIfNullOrEmpty in f(null) // paramName = ""
+```
 
 ### When defining methods using the attribute in F#
 
@@ -80,6 +101,20 @@ type MyClass =
 MyClass.MyMethod(1 + 1, 2.) // "1 + 1", "2."
 ```
 
+# Changes to the F# spec
+
+Under "10. Build the resulting elaborated expression by following these steps:" in [14.4 Method Application Resolution](https://github.com/fsharp/fslang-spec/blob/main/releases/FSharp-Spec-latest.md#144-method-application-resolution):
+> ~~Passing a None value for each argument that corresponds to an `ImplicitlySuppliedFormalArgs`~~
+> 
+> Passing the default value for each argument that corresponds to an `ImplicitlySuppliedFormalArgs`, that is:
+> - The corresponding caller information if the parameter has caller-info attribute (`CallerLineNumber`, `CallerFileName`, `CallerCallerName`, `CallerArgumentExpression`)
+> 
+>   Note: The `CallerArgumentExpression` infomation applies only if the method call has syntactic argument, otherwise the default parameter value will be used.
+> - The default value for C# optional parameter
+> - `None` for F# optional parameter
+
+In [17.1 Custom Attributes Recognized by F#](https://github.com/fsharp/fslang-spec/blob/main/releases/FSharp-Spec-latest.md#171-custom-attributes-recognized-by-f) add `System.Runtime.CompilerServices.CallerArgumentExpressionAttribute`
+
 # Drawbacks
 
 No.
@@ -92,17 +127,19 @@ As mentioned at [the comment](https://github.com/fsharp/fslang-suggestions/issue
 
 Please address all necessary compatibility questions:
 
-* Is this a breaking change?
-> No
+- Is this a breaking change?
 
-* What happens when previous versions of the F# compiler encounter this design addition as source code?
-> It will works as before, ignore the attribute, and pass the default value as argument.
+  > No
 
-* What happens when previous versions of the F# compiler encounter this design addition in compiled binaries?
-> It will works as before, as the attribute is very common in the BCL.
+- What happens when previous versions of the F# compiler encounter this design addition as source code?
 
+  > It will works as before, ignore the attribute, and pass the default value as argument.
 
-* If this is a change or extension to FSharp.Core, what happens when previous versions of the F# compiler encounter this construct?
+- What happens when previous versions of the F# compiler encounter this design addition in compiled binaries?
+
+  > It will works as before, as the attribute is very common in the BCL.
+
+- If this is a change or extension to FSharp.Core, what happens when previous versions of the F# compiler encounter this construct?
 
 > This change does not affect FSharp.Core.
 
@@ -110,11 +147,17 @@ Please address all necessary compatibility questions:
 
 ## Diagnostics
 
-* Error when the attribute is applied to a non-optional parameter.
-* Error when the attribute is applied to a parameter whose type is not `string`.
-* Warn if the attribute is referencing a non-existing parameter name.
-* Warn if the attribute is referencing the parameter that the attribute is applied to.
-* Warn when the attribute is applied to a parameter with `[<CallerMemberName>]` or `[<CallerFilePath>]`.
+### Errors
+- (FS1246) 'CallerArgumentExpression ".."' must be applied to an argument of type 'string', but has been applied to an argument of type '%s'
+- (FS1247) 'CallerArgumentExpression ".."' can only be applied to optional arguments
+
+### Warnings
+- The [\<CallerArgumentExpression\>] on this parameter will have no effect because it's self-referential.
+- The [\<CallerArgumentExpression\>] on this parameter will have no effect because it's applied with an invalid parameter name.
+- The [\<CallerArgumentExpression\>] on this parameter will have no effect because it's overridden by the [\<%s>].
+
+### Informational warnings
+- This usage blocks passing string representations of arguments to parameters annotated with [\<CallerArgumentExpression\>]. The default values of these parameters will be passed. Only the usages like `Method(arguments)` can capture the string representation of arguments.
 
 ## Performance
 
@@ -123,5 +166,3 @@ The feature requires the compiler to read and store all the code text in memory,
 # Unresolved questions
 
 What parts of the design are still TBD?
-
-> Should this attribute can be applied to the computation expression builders?
