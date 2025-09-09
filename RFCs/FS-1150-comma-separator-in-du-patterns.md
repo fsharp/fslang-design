@@ -58,6 +58,8 @@ with
 - Scope: Only applies to named sub-patterns for a single case, such as `Case(name1 = pat1, name2 = pat2, ...)`. The existing `;` separator remains supported.
 - Separator consistency: Mixing them is a parse error: `Inconsistent separators in a pattern. Use either all commas or all semicolons, but not both.`
 - No changes to runtime semantics. This is a syntactic enhancement only.
+- Update the [language specification](https://github.com/fsharp/fslang-spec/blob/main/releases/FSharp-Spec-latest.md#721-union-case-patterns) to reflect the new syntax.
+- Update the [language reference](https://learn.microsoft.com/en-us/dotnet/fsharp/language-reference/pattern-matching#identifier-patterns) to reflect the new syntax.
 
 Grammar changes
 - Where the grammar previously recognized `name = pattern` separated by `;`, the production is extended to accept `,` as a separator token as well.
