@@ -18,14 +18,13 @@ Today, when naming multiple fields within a discriminated union case pattern, th
 type Rect = Rect of width:int * height:int
 match rect with
 | Rect(width = w; height = h) -> w + h
-```
 
-This RFC allows `,` in addition to `;`
+let (Rect(width = w; height = h)) = rect
 
-```fsharp
-type Rect = Rect of width:int * height:int
-match rect with
-| Rect(width = w, height = h) -> w + h
+try
+    ...
+with
+| Rect(width = w; height = h) -> ...
 ```
 
 This is consistent with the existing syntax for creating discriminated unions, where fields are separated by `,`.
@@ -35,7 +34,7 @@ type Rect = Rect of width:int * height:int
 let rect = Rect(width = 10, height = 20)
 ```
 
-After this RFC, the following code is also valid:
+After this RFC, the following code will be valid:
 
 ```fsharp
 type Rect = Rect of width:int * height:int
@@ -44,6 +43,13 @@ let rect = Rect(width = 10, height = 20)
 let res =
     match rect with
     | Rect(width = w, height = h) -> w + h
+    
+let (Rect(width = w, height = h)) = rect
+
+try
+    ...
+with
+ | Rect(width = w, height = h) -> ...
 ```
 
 # Detailed design
