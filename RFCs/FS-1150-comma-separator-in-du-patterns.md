@@ -298,7 +298,7 @@ Examples of various forms and whether they parse and type-check:
 - `Case(x = a; y = b)` → same with semicolons — OK.
 - `Case(x = a, b)` → parsed as `x = (a, b)` — OK only if `x` is tuple‑typed.
 - `Case(x = (a, b), y = c)` → explicit nested tuple for `x`, commas separate siblings — OK.
-- `Case(x = a, y = b, z = c,)` → trailing comma — parse error.
+- `Case(x = a, y = b, z = c,)` → trailing comma — OK.
 - `Case(x = a; y = b, z = c)` → mixed separators — parse error.
 - `Case(a, b)` with case `Case of (int * int)` → tuple pattern — OK.
 - `Case(x = a, y = b)` when a case has no names → not allowed.
