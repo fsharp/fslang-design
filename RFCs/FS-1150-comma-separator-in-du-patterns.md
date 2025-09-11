@@ -27,7 +27,7 @@ with
 | Rect(width = w; height = h) -> ...
 ```
 
-This is consistent with the existing syntax for creating discriminated unions, where fields are separated by `,`.
+This is inconsistent with the existing syntax for discriminated union case constructors, where fields are separated by `,`.
 
 ```fsharp
 type Rect = Rect of width:int * height:int
