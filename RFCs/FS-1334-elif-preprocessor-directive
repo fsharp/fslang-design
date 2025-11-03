@@ -3,7 +3,7 @@
 - [x] [Suggestion: Preprocessor Directives: #elif missing (#1370)](https://github.com/fsharp/fslang-suggestions/issues/1370)
 - [x] Approved in principle
 - [x] [Implementation: PR #19045](https://github.com/dotnet/fsharp/pull/19045)
-- [ ] [Discussion](https://github.com/fsharp/fslang-design/discussions/FILL-ME-IN)
+- [x] [Discussion](https://github.com/fsharp/fslang-design/discussions/821)
 
 ## Summary
 Add `#elif` to F# conditional compilation so multiple mutually exclusive branches can be written linearly (`#if ... #elif ... #elif ... #else ... #endif`) instead of nesting or repeating `#if` blocks. Aligns F# with C# and other languages; improves readability.
