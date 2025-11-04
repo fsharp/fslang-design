@@ -90,6 +90,7 @@ Errors for:
 
 ## Tooling
 Add keyword highlighting (or darken un-used branch), folding across entire block, completion for `#elif`. No runtime tooling differences.
+Tools like Fantomas must update their logic that evaluates the #if conditions to handle #elif.
 
 ## Performance
 Negligible; linear evaluation of conditions. No impact on generated code beyond selected branch.
