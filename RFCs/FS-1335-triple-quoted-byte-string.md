@@ -2,14 +2,14 @@
 
 This RFC documents the change that makes triple-quoted string syntax interoperate with byte-string literal suffixes so that existing triple-quoted strings and byte-string suffxies can be combined in the usual way. There is no separate language suggestion for this change — it simply composes two long‑standing features of the language so they behave consistently together.
 
-- [x] [Suggestion] (none — composition of existing features)
+- [x] Suggestion N/A
 - [?] Approved in principle
 - [x] [Implementation](https://github.com/dotnet/fsharp/pull/19182)
 - [ ] [Discussion](https://github.com/fsharp/fslang-design/discussions/FILL-ME-IN)
 
 # Summary
 
-Allow byte-string literal suffix to be applied to triple-quoted string literals (and vice‑versa) so forms like `"""..."""B` are accepted and behave consistently with the corresponding non‑triple‑quoted byte string forms.
+Allow byte-string literal suffix to be applied to triple-quoted string literals, so forms like `"""..."""B` are accepted and behave consistently with the corresponding non‑triple‑quoted byte string forms.
 
 # Motivation
 
@@ -26,15 +26,15 @@ Examples:
 
 ```fsharp
 // triple-quoted byte string (multi-line)
-let bytes1 = """
+let bytes1: byte[] = """
 First line
 Second line with "quotes" and backslashes \\
 """B
 
-let bytes2 = "Hello\n"B
+let bytes2: byte[] = "Hello\n"B
 
 // Triple-quoted non-byte string unchanged
-let s = """This is a "normal" triple-quoted string"""
+let s: string = """This is a "normal" triple-quoted string"""
 ```
 
 No new literal kinds are introduced — the change simply permits the familiar suffix + delimiter combinations that a user would expect.
