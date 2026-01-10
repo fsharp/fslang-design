@@ -51,7 +51,7 @@ With [supporting `[<CallerArgumentExpressionAttribute>]`](./FS-1149-support-Call
 Please address all necessary compatibility questions:
 
 * Is this a breaking change?
-    > No
+    > If there are user-overridden `System.Diagnostics.Debug.Assert`s, and there is no overload with signature `(condition: bool * message: string) -> ...`, this will be a breaking change.
 * What happens when previous versions of the F# compiler encounter this design addition as source code?
     > It will works the same as before.
 * What happens when previous versions of the F# compiler encounter this design addition in compiled binaries?
@@ -67,17 +67,17 @@ Please address all necessary compatibility questions:
 
 # Pragmatics
 
+## Diagnostics
+
+There can be a friendly error message when the `System.Diagnostics.Debug.Assert: (condition: bool * message: string) -> ...` overload is absent.
+
 ## Performance
 
 This feature may impact the compilation speed when the code file is too large and has many `assert` expressions, since it needs get substrings from the file.
 
 ## Scaling
 
-Please list the dimensions that describe the inputs for this new feature, e.g. "number of widgets" etc.  For each, estimate a reasonable upper bound for the expected size in human-written code and machine-generated code that the compiler will accept.
-
-For example
-
-* Expected maximum number of widgets in reasonable hand-written code: 100
-* Expected reasonable upper bound for number of widgets accepted: 500
+* Expected maximum number of widgets in reasonable hand-written code: 1/3 of code lines
+* Expected reasonable upper bound for number of widgets accepted: 1/2 of code lines
 
 Testing should particularly check that compilation is linear (or log-linear or similar) along these dimensions.  If quadratic or worse this should ideally be noted in the RFC.
