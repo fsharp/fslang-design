@@ -7,7 +7,7 @@ This RFC covers the detailed proposal for this suggestion.
 - [ ] [Related suggestion - Use an Attribute to specify overload resolution priority](https://github.com/fsharp/fslang-suggestions/issues/821)
 - [ ] No dedicated suggestion
 - [ ] Approved in principle
-- [ ] [No Implementation](https://github.com/dotnet/fsharp/pull/FILL-ME-IN)
+- [ ] [Prototype impl](https://github.com/dotnet/fsharp/pull/19277)
 - [ ] [No Discussion](https://github.com/fsharp/fslang-design/discussions/FILL-ME-IN)
 
 **C# Reference:** [csharplang proposal csharp-13.0/overload-resolution-priority.md](https://github.com/dotnet/csharplang/blob/main/proposals/csharp-13.0/overload-resolution-priority.md)
@@ -283,7 +283,7 @@ type MyProcessor() =
 
 - **Complexity**: Adds another dimension to overload resolution that developers must understand.
 
-- **C#-centric design assumptions**: The attribute and its usage patterns in the BCL were designed with C# overload resolution semantics in mind. C# has different implicit conversions than F# (e.g., arrays implicitly convert to `Span<T>` and `ReadOnlySpan<T>` in C#, but not in F#). Some BCL uses of this attribute resolve ambiguities that don't exist in F#, while F# may have its own ambiguity scenarios not addressed by BCL annotations.
+- **C#-centric design assumptions**: The attribute was designed for C# implicit conversions. F#'s type-directed conversions (op_Implicit, numeric widening, Span/ReadOnlySpan) cover most BCL ORPA patterns, so real-world BCL APIs (Debug.Assert, MemoryExtensions) work correctly. However, C# has implicit constant expression narrowing (e.g., literal `42` can convert to `byte`) that F# lacks. If a C# library uses ORPA to prefer `Method(byte)` over `Method(int)`, C# consumers compile while F# consumers get a type mismatch error. This is by design — the library author's intent is "don't call the int overload," and F# correctly reports it cannot satisfy the preferred overload rather than silently ignoring the author's priority.
 
 - **Potential for abuse**: Library authors could use priority to force unintuitive selections. However, this is an explicit choice by the library author, not an accident.
 
