@@ -72,9 +72,9 @@ The F# optimizer inlines small function bodies *before* code generation runs. If
 
 ## Scenarios (by test case)
 
-Every row corresponds one-to-one to a delegate-construction case in the `tests/.../EmittedIL/DirectDelegates` baseline suite; the number is the canonical case index, also carried in the test-source comments. Cases are numbered by shape so the table reads grouped: **1–17** eta-expanded curried forwarding, **18–32** non-eta forwarding, **33–38** eta-expanded tupled forwarding, **39–43** partial application, **44–47** non-forwarding / negative, **48–49** `unit`-argument, **50–51** value-type (struct) receiver, **52** extension member, **53** byref parameter.
+Every row corresponds one-to-one to a delegate-construction case in the `tests/.../EmittedIL/DirectDelegates` baseline suite; the number is the canonical case index, also carried in the test-source comments. Cases are numbered by shape so the table reads grouped: **1–16** eta-expanded curried forwarding, **17–30** non-eta forwarding, **31–36** eta-expanded tupled forwarding, **37–41** partial application, **42–45** non-forwarding / negative, **46–47** `unit`-argument, **48–49** value-type (struct) receiver, **50** extension member, **51** byref parameter.
 
-**Debug** / **Release** give the *preview* emit (`--optimize-` / `--optimize+`); **with the feature off every case is a closure**. "direct" = the delegate points at the real method; "closure" = the intermediate `…@NN::Invoke` is generated. `‡` marks the **inline-race**: the target is small and unannotated, so the optimizer inlines it before codegen and the forwarding call vanishes — the `[<NoCompilerInlining>]` `niXxx` cases (6–9 eta, 23–26 non-eta) are the same shapes proven direct in release, and cases 10/27 (`trivial`, inlinable) are the contrast that bails.
+**Debug** / **Release** give the *preview* emit (`--optimize-` / `--optimize+`); **with the feature off every case is a closure**. "direct" = the delegate points at the real method; "closure" = the intermediate `…@NN::Invoke` is generated. `‡` marks the **inline-race**: the target is small and unannotated, so the optimizer inlines it before codegen and the forwarding call vanishes (cases 1–5 eta, 17–20 non-eta). The `[<NoCompilerInlining>]` `niXxx` cases (6–9 eta, 22–25 non-eta) are the same shapes with inlining suppressed, proving they emit direct in release once the race is removed.
 
 | # | Description | Delegate construction | Debug | Release |
 |---|---|---|---|---|
@@ -87,50 +87,48 @@ Every row corresponds one-to-one to a delegate-construction case in the `tests/.
 | 7 | eta static method, non-inlinable | `Func<int,int,int>(fun a b -> S.AccS a b)` | closure | direct |
 | 8 | eta instance method, non-inlinable | `Func<int,int,int>(fun a b -> o.AccC a b)` | closure | direct |
 | 9 | eta generic instance method, non-inlinable | `Func<int,int,int>(fun a b -> o.GPick<int> a b)` | closure | direct |
-| 10 | eta inlinable module function (inline-race) | `Func<int,int,int>(fun a b -> trivial a b)` | closure | closure‡ |
-| 11 | eta unit-returning member | `Action<int,int>(fun a b -> returnsUnit a b)` | closure | direct |
-| 12 | eta generic unit-returning method | `Func<unit,unit>(fun (x: unit) -> C.Echo<unit> x)` | closure | direct |
-| 13 | eta IL/BCL static method | `Func<int,int,int>(fun a b -> Math.Max(a, b))` | closure | direct |
-| 14 | eta IL/BCL instance method (ref type) | `Func<string,StringBuilder>(fun s -> sb.Append s)` | closure | direct |
-| 15 | eta module function, custom delegate | `DTupled(fun a b -> acc a b)` | closure | direct |
-| 16 | eta instance member, custom delegate | `DTupled(fun a b -> c.M a b)` | closure | direct |
-| 17 | eta generic method, generic custom delegate | `DGen<int>(fun x -> ident x)` | closure | direct |
-| 18 | non-eta module function | `Action<int,int>(handlerCurried)` | direct | closure‡ |
-| 19 | non-eta static method | `Action<int,int>(C.AddC)` | direct | closure‡ |
-| 20 | non-eta generic static method | `Action<int,int>(G<string>.SMc<int>)` | direct | closure‡ |
-| 21 | non-eta instance method | `Action<int,int>(o.AddC)` | direct | closure‡ |
-| 22 | non-eta virtual instance method (`dup; ldvirtftn`) | `Action<int,int>(o.V)` | direct | direct |
-| 23 | non-eta module function, non-inlinable | `Func<int,int,int>(accCurried)` | direct | direct |
-| 24 | non-eta static method, non-inlinable | `Func<int,int,int>(S.AccS)` | direct | direct |
-| 25 | non-eta instance method, non-inlinable | `Func<int,int,int>(o.AccC)` | direct | direct |
-| 26 | non-eta generic instance method, non-inlinable | `Func<int,int,int>(o.GPick<int>)` | direct | direct |
-| 27 | non-eta inlinable module function (inline-race contrast) | `Func<int,int,int>(trivial)` | direct | closure‡ |
-| 28 | non-eta unit-returning member (→ `void`) | `Action<int,int>(returnsUnit)` | direct | direct |
-| 29 | non-eta generic return tyvar → `Unit` | `Func<unit,unit>(C.Echo<unit>)` | direct | direct |
-| 30 | non-eta module function, custom delegate | `DTupled(acc)` | direct | direct |
-| 31 | non-eta instance member, custom delegate | `DTupled(c.M)` | direct | direct |
-| 32 | non-eta generic method, generic custom delegate | `DGen<int>(ident)` | direct | direct |
-| 33 | eta module function, tupled application | `Action<int,int>(fun a b -> handlerTupled (a, b))` | closure | closure |
-| 34 | eta static method, tupled application | `Action<int,int>(fun a b -> C.AddT(a, b))` | closure | closure |
-| 35 | eta generic static method, tupled application | `Action<int,int>(fun a b -> G<string>.SMt<int>(a, b))` | closure | closure |
-| 36 | eta instance method, tupled application | `Action<int,int>(fun a b -> o.AddT(a, b))` | closure | closure |
-| 37 | eta generic instance method, tupled application | `Action<int,int>(fun a b -> o.IMt<int>(a, b))` | closure | closure |
-| 38 | eta module function, tupled, non-inlinable | `Func<int,int,int>(fun a b -> accTupled (a, b))` | closure | closure |
-| 39 | partial application of module function (constant) | `Action<int,int>(handler3 1)` | closure | closure |
-| 40 | partial application of static method (constant) | `Action<int,int>(C.Add3 1)` | closure | closure |
-| 41 | partial application of module function (captured var) | `Action<int,int>(handler3 n)` | closure | closure |
-| 42 | partial application of static method (captured var) | `Action<int,int>(C.Add3 n)` | closure | closure |
-| 43 | partial application of instance method (receiver + var) | `Action<int,int>(o.Add3 n)` | closure | closure |
-| 44 | first-class function value (no target method) | `Action<int,int>(handler)` | closure | closure |
-| 45 | non-forwarding body (computed argument) | `Action<int,int>(fun a b -> sink (a + b + k))` | closure | closure |
-| 46 | reordered arguments | `Action<int,int>(fun a b -> handler b a)` | closure | closure |
-| 47 | reference-parameter contravariance (upcast coercion) | `Func<string,int>(fun s -> h.TakesObj s)` | closure | closure |
-| 48 | non-eta unit-argument delegate | `Action(handler)` (`handler: unit -> unit`) | closure | closure |
-| 49 | eta unit-argument delegate | `Action(fun () -> handler ())` | closure | closure |
-| 50 | non-eta struct (value-type) receiver | `Func<int,int,int>(s.Add)` (`s : struct`) | closure | closure |
-| 51 | eta struct (value-type) receiver | `Func<int,int,int>(fun a b -> s.Add a b)` (`s : struct`) | closure | closure |
-| 52 | extension member (receiver is a leading static arg) | `Func<int,int,int>(fun a b -> h.Combine(a, b))` | closure | closure |
-| 53 | byref-parameter delegate (mutating body) | `DByref(fun x -> x <- x + 1)` | closure | closure |
+| 10 | eta unit-returning member | `Action<int,int>(fun a b -> returnsUnit a b)` | closure | direct |
+| 11 | eta generic unit-returning method | `Func<unit,unit>(fun (x: unit) -> C.Echo<unit> x)` | closure | direct |
+| 12 | eta IL/BCL static method | `Func<int,int,int>(fun a b -> Math.Max(a, b))` | closure | direct |
+| 13 | eta IL/BCL instance method (ref type) | `Func<string,StringBuilder>(fun s -> sb.Append s)` | closure | direct |
+| 14 | eta module function, custom delegate | `DTupled(fun a b -> acc a b)` | closure | direct |
+| 15 | eta instance member, custom delegate | `DTupled(fun a b -> c.M a b)` | closure | direct |
+| 16 | eta generic method, generic custom delegate | `DGen<int>(fun x -> ident x)` | closure | direct |
+| 17 | non-eta module function | `Action<int,int>(handlerCurried)` | direct | closure‡ |
+| 18 | non-eta static method | `Action<int,int>(C.AddC)` | direct | closure‡ |
+| 19 | non-eta generic static method | `Action<int,int>(G<string>.SMc<int>)` | direct | closure‡ |
+| 20 | non-eta instance method | `Action<int,int>(o.AddC)` | direct | closure‡ |
+| 21 | non-eta virtual instance method (`dup; ldvirtftn`) | `Action<int,int>(o.V)` | direct | direct |
+| 22 | non-eta module function, non-inlinable | `Func<int,int,int>(accCurried)` | direct | direct |
+| 23 | non-eta static method, non-inlinable | `Func<int,int,int>(S.AccS)` | direct | direct |
+| 24 | non-eta instance method, non-inlinable | `Func<int,int,int>(o.AccC)` | direct | direct |
+| 25 | non-eta generic instance method, non-inlinable | `Func<int,int,int>(o.GPick<int>)` | direct | direct |
+| 26 | non-eta unit-returning member (→ `void`) | `Action<int,int>(returnsUnit)` | direct | direct |
+| 27 | non-eta generic return tyvar → `Unit` | `Func<unit,unit>(C.Echo<unit>)` | direct | direct |
+| 28 | non-eta module function, custom delegate | `DTupled(acc)` | direct | direct |
+| 29 | non-eta instance member, custom delegate | `DTupled(c.M)` | direct | direct |
+| 30 | non-eta generic method, generic custom delegate | `DGen<int>(ident)` | direct | direct |
+| 31 | eta module function, tupled application | `Action<int,int>(fun a b -> handlerTupled (a, b))` | closure | closure |
+| 32 | eta static method, tupled application | `Action<int,int>(fun a b -> C.AddT(a, b))` | closure | closure |
+| 33 | eta generic static method, tupled application | `Action<int,int>(fun a b -> G<string>.SMt<int>(a, b))` | closure | closure |
+| 34 | eta instance method, tupled application | `Action<int,int>(fun a b -> o.AddT(a, b))` | closure | closure |
+| 35 | eta generic instance method, tupled application | `Action<int,int>(fun a b -> o.IMt<int>(a, b))` | closure | closure |
+| 36 | eta module function, tupled, non-inlinable | `Func<int,int,int>(fun a b -> accTupled (a, b))` | closure | closure |
+| 37 | partial application of module function (constant) | `Action<int,int>(handler3 1)` | closure | closure |
+| 38 | partial application of static method (constant) | `Action<int,int>(C.Add3 1)` | closure | closure |
+| 39 | partial application of module function (captured var) | `Action<int,int>(handler3 n)` | closure | closure |
+| 40 | partial application of static method (captured var) | `Action<int,int>(C.Add3 n)` | closure | closure |
+| 41 | partial application of instance method (receiver + var) | `Action<int,int>(o.Add3 n)` | closure | closure |
+| 42 | first-class function value (no target method) | `Action<int,int>(handler)` | closure | closure |
+| 43 | non-forwarding body (computed argument) | `Action<int,int>(fun a b -> sink (a + b + k))` | closure | closure |
+| 44 | reordered arguments | `Action<int,int>(fun a b -> handler b a)` | closure | closure |
+| 45 | reference-parameter contravariance (upcast coercion) | `Func<string,int>(fun s -> h.TakesObj s)` | closure | closure |
+| 46 | non-eta unit-argument delegate | `Action(handler)` (`handler: unit -> unit`) | closure | closure |
+| 47 | eta unit-argument delegate | `Action(fun () -> handler ())` | closure | closure |
+| 48 | non-eta struct (value-type) receiver | `Func<int,int,int>(s.Add)` (`s : struct`) | closure | closure |
+| 49 | eta struct (value-type) receiver | `Func<int,int,int>(fun a b -> s.Add a b)` (`s : struct`) | closure | closure |
+| 50 | extension member (receiver is a leading static arg) | `Func<int,int,int>(fun a b -> h.Combine(a, b))` | closure | closure |
+| 51 | byref-parameter delegate (mutating body) | `DByref(fun x -> x <- x + 1)` | closure | closure |
 
 For the virtual case (22) the receiver is evaluated, duplicated, and `ldvirtftn` binds the function pointer to the receiver's runtime override, so virtual dispatch through the delegate is preserved; every other (non-virtual) instance target uses `ldftn` to bind the exact method.
 
