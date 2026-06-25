@@ -132,7 +132,7 @@ Every row corresponds one-to-one to a delegate-construction case in the `tests/.
 | 50 | extension member (receiver is a leading static arg) | `Func<int,int,int>(fun a b -> h.Combine(a, b))` | closure | closure |
 | 51 | byref-parameter delegate (mutating body) | `DByref(fun x -> x <- x + 1)` | closure | closure |
 
-For the virtual case (22) the receiver is evaluated, duplicated, and `ldvirtftn` binds the function pointer to the receiver's runtime override, so virtual dispatch through the delegate is preserved; every other (non-virtual) instance target uses `ldftn` to bind the exact method.
+For the virtual case (21) the receiver is evaluated, duplicated, and `ldvirtftn` binds the function pointer to the receiver's runtime override, so virtual dispatch through the delegate is preserved; every other (non-virtual) instance target uses `ldftn` to bind the exact method.
 
 ### Receiver evaluation — correctness guard
 
@@ -146,7 +146,7 @@ The closure form names the `Invoke` parameters: for an eta delegate they are the
 
 ## Quotations and FCS
 
-The recognizer runs only in `IlxGen` (IL emission). Quotations, `FSharp.Compiler.Service` typed-tree consumers, and `Expr<_>` conversions are unaffected — a delegate-construction quotation produces the same quotation node before and after this feature. This is covered by the existing quotation tests.
+The recognizer runs only in `IlxGen` (IL emission). Quotations, `FSharp.Compiler.Service` typed-tree consumers, and `Expr` conversions are unaffected — a delegate-construction quotation produces the same quotation node before and after this feature. This is covered by the existing quotation tests.
 
 # Drawbacks
 [drawbacks]: #drawbacks
@@ -160,7 +160,9 @@ The recognizer runs only in `IlxGen` (IL emission). Quotations, `FSharp.Compiler
 
 * **Do nothing.** F# continues to differ from C#/VB; the interop and identity problems above persist.
 * **Always emit direct (no eta/debug distinction).** Rejected because eta-expanded delegates in debug builds would lose the user's lambda parameter names and a friendly stepping experience.
-* **Run the recognizer inside the optimizer (before inlining).** Would remove the inline-race and make debug/release consistent, but is a more invasive change; deferred (see *Unresolved questions*).
+* **Run the recognizer inside the optimizer (before inlining).** Would remove the inline-race and make debug/release consistent, but is a more invasive change (see *Unresolved questions*).
+* **Gate behind a dedicated opt-in compiler flag instead of a language-version feature.** The behavior change could be controlled by a standalone switch (default off) rather than tied to `--langversion`. Upside: never a breaking change — existing builds are untouched unless the flag is explicitly added. Downsides: poor discoverability (users must already know the flag exists to benefit, and most never will); no automatic improvement (the interop/identity/allocation wins never arrive just by upgrading the toolchain or language version); and the feature risks remaining permanently niche rather than becoming the language's normal behavior.
+* **Add an opt-out compiler flag (default on) alongside the language feature.** This is *not* an alternative to the language feature but a complement to it: once the feature graduates to a released language version and the direct form becomes the default there, a `--direct-delegates-` style switch would let a project that discovers a regression (e.g. delegate-identity-sensitive event removal) turn the new emission off and keep building, without pinning the whole language version back.
 
 # Compatibility
 [compatibility]: #compatibility
