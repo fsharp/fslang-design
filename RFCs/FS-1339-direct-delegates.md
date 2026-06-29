@@ -19,7 +19,14 @@ newobj     <Delegate>::.ctor(object, native int)
 
 // instance target
 <load receiver>
+box        <struct>            // value-type receiver only; runtime binds the unboxing stub
 ldftn      <target>            // ldvirtftn (with dup) for a virtual target
+newobj     <Delegate>::.ctor(object, native int)
+
+// static target with a bound leading argument (extension-member receiver, or a one-argument
+// partial application) — the CLR's "closed over the first argument" delegate
+<load bound argument>
+ldftn      <static target>
 newobj     <Delegate>::.ctor(object, native int)
 ```
 
@@ -52,7 +59,13 @@ whose **trailing** arguments are exactly the delegate's `Invoke` parameters `p0�
 * a known F# value reference — a module-level function or a member (`Expr.App(Expr.Val …)`); or
 * a direct IL/BCL method call (`TOp.ILCall`, e.g. `System.Math.Max`).
 
-Any **leading** arguments are the method's receiver (for an instance method) or, if there are leading arguments where none are expected, a partial application (which is *not* rewritten).
+For an F# value reference the forwarding call is *de-tupled by the target's arity* before matching. A tupled target (e.g. `accTupled (x, y)`, a value of arity `[2]`) carries each tupled argument group as a single tuple node — `accTupled (a, b)` is one `(a, b)` argument — exactly the shape the code generator itself de-tuples by the value's arity when it emits the `call`. The recognizer mirrors that de-tupling, so a tupled target compiles to a method taking the elements as separate IL parameters and is as direct-able as its curried counterpart.
+
+Any **leading** arguments (everything before the trailing `Invoke` parameters) are handled as follows:
+
+* **No leading argument** — a static method or module-level function; the delegate carries a `null` `Target`.
+* **One leading argument** — bound to the delegate's `Target`. For an instance method this is the receiver (not part of the IL signature); a **value-type** receiver is *boxed* (a copy) at the construction site and the runtime binds the method's unboxing stub, which re-derives the `this` pointer from the box on each invocation — matching the closure's by-value capture. For a static method the leading argument is the first IL parameter, bound via the CLR's "closed over the first argument" delegate mechanism (`newobj Delegate::.ctor(object, native int)` with that argument as `Target`); this is how an **extension member**'s receiver, and a **one-argument partial application** of a static method / module function, become direct. In every case the bound argument must be side-effect-free and must not reference the delegate's `Invoke` parameters. For a **static** target it must additionally be a **reference type**: the delegate thunk passes `Target` (an `object`) straight into the method's first by-value parameter with no unboxing, so a value-type first parameter has no closed form at all. (This is *not* the same as a value-type instance receiver above, where the unboxing stub means boxing works.)
+* **Two or more leading arguments** — a partial application that also fixes a receiver, or fixes more than one argument; the CLR closed delegate binds only one argument, so there is no closed form and a closure is kept.
 
 When the shape matches and all the conditions below hold, the compiler emits the direct form and **no closure class is generated**. Otherwise it falls back to the existing closure path, which is byte-for-byte unchanged.
 
@@ -74,9 +87,9 @@ The recognizer has no locality guard, so a target imported from a **referenced a
 
 ## Scenarios (by test case)
 
-Every row corresponds one-to-one to a delegate-construction case in the `tests/.../EmittedIL/DirectDelegates` baseline suite; the number is the canonical case index, also carried in the test-source comments. Cases are numbered by shape so the table reads grouped: **1–16** eta-expanded curried forwarding, **17–30** non-eta forwarding, **31–36** eta-expanded tupled forwarding, **37–41** partial application, **42–45** non-forwarding / negative, **46–47** `unit`-argument, **48–49** value-type (struct) receiver, **50** extension member, **51** byref parameter.
+Every row corresponds one-to-one to a delegate-construction case in the `tests/.../EmittedIL/DirectDelegates` baseline suite; the number is the canonical case index, also carried in the test-source comments. Cases are numbered by shape so the table reads grouped: **1–16** eta-expanded curried forwarding, **17–30** non-eta forwarding, **31–36** eta-expanded tupled forwarding (de-tupled by arity — equivalent to the curried cases), **37–41** partial application, **42–45** non-forwarding / negative, **46–49** `unit`-argument, **50–51** value-type (struct) receiver (boxed as `Target`), **52** extension member (receiver bound as `Target`), **53** byref parameter, **54** value-type extension receiver (negative).
 
-**Debug** / **Release** give the *preview* emit (`--optimize-` / `--optimize+`); **with the feature off every case is a closure**. "direct" = the delegate points at the real method; "closure" = the intermediate `…@NN::Invoke` is generated. `‡` marks the **inline-race**: the target is small and unannotated, so the optimizer inlines it before codegen and the forwarding call vanishes (cases 1–5 eta, 17–20 non-eta). The `[<NoCompilerInlining>]` `niXxx` cases (6–9 eta, 22–25 non-eta) are the same shapes with inlining suppressed, proving they emit direct in release once the race is removed.
+**Debug** / **Release** give the *preview* emit (`--optimize-` / `--optimize+`); **with the feature off every case is a closure**. "direct" = the delegate points at the real method; "closure" = the intermediate `…@NN::Invoke` is generated. `‡` marks the **inline-race**: the target is small and unannotated, so the optimizer inlines it before codegen and the forwarding call vanishes (cases 1–5 eta, 17–20 non-eta, 31–35 eta-tupled). The `[<NoCompilerInlining>]` cases (6–9 eta, 22–25 non-eta, 36 eta-tupled) are the same shapes with inlining suppressed, proving they emit direct in release once the race is removed.
 
 | # | Description | Delegate construction | Debug | Release |
 |---|---|---|---|---|
@@ -100,7 +113,7 @@ Every row corresponds one-to-one to a delegate-construction case in the `tests/.
 | 18 | non-eta static method | `Action<int,int>(C.AddC)` | direct | closure‡ |
 | 19 | non-eta generic static method | `Action<int,int>(G<string>.SMc<int>)` | direct | closure‡ |
 | 20 | non-eta instance method | `Action<int,int>(o.AddC)` | direct | closure‡ |
-| 21 | non-eta virtual instance method (`dup; ldvirtftn`) | `Action<int,int>(o.V)` | direct | direct |
+| 21 | non-eta virtual instance method | `Action<int,int>(o.V)` | direct | direct |
 | 22 | non-eta module function, non-inlinable | `Func<int,int,int>(accCurried)` | direct | direct |
 | 23 | non-eta static method, non-inlinable | `Func<int,int,int>(S.AccS)` | direct | direct |
 | 24 | non-eta instance method, non-inlinable | `Func<int,int,int>(o.AccC)` | direct | direct |
@@ -110,12 +123,12 @@ Every row corresponds one-to-one to a delegate-construction case in the `tests/.
 | 28 | non-eta module function, custom delegate | `DTupled(acc)` | direct | direct |
 | 29 | non-eta instance member, custom delegate | `DTupled(c.M)` | direct | direct |
 | 30 | non-eta generic method, generic custom delegate | `DGen<int>(ident)` | direct | direct |
-| 31 | eta module function, tupled application | `Action<int,int>(fun a b -> handlerTupled (a, b))` | closure | closure |
-| 32 | eta static method, tupled application | `Action<int,int>(fun a b -> C.AddT(a, b))` | closure | closure |
-| 33 | eta generic static method, tupled application | `Action<int,int>(fun a b -> G<string>.SMt<int>(a, b))` | closure | closure |
-| 34 | eta instance method, tupled application | `Action<int,int>(fun a b -> o.AddT(a, b))` | closure | closure |
-| 35 | eta generic instance method, tupled application | `Action<int,int>(fun a b -> o.IMt<int>(a, b))` | closure | closure |
-| 36 | eta module function, tupled, non-inlinable | `Func<int,int,int>(fun a b -> accTupled (a, b))` | closure | closure |
+| 31 | eta module function, tupled application | `Action<int,int>(fun a b -> handlerTupled (a, b))` | closure | closure‡ |
+| 32 | eta static method, tupled application | `Action<int,int>(fun a b -> C.AddT(a, b))` | closure | closure‡ |
+| 33 | eta generic static method, tupled application | `Action<int,int>(fun a b -> G<string>.SMt<int>(a, b))` | closure | closure‡ |
+| 34 | eta instance method, tupled application | `Action<int,int>(fun a b -> o.AddT(a, b))` | closure | closure‡ |
+| 35 | eta generic instance method, tupled application | `Action<int,int>(fun a b -> o.IMt<int>(a, b))` | closure | closure‡ |
+| 36 | eta module function, tupled, non-inlinable | `Func<int,int,int>(fun a b -> accTupled (a, b))` | closure | direct |
 | 37 | partial application of module function (constant) | `Action<int,int>(handler3 1)` | closure | closure |
 | 38 | partial application of static method (constant) | `Action<int,int>(C.Add3 1)` | closure | closure |
 | 39 | partial application of module function (captured var) | `Action<int,int>(handler3 n)` | closure | closure |
@@ -125,12 +138,15 @@ Every row corresponds one-to-one to a delegate-construction case in the `tests/.
 | 43 | non-forwarding body (computed argument) | `Action<int,int>(fun a b -> sink (a + b + k))` | closure | closure |
 | 44 | reordered arguments | `Action<int,int>(fun a b -> handler b a)` | closure | closure |
 | 45 | reference-parameter contravariance (upcast coercion) | `Func<string,int>(fun s -> h.TakesObj s)` | closure | closure |
-| 46 | non-eta unit-argument delegate | `Action(handler)` (`handler: unit -> unit`) | closure | closure |
-| 47 | eta unit-argument delegate | `Action(fun () -> handler ())` | closure | closure |
-| 48 | non-eta struct (value-type) receiver | `Func<int,int,int>(s.Add)` (`s : struct`) | closure | closure |
-| 49 | eta struct (value-type) receiver | `Func<int,int,int>(fun a b -> s.Add a b)` (`s : struct`) | closure | closure |
-| 50 | extension member (receiver is a leading static arg) | `Func<int,int,int>(fun a b -> h.Combine(a, b))` | closure | closure |
-| 51 | byref-parameter delegate (mutating body) | `DByref(fun x -> x <- x + 1)` | closure | closure |
+| 46 | non-eta unit-argument delegate | `Action(handler)` (`handler: unit -> unit`) | direct | direct |
+| 47 | eta unit-argument delegate | `Action(fun () -> handler ())` | closure | direct |
+| 48 | non-eta unit-argument delegate, instance method | `Action(c.M)` (`c.M: unit -> unit`) | direct | direct |
+| 49 | eta unit-argument delegate, instance method | `Action(fun () -> c.M ())` | closure | direct |
+| 50 | non-eta struct (value-type) receiver (boxed) | `Func<int,int,int>(s.Add)` (`s : struct`) | direct | direct |
+| 51 | eta struct (value-type) receiver (boxed) | `Func<int,int,int>(fun a b -> s.Add a b)` (`s : struct`) | closure | direct |
+| 52 | extension member (receiver bound as `Target`) | `Func<int,int,int>(fun a b -> h.Combine(a, b))` | closure | direct |
+| 53 | byref-parameter delegate (mutating body) | `DByref(fun x -> x <- x + 1)` | closure | closure |
+| 54 | extension member on a value-type receiver | `Func<int,int,int>(fun a b -> (3).Echo(a, b))` | closure | closure |
 
 For the virtual case (21) the receiver is evaluated, duplicated, and `ldvirtftn` binds the function pointer to the receiver's runtime override, so virtual dispatch through the delegate is preserved; every other (non-virtual) instance target uses `ldftn` to bind the exact method.
 
@@ -161,8 +177,6 @@ The recognizer runs only in `IlxGen` (IL emission). Quotations, `FSharp.Compiler
 * **Do nothing.** F# continues to differ from C#/VB; the interop and identity problems above persist.
 * **Always emit direct (no eta/debug distinction).** Rejected because eta-expanded delegates in debug builds would lose the user's lambda parameter names and a friendly stepping experience.
 * **Run the recognizer inside the optimizer (before inlining).** Would remove the inline-race and make debug/release consistent, but is a more invasive change (see *Unresolved questions*).
-* **Gate behind a dedicated opt-in compiler flag instead of a language-version feature.** The behavior change could be controlled by a standalone switch (default off) rather than tied to `--langversion`. Upside: never a breaking change — existing builds are untouched unless the flag is explicitly added. Downsides: poor discoverability (users must already know the flag exists to benefit, and most never will); no automatic improvement (the interop/identity/allocation wins never arrive just by upgrading the toolchain or language version); and the feature risks remaining permanently niche rather than becoming the language's normal behavior.
-* **Add an opt-out compiler flag (default on) alongside the language feature.** This is *not* an alternative to the language feature but a complement to it: once the feature graduates to a released language version and the direct form becomes the default there, a `--direct-delegates-` style switch would let a project that discovers a regression (e.g. delegate-identity-sensitive event removal) turn the new emission off and keep building, without pinning the whole language version back.
 
 # Compatibility
 [compatibility]: #compatibility
@@ -205,10 +219,4 @@ Not applicable. This RFC does not affect formatting, parsing, numbers, dates, or
 # Unresolved questions
 [unresolved]: #unresolved-questions
 
-1. **Struct (value-type) receivers.** Instance methods on value types currently bail to a closure. A direct delegate would have to **box** the receiver (the delegate `Target` is `object`) and bind the function pointer accordingly, with the boxed-copy semantics that implies — which matches the current closure's capture semantics but should be confirmed against readonly/`inref`/defensive-copy expectations before enabling. Supporting this is possible but is a separate, more substantial change.
-
-2. **The inline-race (debug/release inconsistency).** Small, inlinable, unannotated targets are inlined by the optimizer before code generation, so they become closures in release while remaining direct in debug — `delegate.Method` then differs between configurations. Fully resolving this would require running the recognizer **inside the optimizer**, before the head call is inlined, or otherwise suppressing inlining of delegate targets. Is the current behavior acceptable, or should it be addressed? Note this extends *across assemblies* (see [The inline-race](#the-inline-race)): for a non-`inline` target in a referenced assembly, the direct/closure outcome depends on that assembly's optimization data rather than the consumer's source, so the inconsistency is not fully under the consumer's control.
-
-3. **`unit`-argument delegates.** `Action(handler)` for `handler: unit -> unit` stays a closure because the synthesized `unit` argument surfaces as a spurious leading argument. This could be made direct by stripping a forwarded `unit` literal that corresponds to an elided unit parameter. Worth doing?
-
-4. **Extension members.** An extension member compiles to a static method whose first parameter is the receiver, so a use such as `Func<_,_,_>(fun a b -> h.Combine(a, b))` presents the receiver `h` as a leading argument and is currently treated as a partial application → closure. This is, however, expressible as a direct delegate: the CLR's "closed over the first argument" mechanism lets `newobj Delegate::.ctor(object, native int)` bind `Target = h` and `ftn = ldftn <static extension method>`, so invoking passes `h` followed by the delegate's arguments. Implementing it requires (a) recognizing the extension-member case (`vrefM.IsExtensionMember`) and allowing a single leading argument to become the `Target` of a *static* method, (b) offsetting the signature check by one to drop the bound first formal parameter, and (c) the same reference-type guard as instance receivers (a value-type extension receiver hits the boxing gap in question 1).
+1. **The inline-race (debug/release inconsistency).** Small, inlinable, unannotated targets are inlined by the optimizer before code generation, so they become closures in release while remaining direct in debug — `delegate.Method` then differs between configurations. Fully resolving this would require running the recognizer **inside the optimizer**, before the head call is inlined, or otherwise suppressing inlining of delegate targets. Is the current behavior acceptable, or should it be addressed? Note this extends *across assemblies* (see [The inline-race](#the-inline-race)): for a non-`inline` target in a referenced assembly, the direct/closure outcome depends on that assembly's optimization data rather than the consumer's source, so the inconsistency is not fully under the consumer's control.
