@@ -30,8 +30,6 @@ ldftn      <static target>
 newobj     <Delegate>::.ctor(object, native int)
 ```
 
-As a result `delegate.Method` is the *real* target `MethodInfo` and `delegate.Target` is the *real* receiver (or `null` for a static target), exactly as the equivalent C# `new Func<…>(obj.Method)` produces. The change is gated behind a `--langversion:preview` language feature (`DirectDelegateConstruction`); without it, code generation is unchanged.
-
 # Motivation
 [motivation]: #motivation
 
@@ -85,74 +83,33 @@ The F# optimizer inlines small function bodies *before* code generation runs. If
 
 The recognizer has no locality guard, so a target imported from a **referenced assembly** takes the same direct path as a local one (the BCL `ILCall` cases already exercise this; cross-assembly *F# value* targets are covered by execution tests). Cross-assembly inlining therefore widens the race in two ways. A target marked `inline` has its body serialized into the referenced assembly and is **always** inlined at the use site, independent of `--optimize` — so a delegate over it is *always* a closure (a deterministic bail, not a race). A small, unannotated, non-`inline` target can be inlined cross-assembly through the referenced assembly's embedded optimization data, so whether it lands direct or closure in the consumer's release build depends on **the referenced assembly's** compilation (whether it shipped optimization data, and the target's size) rather than on anything the consumer wrote. `[<NoCompilerInlining>]` on the target suppresses this across the boundary just as it does locally.
 
-## Scenarios (by test case)
+## Scenarios
 
-Every row corresponds one-to-one to a delegate-construction case in the `tests/.../EmittedIL/DirectDelegates` baseline suite; the number is the canonical case index, also carried in the test-source comments. Cases are numbered by shape so the table reads grouped: **1–16** eta-expanded curried forwarding, **17–30** non-eta forwarding, **31–36** eta-expanded tupled forwarding (de-tupled by arity — equivalent to the curried cases), **37–41** partial application, **42–45** non-forwarding / negative, **46–49** `unit`-argument, **50–51** value-type (struct) receiver (boxed as `Target`), **52** extension member (receiver bound as `Target`), **53** byref parameter, **54** value-type extension receiver (negative).
+Each row groups the delegate-construction cases in the `tests/.../EmittedIL/DirectDelegates` baseline suite that share a shape and outcome; the **Test cases** column lists the canonical case indices folded into that row, also carried in the test-source comments.
 
 **Debug** / **Release** give the *preview* emit (`--optimize-` / `--optimize+`); **with the feature off every case is a closure**. "direct" = the delegate points at the real method; "closure" = the intermediate `…@NN::Invoke` is generated. `‡` marks the **inline-race**: the target is small and unannotated, so the optimizer inlines it before codegen and the forwarding call vanishes (cases 1–5 eta, 17–20 non-eta, 31–35 eta-tupled). The `[<NoCompilerInlining>]` cases (6–9 eta, 22–25 non-eta, 36 eta-tupled) are the same shapes with inlining suppressed, proving they emit direct in release once the race is removed.
 
-| # | Description | Delegate construction | Debug | Release |
-|---|---|---|---|---|
-| 1 | eta module function | `Action<int,int>(fun a b -> handlerCurried a b)` | closure | closure‡ |
-| 2 | eta static method | `Action<int,int>(fun a b -> C.AddC a b)` | closure | closure‡ |
-| 3 | eta generic static method | `Action<int,int>(fun a b -> G<string>.SMc<int> a b)` | closure | closure‡ |
-| 4 | eta instance method | `Action<int,int>(fun a b -> o.AddC a b)` | closure | closure‡ |
-| 5 | eta generic instance method | `Action<int,int>(fun a b -> o.IMc<int> a b)` | closure | closure‡ |
-| 6 | eta module function, non-inlinable | `Func<int,int,int>(fun a b -> accCurried a b)` | closure | direct |
-| 7 | eta static method, non-inlinable | `Func<int,int,int>(fun a b -> S.AccS a b)` | closure | direct |
-| 8 | eta instance method, non-inlinable | `Func<int,int,int>(fun a b -> o.AccC a b)` | closure | direct |
-| 9 | eta generic instance method, non-inlinable | `Func<int,int,int>(fun a b -> o.GPick<int> a b)` | closure | direct |
-| 10 | eta unit-returning member | `Action<int,int>(fun a b -> returnsUnit a b)` | closure | direct |
-| 11 | eta generic unit-returning method | `Func<unit,unit>(fun (x: unit) -> C.Echo<unit> x)` | closure | direct |
-| 12 | eta IL/BCL static method | `Func<int,int,int>(fun a b -> Math.Max(a, b))` | closure | direct |
-| 13 | eta IL/BCL instance method (ref type) | `Func<string,StringBuilder>(fun s -> sb.Append s)` | closure | direct |
-| 14 | eta module function, custom delegate | `DTupled(fun a b -> acc a b)` | closure | direct |
-| 15 | eta instance member, custom delegate | `DTupled(fun a b -> c.M a b)` | closure | direct |
-| 16 | eta generic method, generic custom delegate | `DGen<int>(fun x -> ident x)` | closure | direct |
-| 17 | non-eta module function | `Action<int,int>(handlerCurried)` | direct | closure‡ |
-| 18 | non-eta static method | `Action<int,int>(C.AddC)` | direct | closure‡ |
-| 19 | non-eta generic static method | `Action<int,int>(G<string>.SMc<int>)` | direct | closure‡ |
-| 20 | non-eta instance method | `Action<int,int>(o.AddC)` | direct | closure‡ |
-| 21 | non-eta virtual instance method | `Action<int,int>(o.V)` | direct | direct |
-| 22 | non-eta module function, non-inlinable | `Func<int,int,int>(accCurried)` | direct | direct |
-| 23 | non-eta static method, non-inlinable | `Func<int,int,int>(S.AccS)` | direct | direct |
-| 24 | non-eta instance method, non-inlinable | `Func<int,int,int>(o.AccC)` | direct | direct |
-| 25 | non-eta generic instance method, non-inlinable | `Func<int,int,int>(o.GPick<int>)` | direct | direct |
-| 26 | non-eta unit-returning member (→ `void`) | `Action<int,int>(returnsUnit)` | direct | direct |
-| 27 | non-eta generic return tyvar → `Unit` | `Func<unit,unit>(C.Echo<unit>)` | direct | direct |
-| 28 | non-eta module function, custom delegate | `DTupled(acc)` | direct | direct |
-| 29 | non-eta instance member, custom delegate | `DTupled(c.M)` | direct | direct |
-| 30 | non-eta generic method, generic custom delegate | `DGen<int>(ident)` | direct | direct |
-| 31 | eta module function, tupled application | `Action<int,int>(fun a b -> handlerTupled (a, b))` | closure | closure‡ |
-| 32 | eta static method, tupled application | `Action<int,int>(fun a b -> C.AddT(a, b))` | closure | closure‡ |
-| 33 | eta generic static method, tupled application | `Action<int,int>(fun a b -> G<string>.SMt<int>(a, b))` | closure | closure‡ |
-| 34 | eta instance method, tupled application | `Action<int,int>(fun a b -> o.AddT(a, b))` | closure | closure‡ |
-| 35 | eta generic instance method, tupled application | `Action<int,int>(fun a b -> o.IMt<int>(a, b))` | closure | closure‡ |
-| 36 | eta module function, tupled, non-inlinable | `Func<int,int,int>(fun a b -> accTupled (a, b))` | closure | direct |
-| 37 | partial application of module function (constant) | `Action<int,int>(handler3 1)` | closure | closure |
-| 38 | partial application of static method (constant) | `Action<int,int>(C.Add3 1)` | closure | closure |
-| 39 | partial application of module function (captured var) | `Action<int,int>(handler3 n)` | closure | closure |
-| 40 | partial application of static method (captured var) | `Action<int,int>(C.Add3 n)` | closure | closure |
-| 41 | partial application of instance method (receiver + var) | `Action<int,int>(o.Add3 n)` | closure | closure |
-| 42 | first-class function value (no target method) | `Action<int,int>(handler)` | closure | closure |
-| 43 | non-forwarding body (computed argument) | `Action<int,int>(fun a b -> sink (a + b + k))` | closure | closure |
-| 44 | reordered arguments | `Action<int,int>(fun a b -> handler b a)` | closure | closure |
-| 45 | reference-parameter contravariance (upcast coercion) | `Func<string,int>(fun s -> h.TakesObj s)` | closure | closure |
-| 46 | non-eta unit-argument delegate | `Action(handler)` (`handler: unit -> unit`) | direct | direct |
-| 47 | eta unit-argument delegate | `Action(fun () -> handler ())` | closure | direct |
-| 48 | non-eta unit-argument delegate, instance method | `Action(c.M)` (`c.M: unit -> unit`) | direct | direct |
-| 49 | eta unit-argument delegate, instance method | `Action(fun () -> c.M ())` | closure | direct |
-| 50 | non-eta struct (value-type) receiver (boxed) | `Func<int,int,int>(s.Add)` (`s : struct`) | direct | direct |
-| 51 | eta struct (value-type) receiver (boxed) | `Func<int,int,int>(fun a b -> s.Add a b)` (`s : struct`) | closure | direct |
-| 52 | extension member (receiver bound as `Target`) | `Func<int,int,int>(fun a b -> h.Combine(a, b))` | closure | direct |
-| 53 | byref-parameter delegate (mutating body) | `DByref(fun x -> x <- x + 1)` | closure | closure |
-| 54 | extension member on a value-type receiver | `Func<int,int,int>(fun a b -> (3).Echo(a, b))` | closure | closure |
+Within a row none of the following affect the outcome, so they are folded together: the target kind (module fn / static / instance / generic), whether the target is an F# value or an IL/BCL method (`TOp.ILCall`), the delegate type (a built-in `Func`/`Action` or a user-defined delegate), the return type (a `unit`-returning / `void` target), the argument shape (a `unit`-argument delegate), and the receiver's boxity (a value-type receiver, boxed as `Target`).
 
-For the virtual case (21) the receiver is evaluated, duplicated, and `ldvirtftn` binds the function pointer to the receiver's runtime override, so virtual dispatch through the delegate is preserved; every other (non-virtual) instance target uses `ldftn` to bind the exact method.
+| Description | Delegate construction | Debug | Release | Test cases |
+|---|---|---|---|---|
+| eta forwarding to an *inlinable* method (inline-race) | `Action<int,int>(fun a b -> handlerCurried a b)` | closure | closure‡ | 1, 2, 3, 4, 5 |
+| eta forwarding to a non-inlined method | `Func<int,int,int>(fun a b -> accCurried a b)` | closure | direct | 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 47, 49, 51 |
+| eta *tupled* application to an *inlinable* method (inline-race) | `Action<int,int>(fun a b -> handlerTupled (a, b))` | closure | closure‡ | 31, 32, 33, 34, 35 |
+| eta *tupled* application to a non-inlined method | `Func<int,int,int>(fun a b -> accTupled (a, b))` | closure | direct | 36 |
+| non-eta forwarding to an *inlinable* method (inline-race) | `Action<int,int>(handlerCurried)` | direct | closure‡ | 17, 18, 19, 20 |
+| non-eta forwarding to a non-inlined method | `Func<int,int,int>(accCurried)` | direct | direct | 21*, 22, 23, 24, 25, 26, 27, 28, 29, 30, 46, 48, 50 |
+| extension member (receiver bound as `Target`) | `Func<int,int,int>(fun a b -> h.Combine(a, b))` | closure | direct | 52 |
+| partial application — no CLR closed form (fixes a receiver + an argument, or ≥2 args) | `Action<int,int>(handler3 1)` | closure | closure | 37, 38, 39, 40, 41 |
+| not a transparent forwarding — first-class value, computed arg, reordered args, upcast coercion | `Action<int,int>(handler)` | closure | closure | 42, 43, 44, 45 |
+| byref-parameter delegate (mutating body) | `DByref(fun x -> x <- x + 1)` | closure | closure | 53 |
+| extension member on a value-type receiver (no closed form) | `Func<int,int,int>(fun a b -> (3).Echo(a, b))` | closure | closure | 54 |
 
 ### Receiver evaluation — correctness guard
 
 For an *explicit eta-lambda* like `Func<_,_>(fun a -> recv.M a)`, the closure form re-evaluates `recv` on **every** `Invoke`, whereas a direct delegate evaluates it **once**, at construction, as the `Target`. The rewrite is therefore only applied when that difference is unobservable: the receiver must be side-effect-free (`Optimizer.ExprHasEffect` is `false` — a non-mutable value, a constant, a pure field read) and must not reference the delegate's own `Invoke` parameters. A side-effecting receiver (`getObj().M`), a mutable value, or a fresh allocation keeps the closure. This is verified by an execution test: a counter-bumping receiver remains a closure and is re-evaluated per invocation.
+
+Binding the receiver at construction also changes **when a `null` receiver faults**. The closure form captures the receiver and only dereferences it inside `Invoke`, so a `null` receiver faults (`NullReferenceException`) at the first call — or never, if the target body does not touch `this`. The direct form binds the receiver into the delegate at construction, where the CLR delegate constructor rejects a `null` `this` for an instance method: a **non-virtual** target throws **`ArgumentException`** ("a delegate to an instance method cannot have null 'this'") from `newobj Delegate::.ctor`, and a **virtual** target throws **`NullReferenceException`** from `ldvirtftn` — both at the construction site, before any call. This matches C#, whose `new Func<…>(o.M)` emits the same `ldftn`/`newobj` and faults identically at the creation site.
 
 Note that the related "lazy function" case is *not* affected: `new Action<int>(failwith "")` is eta-expanded by the type checker to `fun arg -> (failwith "") arg`, whose function position is an application of `failwith`, not a plain method value, so the recognizer does not match it and it stays a closure with its existing per-invocation semantics.
 
@@ -168,8 +125,7 @@ The recognizer runs only in `IlxGen` (IL emission). Quotations, `FSharp.Compiler
 [drawbacks]: #drawbacks
 
 * It introduces a code-generation difference that depends on language version *and* optimization level, plus the inline-race, so the precise output for a given source is less uniform than today (see *Unresolved questions*).
-* `delegate.Method`/`Target`/equality semantics change in outwardly-visible ways (see *Compatibility*), which, although generally an improvement and closer to C#, is a behavior change that some code may depend on.
-* The direct path adds a recognizer and emission branch to `IlxGen`/`TypedTreeOps`, increasing compiler surface area.
+* The direct path adds a recognizer and emission branch to `IlxGen`, increasing compiler surface area.
 
 # Alternatives
 [alternatives]: #alternatives
@@ -182,11 +138,11 @@ The recognizer runs only in `IlxGen` (IL emission). Quotations, `FSharp.Compiler
 [compatibility]: #compatibility
 
 * **Is this a breaking change?** Not at the source or type level, and it is opt-in via `--langversion:preview`. It *is* an observable **runtime behavior change** for code that inspects delegates produced by F# compiled with the feature:
-  * `Delegate.Method` now returns the actual target `MethodInfo` (e.g. `Max`, `add`, `AccC`) instead of `Invoke` on a generated closure type. Reflection-based dispatch, logging by `Method.Name`, mocking, and minimal-API/routing frameworks will see the real method (usually the desired result).
-  * `Delegate.Target` is the real receiver for an instance target and `null` for a static target, instead of the closure instance.
+  * `Delegate.Method`
+  * `Delegate.Target`
+  * `delegate.Method.GetParameters()`
   * `Delegate.Equals`/`GetHashCode` (and thus `Delegate.Combine`/`Delegate.Remove`, event add/remove, and delegate de-duplication) now compare by the real `(Method, Target)`. Two delegates built from the same method+receiver may now be equal where previously they were not. Removing an event handler created from the same method now succeeds where it might previously have failed.
-  * `delegate.Method.GetParameters()` reports the target's parameter names rather than synthesized/lambda names.
-  * **Evaluation timing is *not* changed**: throwing/side-effecting function positions and side-effecting/mutable receivers are deliberately kept as closures, so once-vs-per-invocation semantics are preserved.
+  * **Evaluation timing.** The receiver is evaluated exactly once, at construction, in both forms (the count is unchanged), and throwing function positions and side-effecting/mutable receivers are deliberately kept as closures. The one shift is a **`null` instance receiver**, which now faults at *construction* rather than at first `Invoke` — `ArgumentException` for a non-virtual target, `NullReferenceException` for a virtual one, matching C#. This cannot be guarded (nullness is not statically known); see *Receiver evaluation — correctness guard*.
 * **Previous compilers encountering this as source code:** there is no new syntax; the feature only changes code generation under the preview flag, so older compilers compile the same source to the existing closure form.
 * **Previous compilers encountering compiled binaries:** delegates in such binaries have a different `Method`/`Target`, but no surface/type-level change — consumers compile and run unchanged.
 * **FSharp.Core:** no change.
@@ -199,7 +155,7 @@ No new diagnostics. The feature introduces no new syntax and no new error or war
 
 ## Tooling
 
-* **Debugging.** Eta-expanded delegates remain closures in debug builds, preserving user lambda parameter names in the locals window and parameter tips, and the existing stepping experience. Stepping into a *direct* delegate steps into the actual target method (as with C#). Non-eta delegates carry no user names to preserve.
+* **Debugging.** Unaffected.
 * **Auto-complete / tooltips / navigation / colorization / brace matching.** Unaffected — no syntax change.
 * **FCS / analyzers / quotations.** Unaffected — the change is confined to IL emission.
 
