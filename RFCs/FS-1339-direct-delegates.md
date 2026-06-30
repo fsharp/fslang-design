@@ -75,7 +75,7 @@ When the shape matches and all the conditions below hold, the compiler emits the
 | Feature **on**, *non-eta* delegate (`Func<_,_>(f)`) | Direct in both debug and release builds. |
 | Feature **on**, *eta-expanded* delegate (`Func<_,_>(fun a b -> f a b)`) | Direct in **release** (`--optimize+`) only; **closure in debug** (`--optimize-`). |
 
-The eta/non-eta distinction is made by whether the `Invoke` parameters are compiler-generated. A *non-eta* delegate's parameters are synthesized by `BuildNewDelegateExpr` (compiler-generated), so the closure carries no user-meaningful names and the delegate is always made direct. An *eta-expanded* delegate's parameters are the user's own lambda variables; in unoptimized builds the closure is kept so those names survive for debugging (locals window, parameter tips). In optimized builds debuggability is not a concern and the forwarding call survives the optimizer, so the direct form is used.
+The eta/non-eta distinction is made by whether the `Invoke` parameters are compiler-generated. A *non-eta* delegate's parameters are synthesized by `BuildNewDelegateExpr` (compiler-generated), so the closure carries no user-meaningful names and the delegate is always made direct. An *eta-expanded* delegate's parameters are the user's own lambda variables; in unoptimized builds the closure is kept so those names survive for debugging (locals window, parameter tips). In optimized builds debuggability is not a concern and the forwarding call generally survives the optimizer, so the direct form is used (unless the target is inlined away first — see [The inline-race](#the-inline-race)).
 
 ### The inline-race
 
@@ -85,9 +85,7 @@ The recognizer has no locality guard, so a target imported from a **referenced a
 
 ## Scenarios
 
-Each row groups the delegate-construction cases in the `tests/.../EmittedIL/DirectDelegates` baseline suite that share a shape and outcome; the **Test cases** column lists the canonical case indices folded into that row, also carried in the test-source comments.
-
-**Debug** / **Release** give the *preview* emit (`--optimize-` / `--optimize+`); **with the feature off every case is a closure**. "direct" = the delegate points at the real method; "closure" = the intermediate `…@NN::Invoke` is generated. `‡` marks the **inline-race**: the target is small and unannotated, so the optimizer inlines it before codegen and the forwarding call vanishes (cases 1–5 eta, 17–20 non-eta, 31–35 eta-tupled). The `[<NoCompilerInlining>]` cases (6–9 eta, 22–25 non-eta, 36 eta-tupled) are the same shapes with inlining suppressed, proving they emit direct in release once the race is removed.
+Each row groups the delegate-construction cases in the `tests/.../EmittedIL/DirectDelegates` baseline suite that share a shape and outcome; the **Test cases** column lists the canonical case indices folded into that row, also carried in the test-source comments. `‡` marks the **inline-race**: the target is small and unannotated, so the optimizer inlines it before codegen and the forwarding call vanishes (cases 1–5 eta, 17–20 non-eta, 31–35 eta-tupled). The `[<NoCompilerInlining>]` cases (6–9 eta, 22–25 non-eta, 36 eta-tupled) are the same shapes with inlining suppressed, proving they emit direct in release once the race is removed.
 
 Within a row none of the following affect the outcome, so they are folded together: the target kind (module fn / static / instance / generic), whether the target is an F# value or an IL/BCL method (`TOp.ILCall`), the delegate type (a built-in `Func`/`Action` or a user-defined delegate), the return type (a `unit`-returning / `void` target), the argument shape (a `unit`-argument delegate), and the receiver's boxity (a value-type receiver, boxed as `Target`).
 
@@ -98,9 +96,9 @@ Within a row none of the following affect the outcome, so they are folded togeth
 | eta *tupled* application to an *inlinable* method (inline-race) | `Action<int,int>(fun a b -> handlerTupled (a, b))` | closure | closure‡ | 31, 32, 33, 34, 35 |
 | eta *tupled* application to a non-inlined method | `Func<int,int,int>(fun a b -> accTupled (a, b))` | closure | direct | 36 |
 | non-eta forwarding to an *inlinable* method (inline-race) | `Action<int,int>(handlerCurried)` | direct | closure‡ | 17, 18, 19, 20 |
-| non-eta forwarding to a non-inlined method | `Func<int,int,int>(accCurried)` | direct | direct | 21*, 22, 23, 24, 25, 26, 27, 28, 29, 30, 46, 48, 50 |
+| non-eta forwarding to a non-inlined method | `Func<int,int,int>(accCurried)` | direct | direct | 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 46, 48, 50 |
 | extension member (receiver bound as `Target`) | `Func<int,int,int>(fun a b -> h.Combine(a, b))` | closure | direct | 52 |
-| partial application — no CLR closed form (fixes a receiver + an argument, or ≥2 args) | `Action<int,int>(handler3 1)` | closure | closure | 37, 38, 39, 40, 41 |
+| partial application — no CLR closed form (fixes ≥2 leading args, or a single *value-type* argument) | `Action<int,int>(handler3 1)` | closure | closure | 37, 38, 39, 40, 41 |
 | not a transparent forwarding — first-class value, computed arg, reordered args, upcast coercion | `Action<int,int>(handler)` | closure | closure | 42, 43, 44, 45 |
 | byref-parameter delegate (mutating body) | `DByref(fun x -> x <- x + 1)` | closure | closure | 53 |
 | extension member on a value-type receiver (no closed form) | `Func<int,int,int>(fun a b -> (3).Echo(a, b))` | closure | closure | 54 |
@@ -142,7 +140,7 @@ The recognizer runs only in `IlxGen` (IL emission). Quotations, `FSharp.Compiler
   * `Delegate.Target`
   * `delegate.Method.GetParameters()`
   * `Delegate.Equals`/`GetHashCode` (and thus `Delegate.Combine`/`Delegate.Remove`, event add/remove, and delegate de-duplication) now compare by the real `(Method, Target)`. Two delegates built from the same method+receiver may now be equal where previously they were not. Removing an event handler created from the same method now succeeds where it might previously have failed.
-  * **Evaluation timing.** The receiver is evaluated exactly once, at construction, in both forms (the count is unchanged), and throwing function positions and side-effecting/mutable receivers are deliberately kept as closures. The one shift is a **`null` instance receiver**, which now faults at *construction* rather than at first `Invoke` — `ArgumentException` for a non-virtual target, `NullReferenceException` for a virtual one, matching C#. This cannot be guarded (nullness is not statically known); see *Receiver evaluation — correctness guard*.
+  * **Evaluation timing.** For the cases made direct the receiver is provably effect-free, so evaluating it once at construction (the direct form) rather than on every `Invoke` (the closure form of an eta-lambda) is unobservable — the *observable* evaluation count is unchanged. Throwing function positions and side-effecting/mutable receivers are deliberately kept as closures. The one shift is a **`null` instance receiver**, which now faults at *construction* rather than at first `Invoke` — `ArgumentException` for a non-virtual target, `NullReferenceException` for a virtual one, matching C#. This cannot be guarded (nullness is not statically known); see *Receiver evaluation — correctness guard*.
 * **Previous compilers encountering this as source code:** there is no new syntax; the feature only changes code generation under the preview flag, so older compilers compile the same source to the existing closure form.
 * **Previous compilers encountering compiled binaries:** delegates in such binaries have a different `Method`/`Target`, but no surface/type-level change — consumers compile and run unchanged.
 * **FSharp.Core:** no change.
