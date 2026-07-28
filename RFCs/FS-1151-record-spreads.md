@@ -242,7 +242,7 @@ Typing for record type spreading is source-directed: a record type definition's 
 
 Typing for record expression spreading is bidirectional, but target-biased: a known target type fixes the required shape, while the spread sources participate in target type inference in the absence of a known target.
 
-Only record fields participate in spreads: other instance, static, or extension members are ignored.
+Only record fields participate in record-to-record spreads: other instance, static, or extension members are ignored.
 
 ### The field composition model for spreads
 
