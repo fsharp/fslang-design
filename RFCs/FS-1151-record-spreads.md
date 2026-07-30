@@ -824,9 +824,6 @@ This proposal combines these and adds target-directed functional _construction_ 
 | `...` occurs in an unsupported construct, such as a list, array, sequence/computation expression, or constructor-shaped record expression | **FS3902 — error:** "Spreading is not supported in this construct." |
 | A spread is put before `with`, as in `{ ...r with A = x }` or `{\| ...r with A = x \|}` | **FS3903 — error:** "Spreading is not supported in this position. Use one of the forms `{ ...expr1; A = expr2 }` or `{ expr1 with A = expr2 }` instead." |
 | A normal copy-and-update already has a `with` source and its update fields also contain a spread, e.g. `{ r with ...s }` | **FS3904 — error:** "Spread expressions and 'with' cannot be used together in the same copy-and-update expression." |
-| In a record type definition, a spread occurs to the right of another spread that contributes a field with the same name | **FS3905 — informational warning:** "Spread field '…' from type '…' shadows a field with the same name from an earlier spread." |
-| In a record type definition or a nominal or anonymous record expression, an explicit field occurs to the right of a spread that contributes a field with the same name | **FS3906 — informational warning:** "Explicit field '…' shadows a field with the same name from an earlier spread." |
-| In a nominal or anonymous record expression, a spread occurs to the right of another spread that contributes a field with the same name | **FS3907 — informational warning:** "Spread field '…' shadows a field with the same name from an earlier spread." |
 
 ## Tooling
 
