@@ -34,7 +34,7 @@ References documentation held in an external XML file. `file` names the file (re
 let myFunction x = x
 ```
 
-Multiple `<include>` tags may appear in one comment, and an included fragment may itself contain `<include>` (expanded recursively; circular includes are detected). Expansion happens when XML docs are emitted (`--doc:<file>`); the IDE resolves includes in-memory for Quick Info.
+Multiple `<include>` tags may appear in one comment, and an included fragment may itself contain `<include>` (expanded recursively; circular includes are detected). Expansion happens when XML docs are emitted (`--doc:<file>`). In-editor Quick Info does not expand includes in this initial support; doing so in-memory is a possible follow-up (see Unresolved questions).
 
 ## `<inheritdoc>` Tag
 
@@ -101,4 +101,5 @@ N/A. No numeric/date/currency formatting is involved.
 
 # Unresolved questions
 
+- Whether in-editor Quick Info should expand `<include>` in-memory (as `<inheritdoc>` requires), so the editor shows the same content as the emitted XML. This initial `<include>` support resolves only at `--doc` emit time.
 - Whether to also provide C#/VS-style automatic (tag-less) inheritance in the IDE for undocumented overrides/implementations.
