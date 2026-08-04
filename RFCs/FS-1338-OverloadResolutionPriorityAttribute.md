@@ -1,319 +1,121 @@
-# F# RFC FS-1338-OverloadResolutionPriorityAttribute Support
+# F# RFC FS-1338 - OverloadResolutionPriorityAttribute support
 
-This partially addresses [Use an Attribute to specify overload resolution priority](https://github.com/fsharp/fslang-suggestions/issues/821) which existed before the NET attribute was added. With .NET9+, it is more on the "interop" side, even though there might be legitimate pure-F# usage scenarios.
+This RFC adds F# support for `System.Runtime.CompilerServices.OverloadResolutionPriorityAttribute`, introduced in .NET 9 for C# 13. It partially addresses the suggestion [Use an attribute to specify overload resolution priority](https://github.com/fsharp/fslang-suggestions/issues/821). This RFC covers the interop part, which is consuming and authoring the .NET attribute. It does not cover the broader F#-only priority mechanism that the suggestion also discusses.
 
-This RFC covers the detailed proposal for this suggestion.
-
-- [ ] [Related suggestion - Use an Attribute to specify overload resolution priority](https://github.com/fsharp/fslang-suggestions/issues/821)
-- [ ] No dedicated suggestion
+- [x] [Suggestion #821](https://github.com/fsharp/fslang-suggestions/issues/821) (partially addressed; remains open)
 - [ ] Approved in principle
-- [ ] [Prototype impl](https://github.com/dotnet/fsharp/pull/19277)
-- [ ] [No Discussion](https://github.com/fsharp/fslang-design/discussions/FILL-ME-IN)
+- [x] [Implementation](https://github.com/dotnet/fsharp/pull/19277)
+- [ ] [Discussion](https://github.com/fsharp/fslang-design/discussions/FILL-ME-IN)
 
-**C# Reference:** [csharplang proposal csharp-13.0/overload-resolution-priority.md](https://github.com/dotnet/csharplang/blob/main/proposals/csharp-13.0/overload-resolution-priority.md)
+**C# reference:** [csharplang proposal csharp-13.0/overload-resolution-priority.md](https://github.com/dotnet/csharplang/blob/main/proposals/csharp-13.0/overload-resolution-priority.md)
 
 # Summary
 
-This RFC proposes F# support for `System.Runtime.CompilerServices.OverloadResolutionPriorityAttribute`, a .NET 9 attribute that allows API authors to explicitly prioritize overloads. This enables F# to interoperate correctly with .NET libraries that use this attribute and allows F# library authors to use the same API evolution patterns as C#.
+F# honours `OverloadResolutionPriorityAttribute` during method overload resolution. Among the applicable candidates that share a declaring type, those below the highest priority in that type are pruned before F#'s betterness rules run. The default priority is `0`; a higher value wins, and a negative value deprioritises. This lets F# consume .NET 9+ APIs such as `Debug.Assert` and `MemoryExtensions` with the selection their authors intended for C#, and lets F# authors annotate their own overloads. The feature is gated behind `--langversion:preview`.
 
 # Motivation
 
-## The Problem: API Evolution and Obsolescence
+Library authors often add a preferred overload beside an existing one while keeping binary compatibility. The new overload is usually equally applicable, which causes an ambiguity or the wrong selection. `ObsoleteAttribute` does not help, because obsolete members still take part in resolution.
 
-Library authors frequently need to evolve APIs while maintaining binary compatibility. When adding a new, preferred overload alongside an existing one, the author wants callers to use the new version, but:
-
-1. **Ambiguity errors prevent adoption**: If the new overload is equally applicable, callers get compile errors
-2. **ObsoleteAttribute is insufficient**: Marking the old method obsolete doesn't remove it from overload resolution—it can still cause ambiguity
-3. **Extension method ordering is fragile**: The current workaround of splitting overloads across modules relies on implicit open-ordering, which is brittle and poorly discoverable
-
-### Real-World BCL Examples
-
-The .NET BCL has adopted `OverloadResolutionPriorityAttribute` in .NET 9. Here are verified examples from dotnet/runtime:
-
-**Debug.Assert** (`System.Diagnostics.Debug`):
-```csharp
-// Deprioritize the parameterless overload so compiler prefers the 
-// [CallerArgumentExpression] overload which provides automatic assertion message
-[OverloadResolutionPriority(-1)]  // lower priority than overload with message
-public static void Assert([DoesNotReturnIf(false)] bool condition) =>
-    Assert(condition, string.Empty, string.Empty);
-
-public static void Assert(
-    [DoesNotReturnIf(false)] bool condition,
-    [CallerArgumentExpression(nameof(condition))] string? message = null) =>
-    Assert(condition, message, string.Empty);
-```
-
-This enables `Debug.Assert(x > 0)` to automatically report `"x > 0"` as the assertion message.
-
-> **Note:** `CallerArgumentExpression` support in F# is tracked by [RFC FS-1149](https://github.com/fsharp/fslang-design/blob/main/RFCs/FS-1149-support-CallerArgumentExpression.md).
-
-**MemoryExtensions.Contains** (`System.MemoryExtensions`):
-```csharp
-// Deprioritize Span<T> to prefer ReadOnlySpan<T> 
-// (avoids ambiguity since Span implicitly converts to ROS)
-[OverloadResolutionPriority(-1)]
-public static bool Contains<T>(this Span<T> span, T value) where T : IEquatable<T>? =>
-    Contains((ReadOnlySpan<T>)span, value);
-
-public static bool Contains<T>(this ReadOnlySpan<T> span, T value) where T : IEquatable<T>?
-{ ... }
-```
-
-Many `MemoryExtensions` methods use this pattern to resolve Span/ReadOnlySpan ambiguity.
-
-# Detailed Design
-
-## Attribute Semantics
-
-`System.Runtime.CompilerServices.OverloadResolutionPriorityAttribute` is a .NET 9 attribute that takes an integer priority value:
-
-- **Default priority**: 0 (when attribute is not present)
-- **Higher values**: More preferred
-- **Negative values**: Explicitly deprioritized (useful for deprecation without breaking binary compatibility)
-
-## Algorithm Integration
-
-The priority attribute is evaluated **before** the "better function member" comparison. Per the C# specification, the process is:
-
-1. Identify applicable candidates
-2. **Group candidates by declaring type**
-3. **Within each group, filter to highest priority only**
-4. Recombine groups
-5. Apply "better function member" rules
-
-### Relationship to F# Language Specification
-
-The F# Language Specification ([§14.4 Method Application Resolution](https://fsharp.github.io/fsharp-spec/method-application-resolution.html)) defines method resolution in step 7, which selects a unique candidate by applying criteria in order:
-
-1. Prefer candidates that do not constrain user-introduced generic type annotations
-2. Prefer candidates that do not use ParamArray conversion
-3. Prefer candidates that do not have implicitly returned formal args
-4. Prefer candidates that do not have implicitly supplied formal args  
-5. Prefer candidates with more specific actual argument types
-6. Prefer candidates that are not extension members (spec §14.4, step 7.6)
-7. For extension members, prefer the most recent `open` (spec §14.4, step 7.7)
-8. Prefer candidates that are not generic
-
-**OverloadResolutionPriority operates as a pre-filter before these rules.** Candidates with lower priority within the same declaring type are removed before any of the above comparisons occur. This matches C# behavior and ensures author intent takes precedence.
-
-## Inheritance Semantics
-
-Following C# precedent:
-- Priority is read from the **least-derived declaration** of a member
-- Overrides do **not** inherit or override the priority
-- Applying the attribute to an override is an error
+.NET 9 added the attribute and the BCL uses it. The canonical example is `Debug.Assert`, whose one-argument overload is deprioritised in favour of the overload that carries a `CallerArgumentExpression`. F# must honour the attribute, or F# callers resolve these APIs differently from C#.
 
 ```fsharp
-type Base() =
-    [<OverloadResolutionPriority(1)>]
-    abstract member M : unit -> unit
-    default _.M() = ()
+open System.Runtime.CompilerServices
+type FSharpWithORP =
+    [<OverloadResolutionPriority(2)>]
+    static member Greet(o: obj) = "obj"
+    static member Greet(s: string) = "string"
+// Greet "hello" resolves to the obj overload (priority 2 > 0), even though string is more specific.
+```
 
+# Detailed design
+
+## Attribute semantics
+
+The priority of a method is a 32-bit integer; a higher value is preferred and a negative value deprioritises. The priority is `0` when the attribute is absent, when the target runtime does not define it, or when the method is an F# override, a default struct constructor, or a type-provider method. For a C# or IL method the priority is read from the attribute on the definition. For an F# method it is read from the member's own attributes.
+
+## The pre-filter
+
+Priority acts as a pre-filter before betterness, mirroring C#. Overload resolution proceeds as follows.
+
+1. Guard first. The pre-filter runs only when the feature is on and some candidate has a non-zero priority. Otherwise resolution continues unchanged, with no extra work.
+2. Otherwise, take the applicable candidates and prune them. Group the applicable candidates by declaring type, keep each group's maximum priority, and recombine, so that the working set is restricted to the survivors. If no candidate is applicable, keep the full set, so that "no overloads match" diagnostics stay complete.
+3. Continue with the existing pipeline: exact match, applicability, and betterness.
+
+Three properties follow.
+
+- **Scoped per declaring type.** Members in different declaring types are never compared by priority; ordinary betterness decides between them. So two extension methods in different static classes are independent, while two in the same class share a group, as do the static and instance members of one type.
+- **Applicability gates pruning.** Only applicable candidates are pruned, so an inapplicable high-priority overload never shadows an applicable lower-priority one:
+  ```fsharp
+  type C() =
+      [<OverloadResolutionPriority(1)>] member _.M(s: string) = "string"
+      member _.M(i: int) = "int"
+  // C().M 42 = "int": the string overload is inapplicable, so it never prunes the int one.
+  ```
+- **Equal priority falls through.** When the survivors share the top priority, betterness decides between them as usual, and can still end in `FS0041`.
+
+## Override and interface semantics
+
+- Applying the attribute to an F# override or an explicit interface implementation is an error, **FS3586**, raised during member checking when the feature is on. It is accepted silently when the feature is off.
+- An F# override therefore never carries its own priority, and its effective priority is `0`. For a C# or IL override, where C# also forbids the attribute on the override, F# reads the priority from the base declaration that the override resolves to, which matches C#. The one divergence is an F# override of an already-prioritized base member: its effective priority is still `0`, so a call resolved against it does not see the base priority.
+- Every F# interface implementation is explicit, so the attribute cannot sit on the implementing member. The priority lives on the interface member's declaration, and the implementation's effective priority is `0`. F# has no implicit interface implementations, so C#'s handling of those has no F# counterpart.
+
+```fsharp
 type Derived() =
     inherit Base()
-    // Error: Cannot apply OverloadResolutionPriority to override
-    // [<OverloadResolutionPriority(2)>] 
-    override _.M() = ()
+    [<OverloadResolutionPriority(1)>]   // FS3586: apply it to the original declaration instead
+    override _.DoWork(x: int) = "derived"
 ```
 
-### Extension Method Semantics
+# Changes to the F# spec
 
-Per the F# Language Specification ([§8.14 Type Extensions](https://fsharp.github.io/fsharp-spec/type-definitions.html#type-extensions)), extension members are resolved via the `ExtensionsInScope` table during name resolution for members (§14.1.6). The spec states that "regular members are preferred to extension members" and that resolution between extension members uses open ordering.
+This inserts a pre-filter before the "choose a unique best candidate" step of [§14.4](https://fsharp.github.io/fslang-spec/) step 7. The published rules 1 to 8, and, under preview, FS-1340's rule 9, are unchanged and run afterwards on the survivors.
 
-Priority filtering applies **within each declaring type** before cross-type comparison:
-
-```fsharp
-open System.Runtime.CompilerServices
-
-module Extensions1 =
-    type System.String with
-        [<OverloadResolutionPriority(1)>]
-        member s.Process(x: obj) = "Ext1 obj"
-        
-        member s.Process(x: int) = "Ext1 int"
-
-module Extensions2 =
-    type System.String with
-        member s.Process(x: int) = "Ext2 int"
-
-open Extensions1
-open Extensions2
-
-// When calling "test".Process(42):
-// 1. Within Extensions1: Process(obj) has priority 1, Process(int) has priority 0
-//    → only Process(obj) survives the priority filter
-// 2. Extensions2.Process(int) remains (no priority competition within Extensions2)
-// 3. Standard F# resolution rules apply between surviving candidates
+```diff
+ 7. Choose a unique M~possible:
+    - Determine applicability of each candidate ...
++   - OverloadResolutionPriority pre-filter (feature on and some applicable candidate has non-zero
++     priority): group applicable candidates by declaring type; within each group discard those
++     below the group's maximum priority; recombine. For a C#/IL override the priority is that of
++     its least-derived declaration; an F# override has priority 0. If none is applicable, leave the
++     set unchanged.
+    - If a unique applicable candidate exists choose it; otherwise apply criteria 1)-8) (and rule 9).
 ```
 
-## Interaction with Existing Resolution Rules
-
-Per the F# Language Specification §14.4, method application resolution applies a series of preference rules after determining applicable candidates. The priority attribute is evaluated as a **pre-filter** before these rules:
-
-1. First, candidates are grouped by declaring type
-2. Within each group, only the highest-priority candidates survive
-3. Then all preference rules from §14.4 step 7 apply (ParamArray, extension preference, genericity, etc.)
-
-This ensures author intent is honored: if an API author explicitly marks an overload as preferred, that choice takes precedence before the spec's ordering rules are consulted.
-
-## Diagnostics
-
-A new informational diagnostic (off by default) could report when priority affects resolution:
-
-| Code | Message | Default |
-|------|---------|---------|
-| FS3577 | "Overload resolution selected '%s' because it has higher OverloadResolutionPriority (%d) than '%s' (%d)." | Off |
-
-# Test Cases
-
-The following examples demonstrate scenarios where `OverloadResolutionPriorityAttribute` affects resolution. Each example shows the expected behavior once this RFC is implemented.
-
-## Basic Priority Selection
-
-```fsharp
-open System.Runtime.CompilerServices
-
-type Api =
-    [<OverloadResolutionPriority(1)>]
-    static member Call(x: obj) = "high-priority"
-    
-    static member Call(x: string) = "default-priority"
-
-// With this RFC: Api.Call("test") returns "high-priority"
-// The obj overload has higher priority (1 > 0), so it wins despite string being more specific.
-```
-
-## Negative Priority (Deprecation Pattern)
-
-```fsharp
-open System.Runtime.CompilerServices
-
-type Parser =
-    static member Parse(s: string) = "preferred"
-    
-    [<OverloadResolutionPriority(-1)>]
-    static member Parse(s: string, ?provider: System.IFormatProvider) = "legacy"
-
-// With this RFC: Parser.Parse("42") returns "preferred"
-// The legacy overload is deprioritized (-1 < 0), steering callers to the new API.
-```
-
-## Priority vs. Specificity
-
-```fsharp
-open System.Runtime.CompilerServices
-
-type Processor =
-    [<OverloadResolutionPriority(1)>]
-    static member Run<'T>(x: 'T) = "generic-high-priority"
-    
-    static member Run(x: int) = "specific-default-priority"
-
-// With this RFC: Processor.Run(42) returns "generic-high-priority"
-// Priority filtering (1 > 0) happens before specificity comparison.
-```
-
-## Extension Method Grouping
-
-```fsharp
-open System.Runtime.CompilerServices
-
-module Extensions1 =
-    type System.String with
-        [<OverloadResolutionPriority(1)>]
-        member s.Transform(x: obj) = sprintf "Ext1 obj: %O" x
-        
-        member s.Transform(x: int) = sprintf "Ext1 int: %d" x
-
-module Extensions2 =
-    type System.String with
-        member s.Transform(x: int) = sprintf "Ext2 int: %d" x
-
-open Extensions1
-open Extensions2
-
-// With this RFC: "test".Transform(42) returns "Ext2 int: 42"
-//
-// Resolution steps:
-// 1. Within Extensions1: Transform(obj) has priority 1, Transform(int) has priority 0
-//    → only Transform(obj) survives the priority filter
-// 2. Within Extensions2: Transform(int) has priority 0, no filtering needed
-// 3. Candidates: Extensions1.Transform(obj) vs Extensions2.Transform(int)
-// 4. Extensions2.Transform(int) wins because int is more specific than obj
-```
-
-## Override Error
-
-```fsharp
-open System.Runtime.CompilerServices
-
-type Base() =
-    [<OverloadResolutionPriority(1)>]
-    abstract member M : unit -> unit
-    default _.M() = ()
-
-type Derived() =
-    inherit Base()
-    [<OverloadResolutionPriority(2)>]  // ERROR: Cannot apply to override
-    override _.M() = ()
-
-// The attribute on override should produce a compile error.
-// Priority is read from the least-derived declaration only.
-```
-
-## Interface Implementation (Priority Not Inferred)
-
-```fsharp
-open System.Runtime.CompilerServices
-
-type IProcessor =
-    [<OverloadResolutionPriority(1)>]
-    abstract member Process : int -> string
-
-type MyProcessor() =
-    interface IProcessor with
-        member _.Process(x) = "impl"
-
-// The implementation has priority 0 (default), not 1.
-// Priority is not inferred from interface definitions.
-```
+The compiler applies further betterness preferences that are not written in the published spec. All of them run after this pre-filter and before FS-1340's most-concrete rule.
 
 # Drawbacks
 
-- **Complexity**: Adds another dimension to overload resolution that developers must understand.
-
-- **C#-centric design assumptions**: The attribute was designed for C# implicit conversions. F#'s type-directed conversions (op_Implicit, numeric widening, Span/ReadOnlySpan) cover most BCL ORPA patterns, so real-world BCL APIs (Debug.Assert, MemoryExtensions) work correctly. However, C# has implicit constant expression narrowing (e.g., literal `42` can convert to `byte`) that F# lacks. If a C# library uses ORPA to prefer `Method(byte)` over `Method(int)`, C# consumers compile while F# consumers get a type mismatch error. This is by design — the library author's intent is "don't call the int overload," and F# correctly reports it cannot satisfy the preferred overload rather than silently ignoring the author's priority.
-
-- **Potential for abuse**: Library authors could use priority to force unintuitive selections. However, this is an explicit choice by the library author, not an accident.
-
+- The attribute adds a dimension that developers must understand when reading an annotated API.
+- F#'s conversions (`op_Implicit`, widening, `Span`) cover the common BCL patterns, but lack C#'s implicit constant narrowing, so the applicable set can differ between the two languages. Because pruning is over applicable candidates only, a high-priority overload that is applicable in C# but not in F# does not produce an error. F# falls back to the highest-priority applicable overload, which may be a different member than C# selects, and only reports "no overloads match" when nothing applies.
+- Priority can be misused to force unintuitive selections, though the annotation is explicit in the source.
 
 # Alternatives
 
-## 1. Do Nothing
+- **Ignore the attribute.** Rejected, because F# would then resolve annotated .NET 9+ APIs differently from C#.
+- **A separate F#-only priority mechanism.** This is the broader ambition of the suggestion, for example a derived-over-base priority in trait calls. It is out of scope here, and the suggestion stays open for it.
 
-F# could ignore `OverloadResolutionPriorityAttribute` entirely.
+# Prior art
 
-**Rejected:** This would cause interoperability problems with .NET 9+ libraries. The BCL already uses this attribute extensively (e.g., `Debug.Assert`, `MemoryExtensions`). Without support, F# users would experience different overload resolution behavior than C# users when calling the same APIs, leading to confusion and potential ambiguity errors that C# users don't encounter.
-
-# Prior Art
-
-- **C# 13.0**: Implemented as part of [Overload Resolution Priority](https://github.com/dotnet/csharplang/blob/main/proposals/csharp-13.0/overload-resolution-priority.md)
-- **.NET BCL**: Already uses the attribute in `Debug.Assert`, `MemoryExtensions`, and other types
-- **Roslyn**: Full implementation in the C# compiler
+C# 13 and .NET 9 introduced [Overload Resolution Priority](https://github.com/dotnet/csharplang/blob/main/proposals/csharp-13.0/overload-resolution-priority.md), which updates §12.6.4.1 to group the applicable set by declaring type, drop members below the per-group maximum, and then apply the better-function-member rules. This RFC follows that shape, and the BCL is already annotated (`Debug.Assert`, `MemoryExtensions`). The corner cases adopted here follow the C# proposal and are covered in the detailed design above.
 
 # Compatibility
 
-* Is this a breaking change?
+This is not a binary break. It changes resolution only for code that references annotated members, in the direction the author intended, and only under the preview feature. Older compilers accept the attribute but ignore it during resolution, and do not raise FS3586. The attribute is metadata only, with no runtime impact, and FSharp.Core is unchanged.
 
-Not binary breaking.
-It does affect method resolution - the break will follow intentions of the type's author.
+# Interop
 
-* What happens when previous versions of the F# compiler encounter this design addition as source code?
+- **Consumed by another .NET language.** F# emits the standard attribute on annotated members, so C# and any other language that honours it see the same priority.
+- **Related features.** This is the F# side of C# 13's feature, and the two are designed to agree, so an annotated library resolves the same way from both languages for method and constructor calls. Two cases diverge. Indexer access is one: F# resolves indexers by ordinary specificity and ignores priority, even when the applicable set is identical (see [Unresolved questions](#unresolved-questions)). A call that relies on a C#-only conversion is the other: there the applicable set itself differs (see [Drawbacks](#drawbacks)).
 
-The attribute is silently ignored. Overload resolution proceeds as before.
+# Pragmatics
 
-* What happens when previous versions of the F# compiler encounter this design addition in compiled binaries?
+- **Diagnostics.** FS3586 only, for the attribute on an override or explicit interface implementation. There is no "selected X by priority" message; when pruning leaves an ambiguity the ordinary `FS0041` fires and lists the survivors.
+- **Tooling and culture-aware formatting.** Not applicable.
+- **Performance.** The guard and fast path make the feature a no-op unless a non-zero priority is present. Otherwise the grouping is linear in the size of the candidate group. Applicability may be computed twice for an annotated group, once to prune and once on the survivors, bounded by the group size.
+- **Scaling.** Linear in the number of candidates in a method group.
 
-The attribute metadata is ignored. No runtime impact.
+# Unresolved questions
 
+- **Indexers.** F# ignores priority on C# indexers and resolves them by specificity. Whether it should honour priority there is open.
+- Whether F# should later add the broader, F#-only priority mechanism the suggestion describes, for example a derived-over-base priority in trait calls.
