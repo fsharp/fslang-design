@@ -8,14 +8,14 @@ These design suggestions:
 have been marked "approved in principle". This RFC covers the detailed proposal for these
 
 * [x] Approved in principle
-* [x] [Discussion](https://github.com/fsharp/fslang-design/issues/435)
-* [x] [Implementation](https://github.com/dotnet/fsharp/pull/8404)
+* [ ] [Discussion](https://github.com/fsharp/fslang-design/discussions/FILL-ME-IN)
+* [x] [Implementation](https://github.com/dotnet/fsharp/pull/19602) (continues the original prototype [#8404](https://github.com/dotnet/fsharp/pull/8404))
 
 
 # Summary
 [summary]: #summary
 
-Extension methods are previously ignored by SRTP constraint resolution.  This RFC means they are taken into account.
+Extension members were previously ignored by SRTP constraint resolution.  This RFC means they are taken into account.
 
 For example, consider
 ```fsharp
@@ -31,16 +31,18 @@ Prior to this RFC the result is:
 foo.fs(2,21): warning FS1215: Extension members cannot provide operator overloads.  Consider defining the operator as part of the type definition instead.
 foo.fs(4,16): error FS0001: The type 'int' does not match the type 'string'
 ```
-With this RFC, the code compiles.
+With this RFC, the code compiles. A type extension may declare an operator for a type of restricted accessibility, including an `internal` type, which is the second half of suggestion #230.
 
-In addition, this RFC adds an attribute `AllowOverloadOnReturnTypeAttribute` to FSharp.Core to implement suggestion [Consider the return type in overload resolution](https://github.com/fsharp/fslang-suggestions/issues/820). If this is present on any applicable overloads in a method overload resolution, then the return type is also checked/unified when determining overload resolution.  Previously, only methods named `op_Explicit` and `op_Implicit` where given this treatment.
+In addition, this RFC adds an attribute `AllowOverloadOnReturnTypeAttribute` to FSharp.Core to implement suggestion [Consider the return type in overload resolution](https://github.com/fsharp/fslang-suggestions/issues/820). If this is present on any applicable overloads in a method overload resolution, then the return type is also checked/unified when determining overload resolution.  Previously, only methods named `op_Explicit` and `op_Implicit` were given this treatment.
 
-In addition, this RFC makes small technical modifications to the process of solving SRTP constraints.  These will be documented in further  sections of this RFC.
+This RFC also modifies the process of solving SRTP constraints, as described in the sections below.
 
 # Motivation
 [motivation]: #motivation
 
-It is reasonable to use extension methods to retrofit operators and other semantics on to existing types. This "completes the picture" as extension methods in a natural way.
+It is reasonable to use extension methods to retrofit operators onto existing types. This removes the asymmetry where ordinary members could be added via a type extension but operators could not participate in the generic inline code that consumes them.
+
+This RFC also bundles two smaller changes that share the same resolution machinery: return-type-directed overload resolution (previously reserved for `op_Explicit`/`op_Implicit`), exposed through the `AllowOverloadOnReturnTypeAttribute`; and the ability to write type extensions directly on tuple types.
 
 
 # Detailed design
@@ -53,13 +55,63 @@ The proposed change is as follows, in the internal logic of the constraint solvi
 
 1. During constraint solving, the record of each SRTP constraint incorporates the relevant extension methods in-scope at the point the SRTP constraint is asserted. That is, at the point a generic construct is used and "freshened".  The accessibility domain (i.e. the information indicating accessible methods) is also noted as part of the constraint.  Both of these pieces of information are propagated as part of the constraint. We call these the *trait possible extension solutions* and the *trait accessor domain*
 
-2. When checking whether one unsolved SRTP constraint A *implies* another B (note: this a process used to avoid asserting duplicate constraints when propagating a constraint from one type parameter to another - see `implies` in `ConstraintSolver.fs`), both the possible extension solutions and the accessor domain of A are ignored, and those of the existing asserted constraint are preferred.
+2. When checking whether one unsolved SRTP constraint A *implies* another B (note: this is a process used to avoid asserting duplicate constraints when propagating a constraint from one type parameter to another), both the possible extension solutions and the accessor domain of A are ignored, and those of the existing asserted constraint are preferred.
 
-3. When checking whether one unsolved SRTP constraint is *consistent* with another (note: this is a process used to check for inconsistency errors amongst a set of constraints - see `consistent` in `ConstraintSolver.fs`), the possible extension solutions and accessor domain are ignored.
+3. When checking whether one unsolved SRTP constraint is *consistent* with another (note: this is a process used to check for inconsistency errors amongst a set of constraints), the possible extension solutions and accessor domain are ignored.
 
-4. When attempting to solve the constraint via overload resolution, the possible extension solutions which are accessible from the trait accessor domain are taken into account.  
+4. When attempting to solve the constraint via overload resolution, the possible extension solutions which are accessible from the trait accessor domain are taken into account.  An extension member that is not accessible at the use site (for example a `private` or `internal` member outside its declaring scope) is never selected, so extension members do not act as hidden witnesses for code that cannot access them.
 
 5. Built-in constraint solutions for things like `op_Addition` constraints are applied if and when the relevant types match precisely, and are applied even if some extension methods of that name are available.
+
+## Return-type-directed overload resolution
+
+This RFC adds `AllowOverloadOnReturnTypeAttribute` to FSharp.Core:
+
+```fsharp
+[<AttributeUsage(AttributeTargets.Method, AllowMultiple = false)>]
+[<Sealed>]
+type AllowOverloadOnReturnTypeAttribute =
+    inherit System.Attribute
+    new: unit -> AllowOverloadOnReturnTypeAttribute
+```
+
+When at least one applicable overload in a method group carries this attribute and an expected
+return type is available at the call site, that expected type is unified with each candidate's
+declared return type during overload resolution, and candidates whose return type does not unify
+are discarded. This is the treatment previously reserved for `op_Explicit` and `op_Implicit`, now
+available to any method. When no expected return type is known, resolution is unchanged.
+
+```fsharp
+type Converter =
+    [<AllowOverloadOnReturnType>] static member Convert (x: string) : int = int x
+    [<AllowOverloadOnReturnType>] static member Convert (x: string) : float = float x
+
+let a : int   = Converter.Convert "42"   // selects the int-returning overload
+let b : float = Converter.Convert "42"   // selects the float-returning overload
+```
+
+The same resolution applies when the call is reached through an inline SRTP constraint.
+
+Unlike the rest of this RFC, this attribute is not gated by `--langversion:preview`: it takes
+effect wherever the referenced FSharp.Core defines it.
+
+## Tuple type extensions
+
+As part of this implementation, type extensions may be written directly on tuple types using
+tuple syntax. The tuple type in the augmentation position is rewritten to its underlying named
+type: a reference tuple `type ('T1 * 'T2) with ...` extends `System.Tuple<'T1, 'T2>`, and a
+struct tuple `type struct ('T1 * 'T2) with ...` extends `System.ValueTuple<'T1, 'T2>`. This lets
+extension operators/members (including those participating in SRTP resolution) be attached to
+tuple types. The capability is gated behind the same preview language feature as the rest of this
+RFC; below preview the syntax parses but is rejected with a feature-availability diagnostic.
+
+```fsharp
+type (int * string) with
+    static member Combined (t: int * string) = fst t + (snd t).Length
+```
+
+Tuples of any arity are supported by mapping to the corresponding `System.Tuple` or
+`System.ValueTuple` shape, including arities above seven where the underlying type is nested.
 
 ## Weak resolution no longer forces overload resolution for SRTP constraints prior to generalizing `inline` code
 
@@ -83,7 +135,7 @@ Prior to this RFC, `f1` is generalized to **non-generic** code, and `f2` is corr
 val inline f1 : x:DateTime -> y:TimeSpan -> DateTime
 val inline f2 : x:DateTime -> y: ^a ->  ^b  when (DateTime or  ^a) : (static member ( - ) : System.DateTime * ^a ->  ^b)
 ```
-Why?  Well, prior to this RFC, generalization invokes "weak resolution" for both inline and non-inline code.  This caused
+This happens because prior to this RFC, generalization invokes "weak resolution" for both inline and non-inline code.  This caused
 overload resolution to be applied even though the second parameter type of "y" is not known.
 
 * In the first case, overload resolution for `op_Addition` succeeded because there is only one overload.
@@ -102,6 +154,9 @@ val inline f1 : x:DateTime -> y: ^a ->  ^b when (DateTime or  ^a) : (static memb
 Some signatures files may need to be updated to account for this change.
 
 
+
+
+
 # Drawbacks
 [drawbacks]: #drawbacks
 
@@ -110,172 +165,126 @@ Some signatures files may need to be updated to account for this change.
 # Alternatives
 [alternatives]: #alternatives
 
-1. Don't do it
+1. Don't do it. Extension operators would continue to be rejected as SRTP witnesses (FS1215), and return-type-directed overload resolution would remain available only through the dummy-parameter workaround described in suggestion #820.
 
 
 # Examples
 
-## Widening to specific type
+The Summary shows the core case: an in-scope extension operator solves an operator application that
+previously failed with FS1215/FS0001.
 
-**NOTE: this is an example of what is allowed by this RFC, but is not necessarily recommended for standard F# coding. In particular error messages may degrade for existing code, and extensive further prelude definitions would be required to give a consistent programming model.**
+## Out of scope: cross-type widening and return-type-polymorphic conversion
 
-By default `1 + 2.0` doesn't check in F#.  By using extension members to provide additional overloads for addition you can make this check.  Note that the set of available extensions determines the "numeric hierarchy" and is used to augment the operators, not the actual numeric types themselves.
+Two patterns that extension SRTP might appear to enable are deliberately not supported, because an
+applicable built-in operator solution is always preferred to an extension member (design point 5).
+
+Cross-type numeric widening, such as making `1 + 2L` check by adding `(+)` overloads through
+extensions, does not work: `1 + 2L` resolves the built-in `int (+)`, which forces both operands to
+`int` and rejects `2L` with `error FS0001: The type 'int64' does not match the type 'int'`.
+
+Populating a return-type-polymorphic `op_Implicit` through extensions is likewise out of scope:
+
 ```fsharp
-
-type System.Int32 with
-    static member inline widen_to_int64 (a: int32) : int64 = int64 a
-    static member inline widen_to_single (a: int32) : single = single a
-    static member inline widen_to_double (a: int32) : double = double a
-
-type System.Single with
-    static member inline widen_to_double (a: int) : double = double a
-
-let inline widen_to_int64 (x: ^T) : int64 = (^T : (static member widen_to_int64 : ^T -> int64) (x))
-let inline widen_to_single (x: ^T) : single = (^T : (static member widen_to_single : ^T -> single) (x))
-let inline widen_to_double (x: ^T) : double = (^T : (static member widen_to_double : ^T -> double) (x))
-
-type System.Int64 with
-    static member inline (+)(a: int64, b: 'T) : int64 = a + widen_to_int64 b
-    static member inline (+)(a: 'T, b: int64) : int64 = widen_to_int64 a + b
-
-type System.Single with
-    static member inline (+)(a: single, b: 'T) : single = a + widen_to_single b
-    static member inline (+)(a: 'T, b: single) : single = widen_to_single a + b
-
-type System.Double with
-    static member inline (+)(a: double, b: 'T) : double = a + widen_to_double b
-    static member inline (+)(a: 'T, b: double) : double = widen_to_double a + b
-
-let examples() =
-
-    (1 + 2L)  |> ignore<int64>
-    (1 + 2.0f)  |> ignore<single>
-    (1 + 2.0)  |> ignore<double>
-
-    (1L + 2)  |> ignore<int64>
-    (1L + 2.0)  |> ignore<double>
-```
-
-## Defining safe conversion corresponding to `op_Implicit`
-
-**NOTE: this is an example of what is allowed by this RFC, but is not necessarily recommended for standard F# coding. In particular compiler performance is poor when resolving heavily overloaded constraints.**
-
-By default there is no function which captures the notion of .NET's safe `op_Implicit` conversion in F# (though note
-the conversion is still explicit in F# code, not implicit).
-
-You can define one like this:
-```
 let inline implicitConv (x: ^T) : ^U = ((^T or ^U) : (static member op_Implicit : ^T -> ^U) (x))
 ```
-With this RFC you can then populate this with instances for existing primitive types:
+
+A single-overload `op_Implicit` with a fixed return type does resolve through an extension member;
+only the return-type-polymorphic `(^T or ^U)` form above stays out of scope.
+
+# Interop
+
+* C# consumers see no difference: extension SRTP constraints are an F#-only concept resolved at compile time. The emitted IL is standard .NET.
+* Extension members solve structural SRTP constraints but do *not* make a type satisfy nominal static abstract interface constraints (`INumber<'T>`, `IAdditionOperators<'T,'T,'T>`, etc.). IWSAMs ([FS-1124](https://github.com/fsharp/fslang-design/blob/main/FSharp-7.0/FS-1124-interfaces-with-static-abstract-members.md)) and extension SRTP solving are orthogonal resolution mechanisms.
+
+# Pragmatics
+
+## Diagnostics
+
+* **FS1215** ("Extension members cannot provide operator overloads"): no longer emitted when the feature is enabled, because extension operators are now valid SRTP witnesses. Fires as before when the feature is disabled.
+* Overload ambiguity introduced by extension methods uses existing error codes; no additional diagnostics for that case.
+
+## Tooling
+
+* **Tooltips**: show the more generic inferred type for inline functions (e.g., `^a -> ^b when ...` instead of `int -> int`).
+* **Auto-complete**: extension operators now appear in SRTP-resolved member lists when the feature is enabled.
+* No changes to debugging, breakpoints, colorization, or brace matching.
+
+## Performance
+
+* Extension method lookup during SRTP constraint solving adds overhead proportional to the number of extension methods in scope. Compiler performance degrades when resolving heavily overloaded constraints.
+* Resolution cost is proportional to the candidate set size per constraint. Libraries such as FSharpPlus that define many overloads per operator family may observe measurable slowdown; profiling is ongoing.
+* No impact on generated code performance: the resolved call sites are identical.
+
+## Witnesses
+
+Extension members now participate as witnesses for SRTP constraints (see [RFC FS-1071](https://github.com/fsharp/fslang-design/blob/main/FSharp-5.0/FS-1071-witness-passing-quotations.md)). Quotations of inline SRTP calls may now capture extension methods as witnesses:
+
 ```fsharp
-type System.SByte with
-    static member inline op_Implicit (a: sbyte) : int16 = int16 a
-    static member inline op_Implicit (a: sbyte) : int32 = int32 a
-    static member inline op_Implicit (a: sbyte) : int64 = int64 a
-    static member inline op_Implicit (a: sbyte) : nativeint = nativeint a
-    static member inline op_Implicit (a: sbyte) : single = single a
-    static member inline op_Implicit (a: sbyte) : double = double a
+type [<Struct>] MyNum = { V: int }
 
-type System.Byte with
-    static member inline op_Implicit (a: byte) : int16 = int16 a
-    static member inline op_Implicit (a: byte) : uint16 = uint16 a
-    static member inline op_Implicit (a: byte) : int32 = int32 a
-    static member inline op_Implicit (a: byte) : uint32 = uint32 a
-    static member inline op_Implicit (a: byte) : int64 = int64 a
-    static member inline op_Implicit (a: byte) : uint64 = uint64 a
-    static member inline op_Implicit (a: byte) : nativeint = nativeint a
-    static member inline op_Implicit (a: byte) : unativeint = unativeint a
-    static member inline op_Implicit (a: byte) : single = single a
-    static member inline op_Implicit (a: byte) : double = double a
+[<AutoOpen>]
+module MyNumExt =
+    type MyNum with
+        static member inline (+) (a: MyNum, b: MyNum) = { V = a.V + b.V }
 
-type System.Int16 with
-    static member inline op_Implicit (a: int16) : int32 = int32 a
-    static member inline op_Implicit (a: int16) : int64 = int64 a
-    static member inline op_Implicit (a: int16) : nativeint = nativeint a
-    static member inline op_Implicit (a: int16) : single = single a
-    static member inline op_Implicit (a: int16) : double = double a
-
-type System.UInt16 with
-    static member inline op_Implicit (a: uint16) : int32 = int32 a
-    static member inline op_Implicit (a: uint16) : uint32 = uint32 a
-    static member inline op_Implicit (a: uint16) : int64 = int64 a
-    static member inline op_Implicit (a: uint16) : uint64 = uint64 a
-    static member inline op_Implicit (a: uint16) : nativeint = nativeint a
-    static member inline op_Implicit (a: uint16) : unativeint = unativeint a
-    static member inline op_Implicit (a: uint16) : single = single a
-    static member inline op_Implicit (a: uint16) : double = double a
-
-type System.Int32 with
-    static member inline op_Implicit (a: int32) : int64 = int64 a
-    static member inline op_Implicit (a: int32) : nativeint = nativeint a
-    static member inline op_Implicit (a: int32) : single = single a
-    static member inline op_Implicit (a: int32) : double = double a
-
-type System.UInt32 with
-    static member inline op_Implicit (a: uint32) : int64 = int64 a
-    static member inline op_Implicit (a: uint32) : uint64 = uint64 a
-    static member inline op_Implicit (a: uint32) : unativeint = unativeint a
-    static member inline op_Implicit (a: uint32) : single = single a
-    static member inline op_Implicit (a: uint32) : double = double a
-
-type System.Int64 with
-    static member inline op_Implicit (a: int64) : double = double a
-
-type System.UInt64 with
-    static member inline op_Implicit (a: uint64) : double = double a
-
-type System.IntPtr with
-    static member inline op_Implicit (a: nativeint) : int64 = int64 a
-    static member inline op_Implicit (a: nativeint) : double = double a
-
-type System.UIntPtr with
-    static member inline op_Implicit (a: unativeint) : uint64 = uint64 a
-    static member inline op_Implicit (a: unativeint) : double = double a
-
-type System.Single with
-    static member inline op_Implicit (a: int) : double = double a
+let inline add x y = x + y
+let q = <@ add { V = 1 } { V = 2 } @>  // witness is MyNumExt.(+)
 ```
+
+## Binary compatibility (pickling)
+
+The *trait possible extension solutions* and *trait accessor domain* (design points 1–4) are **not** serialized into compiled DLLs. They exist only during in-process constraint solving and are discarded before metadata emission. Consequently:
+
+* Cross-version binary compatibility is unaffected: no new fields are added to the pickled SRTP constraint format.
+* When an `inline` function is consumed from a compiled DLL, extension operators available at the *consumer's* call site are used for constraint solving, not those that were in scope when the library was compiled. This is consistent with how SRTP constraints are freshened at each use site.
+
 
 
 # Compatibility
 [compatibility]: #compatibility
 
-Status: We are trying to determine when/if this RFC is a breaking change.
+Status: This RFC **is** a breaking change. The extension-SRTP, tuple-extension, and weak-resolution changes are gated behind `--langversion:preview`. The `AllowOverloadOnReturnTypeAttribute` behavior is gated only by the presence of that attribute in the referenced FSharp.Core, not by the language version.
 
-We assume it must be a breaking change, because additional methods are taken into account in the overload resolution used in SRTP constraint resolution. That must surely cause it to fail where it would have succeeded before. However,
+**What breaks**:
+- Inferred types of inline SRTP functions become more generic when extension operators are in scope (e.g., `val inline f : int -> int` becomes `val inline f : x: ^a -> ^b when ...`). Signature files need updating.
+- A point-free binding such as `let g : int -> int = f` may stop compiling when `f` is now generic; rewrite it in expanded form, for example `let g x = f x`.
+- Extension methods in SRTP resolution may introduce new overload ambiguity at call sites, including concretely-typed ones where a new extension candidate is in scope.
+- The set of functions whose non-inline invocation throws `NotSupportedException` at runtime grows: previously, weak resolution eagerly picked a concrete implementation; now the constraint may stay open, and the non-witness fallback method body throws.
+- `AllowOverloadOnReturnTypeAttribute` changes overload resolution behavior: when present on any applicable overload, the return type is unified during resolution. Existing code relying on the current resolution order (which ignores return types except for `op_Explicit`/`op_Implicit`) may select a different overload or become ambiguous.
 
-1. All the new methods are extension methods, which are lower priority in overload resolution
+**What does NOT break**:
+- Concrete operator uses with no extension operators in scope are unaffected. (Inline function *definitions* may still gain a more generic inferred signature, as described above.)
+- Call-site operator resolution for primitive types without in-scope extensions.
 
-Even if it's theoretically a breaking change, we may still decide it's worthwhile because the risk of change is low.  This seems plausible because
+**FSharpPlus coordination**: Deferred; see workarounds documented below.
 
-1. Taking the extra existing extension methods into account is natural and a lot like an addition to the .NET libraries causing overload resolution to fail. We don't really consider that a breaking change (partly because this is measured differently for C# and F#, as they have different sensitivities to adding overloads).
+**Risk mitigation**:
 
-2. For the built-in operators like `(+)`, there will be relatively few such candidate extension methods in F# code because we give warnings when users try to add extension methods for these
+1. Extension methods are lower priority in overload resolution.
+2. For built-in operators like `(+)`, there will be relatively few candidate extension methods in F# code.
+3. Nearly all SRTP constraints for built-in operators are on static members, and C# code can't introduce static extension members.
 
-3. Nearly all SRTP constraints (at least the ones for built-in operators) are on static members, and C# code can't introduce extension members that are static - just instance ones. So C# extension members will only cause compat concern for F# code using SRTP constraints on instance members, AND where the C# extension methods make a difference to overload resolution.
-
-Still, we're pretty sure this must be a breaking change. We would appreciate help construct test cases where it is/isn't.
-
-I'm examining some consequences of the part of this RFC "Weak Resolution no longer forces overload resolution...".   In general this seems a great improvement.  However, I have found one case where, for the complicated SRTP code such as found in FSharpPlus, existing code no longer compiles.
+The weak resolution change corrects the generalization behavior described above. One case has been identified where complex SRTP code such as found in FSharpPlus no longer compiles under this change.
 
 ### Example
 
-Here is a standalone repro reduced substantially, and where many types are made more explicit:
+Here is a standalone repro reduced substantially, and where many types are made more explicit. Given these definitions:
 ```fsharp
-let inline InvokeMap (mapping: ^F) (source: ^I) : ^R =  
-    ((^I or ^R) : (static member Map : ^I * ^F ->  ^R) source, mapping)
+let inline InvokeMap (mapping: ^F) (source: ^I) : ^R =
+    ((^I or ^R) : (static member Map : ^I * ^F -> ^R) source, mapping)
 
- // A simulated collection
-type Coll<'T>() =
+let inline InvokeApply (f: ^F) (x: ^X) : ^R =
+    ((^F or ^X or ^R) : (static member Apply : ^F * ^X -> ^R) f, x)
 
-    // A simulated 'Map' witness
-    static member Map (source: Coll<'a>, mapping: 'a->'b) : Coll<'b> = new Coll<'b>()
+// A simulated collection carrying both a 'Map' and an 'Apply' witness
+type ZipList<'T>() =
+    static member Map (source: ZipList<'a>, mapping: 'a -> 'b) : ZipList<'b> = ZipList<'b>()
+    static member Apply (f: ZipList<'a -> 'b>, x: ZipList<'a>) : ZipList<'b> = ZipList<'b>()
 ```
-Now consider this generic inline code:
+the following generic inline function fails to compile with this RFC activated:
 ```fsharp
-let inline MapTwice (x: Coll<'a>) (v: 'a) : Coll<'a> =
-    InvokeMap ((+) v) (InvokeMap ((+) v) x)
+let inline AddZipLists (x: ZipList<'a>) (y: ZipList<'a>) : ZipList<'a> =
+    InvokeApply (InvokeMap (+) x) y
 ```
 
 ### Explanation
@@ -283,10 +292,10 @@ let inline MapTwice (x: Coll<'a>) (v: 'a) : Coll<'a> =
 The characteristics are
 1. There is no overloading directly, but this code is generic and there is the *potential* for further overloading by adding further extension methods.
 
-2. The definition of the member constraint allows resolution by **return type**, e.g. `(^I or ^R)` for `Map` .  Because of this, the return type of the inner `InvokeMap` call is **not** known to be `Coll` until weak resolution is applied to the constraints. This is because extra overloads could in theory be added via new witnesses mapping the collection to a different collection type.
+2. The definition of the member constraint allows resolution by **return type**, e.g. `(^I or ^R)` for `Map` .  Because of this, the return type of the inner `InvokeMap` call is **not** known to be `ZipList` until weak resolution is applied to the constraints. This is because extra overloads could in theory be added via new witnesses mapping the collection to a different collection type.
 
 3. The resolution of the nested member constraints will eventually imply that the type variable `'a` support the addition operator.
-   However after this RFC, the generic function `MapTwice` now gets generalized **before** the member constraints are fully solved
+   However after this RFC, the generic function `AddZipLists` now gets generalized **before** the member constraints are fully solved
    and the return types known.  The process of generalizing the function makes the type variable `'a` rigid (generalized).  The
    member constraints are then solved via weak resolution in the final phase of inference, and the return type of `InvokeMap`
    is determined to be a `ZipList`, and the `'a` variable now requires an addition operator.  Because the code has already
@@ -294,7 +303,7 @@ The characteristics are
 
 ### Workarounds
 
-There are numerous workarounds:
+There are numerous workarounds, shown here on the `ZipList` setup above:
 
 1. sequentialize the constraint problem rather than combining the resolution of the `Apply` and `Map` methods, e.g.
 ```fsharp
@@ -311,28 +320,28 @@ let inline (+) (x: ZipList<'a>, y: ZipList<'a>) : ZipList<'a> =
 ```
    This works because the type annotation means the `op_Addition` constraint is immediately associated with the type variable `'a` that is part of the function signature.
 
-3. Another approach (and likely the best) is to **no longer use return types as support types** in this kind of generic code.  (My understanding is that the use of return types as support types in such cases FSharpPlus was basically "only" to delay weak resolution anyway).  This means using this definition:
+3. Another approach (and likely the best) is to **no longer use return types as support types** in this kind of generic code.  (Using return types as support types in such cases was basically "only" to delay weak resolution anyway.)  This means defining `InvokeMap` with the return type removed from the support-type list:
 
 ```fsharp
-let inline CallMapMethod (mapping: ^F, source: ^I, _output: ^R, mthd: ^M) =
-    ((^M or ^I) : (static member MapMethod : (^I * ^F) * ^M  -> ^R) (source, mapping), mthd)
+let inline InvokeMap (mapping: ^F) (source: ^I) : ^R =
+    (^I : (static member Map : ^I * ^F -> ^R) source, mapping)
 ```
 instead of
 ```fsharp
-let inline CallMapMethod (mapping: ^F, source: ^I, _output: ^R, mthd: ^M) =
-    ((^M or ^I or ^R) : (static member MapMethod : (^I * ^F) * ^M  -> ^R) (source, mapping), mthd)
+let inline InvokeMap (mapping: ^F) (source: ^I) : ^R =
+    ((^I or ^R) : (static member Map : ^I * ^F -> ^R) source, mapping)
 ```
 
    With this change the code compiles.
 
-This is the only example I've found of this in FSharpPlus.  However I guess there may be client code of FSharpPlus that hits this problems.  In general I suppose it may result whenever we have
+This is the only known example of this pattern in FSharpPlus. However, client code of FSharpPlus may also encounter this issue. In general, this may occur whenever there is
 
 ```
      let inline SomeGenericFunction (...) =
         ...some composition of FSharpPlus operations that use return types to resolve member constraints....
 ```
 
-We expect this pattern to happening in client code of FSharpPlus code. The recommendation is:
+We expect this pattern to occur in client code of FSharpPlus. The recommendation is:
 
 1. We keep the change to avoid weak resolution as part of the RFC 
 
@@ -343,45 +352,9 @@ We expect this pattern to happening in client code of FSharpPlus code. The recom
 As part of this RFC we should also deliver a guide on writing SRTP code that documents cases like this and
 gives guidelines about their use.
 
-### Slightly Larger Example
-
-For completeness here's a longer example of this problem:
-```fsharp
-module Lib
-
-let inline CallApplyMethod (input1: ^I1, input2: ^I2, mthd : ^M) : ^R =
-    ((^M or ^I1 or ^I2 or ^R) : (static member ApplyMethod : ^I1 * ^I2 * ^M -> ^R) input1, input2, mthd)
-
-let inline CallMapMethod (mapping: ^F, source: ^I, _output: ^R, mthd: ^M) =
-    ((^M or ^I or ^R) : (static member MapMethod : (^I * ^F) * ^M  -> ^R) (source, mapping), mthd)
-
-type Apply =
-    static member inline ApplyMethod (f: ^AF, x: ^AX, _mthd:Apply) : ^AOut = ((^AF or ^AX) : (static member Apply : ^AF * ^AX -> ^AOut) f, x)
-
-type Map =
-    static member inline MapMethod ((x: ^FT, f: 'T->'U), _mthd: Map) : ^R = (^FT : (static member Map : ^FT * ('T -> 'U) ->  ^R) x, f)
-
-let inline InvokeApply (f: ^AF) (x: ^AX) : ^AOut = CallApplyMethod(f, x, Unchecked.defaultof<Apply>)
-
-let inline InvokeMap (mapping: 'T->'U) (source: ^FT) : ^FU =  CallMapMethod (mapping, source, Unchecked.defaultof< ^FU >, Unchecked.defaultof<Map>)
-
-[<Sealed>]
-type ZipList<'s>() =
-
-    static member Map (_xs: ZipList<'a>, _f: 'a->'b) : ZipList<'b> = failwith ""
-
-    static member Apply (_fs: ZipList<'a->'b>, _xs: ZipList<'a>) : ZipList<'b>  = failwith ""
-```
-The following code fails to compile with this RFC activated:
-```fsharp
-let inline AddZipLists (x: ZipList<'a>, y: ZipList<'a>) : ZipList<'a> =
-    InvokeApply (InvokeMap (+) x) y
-```
-
 # Unresolved questions
 [unresolved]: #unresolved-questions
 
-* [ ] Points 2 & 3 (`consistent` and `implies`) are subtle and I will attempt to expand the test cases where constraints flow together from different accessibility
-domains to try to identify a case where this matters. However it's actually very hard and artificial to construct tests where this matters, because SRTP constraints are typically freshened
-and solved within quite small scopes where the available methods and accessibility domain is always consistent.
+None outstanding. One point was investigated during design: whether constraints that flow together from different accessibility domains could observe an inconsistent set of candidate extension members. This does not arise in practice, because SRTP constraints are freshened and solved within a single scope where the available members and accessibility are consistent. Two modules that each provide extension operators on the same type resolve correctly when both are opened.
+
 
