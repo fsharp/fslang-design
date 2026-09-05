@@ -7,7 +7,7 @@ This RFC covers the detailed proposal for **interface implementation spreads** i
 - [x] [Spread operator for F#](https://github.com/fsharp/fslang-suggestions/issues/1253)
 - [x] Approved in principle
 - [ ] Implementation (not started)
-- [ ] Discussion
+- [x] [Discussion](https://github.com/fsharp/fslang-design/discussions/847)
 
 # Summary
 
