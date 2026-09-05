@@ -1,4 +1,4 @@
-# F# RFC FS-1345 - Slicing syntax via `System.Range` indexers and `Slice` methods
+# F# RFC FS-1351 - Slicing syntax via `System.Range` indexers and `Slice` methods
 
 The design suggestion [Allow slice syntax to use instance `Slice` method instead of requiring `GetSlice` method](https://github.com/fsharp/fslang-suggestions/issues/1317) has been marked "approved in principle".
 
