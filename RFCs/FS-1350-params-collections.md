@@ -5,7 +5,7 @@ The design suggestion [Native interop for C#13 params enhancements](https://gith
 - [x] [Suggestion](https://github.com/fsharp/fslang-suggestions/issues/1377)
 - [ ] Approved in principle
 - [ ] [Implementation](https://github.com/dotnet/fsharp/pull/FILL-ME-IN)
-- [ ] [Discussion](https://github.com/fsharp/fslang-design/discussions/FILL-ME-IN)
+- [x] [Discussion](https://github.com/fsharp/fslang-design/pull/848)
 
 **Related:** [FS-1338 OverloadResolutionPriorityAttribute support](FS-1338-OverloadResolutionPriorityAttribute.md) and [FS-1340 "Most concrete" tiebreaker](FS-1340-most-concrete-tiebreaker.md) (both preview) define the overload-resolution steps this RFC slots into. [FS-1093 Additional type directed conversions](../FSharp-6.0/FS-1093-additional-conversions.md) governs how each element is converted. [FS-1145](../FSharp.Core-9.0/FS-1145-csharp-collection-expression-support-for-lists-and-sets.md) put `CollectionBuilderAttribute` on FSharp.Core's `list` and `Set`. [FS-1053](../FSharp-4.5/FS-1053-span.md) defines byref-like types. The open RFC [FS-1342 Contextual target typing for numeric and collection literals](https://github.com/fsharp/fslang-design/pull/838) proposes building collections from `[ ... ]` at method-argument position; this RFC is self-contained and does not depend on it, but the two use the same shape vocabulary, and where both apply the collection is constructed by the same rules.
 
