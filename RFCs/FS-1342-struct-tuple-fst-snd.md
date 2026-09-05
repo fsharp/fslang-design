@@ -5,7 +5,7 @@ The design suggestion [Add List.chooseV, Seq.tryPickV, etc. for ValueOption](htt
 - [x] [Suggestion](https://github.com/fsharp/fslang-suggestions/issues/739) (the `fst`/`snd` side thread, starting at [this comment](https://github.com/fsharp/fslang-suggestions/issues/739#issuecomment-5302753208))
 - [x] Approved in principle (parent suggestion; the accessor design was endorsed by the F# team in the thread)
 - [ ] [Implementation](https://github.com/dotnet/fsharp/pull/FILL-ME-IN)
-- [ ] [Discussion](https://github.com/fsharp/fslang-design/discussions/FILL-ME-IN)
+- [x] [Discussion](https://github.com/fsharp/fslang-design/pull/844)
 
 **Depends on:** [FS-1338 OverloadResolutionPriorityAttribute support](FS-1338-OverloadResolutionPriorityAttribute.md) (preview).
 
