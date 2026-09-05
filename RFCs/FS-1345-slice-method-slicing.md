@@ -7,7 +7,7 @@ This RFC covers the detailed proposal for this suggestion.
 - [x] [Suggestion](https://github.com/fsharp/fslang-suggestions/issues/1317)
 - [x] Approved in principle
 - [ ] [Implementation](https://github.com/dotnet/fsharp/pull/17377) (draft by @brianrourkeboll from July 2024; it predates this RFC, resolves the protocols in a different order and needs to be refreshed)
-- [ ] [Discussion](https://github.com/fsharp/fslang-design/discussions/FILL-ME-IN)
+- [x] [Discussion](https://github.com/fsharp/fslang-design/pull/849)
 
 **Related:** [FS-1077 Tolerant slicing](../FSharp-5.0/FS-1077-tolerant-slicing.md), [FS-1076 From-the-end slicing](../preview/FS-1076-from-the-end-slicing.md) (preview), [FS-1110 Index syntax](../FSharp-6.0/FS-1110-index-syntax.md), [FS-1111 Reference cell advisory messages](../FSharp-6.0/FS-1111-refcell-op-information-messages.md), suggestion [#1044](https://github.com/fsharp/fslang-suggestions/issues/1044) (`System.Index` and `System.Range` support).
 
