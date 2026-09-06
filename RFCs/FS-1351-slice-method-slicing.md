@@ -317,7 +317,7 @@ Not applicable.
 
 # Unresolved questions
 
-- **From-end bounds on the new paths.** A follow-up revision of FS-1076 should define `xs[^i]` for `Index` indexers, `^i` inside ranges for `Range` indexers (as `Index(i + 1, fromEnd = true)` for a start and `Index(j, fromEnd = true)` for an end, keeping F#'s `^0` = last element), a length-based `^i` for `Slice` types, and the role of `GetReverseIndex`, in one place.
+- **From-end bounds on the new paths.** Defined by the [revision of FS-1076](https://github.com/fsharp/fslang-design/pull/851), which adopts the .NET meaning of `^i` (`^1` is the last element), admits from-end bounds on all three protocols of this RFC, and makes bare `a..b` and `^i` expressions of type `System.Range` and `System.Index`. The two RFCs are meant to be promoted together.
 - **`Item(Index)` on `list<'T>`** and general `System.Index` support (suggestion #1044) are out of scope here.
 - **Extension `Length`/`Count`.** This RFC follows C# in requiring an intrinsic property; allowing extension properties would let a type be made sliceable entirely from outside.
 - **Promoting FS3918.** Whether, and when, the informational message becomes a warning, and whether a definition-site hint should suggest `Slice` to authors of one-dimensional `GetSlice` members.
