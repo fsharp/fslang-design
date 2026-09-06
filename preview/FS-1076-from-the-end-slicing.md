@@ -7,7 +7,7 @@ The design suggestion [Allow negative indices in indexing and slicing like pytho
 - [x] [Suggestion #358](https://github.com/fsharp/fslang-suggestions/issues/358), approved in principle
 - [ ] [Suggestion #1044](https://github.com/fsharp/fslang-suggestions/issues/1044), covered here, approval pending
 - [x] [Implementation of the 2019 design](https://github.com/dotnet/fsharp/pull/7781) (merged, preview); the revision needs a follow-up implementation
-- [x] [Discussion](https://github.com/fsharp/fslang-design/discussions/472) (2019–2021) and the pull request of this revision (FILL-ME-IN)
+- [x] [Discussion](https://github.com/fsharp/fslang-design/discussions/472) (2019–2021) and [the pull request of this revision](https://github.com/fsharp/fslang-design/pull/851)
 
 **Related:** [FS-1351 Slicing syntax via `System.Range` indexers and `Slice` methods](https://github.com/fsharp/fslang-design/pull/849), [FS-1077 Tolerant slicing](../FSharp-5.0/FS-1077-tolerant-slicing.md), [FS-1110 Index syntax](../FSharp-6.0/FS-1110-index-syntax.md), [FS-1093 Additional type-directed conversions](../FSharp-6.0/FS-1093-additional-conversions.md), the [C# 8 ranges proposal](https://github.com/dotnet/csharplang/blob/main/proposals/csharp-8.0/ranges.md).
 
