@@ -8,11 +8,12 @@ Handwritten RFCs follow the existing [RFC process](README.md#the-process).
 Read the full draft, suggestions, approval decisions, related RFCs, and relevant code.
 Verify claims against these sources, not the drafting agent's account.
 
-1. **AI screening:** Check approved scope, proportional length, and expert writing against the [authoring guidance](.claude/skills/authoring-rfcs/SKILL.md). Request a shorter rewrite when repetition obscures the design.
-2. **AI design review:** After screening passes, check the technical contract, language interactions, safety, compatibility, and distinguishing examples. Identify omissions even in detailed drafts.
+1. **AI screening:** Apply the [authoring guidance](.claude/skills/authoring-rfcs/SKILL.md), including its size comparisons. If revision is needed, stop before design review. For unnecessary length, request a shorter rewrite.
+2. **AI design review:** Check the technical contract, language interactions, safety, compatibility, and distinguishing examples. Identify omissions even in detailed drafts.
 3. **Human review:** After both AI stages pass, hand the draft, findings, and unresolved questions to maintainers for review.
 
-Give polite, RFC-specific revision requests rather than a generic checklist.
+In each reply, separate a brief, polite introduction linking the guidance and size comparisons from categorized RFC-specific bullet fragments.
+Use categories such as **Not needed**, **Missing**, **Repeated**, **Conflicting**, and **Incorrect**.
 Link the proposed guidance revision until it is merged, then use the shared main-branch link.
 
 ## Record results
