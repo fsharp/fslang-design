@@ -1,16 +1,16 @@
-# Reviewing AI-assisted RFCs
+# Three-stage review workflow for AI-assisted RFCs
 
-This optional AI review helps authors prepare AI-assisted drafts for maintainer review.
-The existing [RFC process](README.md#the-process) accepts handwritten and AI-assisted RFCs without AI review.
-Authors remain responsible for their specifications. AI review does not approve a design or replace maintainer judgment.
+This workflow is optional and applies only to AI-assisted RFCs.
+Handwritten RFCs follow the existing [RFC process](README.md#the-process).
 
-## Review the draft
+## Review stages
 
 Read the full draft, suggestions, approval decisions, related RFCs, and relevant code.
 Verify claims against these sources, not the drafting agent's account.
 
-1. **Screening:** Check approved scope, proportional length, and expert writing against the [authoring guidance](.claude/skills/authoring-rfcs/SKILL.md). Request a shorter rewrite when repetition obscures the design.
-2. **Design:** After screening passes, check the technical contract, language interactions, safety, compatibility, and distinguishing examples. Identify omissions even in detailed drafts.
+1. **AI screening:** Check approved scope, proportional length, and expert writing against the [authoring guidance](.claude/skills/authoring-rfcs/SKILL.md). Request a shorter rewrite when repetition obscures the design.
+2. **AI design review:** After screening passes, check the technical contract, language interactions, safety, compatibility, and distinguishing examples. Identify omissions even in detailed drafts.
+3. **Human review:** After both AI stages pass, hand the draft, findings, and unresolved questions to maintainers for review.
 
 Give polite, RFC-specific revision requests rather than a generic checklist.
 Link the proposed guidance revision until it is merged, then use the shared main-branch link.
@@ -23,9 +23,9 @@ The labels below record AI review results, not maintainer approval.
 
 | Stage | Revise | Pass |
 | --- | --- | --- |
-| Screening | `AI-Review-1-screening-redo` | `AI-Review-1-screening-OK` |
-| Design | `AI-Review-2-design-redo` | `AI-Review-2-design-OK` |
+| AI screening | `AI-Review-1-screening-redo` | `AI-Review-1-screening-OK` |
+| AI design review | `AI-Review-2-design-redo` | `AI-Review-2-design-OK` |
 
 Reject stale or conflicting results.
-Clear both stages after new commits. Re-screening clears design.
+Clear both AI stages after new commits. Re-screening clears the AI design review.
 Publish comments or change labels only when authorized.
