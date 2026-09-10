@@ -1,9 +1,9 @@
 ---
 name: authoring-rfcs
-description: Use when writing or shortening an F# RFC.
+description: Use when assisting with writing or shortening an F# RFC.
 ---
 
-# Authoring F# RFCs
+# Authoring F# RFCs with AI assistance
 
 **Write the smallest complete specification for experts, not a tutorial or compiler patch plan.**
 
