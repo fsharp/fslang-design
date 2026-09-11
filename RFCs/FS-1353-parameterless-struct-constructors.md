@@ -1,6 +1,6 @@
 # F# RFC FS-1353 - Parameterless struct constructors and struct initializers
 
-The design suggestions [Allow parameterless constructors in structs](https://github.com/fsharp/fslang-suggestions/issues/362) and [Allow do bindings in structs](https://github.com/fsharp/fslang-suggestions/issues/1056) have been marked "approved in principle". This RFC covers both.
+This RFC covers the suggestions [#362](https://github.com/fsharp/fslang-suggestions/issues/362) and [#1056](https://github.com/fsharp/fslang-suggestions/issues/1056), both marked "approved in principle".
 
 - [x] [Suggestion #362](https://github.com/fsharp/fslang-suggestions/issues/362)
 - [x] [Suggestion #1056](https://github.com/fsharp/fslang-suggestions/issues/1056)
@@ -12,7 +12,7 @@ The design suggestions [Allow parameterless constructors in structs](https://git
 
 # Summary
 
-An F# struct type can declare a parameterless constructor, either as `new() = ...` or as a parameterless primary constructor. A struct type with a primary constructor can contain instance `let`, `do` and `member val` definitions. These are the F# counterpart of C# struct field initializers. `S()` calls a public parameterless constructor if the type has one, and otherwise zero-initializes, as in C#. For a struct type with primary-constructor initializers, `S()` never zero-initializes. The feature is gated behind `--langversion:preview`.
+Struct types can declare a public parameterless constructor, as `new() = ...` or `type S() = ...`. Primary-constructor structs can contain instance `let`, `do` and `member val` definitions, the F# counterpart of C# struct field initializers. As in C#, `S()` calls a public parameterless constructor and otherwise zero-initializes. Unlike C#, `S()` never zero-initializes a struct with such initializers. Gated behind `--langversion:preview`.
 
 # Motivation
 
@@ -31,19 +31,17 @@ type Ratio(n: int, d: int) =
     member _.D = d
 ```
 
-FS0870 calls this ban "a restriction imposed on all CLI languages". The CLI has no such restriction, and C# 10 allows them. FS0035 and FS0901 reject `do` and `let` because "the default constructor for structs would not execute these bindings". Zero-initialization skips every struct constructor, so this reason applies to all of them. C# 10 accepted the same trade-off for field initializers.
+FS0870 calls this ban "a restriction imposed on all CLI languages". The CLI has no such restriction, and C# 10 allows these constructors. FS0035 and FS0901 say that the default constructor "would not execute these bindings". Zero-initialization skips every struct constructor, and C# 10 accepted this for field initializers.
 
-As a result:
-
-- An F# struct cannot give `new S()` a meaning for C# callers, `Activator.CreateInstance` or `new()`-constrained generic code.
-- Validation and derived values in a struct need `val` fields, explicit constructors and `then` blocks instead of primary-constructor code.
-- F# rejects `S()` with FS0801 for an imported struct whose parameterless constructor is not public. C# zero-initializes it.
+- F# structs cannot define `new S()` for C#, `Activator.CreateInstance` or `new()`-constrained code.
+- Validation and derived values need `val` fields, explicit constructors and `then` blocks.
+- `S()` fails with FS0801 on an imported struct with a non-public parameterless constructor. C# zero-initializes it.
 
 # Detailed design
 
 ## Explicit parameterless constructors
 
-A struct type can declare `new() = ...`. The body follows the existing rules for struct constructors. It is an object initialization expression that assigns every field without `[<DefaultValue>]` (FS0764), or a call to another constructor of the type. Either form can be followed by `then`.
+A struct type can declare `new() = ...`. The existing rules for struct constructors apply: an object initialization expression that assigns every field without `[<DefaultValue>]` (FS0764), or a call to another constructor, optionally followed by `then`. This includes `[<IsReadOnly>]` and `[<IsByRefLike>]` structs. Struct records and unions cannot declare constructors.
 
 ```fsharp
 [<Struct>]
@@ -59,11 +57,9 @@ type Complex(r: float, i: float) =
     member _.I = i
 ```
 
-This applies to every struct type that can declare constructors, including `[<IsReadOnly>]` and `[<IsByRefLike>]` structs. Struct records and struct unions cannot declare constructors and do not change.
-
 ## Primary-constructor initializers
 
-A struct type can have a parameterless primary constructor (FS0081 is removed). A struct type with a primary constructor can contain instance `let`, `let mutable`, `let rec` and `do` definitions ([§8.6.1.3](https://fsharp.github.io/fslang-spec/type-definitions/#8613-instance-function-and-value-definitions-in-primary-constructors)), and `member val` definitions (FS0901 and the struct form of FS0035 are removed). This RFC calls the `do` statements, value definitions and `member val` definitions *initializers*. Function definitions are not initializers.
+FS0081, FS0901 and the struct form of FS0035 are removed. A struct can have a parameterless primary constructor. A primary-constructor struct can contain instance `let`, `let mutable`, `let rec` and `do` definitions ([§8.6.1.3](https://fsharp.github.io/fslang-spec/type-definitions/#8613-instance-function-and-value-definitions-in-primary-constructors)) and `member val` definitions. Below, *initializers* are the `do`, value and `member val` definitions, not function definitions.
 
 ```fsharp
 [<Struct>]
@@ -80,109 +76,91 @@ type Ratio(n: int, d: int) =
     member _.D = sign * d
 ```
 
-The rules for classes apply, with these differences:
+The rules for classes apply, except:
 
-- Every instance value definition is an instance field, as every primary-constructor parameter of a struct already is. The set of fields does not depend on which values the members use. These fields behave as other fields for layout, generated equality, comparison and hashing, default-initialization checks (FS0688, `[<DefaultValue>]`), struct cycles, FS3225 in `[<IsReadOnly>]` structs, and byref-like rules.
-- Additional constructors must call another constructor of the type ([§8.6.3](https://fsharp.github.io/fslang-spec/type-definitions/#863-additional-object-constructors-in-classes)). So each constructor call runs the initializers once, in declaration order.
-- Closures cannot capture `this` (FS0406). Inside initializers, parameters and immutable value definitions are locals, so closures there can use them. Inside members they are fields of `this`, so closures there cannot, as for primary-constructor parameters today.
-- The primary constructor cannot bind a self identifier (FS0658, unchanged). So initializers cannot call members.
+- Every instance value definition is a field, whether or not members use it, as every struct primary-constructor parameter already is. These fields count as other fields for layout, generated equality, comparison and hashing, default-initialization checks (FS0688, `[<DefaultValue>]`), struct cycles, FS3225 and byref-like rules.
+- Closures cannot capture `this` (FS0406). In initializers, parameters and immutable values are locals and can be captured. In members they are fields, as parameters are today.
+- No self identifier (FS0658), so initializers cannot call members.
+
+Additional constructors must call another constructor ([§8.6.3](https://fsharp.github.io/fslang-spec/type-definitions/#863-additional-object-constructors-in-classes)), so each constructor call runs the initializers once, in order.
 
 ## Accessibility
 
-A parameterless struct constructor must be public, as in C# (CS8958). If the type has a signature, the signature must declare the constructor. Otherwise a new error is reported.
-
-```fsharp
-[<Struct>]
-type S private () = // error
-    member _.X = 1
-```
-
-Other code does not call a non-public parameterless struct constructor: `Activator.CreateInstance<S>()` throws `MissingMethodException`, and C# `new S()` zero-initializes.
+A parameterless struct constructor must be public, also in the signature file (new error), as in C# (CS8958). For a non-public one, `Activator.CreateInstance<S>()` throws `MissingMethodException` and C# `new S()` zero-initializes.
 
 ## Meaning of `S()`
 
 For a struct type `S`, `S()` and `new S()` resolve as follows ([§6.4.2](https://fsharp.github.io/fslang-spec/expressions/#642-object-construction-expressions)):
 
-1. If `S` has a public parameterless constructor or has initializers, the candidates are the accessible declared constructors. If `S` has initializers and no candidate applies, a new error suggests `Unchecked.defaultof<S>`.
-2. Otherwise zero-initialization is a candidate in addition to the declared constructors, as today.
+1. If `S` has a public parameterless constructor or initializers, the candidates are the accessible declared constructors. If `S` has initializers and no candidate applies, a new error suggests `Unchecked.defaultof<S>`.
+2. Otherwise zero-initialization is also a candidate, as today.
 
-A constructor whose parameters are all optional or `ParamArray` is not parameterless. Under rule 2, `S()` prefers zero-initialization to it, as today and as in C#. A non-public parameterless constructor of an imported type is never a candidate, as in C#. For such a type, `S()` zero-initializes instead of reporting FS0801.
+A constructor with only optional or `ParamArray` parameters is not parameterless. Under rule 2, `S()` prefers zero-initialization to it, as today and in C#. A non-public parameterless constructor of an imported type is never a candidate, as in C#, so `S()` zero-initializes instead of reporting FS0801. F# metadata records whether a struct has initializers, so rule 1 works across assemblies.
 
-F# metadata records whether a struct type has initializers, so rule 1 also applies to struct types from referenced F# assemblies.
+`<@ S() @>` is `Expr.NewObject` when `S()` calls a constructor and `Expr.DefaultValue` otherwise, as for C# structs today.
 
-## Zero-initialization
-
-These ignore constructors and initializers, as today and as in C#: `Unchecked.defaultof<S>`, `Array.zeroCreate`, fields with `[<DefaultValue>]`, fields of type `S` in other structs, and omitted `[<Optional>]` arguments of type `S`.
+`Unchecked.defaultof`, `Array.zeroCreate`, `[<DefaultValue>]` fields, fields of struct type in other structs and omitted `[<Optional>]` arguments still zero-initialize, as in C#.
 
 ## Generic code
 
-Every struct type satisfies `'T : struct`. A struct type satisfies `'T : (new : unit -> 'T)` if it has a public parameterless constructor or if all its fields admit default initialization. Both rules are unchanged, and struct types with initializers are included, as in C#. `new 'T()` calls `Activator.CreateInstance<'T>()`. On .NET Core and later, this runs a public parameterless struct constructor. For .NET Framework, see the C# proposal. Member constraints cannot refer to constructors, so SRTP does not change.
-
-## Quotations
-
-`<@ S() @>` is `Expr.NewObject` when `S()` calls a constructor and `Expr.DefaultValue` when it zero-initializes. This is the current behaviour for C# structs.
+`'T : struct` and `'T : (new : unit -> 'T)` do not change, also for structs with initializers, as in C#. A struct satisfies the second if it has a public parameterless constructor or all its fields admit default initialization. `new 'T()` calls `Activator.CreateInstance<'T>()`, which runs a public parameterless struct constructor on .NET Core and later. For .NET Framework, see the C# proposal. SRTP cannot refer to constructors.
 
 # Changes to the F# spec
 
-- [§8.8 Struct Type Definitions](https://fsharp.github.io/fslang-spec/type-definitions/#88-struct-type-definitions): remove "Structs that have primary constructors must accept at least one argument", "The fields in a struct may be mutable only if the struct does not have a primary constructor" and "Structs may not have “let” or “do” statements unless they are static". Add the rules in *Explicit parameterless constructors*, *Primary-constructor initializers* and *Accessibility*. Give the implicit default constructor only to struct types that have no public parameterless constructor and no initializers.
-- [§6.4.2 Object Construction Expressions](https://fsharp.github.io/fslang-spec/expressions/#642-object-construction-expressions): replace "does not have a constructor method that takes zero arguments" with the rules in *Meaning of `S()`*.
-- [§5.2.4 Default Constructor Constraints](https://fsharp.github.io/fslang-spec/types-and-type-constraints/#524-default-constructor-constraints): state the struct rule from *Generic code*, because §8.8 no longer gives every struct type an implicit default constructor.
+- [§8.8](https://fsharp.github.io/fslang-spec/type-definitions/#88-struct-type-definitions): remove the rules that struct primary constructors take arguments, that fields of primary-constructor structs are immutable and that structs have no instance `let` or `do`. Add *Explicit parameterless constructors*, *Primary-constructor initializers* and *Accessibility*. Only structs with no public parameterless constructor and no initializers get the implicit default constructor.
+- [§6.4.2](https://fsharp.github.io/fslang-spec/expressions/#642-object-construction-expressions): replace the zero-argument struct rule with *Meaning of `S()`*.
+- [§5.2.4](https://fsharp.github.io/fslang-spec/types-and-type-constraints/#524-default-constructor-constraints): add the struct rule from *Generic code*.
 
 # Drawbacks
 
-- At a call site, `S()` can run code or zero-initialize, depending on the type. C# has the same property.
-- Zero-initialized values skip constructors and initializers. Struct authors must still keep the zero value valid.
-- `S()` still zero-initializes existing struct types whose explicit constructors have `then` blocks. A restriction would break existing code.
-- A value definition that is used only during construction still takes space in every instance.
+- At a call site, `S()` can run code or zero-initialize, depending on the type, as in C#.
+- Zero-initialized values skip constructors and initializers. The zero value must stay valid.
+- Existing structs with `then` blocks still allow zero-initializing `S()`. Changing this would break code.
+- A value used only during construction still takes space in each instance.
 
 # Alternatives
 
-- **Opt-in attribute for zero-initializing `S()`** ([dsyme on #1056](https://github.com/fsharp/fslang-suggestions/issues/1056#issuecomment-895235611)): `Unchecked.defaultof<S>` already states the intent.
-- **Warning on `S()` for all struct types with constructors** (the C# "warning wave" idea): breaks builds that treat warnings as errors. It can be a separate, opt-in warning.
-- **Non-public parameterless constructors** ([#362 comment](https://github.com/fsharp/fslang-suggestions/issues/362#issuecomment-894781609)): F# `S()` would run the constructor, but `new 'T()` and C# `new S()` would not (see *Accessibility*).
-- **Class rule for value definitions** (a field only if a member uses it): layout and equality would change when a member body changes.
-- **C# 11 auto-default structs**: not needed. An F# object initialization expression assigns every field, and a primary constructor assigns every field that it creates.
-- **Constructors only**: leaves #1056 without a design. A parameterless primary constructor has no use without initializers.
+- **Attribute to allow zero-initializing `S()`** ([dsyme on #1056](https://github.com/fsharp/fslang-suggestions/issues/1056#issuecomment-895235611)): `Unchecked.defaultof<S>` already says this.
+- **Warn on `S()` for every struct with constructors** (C# "warning wave"): breaks warnings-as-errors builds. Possible later as an opt-in warning.
+- **Non-public parameterless constructors** ([#362 comment](https://github.com/fsharp/fslang-suggestions/issues/362#issuecomment-894781609)): `S()`, `new 'T()` and C# `new S()` would disagree.
+- **Class rule for values** (field only if a member uses it): layout and equality would depend on member bodies.
+- **C# 11 auto-default structs**: not needed. Object initialization expressions and primary constructors assign every field.
+- **Constructors only**: leaves #1056 open, and `type S() =` is useless without initializers.
 
 # Prior art
 
-C# 10 added parameterless struct constructors and struct field initializers. C# 11 made struct constructors zero-initialize the fields that they do not assign. This RFC follows C# 10 for declaration, accessibility, import and zero-initialization. Rule 1 for struct types with initializers has no C# counterpart.
+C# 10 added parameterless struct constructors and field initializers. C# 11 added auto-default structs. This RFC follows C# 10. Rule 1 for initializers has no C# counterpart.
 
 # Compatibility
 
-- **Breaking change?** Not for F# source: every new form was an error (FS0870, FS0081, FS0901, FS0035). One behaviour changes for binaries. If an imported struct has an `internal` parameterless constructor that is visible through `InternalsVisibleTo`, `S()` called it before and zero-initializes now, as in C#. No C# or F# compiler emits such a constructor.
-- **Older compilers, new source**: the errors listed above.
-- **Older compilers, new binaries**: `S()` calls a public parameterless constructor of an F# struct type. Current compilers already call an imported public zero-argument struct constructor, for example from C# 10. Older compilers do not know about initializers, so for such a type `S()` zero-initializes. The initializer flag must be stored in F# metadata so that older readers ignore it. The CompilerCompat tests must cover it.
+- **Breaking?** Not for source: all new forms were errors. For binaries, `S()` on an imported struct with an `internal` parameterless constructor visible through `InternalsVisibleTo` called it. Now `S()` zero-initializes, as in C#. No C# or F# compiler emits such constructors.
+- **Older compilers, new source**: the errors above.
+- **Older compilers, new binaries**: `S()` calls a public parameterless F# struct constructor, as it already does for C# 10 structs. It zero-initializes structs with initializers. Older readers must ignore the new metadata flag. CompilerCompat tests must cover it.
 - **FSharp.Core**: no change.
 
 # Interop
 
-- C# sees an ordinary public `.ctor()`. `new S()` calls it. `default(S)`, arrays and `Activator.CreateInstance` behave as for a C# struct.
-- C# `new S()` zero-initializes a struct type that has initializers but no parameterless constructor. F# cannot prevent this.
-- Imported types, including provided types, use the rules in *Meaning of `S()`*.
+C# sees a normal public `.ctor()`: `new S()` calls it, and `default(S)`, arrays and `Activator.CreateInstance` behave as for C# structs. C# `new S()` zero-initializes a struct with initializers and no parameterless constructor. Imported and provided types follow *Meaning of `S()`*.
 
 # Pragmatics
 
 ## Diagnostics
 
-- New error: a parameterless struct constructor is not public.
-- New error: `S()` on a struct type with initializers and no applicable constructor. The message suggests `Unchecked.defaultof<S>`, and a code fix applies it.
-- With an older language version, the forms that FS0870, FS0081, FS0901 and FS0035 reject report the feature as not available in that version.
+- New error: a non-public parameterless struct constructor.
+- New error: `S()` on a struct with initializers and no applicable constructor, with a code fix to `Unchecked.defaultof<S>`.
+- Older language versions report the new forms as unavailable.
 
 ## Tooling
 
-- Go to definition, find references and rename on `S()` go to the constructor when `S()` calls one, and to the type otherwise, as today.
-- Tooltips, signature help and generated signatures show `new: unit -> S`.
-- Breakpoints and stepping in struct initializers work as in class primary constructors.
-- No FCS API change.
+Navigation, tooltips and generated signatures treat the constructor as any other (`new: unit -> S`). Stepping through initializers works as in classes. No FCS API change.
 
 ## Performance
 
-No change for existing code. On a type with a parameterless constructor, `S()` is a call instead of `initobj`.
+No change for existing code. With a parameterless constructor, `S()` is a call, not `initobj`.
 
 ## Scaling
 
-No new dimensions.
+None.
 
 ## Culture-aware formatting/parsing
 
@@ -190,6 +168,6 @@ None.
 
 # Unresolved questions
 
-1. Should `S()` ignore *non-public* imported parameterless constructors (as C# does), or only *inaccessible* ones (no behaviour change under `InternalsVisibleTo`)?
-2. Should the new `S()` error for struct types with initializers be a warning?
-3. Should a struct type with initializers and no parameterless constructor stop satisfying `'T : (new : unit -> 'T)`? C# accepts such types.
+1. Ignore *non-public* imported parameterless constructors (C#), or only *inaccessible* ones (no change under `InternalsVisibleTo`)?
+2. Make the new `S()` error a warning?
+3. Should a struct with initializers and no parameterless constructor fail `'T : (new : unit -> 'T)`? C# accepts it.
