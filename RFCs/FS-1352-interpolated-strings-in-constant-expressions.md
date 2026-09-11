@@ -5,11 +5,11 @@ The design suggestion [Support (a subset of) interpolated strings in Attribute p
 - [x] [Suggestion](https://github.com/fsharp/fslang-suggestions/issues/1347)
 - [ ] Approved in principle
 - [ ] [Implementation](https://github.com/dotnet/fsharp/pull/FILL-ME-IN)
-- [ ] [Discussion](https://github.com/fsharp/fslang-design/discussions/FILL-ME-IN)
+- [x] [Discussion](https://github.com/fsharp/fslang-design/discussions/854)
 
 # Summary
 
-An interpolated string is a constant expression when each hole inserts a non-null constant `string` unchanged. The compiler evaluates it to the text that the same expression gives at run time. `[<Literal>]` values, attribute arguments and type provider static arguments can then use interpolation, as they already use `+`.
+As in C# 10, an interpolated string is a constant expression when each hole is a non-null constant `string` expression without alignment or format specifiers. The compiler evaluates it to the text that the same expression gives at run time. `[<Literal>]` values, attribute arguments and type provider static arguments can then use interpolation, as they already use `+`.
 
 # Motivation
 
@@ -36,9 +36,8 @@ The `[<Obsolete>]` message is the use case of the suggestion. `+` is harder to r
 
 An interpolated string is a *constant interpolated string* when each hole obeys all of these rules:
 
-1. The hole has no .NET alignment (`{e,8}`) and no .NET format (`{e:N2}`).
-2. The hole has no printf format, or only a plain `%s` (no flags, width or precision).
-3. The hole expression is a constant expression of type `string`, and its value is not `null`.
+1. The hole has no alignment (`{e,8}`) and no format specifier: no .NET format (`{e:N2}`) and no printf format (`%s{e}`).
+2. The hole expression is a constant expression of type `string`, and its value is not `null`.
 
 The rules apply to all interpolated string forms: `$"..."`, `$@"..."`, `$"""..."""` and `$$"""..."""`. A constant interpolated string has type `string` and is a constant expression. So it can be an operand of `+` or a hole of another constant interpolated string. Interpolated strings without holes are constant expressions already and do not change.
 
@@ -69,7 +68,7 @@ A constant interpolated string is valid where F# requires a constant expression:
 type Prices = CsvProvider<const ($"{__SOURCE_DIRECTORY__}/data/prices.csv")>
 ```
 
-Outside these contexts, interpolated strings do not change.
+Outside these contexts, interpolated strings do not change. In particular, quotations keep their current shape.
 
 ## Rejected holes
 
@@ -80,11 +79,11 @@ let Version = 2
 let NoValue: string = null
 let dir = "data"
 
-[<Literal>] let A = $"v{Version}"     // rule 3: type int
+[<Literal>] let A = $"v{Version}"     // rule 2: type int
 [<Literal>] let B = $"{Root,10}"      // rule 1: alignment
-[<Literal>] let C = $"%-8s{Root}"     // rule 2: flags and width
-[<Literal>] let D = $"{dir}/x"        // rule 3: not a constant
-[<Literal>] let E = $"{NoValue}/x"    // rule 3: null, as for NoValue + "/x" today
+[<Literal>] let C = $"%s{Root}"       // rule 1: printf format
+[<Literal>] let D = $"{dir}/x"        // rule 2: not a constant
+[<Literal>] let E = $"{NoValue}/x"    // rule 2: null, as for NoValue + "/x" today
 ```
 
 # Changes to the F# spec
@@ -93,7 +92,7 @@ let dir = "data"
 
 > — OR —
 >
-> - An interpolated string whose holes are non-null literal constant expressions of type `string`, without alignment, without .NET format, and without a printf format other than a plain `%s`. Its value is the concatenation of its text fragments and hole values.
+> - An interpolated string whose holes are non-null literal constant expressions of type `string` without alignment or format specifiers. Its value is the concatenation of its text fragments and hole values.
 
 [Custom attribute](https://github.com/fsharp/fslang-spec/blob/main/spec/custom-attributes-and-reflection.md#custom-attributes) arguments and [provided type](https://github.com/fsharp/fslang-spec/blob/main/spec/provided-types.md) static parameters use this definition, so they do not change.
 
@@ -106,13 +105,14 @@ let dir = "data"
 
 - Do nothing: `+` stays the only way.
 - Attribute arguments only, as the suggestion title says. Rejected: attribute arguments, `[<Literal>]` values and static arguments share one definition of constant expression.
-- More hole types: see [Unresolved questions](#unresolved-questions).
+- Holes of integral, `char` and `bool` types. F# formats them with the invariant culture (C# uses the current culture), so their text is known at compile time. Rejected for parity with C#.
+- A plain `%s` hole. It inserts the string unchanged, as `{e}` does. Rejected for parity with C#, which allows no format specifiers.
 
 # Prior art
 
-C# 10 [constant interpolated strings](https://github.com/dotnet/csharplang/blob/main/proposals/csharp-10.0/constant_interpolated_strings.md) ([champion issue](https://github.com/dotnet/csharplang/issues/2951)) use the same subset: each hole is a constant `string` expression without alignment or format. C# also rejects a `null` constant hole (CS0133). Rule 2 is F#-only, because C# has no printf formats.
+C# 10 [constant interpolated strings](https://github.com/dotnet/csharplang/blob/main/proposals/csharp-10.0/constant_interpolated_strings.md) ([champion issue](https://github.com/dotnet/csharplang/issues/2951)) use the same rules: each hole is a constant `string` expression without alignment or format specifiers, and a `null` constant hole is an error (CS0133). This RFC accepts and rejects the same holes.
 
-In C#, holes of other types format with the current culture, so their text is not known at compile time. F# formats holes with the invariant culture (`$"{1.5}"` gives `1.5` under `de-DE`), so in F# the restriction is a scope choice.
+C# also evaluates such strings at compile time outside constant contexts. This RFC does not require that, as F# does not require it for `+`.
 
 # Compatibility
 
@@ -140,7 +140,7 @@ Report the error on the first hole that breaks a rule, not on the whole string, 
 
 ## Performance
 
-Evaluation is linear in the number of fragments and holes. Existing code is not affected. The RFC does not require folding constant interpolated strings outside constant contexts; an implementation can do it as an optimization.
+Evaluation is linear in the number of fragments and holes. Existing code is not affected. An implementation can also fold constant interpolated strings outside constant contexts, as an optimization.
 
 ## Scaling
 
@@ -153,4 +153,4 @@ None. Holes insert strings unchanged, so the value does not depend on culture or
 
 # Unresolved questions
 
-1. Allow holes of integral types, `char` and `bool` without formatting, for example `$"api/v{Version}"` with `[<Literal>] let Version = 2`? Their F# text does not depend on culture (see [Prior art](#prior-art)), so the value is known at compile time. This RFC excludes them for C# parity and to keep one text rule. `float` and `float32` stay excluded in any case: their text depends on the .NET version (shortest round-trip formatting since .NET Core 3.0). Printf formats add their own rules: `$"%b{true}"` gives `true`, but `$"{true}"` gives `True`.
+None.
