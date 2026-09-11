@@ -32,7 +32,17 @@ The 2019 design predates `System.Index`. Its `^0` is the last element, so an F# 
 
 ## Meaning of `^e`
 
-`^e` (`e : int`) is the position `len - e` of a receiver with length `len`. As an index or a slice start it is inclusive. As a slice end it is exclusive. An integer end `b` stays inclusive. So every from-end form selects the same elements as the same C# expression, and an F# integer end `b` is C# `b + 1`.
+`^e` (`e : int`) is the position `len - e` of a receiver with length `len`. As an index or a slice start it is inclusive. As a slice end it is exclusive. An integer end `b` stays inclusive. Each F# form selects the same elements as its C# equivalent:
+
+| F# | C# |
+|---|---|
+| `xs[^1]` | `xs[^1]` |
+| `xs[a..b]` | `xs[a..(b + 1)]` |
+| `xs[a..^b]` | `xs[a..^b]` |
+| `xs[^a..]` | `xs[^a..]` |
+| `xs[..^b]` | `xs[..^b]` |
+| `xs[^a..^b]` | `xs[^a..^b]` |
+| `xs[*]` | `xs[..]` |
 
 Changes from the 2019 preview, on `xs = [1; 2; 3; 4; 5]`:
 
