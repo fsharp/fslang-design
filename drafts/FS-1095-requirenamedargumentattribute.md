@@ -11,7 +11,7 @@ This RFC covers the detailed proposal for this suggestion.
 - [x] [Implementation](https://github.com/dotnet/fsharp/pull/20340)
 - [ ] Design Review Meeting(s) with @dsyme and others invitees
 - [x] [F# Language Design Discussion](https://github.com/fsharp/fslang-design/discussions/538)
-- [x] [Dotnet Runtime Discussion](https://github.com/dotnet/runtime/issues/51451)
+- [x] [Dotnet Runtime Discussion](https://github.com/dotnet/runtime/issues/132924)
 
 # Summary
 
