@@ -83,7 +83,7 @@ C# and Java use `d`/`D` for binary64 literals. Rust uses the fixed-width name an
 
 # Compatibility
 
-Neither addition reinterprets an existing token or type. Older compilers reject source using the new spelling, while produced assemblies use the existing binary64 representation. Adding the automatically available name `float64` has the normal possibility of a source name collision; existing qualification and shadowing rules apply. The feature should initially be gated by the corresponding preview language version.
+Neither addition reinterprets an existing token or type. The `d`/`D` suffix is compiler syntax gated by the corresponding preview language version; older compilers reject it. The `float64` aliases come from the referenced FSharp.Core, which `--langversion` does not select ([FST-1028](../tooling/FST-1028-langversion%20switch.md)). They are absent with an older FSharp.Core. If the aliases should also carry a preview warning, they can use the established `Experimental` marking ([FST-1029](../tooling/FST-1029-langversion%20and%20preview%20library%20functions.md)); this warns FS0057 outside preview rather than failing. Produced assemblies use the existing binary64 representation. Adding the automatically available name `float64` has the normal possibility of a source name collision; existing qualification and shadowing rules apply.
 
 # Interop
 
