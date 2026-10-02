@@ -8,7 +8,9 @@ description: Use when assisting with writing or shortening an F# RFC.
 **Write the smallest complete specification for experts, not a tutorial or compiler patch plan.**
 
 Read full suggestions, approval decisions, and related RFCs. Follow the [template](../../../RFC_template.md).
-State approved scope and unresolved choices. Use precise Simplified Technical English. Prefer code to prose.
+State approved scope and unresolved choices. Use precise Simplified Technical English.
+To make intentions behind requirement levels clear, refer to this [RFC-2119](https://www.rfc-editor.org/info/rfc2119/).
+Prefer code to prose.
 
 - Would deleting this word or sentence lose important information from the document as a whole? If not, delete it.
 - Is each rule stated once across the document?
