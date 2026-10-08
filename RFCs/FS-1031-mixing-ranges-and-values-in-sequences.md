@@ -21,6 +21,8 @@ Today a range mixed with other values needs `yield!` of a nested collection, suc
 
 # Detailed design
 
+The keywords MUST, MUST NOT, SHOULD and MAY are used as in [RFC 2119](https://www.rfc-editor.org/info/rfc2119/).
+
 ```fsharp
 // Before
 let a = seq { yield! seq { 1..10 }; 19 }
@@ -46,7 +48,7 @@ A *range expression* is `e1..e2` or `e1..e2..e3`.
    let h xs = [ for x in xs do x..x+2 ]
    ```
 
-2. **Implicit yields.** [FS-1069](../FSharp-4.7/FS-1069-implicit-yields.md) activates implicit yields only when an expression has no explicit `yield` (`yield!` does not count) and, in a computation expression, the builder has `Yield`, `Combine` and `Delay`. A range expression does not count either, and it is a splice whether implicit yields are active or not. Plain values keep the FS-1069 rule:
+2. **Implicit yields.** Like `yield!`, a range expression is not an explicit `yield` for the activation rule of [FS-1069](../FSharp-4.7/FS-1069-implicit-yields.md). It is a splice whether implicit yields are active or not. Plain values keep the FS-1069 rule:
 
    ```fsharp
    [ yield! xs; 2..3; 4 ]   // xs, then 2; 3; 4
@@ -55,7 +57,7 @@ A *range expression* is `e1..e2` or `e1..e2..e3`.
 
 3. **Explicit splice.** `yield! e1..e2` and `yield! e1..e2..e3` are allowed wherever `yield!` is allowed, with the same meaning.
 
-4. **No single value.** `yield e1..e2`, `for x in xs -> e1..e2` (`->` means `yield`) and, in a computation expression, `return e1..e2` are errors with a dedicated diagnostic. In list, array and sequence expressions `return` keeps error FS0635. A range is not a value today; `let r = 1..10` is an error. `return! e1..e2` is unchanged (FS0751).
+4. **No single value.** `yield e1..e2`, `for x in xs -> e1..e2` (`->` means `yield`) and, in a computation expression, `return e1..e2` are errors with a dedicated diagnostic. In list, array and sequence expressions `return` keeps error FS0635. A range is not a value today; `let r = 1..10` is an error. `return! e1..e2` stays an error.
 
 5. **Parentheses.** `(e1..e2)` is not a range expression. `[ 1; (2..5) ]` stays error FS0751. This keeps the form free for a first-class range value (see [Unresolved questions](#unresolved-questions)).
 
@@ -66,8 +68,6 @@ A *range expression* is `e1..e2` or `e1..e2..e3`.
    [ 0; 1..3 ]   // [0; 1; 3]; today [ 1..3 ] already gives [1; 3]
    ```
 
-   The splice is well-typed when the operator returns `seq<'T>`, or a subtype, for element type `'T`.
-
 7. **Computation expressions.** The translation is the existing `yield!` rule:
 
    ```text
@@ -75,7 +75,7 @@ A *range expression* is `e1..e2` or `e1..e2..e3`.
    T(e1..e2..e3, V, C, q)  = C(b.YieldFrom(src((.. ..) e1 e2 e3)))
    ```
 
-   `yield! e1..e2` translates the same way. In tail position, `YieldFromFinal` is used when the builder defines it, as for `yield!`. A builder with neither method gets error FS0708. Sequencing needs `Combine` and `Delay`, as today. This also applies to `b { e1..e2 }` alone, which is an error today.
+   In tail position, `YieldFromFinal` is used when the builder defines it, as for `yield!`. A builder with neither method gets error FS0708. Sequencing needs `Combine` and `Delay`, as today. This also applies to `b { e1..e2 }` alone, which is an error today.
 
 8. **Out of scope.** The builder-less form `{ 1..10; 19 }` ([FS-1033](../FSharp-10.0/FS-1033-Deprecate-places-where-seq-can-be-omitted.md)). The single-range forms `[ e1..e2 ]`, `[| e1..e2 |]` and `seq { e1..e2 }` keep their elaboration. Slicing `xs[a..b]` is unaffected.
 
@@ -85,6 +85,7 @@ A *range expression* is `e1..e2` or `e1..e2..e3`.
 type MyBuilder() =
     member _.Yield(x) = [x]
     member _.YieldFrom(xs: seq<_>) = List.ofSeq xs
+    member _.Zero() = []
     member _.Combine(a, b) = a @ b ()
     member _.Delay(f) = f
     member _.Run(f) = f()
@@ -118,6 +119,7 @@ let result = mybuilder { 1; 2..5; 10 }  // [1; 2; 3; 4; 5; 10]
 - **Splice only at the top level**, with explicit `yield!` inside `if`, `match` and `for`. Ranges would then behave differently from values in the same position.
 - **Treat ranges like plain values.** Then `[ yield 1; 2..3 ]` discards the range with warning FS3221. A discarded range is never intentional.
 - **Fall back to `Yield`** when the builder has no `YieldFrom` (the prototype). This silently yields the range as one element.
+- **Translate through `For` and `Yield`** in computation expressions. This composes with the `Range` builder method of [fslang-suggestions#1116](https://github.com/fsharp/fslang-suggestions/issues/1116), but a splice would then differ from `yield!` of the same range (rule 3).
 - **A general spread operator** ([fslang-suggestions#1253](https://github.com/fsharp/fslang-suggestions/issues/1253)). It covers any sequence and does not conflict with this RFC.
 
 # Prior art
@@ -128,7 +130,7 @@ Ruby `[-3, *1..10, 19]`, Python `[-3, *range(1, 11), 19]`, C# 12 `[-3, ..Enumera
 
 * Is this a breaking change?
   * No. This change only allows syntax that was previously rejected by the compiler.
-  * Diagnostics for code that does not use the feature must not change under any language version.
+  * Diagnostics for code that does not use the feature MUST NOT change under any language version.
   
 * What happens when previous versions of the F# compiler encounter this design addition as source code?
   * Compilers before F# 6 emit a syntax error. F# 6 and later report an error at the range, FS0751 in most positions. A new compiler with an older `--langversion` reports FS3350 once per range for the new forms, and keeps today's error for the rule 4 forms.
@@ -157,11 +159,11 @@ The syntax tree already has the range node, so parsing, error recovery, coloriza
 ## Performance
 
 * No impact on existing code.
-* A mixed literal must not be slower than the `yield! [ e1..e2 ]` it replaces. Integral splices in list, array and sequence expressions should be as fast as `[ for x in e1..e2 -> x ]`. An implementation may lower them to that counted loop after type checking; quotations and debug points keep the `yield!` form.
+* A mixed literal MUST NOT be slower than the `yield! [ e1..e2 ]` it replaces. Integral splices in list, array and sequence expressions SHOULD be as fast as `[ for x in e1..e2 -> x ]`. An implementation MAY lower them to that counted loop after type checking; quotations and debug points MUST keep the `yield!` form.
 
 ## Scaling
 
-The dimension is the number of elements in one collection expression. Human-written code has a few dozen; generated code can have thousands, as for list literals today. Checking must stay linear in it.
+The dimension is the number of elements in one collection expression. Human-written code has a few dozen; generated code can have thousands, as for list literals today. Checking MUST stay linear in it.
 
 ## Culture-aware formatting/parsing
 
@@ -169,7 +171,6 @@ Not applicable.
 
 # Unresolved questions
 
-* **`YieldFrom` or `For`.** `b.For((..) e1 e2, fun x -> b.Yield x)` needs only `For` and `Yield`, and composes with the `Range` builder method of [fslang-suggestions#1116](https://github.com/fsharp/fslang-suggestions/issues/1116). A third option is `YieldFrom` when present, else `For` and `Yield`. The choice is observable for custom builders.
 * **Spread operator** ([#1253](https://github.com/fsharp/fslang-suggestions/issues/1253)): whether `...e1..e2` is accepted or redundant.
 * **First-class ranges.** The [FS-1076 revision (#851)](https://github.com/fsharp/fslang-design/pull/851) types `a..b` as `System.Range` outside indexers, list, array and sequence expressions and `for` sources. In a custom computation expression this conflicts with this RFC: an element range splices (rule 7), and `yield e1..e2` and `return e1..e2` are errors (rule 4). One of the two RFCs must change its boundary. Inside list, array and sequence expressions #851 does not use `(e1..e2)`, so rule 5 only reserves it.
 * **Diagnostic text** for rule 4, and whether FS3221 should mention `yield!` next to a range splice.
