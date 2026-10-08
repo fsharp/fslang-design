@@ -60,16 +60,22 @@ Under `FromEndSlicing`, `e[..., ^k, ...]` uses the first rule that applies, for 
 
 | # | Receiver | `^k` at dimension `d` becomes |
 |---|---|---|
-| 0 | array of rank 1 to 4, or `string` | `r.GetLength(d) - k` |
+| 0 | array of rank 1 to 4, or `string` | array: `r.GetLowerBound(d) + (r.GetLength(d) - k)`; string: `r.Length - k` |
 | 1 | `Item` indexer, intrinsic or extension, with a `System.Index` parameter at that position | `Index(k, true)` |
-| 2 | countable (intrinsic `int` `Length`, else `Count`) with an `int` indexer parameter | `r.Length - k` |
+| 2 | one-argument access on a countable receiver (intrinsic `int` `Length`, else `Count`) with an `int` indexer parameter | `r.Length - k` |
 | 3 | member `GetReverseIndex: rank: int * offset: int -> int` | `r.GetReverseIndex(d, k)` |
 
 The receiver `r` is evaluated once. `GetReverseIndex` now returns the offset of `^offset`, which is `length - offset`; the 2019 contract returned `length - offset - 1`. Out-of-range positions, including `xs[^0]`, are errors of the indexer.
 
 ## Slicing
 
-From-end bounds are allowed in all FS-1351 protocols and in array and string slicing. For a `Range` indexer, `^k` becomes `Index(k, true)`. Elsewhere, `^k` becomes the start `len - k` or the inclusive end `len - k - 1`, and the integer rules of FS-1351 (FS-1077 for arrays and strings) then apply. `len` is `Length`, `Count` or `GetLength(d)`; a type without them uses `GetReverseIndex(d, k)` for `len - k`. A negative `k` throws `ArgumentOutOfRangeException` in every protocol, as the `Index` constructor does.
+From-end bounds are allowed in all FS-1351 protocols and in array and string slicing. For a `Range` indexer, `^k` becomes `Index(k, true)`.
+
+Elsewhere, `^k` becomes the start `base + len - k` or the inclusive end `base + len - k - 1`. `base` is `GetLowerBound(d)` for arrays and zero otherwise. Integer bounds are unchanged. The integer rules of FS-1351 (FS-1077 for arrays and strings) then apply. Array bounds retain their mathematical values through FS-1077 clamping, even outside `int`.
+
+`len` is `Length` or `Count` for one-argument accesses, or `GetLength(d)`. Without an applicable length, `GetReverseIndex(d, k)` supplies `len - k`. FS-1351 protocol 2 uses its captured `len` for conversion and clamping. Other length-based conversions read it once per from-end position.
+
+A negative `k` throws `ArgumentOutOfRangeException` in every protocol, as the `Index` constructor does.
 
 ## Range and index expressions
 
@@ -95,7 +101,7 @@ let ys : seq<int> = 1..3         // the sequence 1, 2, 3
 
 ## Interactions
 
-- **Quotations** show the elaboration, for example `Let(r, xs, Call(r, get_Item, [r.Length - 1]))`, or `NewObject(Index, ...)` for a bare `^e`. Quoted slices that show `GetReverseIndex` today change.
+- **Quotations** show the elaboration: `PropertyGet` for intrinsic indexers, static `Call` for extension getters, and `NewObject(Index, ...)` for a bare `^e`. Quoted slices that show `GetReverseIndex` today change.
 - **SRTP**: `^T` stays a type-parameter prefix in types and in `^T.Member`.
 - **C#** cannot see the extension indexers on lists. `Index` and `Range` values pass between the languages unchanged.
 - **Tooling**: hover on `^` shows `System.Index`; hover on a bare `..` shows `System.Range`.
@@ -151,7 +157,7 @@ See [Interactions](#interactions).
 
 ## Performance
 
-One `Length` or `Count` read per from-end position: O(1) for arrays, strings and BCL collections, O(n) for F# lists, as today. `Index` and `Range` are structs.
+A `Length` or `Count` read is O(1) for arrays, strings and BCL collections and O(n) for F# lists, as today. `Index` and `Range` are structs.
 
 ## Scaling
 
