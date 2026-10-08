@@ -59,7 +59,7 @@ A *range expression* is `e1..e2` or `e1..e2..e3`.
 
 4. **No single value.** `yield e1..e2`, `for x in xs -> e1..e2` (`->` means `yield`) and, in a computation expression, `return e1..e2` are errors with a dedicated diagnostic. In list, array and sequence expressions `return` keeps error FS0635. A range is not a value today; `let r = 1..10` is an error. `return! e1..e2` stays an error.
 
-5. **Parentheses.** `(e1..e2)` is not a range expression. `[ 1; (2..5) ]` stays error FS0751. This keeps the form free for a first-class range value (see [Unresolved questions](#unresolved-questions)).
+5. **Parentheses.** `(e1..e2)` is not a range expression. `[ 1; (2..5) ]` stays an error. This keeps the form free for a first-class range value, such as `System.Range` in the [FS-1076 revision (#851)](https://github.com/fsharp/fslang-design/pull/851), which leaves the positions of rules 1 to 4 to this RFC.
 
 6. **Operators in scope.** `(..)` and `(.. ..)` are resolved by name resolution at the splice, as for `[ e1..e2 ]` and `for x in e1..e2` today. A user-defined operator is used:
 
@@ -172,5 +172,4 @@ Not applicable.
 # Unresolved questions
 
 * **Spread operator** ([#1253](https://github.com/fsharp/fslang-suggestions/issues/1253)): whether `...e1..e2` is accepted or redundant.
-* **First-class ranges.** The [FS-1076 revision (#851)](https://github.com/fsharp/fslang-design/pull/851) types `a..b` as `System.Range` outside indexers, list, array and sequence expressions and `for` sources. In a custom computation expression this conflicts with this RFC: an element range splices (rule 7), and `yield e1..e2` and `return e1..e2` are errors (rule 4). One of the two RFCs must change its boundary. Inside list, array and sequence expressions #851 does not use `(e1..e2)`, so rule 5 only reserves it.
 * **Diagnostic text** for rule 4, and whether FS3221 should mention `yield!` next to a range splice.
