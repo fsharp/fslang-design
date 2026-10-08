@@ -11,7 +11,7 @@ Related: [FS-1077 Tolerant slicing](../FSharp-5.0/FS-1077-tolerant-slicing.md), 
 
 # Summary
 
-Slicing syntax `e[a..b]` uses the .NET slicing protocols in C# order: an indexer that takes `System.Range`, then `Slice(int, int)` on a type with an `int` `Length` or `Count`, then the existing `GetSlice`. F# slices stay end-inclusive and tolerant. FSharp.Core deprecates `List<'T>.GetSlice`.
+Slicing syntax `e[a..b]` uses the .NET slicing protocols in this order: an indexer that takes `System.Range`, then `Slice(int, int)` on a type with an `int` `Length` or `Count`, then the existing `GetSlice`. F# slices stay end-inclusive and tolerant. FSharp.Core deprecates `List<'T>.GetSlice`.
 
 ```fsharp
 let s = "abc123".AsSpan()[1..3]   // "bc1": Slice + Length
@@ -63,11 +63,11 @@ No step can overflow. Protocol 2 selects the same elements as array slicing for 
 
 ## Interactions
 
-- **Quotations** show the elaboration: `PropertyGet(Item, [Range])`, or `Let` bindings with `PropertyGet(Length)` and `Call(Slice)`. A quoted list slice changes from `Call(GetSlice)` to `PropertyGet(Item)`; quotation translators such as Fable need the new shape.
+- **Quotations** show the elaboration, with `Let` bindings as needed. Intrinsic indexers use `PropertyGet`/`PropertySet`, and extension accessors use static `Call`. A quoted list slice calls the extension getter instead of `GetSlice`, so translators must handle the new member. Protocol 2 uses `PropertyGet(Length)` or `PropertyGet(Count)` and `Call(Slice)`.
 - **Byref-like receivers** such as `Span<'T>` are held in a local, as any byref-like value is. They cannot be quoted.
 - **Type providers**: provided types use the same protocols.
 - **SRTP**: an `inline` `GetSlice` extension over `Slice` and `Length`, the workaround in #1317, is no longer reached for types that have `Slice`.
-- **C#** ignores extension members, so C# cannot slice F# lists. A type with `Slice` or a `Range` indexer slices the same elements in both languages, apart from F#'s inclusive end.
+- **C#** cannot use the F# list extension indexer. The [C# 15 extension-indexer design](https://github.com/dotnet/csharplang/blob/93d55a09e48c7f36f312bffe2e5b83e8d18031b1/proposals/csharp-15.0/extension-indexers.md) permits extension `Length`/`Count` and prefers intrinsic `Slice` over extension `Range` indexers.
 - **Tooling**: the checker records the selected member at the `..` range for hover and go-to-definition. An explicit `span.Slice(1, 2)` call stays classified as a method.
 
 # Changes to the F# spec
@@ -78,7 +78,7 @@ No step can overflow. Protocol 2 selects the same elements as array slicing for 
 # Drawbacks
 
 - Three protocols with a precedence order.
-- A type that has both `GetSlice` and `Slice` or a `Range` indexer changes behaviour when the feature is on (see [Compatibility](#compatibility)).
+- Some existing slices change behaviour when the feature is on (see [Compatibility](#compatibility)).
 - `span[5..2]` is empty but `span.Slice(5, -2)` throws. Arrays have the same split today.
 
 # Alternatives
@@ -90,23 +90,23 @@ No step can overflow. Protocol 2 selects the same elements as array slicing for 
 
 # Prior art
 
-- C# 8 [ranges](https://github.com/dotnet/csharplang/blob/main/proposals/csharp-8.0/ranges.md): the same precedence and countable rule. C# ends are exclusive, bounds are strict, and extension members are ignored.
+- C# 8 [ranges](https://github.com/dotnet/csharplang/blob/main/proposals/csharp-8.0/ranges.md): the same precedence and countable rule for intrinsic members. C# ends are exclusive and bounds are strict.
 - FS-1077 defines the tolerant semantics that protocol 2 keeps.
 
 # Compatibility
 
-With the feature off, nothing changes. With the feature on, a program changes only if a receiver satisfies protocol 1 or 2 and also has a `GetSlice` in scope:
+With the feature off, nothing changes. With the feature on, a program changes only if a receiver satisfies protocol 1 or 2 and also has a `GetSlice` or `SetSlice` in scope:
 
 | Existing code | New behaviour |
 |---|---|
 | end-exclusive `GetSlice` extension from Learn | `Slice` is used; `sp[0..3]` has 4 elements, not 3 |
 | `GetSlice` that returns another type than `Slice` | the `Slice` result type is used |
 | `GetSlice` with non-`int` bounds beside `Slice(int, int)` | non-`int` bounds are type errors |
-| `GetSlice` beside a `Range` indexer | the indexer is used |
+| `GetSlice` or `SetSlice` beside a matching `Range` accessor | the accessor is used |
 
 The fix is to delete the redundant extension or to call it explicitly. These changes become breaking when the feature is promoted.
 
-Older compilers use `GetSlice` as today, and the new FSharp.Core extension does not change their inference. A new compiler with an older FSharp.Core, or on netstandard2.0, slices lists with `GetSlice`. Generated code calls only `get_Item`, `Slice`, `get_Length` or `get_Count`, and the `Range` and `Index` constructors.
+Older compilers use `GetSlice` as today, and the new FSharp.Core extension does not change their inference. A new compiler with an older FSharp.Core, or on netstandard2.0, slices lists with `GetSlice`. Protocols 1 and 2 need only ordinary member calls and `Range`/`Index` values.
 
 # Interop
 
@@ -143,5 +143,5 @@ Not applicable.
 # Unresolved questions
 
 - From-end bounds on protocols 1 and 2: the FS-1076 revision ([#851](https://github.com/fsharp/fslang-design/pull/851)).
-- Extension `Length` and `Count` (C# requires intrinsic properties).
+- Extension `Length` and `Count`.
 - When to promote FS3918 to a warning.
