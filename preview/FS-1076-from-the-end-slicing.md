@@ -79,7 +79,7 @@ A negative `k` throws `ArgumentOutOfRangeException` in every protocol, as the `I
 
 ## Range and index expressions
 
-Under the new feature `RangeIndexExpressions` (preview), a range `a..b`, `a..` or `..b` that is not an indexer argument, not in a list, array or sequence expression and not the source of a `for` loop has type `System.Range`. `^e` in the same positions has type `System.Index`. The bounds map as in FS-1351 protocol 1, but without clamping: `a` becomes `Index a`, `b` becomes `Index(b + 1)` saturated at `Int32.MaxValue`, `^k` becomes `Index(k, true)`, and an absent bound becomes `Index.Start` or `Index.End`. A negative bound throws in the `Index` constructor.
+Under the new feature `RangeIndexExpressions` (preview), a range `a..b`, `a..` or `..b` has type `System.Range`, except as an indexer argument, as the source of a `for` loop, and where [FS-1031](../RFCs/FS-1031-mixing-ranges-and-values-in-sequences.md) defines its meaning: as an element of a list, array, sequence or computation expression, or as the operand of `yield!`, `yield`, `->`, `return` or `return!` there. `^e` that is not an indexer argument has type `System.Index`. The bounds map as in FS-1351 protocol 1, but without clamping: `a` becomes `Index a`, `b` becomes `Index(b + 1)` saturated at `Int32.MaxValue`, `^k` becomes `Index(k, true)`, and an absent bound becomes `Index.Start` or `Index.End`. A negative bound throws in the `Index` constructor.
 
 - If the expected type is known and is `seq<'T>`, a range is the sequence `seq { a..b }`. Any other known type except `Range` and `Index` gives the current error.
 - A step range `a..s..b` is an error, as today.
