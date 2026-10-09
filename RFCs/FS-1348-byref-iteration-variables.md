@@ -1,9 +1,10 @@
 # F# RFC FS-1348 - `byref` and `inref` iteration variables in `for ... in` loops
 
-The design suggestion [byref and inref for loops](https://github.com/fsharp/fslang-suggestions/issues/1453) has not been marked "approved in principle".
+The design suggestion [byref and inref for loops](https://github.com/fsharp/fslang-suggestions/issues/1453) has been marked "approved in principle".
+This RFC covers the detailed proposal for this suggestion.
 
 - [x] [Suggestion](https://github.com/fsharp/fslang-suggestions/issues/1453)
-- [ ] Approved in principle
+- [x] Approved in principle
 - [ ] Implementation (not started)
 - [x] [Discussion](https://github.com/fsharp/fslang-design/pull/845)
 
@@ -74,7 +75,12 @@ for x: int byref in RefList [| 1; 2 |] do x <- 0
 
 ## The variable
 
-The variable is a byref-typed local, as if `let item = &<element>` were the first line of the body; the FS-1053 rules and byref safety analysis apply unchanged. `item` reads or writes the element. `&item` passes the reference to a `byref` or `inref` parameter, for example `ReadOnlySpan<int>(&item)`. A mutating struct member on a `byref` variable mutates the element in place; on an `inref` variable the existing defensive copy applies. The reference can outlive the iteration only where the existing rules let `let item = &<element>` escape. The compiler does not check that an enumerator's reference is used before the next `MoveNext`; as in C#, that is the enumerator's contract.
+The variable is a local of the annotated type `ty`, as if `let item: ty = &<element>` were the first line of the body. The FS-1053 rules and byref safety analysis apply unchanged, so the annotation, not the source, decides what the body can do:
+
+- `byref`: `item` reads and writes the element, `&item` can be passed to a `byref` or `inref` parameter, and a mutating struct member mutates the element in place.
+- `inref`: `item` only reads the element. Assignment to it or to its fields is an error, `&item` can be passed only to an `inref` parameter, for example `ReadOnlySpan<int>(&item)`, and a mutating struct member acts on a defensive copy.
+
+The reference can escape the iteration only where the existing rules let that binding escape. The compiler does not check that an enumerator's reference is used before the next `MoveNext`; as in C#, that is the enumerator's contract.
 
 ```fsharp
 [<Struct>]
@@ -87,26 +93,28 @@ let step (ps: Particle[]) dt =
 
 ## Elaboration
 
-Only the element binding changes: it takes the address instead of the value.
+Only the element binding changes: it binds the address instead of the value.
 
 ```fsharp
 // arrays, Span, ReadOnlySpan
 let s = expr
 for i = 0 to s.Length - 1 do
-    let item = &s[i]
+    let item: ty = &s[i]
     body
 
 // collection pattern
 let mutable e = expr.GetEnumerator()
 try
     while e.MoveNext() do
-        let item = &e.Current
+        let item: ty = &e.Current
         body
 finally
     // Dispose, as today
 ```
 
-For an `inref` variable over an array, `ldelema` gets the `readonly.` prefix, so it skips the array type check and does not throw on a covariant array. Today the compiler emits that prefix only when the element type is a type parameter.
+For an `inref` variable over an array, `ldelema` MUST carry the `readonly.` prefix, so that it skips the array type check and does not throw on a covariant array. Today the compiler emits that prefix only when the element type is a type parameter.
+
+Apart from that prefix, the elaborated forms can be written by hand today. The optimizer, however, recognises compiled `for ... in` loops over integer ranges, strings and lists and rebinds their variable to a value. It MUST NOT rewrite a loop whose variable has a byref type.
 
 ## Sequence, list, array and computation expressions
 
@@ -121,7 +129,7 @@ These forms elaborate the loop variable to a lambda parameter (`Seq.collect`, a 
 
 ## Interactions
 
-- **SRTP**: a trait call with the variable as receiver acts on the element, as on any byref local.
+- **SRTP**: a trait call with the variable as receiver behaves as on any local of the annotated type.
 - **Quotations**: a quoted loop with a byref annotation is an error (FS0462), as for any byref local.
 - **Type providers**: a provided type is checked as any other source type.
 
@@ -145,7 +153,7 @@ These forms elaborate the loop variable to a lambda parameter (`Seq.collect`, a 
 
 # Prior art
 
-- **C#**: `foreach (ref V v in x)` and `foreach (ref readonly V v in x)` since C# 7.3, defined as `ref V v = ref e.Current;` (C# spec §13.9.5). `ref` over `ReadOnlySpan<T>` is CS8331, and `ref` or `ref readonly` over an array or a by-value `Current` is CS1510. This RFC matches these source and reference-kind rules except that it accepts arrays. C# 13 also accepts the form in async methods and iterators where the reference does not cross an `await` or `yield`; this RFC rejects it in all sequence and computation expressions.
+- **C#**: `foreach (ref V v in x)` and `foreach (ref readonly V v in x)` since C# 7.3, defined as `ref V v = ref e.Current;` (C# spec §13.9.5). Its source and reference-kind rules are the ones above, except that C# rejects arrays (CS1510). C# 13 also accepts the form in async methods and iterators where the reference does not cross an `await` or `yield`.
 - **Rust** (`for x in slice.iter_mut()`, `for x in &v`) and **C++** (`for (auto& x : xs)`, `const auto&`) iterate by reference.
 
 # Compatibility
