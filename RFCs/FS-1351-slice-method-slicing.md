@@ -11,7 +11,7 @@ Related: [FS-1077 Tolerant slicing](../FSharp-5.0/FS-1077-tolerant-slicing.md), 
 
 # Summary
 
-Slicing syntax `e[a..b]` uses the .NET slicing protocols in this order: an indexer that takes `System.Range`, then `Slice(int, int)` on a type with an `int` `Length` or `Count`, then the existing `GetSlice`. F# slices stay end-inclusive and tolerant. FSharp.Core deprecates `List<'T>.GetSlice`.
+Slicing syntax `e[a..b]` uses the .NET slicing protocols in this order: an indexer that takes `System.Range`, then `Slice(int, int)` on a type with an `int` `Length` or `Count`, then the existing `GetSlice`. F# bounds stay end-inclusive. Protocol 2 and list slicing are tolerant. Protocol 1 clamps negative offsets; the `Range` indexer decides all remaining out-of-range behavior. FSharp.Core deprecates `List<'T>.GetSlice`.
 
 ```fsharp
 let s = "abc123".AsSpan()[1..3]   // "bc1": Slice + Length
@@ -21,7 +21,7 @@ let l = [ 1..10 ][1..3]           // [2; 3; 4]: FSharp.Core extension Item(Range
 
 # Motivation
 
-`Span`, `ReadOnlySpan`, `Memory`, `ArraySegment`, `List<T>` and `ImmutableArray` expose `Slice(int, int)` with `Length` or `Count`, and C# 8 slices them with `x[a..b]`. F# slices them only after the user writes a `GetSlice` extension for each type. The [Learn example](https://learn.microsoft.com/dotnet/fsharp/language-reference/slices) of such an extension is end-exclusive (`sp.Slice(s, e - s)`), so it disagrees with all other F# slices. Types that need more than two integers, such as matrices and tensors, use a `Range` indexer, which F# slicing syntax cannot reach. `List<'T>.GetSlice` exposes F# `option` parameters to C#.
+`Span`, `ReadOnlySpan`, `Memory`, `ArraySegment`, `List<T>` and `ImmutableArray` expose `Slice(int, int)` with `Length` or `Count`, and C# 8 slices them with `x[a..b]`. F# slices them only after the user writes a `GetSlice` extension for each type. The [Learn example](https://learn.microsoft.com/dotnet/fsharp/language-reference/slices) of such an extension is end-exclusive (`sp.Slice(s, e - s)`), so it disagrees with all other F# slices. Types that need more than two integers, such as matrices, use a `Range` indexer, which F# slicing syntax cannot reach. `List<'T>.GetSlice` exposes F# `option` parameters to C#.
 
 # Detailed design
 
@@ -31,15 +31,15 @@ The rules apply under the language feature `SliceMethodSlicing` (preview) to a s
 
 | # | Protocol | Requirement | Scope |
 |---|---|---|---|
-| 1 | `Range` indexer | accessible `Item` (or `DefaultMember`) indexer, intrinsic or extension, with one parameter per argument and type `System.Range` at each range position | any rank, get and set |
-| 2 | `Slice` | accessible instance `Slice`, intrinsic or extension, with exactly two `int` parameters (units of measure erased) and no optional, `ParamArray` or byref parameter; and an accessible intrinsic `int` property `Length`, else `Count` | one range argument, get only |
+| 1 | `Range` indexer | accessible `Item` (or `DefaultMember`) indexer, intrinsic or extension, selected by ordinary indexer resolution, with one parameter per argument and type `System.Range` at each range position; its getter is required for a read and its setter for an assignment | any rank |
+| 2 | `Slice` | accessible instance `Slice`, intrinsic or extension, with exactly two `int` parameters (units of measure erased) and no optional, `ParamArray` or byref parameter; and an accessible intrinsic `int` property `Length`, else `Count` | exactly one argument, which is a range; get only |
 | 3 | `GetSlice` | unchanged | all other cases |
 
-The compiler selects the protocol from the receiver type before it checks the bounds. It then checks each bound against the parameter type (`int`, with the units of measure of `Slice` if any). If more than one `Slice` overload qualifies, it reports an error. An assignment `e[...] <- v` uses the setter of protocol 1 if it exists, else `SetSlice`.
+The compiler selects the protocol from the receiver type before it checks range bounds. Protocol 1 checks each range bound as `int`; protocol 2 checks each range bound against the corresponding `Slice` parameter type, including its units of measure. Protocol 3 keeps its current bound checking. If more than one `Slice` overload qualifies, it reports an error. An assignment `e[...] <- v` uses the setter of protocol 1 if it exists, else `SetSlice`.
 
 ## Bounds
 
-The compiler evaluates the receiver `r`, then `a`, then `b`, then `len = r.Length` (protocol 2 only), each once. Then it calls the member:
+The compiler evaluates the receiver `r`, then `a`, then `b`, then, for protocol 2, the selected `Length` or `Count` property as `len`, each once. Then it calls the member:
 
 ```fsharp
 // Protocol 1: one Range per range argument; `*` is Range.All
@@ -53,7 +53,7 @@ x = if b is absent then len elif b < s then s elif b >= len then len else b + 1
 r.Slice(s, x - s)
 ```
 
-No step can overflow. Protocol 2 selects the same elements as array slicing for all bounds, and it returns an empty result for `[3..Int32.MinValue]`, where array slicing throws today ([dotnet/fsharp#20530](https://github.com/dotnet/fsharp/issues/20530)). Protocol 1 clamps only the negative offsets that `Index` cannot hold; the indexer handles all other out-of-range bounds. A direct call keeps the member's own checks: `span.Slice(5, -2)` throws, but `span[5..2]` is empty.
+No step can overflow. Protocol 2 selects the same elements as current array slicing for all bounds. Protocol 1 clamps only the negative offsets that `Index` cannot hold; the indexer handles all other out-of-range bounds. A direct call keeps the member's own checks: `span.Slice(5, -2)` throws, but `span[5..2]` is empty.
 
 ## FSharp.Core
 
@@ -66,7 +66,7 @@ No step can overflow. Protocol 2 selects the same elements as array slicing for 
 - **Quotations** show the elaboration, with `Let` bindings as needed. Intrinsic indexers use `PropertyGet`/`PropertySet`, and extension accessors use static `Call`. A quoted list slice calls the extension getter instead of `GetSlice`, so translators must handle the new member. Protocol 2 uses `PropertyGet(Length)` or `PropertyGet(Count)` and `Call(Slice)`.
 - **Byref-like receivers** such as `Span<'T>` are held in a local, as any byref-like value is. They cannot be quoted.
 - **Type providers**: provided types use the same protocols.
-- **SRTP**: an `inline` `GetSlice` extension over `Slice` and `Length`, the workaround in #1317, is no longer reached for types that have `Slice`.
+- **SRTP**: because the new protocols require a nominal receiver, a slice on a statically resolved receiver still uses `GetSlice`, including the workaround in #1317.
 - **C#** cannot use the F# list extension indexer. The [C# 15 extension-indexer design](https://github.com/dotnet/csharplang/blob/93d55a09e48c7f36f312bffe2e5b83e8d18031b1/proposals/csharp-15.0/extension-indexers.md) permits extension `Length`/`Count` and prefers intrinsic `Slice` over extension `Range` indexers.
 - **Tooling**: the checker records the selected member at the `..` range for hover and go-to-definition. An explicit `span.Slice(1, 2)` call stays classified as a method.
 
@@ -95,7 +95,7 @@ No step can overflow. Protocol 2 selects the same elements as array slicing for 
 
 # Compatibility
 
-With the feature off, nothing changes. With the feature on, a program changes only if a receiver satisfies protocol 1 or 2 and also has a `GetSlice` or `SetSlice` in scope:
+With the feature off, successful slice expressions keep their current elaboration. If an expression has no applicable current slicing member but its receiver would satisfy protocol 1 or 2, it remains an error, reported as FS3350 instead of FS0039. With the feature on, a program changes only if a receiver satisfies protocol 1 or 2 and also has a `GetSlice` or `SetSlice` in scope:
 
 | Existing code | New behaviour |
 |---|---|
@@ -122,7 +122,7 @@ See [Interactions](#interactions). Tensor types use `NRange` and `params ReadOnl
 | FS3917 | error | more than one `Slice(int, int)` overload qualifies |
 | FS3918 | info | explicit use of `List<'T>.GetSlice` |
 
-With the feature off, FS3350 replaces FS0039 where protocol 1 or 2 would apply. The numbers are provisional.
+The numbers are provisional.
 
 ## Tooling
 
@@ -130,7 +130,7 @@ See [Interactions](#interactions).
 
 ## Performance
 
-Protocol 1 builds one `Range` struct. Protocol 2 reads `Length` once and does at most four comparisons. Both avoid the two `option` allocations of `GetSlice`. List slicing keeps its cost.
+Protocol 1 builds one `Range` struct per range argument. Protocol 2 reads the selected `Length` or `Count` once and does at most four comparisons. Both avoid the `option` arguments used by `GetSlice`. List slicing keeps its cost.
 
 ## Scaling
 
