@@ -1,9 +1,9 @@
 # F# RFC FS-1352 - Interpolated strings in constant expressions
 
-The design suggestion [Support (a subset of) interpolated strings in Attribute parameters](https://github.com/fsharp/fslang-suggestions/issues/1347) is **not** marked "approved in principle". This RFC gives a concrete design for that decision.
+The design suggestion [Support (a subset of) interpolated strings in Attribute parameters](https://github.com/fsharp/fslang-suggestions/issues/1347) has been marked "approved in principle". This RFC covers the detailed proposal for this suggestion.
 
 - [x] [Suggestion](https://github.com/fsharp/fslang-suggestions/issues/1347)
-- [ ] Approved in principle
+- [x] Approved in principle
 - [ ] [Implementation](https://github.com/dotnet/fsharp/pull/FILL-ME-IN)
 - [x] [Discussion](https://github.com/fsharp/fslang-design/discussions/854)
 
