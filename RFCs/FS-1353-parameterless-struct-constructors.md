@@ -41,7 +41,7 @@ FS0870 calls this ban "a restriction imposed on all CLI languages". The CLI has 
 
 ## Explicit parameterless constructors
 
-A struct type can declare `new() = ...`. The existing rules for struct constructors apply: an object initialization expression that assigns every field without `[<DefaultValue>]` (FS0764), or a call to another constructor, optionally followed by `then`. This includes `[<IsReadOnly>]` and `[<IsByRefLike>]` structs. Struct records and unions cannot declare constructors.
+A struct type can declare `new() = ...` under the existing rules for struct constructors, also in `[<IsReadOnly>]` and `[<IsByRefLike>]` structs. Struct records and unions cannot declare constructors.
 
 ```fsharp
 [<Struct>]
@@ -59,7 +59,7 @@ type Complex(r: float, i: float) =
 
 ## Primary-constructor initializers
 
-FS0081, FS0901 and the struct form of FS0035 are removed. A struct can have a parameterless primary constructor. A primary-constructor struct can contain instance `let`, `let mutable`, `let rec` and `do` definitions ([§8.6.1.3](https://fsharp.github.io/fslang-spec/type-definitions/#8613-instance-function-and-value-definitions-in-primary-constructors)) and `member val` definitions. Below, *initializers* are the `do`, value and `member val` definitions, not function definitions.
+A struct can have a parameterless primary constructor, and a primary-constructor struct can contain the instance `let`, `do` and `member val` definitions that a class can ([§8.6.1.3](https://fsharp.github.io/fslang-spec/type-definitions/#8613-instance-function-and-value-definitions-in-primary-constructors)). FS0081, FS0901 and the struct form of FS0035 are removed. Below, *initializers* are these definitions, except function definitions.
 
 ```fsharp
 [<Struct>]
@@ -81,8 +81,6 @@ The rules for classes apply, except:
 - Every instance value definition is a field, whether or not members use it, as every struct primary-constructor parameter already is. These fields count as other fields for layout, generated equality, comparison and hashing, default-initialization checks (FS0688, `[<DefaultValue>]`), struct cycles, FS3225 and byref-like rules.
 - Closures cannot capture `this` (FS0406). In initializers, parameters and immutable values are locals and can be captured. In members they are fields, as parameters are today.
 - No self identifier (FS0658), so initializers cannot call members.
-
-Additional constructors must call another constructor ([§8.6.3](https://fsharp.github.io/fslang-spec/type-definitions/#863-additional-object-constructors-in-classes)), so each constructor call runs the initializers once, in order.
 
 ## Accessibility
 
