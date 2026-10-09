@@ -69,11 +69,11 @@ The receiver `r` is evaluated once. `GetReverseIndex` now returns the offset of 
 
 ## Slicing
 
-From-end bounds are allowed in all FS-1351 protocols and in array and string slicing. For a `Range` indexer, `^k` becomes `Index(k, true)`.
+From-end bounds are allowed in all FS-1351 protocols and in array and string slicing. For a `Range` indexer, `^k` becomes `Index(k, true)`. Its other bounds use FS-1351 protocol 1.
 
 Elsewhere, `^k` becomes the start `base + len - k` or the inclusive end `base + len - k - 1`. `base` is `GetLowerBound(d)` for arrays and zero otherwise. Integer bounds are unchanged. The integer rules of FS-1351 (FS-1077 for arrays and strings) then apply. Array bounds retain their mathematical values through FS-1077 clamping, even outside `int`.
 
-`len` is `Length` or `Count` for one-argument accesses, or `GetLength(d)`. Without an applicable length, `GetReverseIndex(d, k)` supplies `len - k`. FS-1351 protocol 2 uses its captured `len` for conversion and clamping. Other length-based conversions read it once per from-end position.
+`len` is `Length` or `Count` for one-argument accesses, or `GetLength(d)`. Without an applicable length, `GetReverseIndex(d, k)` supplies `len - k`. FS-1351 protocol 2 uses its captured `len` for conversion and clamping. Other length-based conversions read it once per from-end position. The receiver is evaluated once, before the bounds. Each bound is evaluated once, in source order. A length read used to convert a from-end bound happens after all bounds.
 
 A negative `k` throws `ArgumentOutOfRangeException` in every protocol, as the `Index` constructor does.
 
@@ -81,7 +81,7 @@ A negative `k` throws `ArgumentOutOfRangeException` in every protocol, as the `I
 
 Under the new feature `RangeIndexExpressions` (preview), a range `a..b`, `a..` or `..b` has type `System.Range`, except as an indexer argument, as the source of a `for` loop, and where [FS-1031](../RFCs/FS-1031-mixing-ranges-and-values-in-sequences.md) defines its meaning: as an element of a list, array, sequence or computation expression, or as the operand of `yield!`, `yield`, `->`, `return` or `return!` there. `^e` that is not an indexer argument has type `System.Index`. The bounds map as in FS-1351 protocol 1, but without clamping: `a` becomes `Index a`, `b` becomes `Index(b + 1)` saturated at `Int32.MaxValue`, `^k` becomes `Index(k, true)`, and an absent bound becomes `Index.Start` or `Index.End`. A negative bound throws in the `Index` constructor.
 
-- If the expected type is known and is `seq<'T>`, a range is the sequence `seq { a..b }`. Any other known type except `Range` and `Index` gives the current error.
+- If the expected type is known and is `seq<'T>`, `a..b` is the sequence `seq { a..b }`. A range whose expected type is known to be neither `Range` nor `seq<'T>` gives the current error. A bare `^e` whose expected type is known not to be `Index` gives the current error.
 - A step range `a..s..b` is an error, as today.
 - `^T.Member` with a dotted operand keeps its diagnostic FS3534 and its SRTP recovery.
 - `System.Range` and `System.Index` must exist in the target framework.
@@ -96,7 +96,7 @@ let ys : seq<int> = 1..3         // the sequence 1, 2, 3
 ## FSharp.Core
 
 - An extension `member Item: index: Index -> 'T with get` on `List<'T>`, beside the FS-1351 extension `Item(range: Range)`, for netstandard2.1 and net.
-- Both are extension members. Beside the intrinsic `Item: int -> 'T`, an intrinsic overload makes `let get (xs: 'T list) i = xs[i]` fail with FS0041 on every compiler; `[<OverloadResolutionPriority>]` prevents that only under `--langversion:preview`. With extensions, `i` is still inferred as `int`, and `xs[n]` with `n : int` still calls `Item(int)`.
+- Both are extension members, following FS-1351's `Item(Range)` pattern, so existing unannotated `xs[i]` keeps its `int` inference and calls `Item(int)`.
 - `GetReverseIndex` on lists, arrays and strings (all `[<Experimental>]`) gets the new contract and `[<EditorBrowsable(EditorBrowsableState.Never)>]`. The compiler no longer calls it for these types.
 
 ## Interactions
@@ -134,6 +134,7 @@ let ys : seq<int> = 1..3         // the sequence 1, 2, 3
 
 - `FromEndSlicing` has shipped only in preview, so no released language version changes.
 - Third-party `GetReverseIndex` members that follow the 2019 contract are off by one until updated.
+- An older preview compiler with the new FSharp.Core still calls `GetReverseIndex` for lists, arrays and strings. A from-end slice end is then off by one until the compiler is updated too.
 - Older compilers give FS3303 for `^` outside preview, FS0751 for a bare `1..6` and FS3534 for a bare `^7`, as today. The new FSharp.Core extensions do not change their inference. A new compiler with an older FSharp.Core uses rules 0 and 2 for arrays and lists and does not need `GetReverseIndex`.
 
 # Interop
@@ -171,4 +172,6 @@ Not applicable.
 
 - Promote together with FS-1351, not before it.
 - Whether other expected types, such as `'T list` and `'T[]`, also select the sequence meaning of a range.
+- Whether a known `seq<'T>` expected type also selects the sequence meaning for `a..`, `..b`, or a range with a from-end bound.
+- Whether a from-end set-slice gets the same FS-1077/FS-1351 tolerance as a from-end get-slice.
 - `int64` and `nint` bounds, `NIndex` and `NRange`.
