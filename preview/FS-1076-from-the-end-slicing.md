@@ -1,145 +1,193 @@
 # F# RFC FS-1076 - From the end slicing and indexing for collections
 
-This RFC covers the detailed proposal for this suggestion.
+> **Revision, September 2026.** This text replaces the 2019 design, which is in preview since F# 5 (feature `FromEndSlicing`). The 2019 text is in the file history (commit 96ad025).
 
-* [x] Approved in principle
-* [x] [Suggestion](https://github.com/fsharp/fslang-suggestions/issues/358)
-* [x] [Implementation](https://github.com/dotnet/fsharp/pull/7781) (merged)
-* [Discussion](https://github.com/fsharp/fslang-design/issues/472)
+The design suggestion [Allow negative indices in indexing and slicing like python](https://github.com/fsharp/fslang-suggestions/issues/358) has been marked "approved in principle". The range and index expressions below also cover suggestion [#1044](https://github.com/fsharp/fslang-suggestions/issues/1044), which is not approved.
+
+- [x] [Suggestion #358](https://github.com/fsharp/fslang-suggestions/issues/358), approved in principle
+- [ ] [Suggestion #1044](https://github.com/fsharp/fslang-suggestions/issues/1044), approval pending
+- [x] [Implementation of the 2019 design](https://github.com/dotnet/fsharp/pull/7781) (preview); this revision needs new work
+- [x] Discussion: [#472](https://github.com/fsharp/fslang-design/discussions/472), [#851](https://github.com/fsharp/fslang-design/pull/851)
+
+Related: [FS-1351](https://github.com/fsharp/fslang-design/pull/849) (slicing protocols), [FS-1077](../FSharp-5.0/FS-1077-tolerant-slicing.md), [FS-1093](../FSharp-6.0/FS-1093-additional-conversions.md).
 
 # Summary
-[summary]: #summary
 
-This RFC proposes the capability to slice and index collections with indices counted from the end. Using the `^i` syntax in slicing and indexing desugars to `collection.GetReverseIndex(i)`.
+`^e` denotes `System.Index(e, fromEnd = true)`, as in C#: `^1` is the last element. From-end positions work with `Index` indexers, countable types and the slicing protocols of FS-1351. Outside indexers, `a..b` and `^e` are values of type `System.Range` and `System.Index`. A `Range` value indexes a type that has `Slice`, as in C#.
 
-e.g.
-```
-let list = [1;2;3;4;5]
-
-list.[..^0]   // 1,2,3,4,5
-list.[..^1]   // 1,2,3,4
-list.[0..^1]  // 1,2,3,4
-list.[^1..]   // 4,5
-list.[^0..]   // 5
-list.[^2..^1] // 3,4
+```fsharp
+let xs = [ 1..5 ]
+xs[^1]                  // 5
+xs[..^1]                // [1; 2; 3; 4]
+(ResizeArray xs)[^1]    // 5: Count + Item(int)
+let r = 1..^1           // System.Range
+xs.Take(r)              // [2; 3; 4]: Enumerable.Take(source, Range)
+(ResizeArray xs)[r]     // [2; 3; 4]: Count + Slice
 ```
 
 # Motivation
-[motivation]: #motivation
 
-From-the-end slicing and indexing would allow easier operations on arrays. Currently in Python one can specify a negative index, like `list.[:-1]` to obtain a slice of the list without the last element. This feature is often used in scientific and mathematical computation. Adding this feature would make F# more accessible for those uses.
+The 2019 design predates `System.Index`. Its `^0` is the last element, so an F# `^1` is one element away from a C# `^1`. It needs a custom `GetReverseIndex` member on each type, so `ResizeArray[^1]` fails ([dotnet/fsharp#9425](https://github.com/dotnet/fsharp/issues/9425)), and it cannot pass `Index` or `Range` values to .NET APIs. It evaluates the receiver of `f()[^1]` twice ([dotnet/fsharp#12071](https://github.com/dotnet/fsharp/issues/12071), still reproduces). In [#472](https://github.com/fsharp/fslang-design/discussions/472) dsyme proposed that "`^e` *always* becomes `Index(e, true)`". This revision adopts that rule.
 
 # Detailed design
-[design]: #detailed-design
 
-## Parsing
+## Meaning of `^e`
 
-The `^` operator is currently used as a infix operator for:
-- Power (2^2)
-- Measure types
-- Legacy string concat
+`^e` (`e : int`) is the position `len - e` of a receiver with length `len`. As an index or a slice start it is inclusive. As a slice end it is exclusive. An integer end `b` stays inclusive. Each F# form selects the same elements as its C# equivalent:
 
-It is used as a prefix operator for:
-- Statically resolved types
+| F# | C# |
+|---|---|
+| `xs[^1]` | `xs[^1]` |
+| `xs[a..b]` | `xs[a..(b + 1)]` |
+| `xs[a..^b]` | `xs[a..^b]` |
+| `xs[^a..]` | `xs[^a..]` |
+| `xs[..^b]` | `xs[..^b]` |
+| `xs[^a..^b]` | `xs[^a..^b]` |
+| `xs[*]` | `xs[..]` |
 
-For the from-the-end slicing and indexing, the `^` operator will be overloaded as a prefix operator. 
+Changes from the 2019 preview, on `xs = [1; 2; 3; 4; 5]`:
 
-We will add new rules to the parser to support the following expressions for `optRange`:
+| Form | 2019 | Revision |
+|---|---|---|
+| `xs[^1]` | `4` | `5` |
+| `xs[^0]` | `5` | out of range |
+| `xs[^1..]` | `[4; 5]` | `[5]` |
+| `xs[^2..^1]` | `[3; 4]` | `[4]` |
+| `xs[..^1]` | `[1; 2; 3; 4]` | unchanged |
+
+## Indexing
+
+Under `FromEndSlicing`, `e[..., ^k, ...]` uses the first rule that applies, for get and for set:
+
+| # | Receiver | `^k` at dimension `d` becomes |
+|---|---|---|
+| 0 | array of rank 1 to 4, or `string` | array: `r.GetLowerBound(d) + (r.GetLength(d) - k)`; string: `r.Length - k` |
+| 1 | `Item` indexer, intrinsic or extension, with a `System.Index` parameter at that position | `Index(k, true)` |
+| 2 | one-argument access on a countable receiver (intrinsic `int` `Length`, else `Count`) with an `int` indexer parameter | `r.Length - k` |
+| 3 | member `GetReverseIndex: rank: int * offset: int -> int` | `r.GetReverseIndex(d, k)` |
+
+The receiver `r` is evaluated once. `GetReverseIndex` now returns the offset of `^offset`, which is `length - offset`; the 2019 contract returned `length - offset - 1`. Out-of-range positions, including `xs[^0]`, are errors of the indexer.
+
+## Slicing
+
+From-end bounds are allowed in all FS-1351 protocols and in array and string slicing. For a `Range` indexer, `^k` becomes `Index(k, true)`. Its other bounds use FS-1351 protocol 1.
+
+Elsewhere, `^k` becomes the start `base + len - k` or the inclusive end `base + len - k - 1`. `base` is `GetLowerBound(d)` for arrays and zero otherwise. Integer bounds are unchanged. The integer rules of FS-1351 (FS-1077 for arrays and strings) then apply. Array bounds retain their mathematical values through FS-1077 clamping, even outside `int`.
+
+`len` is `Length` or `Count` for one-argument accesses, or `GetLength(d)`. Without an applicable length, `GetReverseIndex(d, k)` supplies `len - k`. FS-1351 protocol 2 uses its captured `len` for conversion and clamping. Other length-based conversions read it once per from-end position. The receiver is evaluated once, before the bounds. Each bound is evaluated once, in source order. A length read used to convert a from-end bound happens after all bounds.
+
+A negative `k` throws `ArgumentOutOfRangeException` in every protocol, as the `Index` constructor does.
+
+## Range and index expressions
+
+Under the new feature `RangeIndexExpressions` (preview), a range `a..b`, `a..` or `..b` has type `System.Range`, except as an indexer argument, as the source of a `for` loop, and where [FS-1031](../RFCs/FS-1031-mixing-ranges-and-values-in-sequences.md) defines its meaning: as an element of a list, array, sequence or computation expression, or as the operand of `yield!`, `yield`, `->`, `return` or `return!` there. `^e` that is not an indexer argument has type `System.Index`. The bounds map as in FS-1351 protocol 1, but without clamping: `a` becomes `Index a`, `b` becomes `Index(b + 1)` saturated at `Int32.MaxValue`, `^k` becomes `Index(k, true)`, and an absent bound becomes `Index.Start` or `Index.End`. A negative bound throws in the `Index` constructor.
+
+- If the expected type is known and is `seq<'T>`, `a..b` is the sequence `seq { a..b }`. A range whose expected type is known to be neither `Range` nor `seq<'T>` gives the current error. A bare `^e` whose expected type is known not to be `Index` gives the current error.
+- A step range `a..s..b` is an error, as today.
+- `^T.Member` with a dotted operand keeps its diagnostic FS3534 and its SRTP recovery.
+- `System.Range` and `System.Index` must exist in the target framework.
+
+```fsharp
+let tail = ^5..
+"hello world".AsSpan(tail)       // "world": a Range argument
+[ 1..10 ].ElementAt(^1)          // 10: an Index argument
+let ys : seq<int> = 1..3         // the sequence 1, 2, 3
 ```
-^x..y
-^x..
-x..^y
-..^y
-^x..^y
-^x
+
+## Range values as indexer arguments
+
+Under `RangeIndexExpressions`, a one-argument access `e[r]` whose argument is not a range expression and has known type `System.Range` uses ordinary indexer resolution first. That finds the `Range` indexers of lists and of FS-1351 protocol 1. If no indexer applies and the receiver satisfies FS-1351 protocol 2, a get elaborates as in C#:
+
+```fsharp
+// e, then r, then len are evaluated once
+let len = e.Length                       // else Count
+let s = r.Start.GetOffset len
+e.Slice(s, r.End.GetOffset len - s)
 ```
 
-Using `^` outside of the square brackets will not mean anything, as the parsing rule that handles it only exists inside `optRange`.
+Nothing is clamped: `Slice` rejects out-of-range values, as in C#. A slice `e[a..b]` stays tolerant under FS-1351: on a `ResizeArray` of six elements `xs[4..10]` has two elements, and `xs[r]` with `r = 4..10` throws.
 
-In addition, because of the way `..` is handled currently in the lexer, to correctly parse `..^`, we would have to add it to the list of reserved symbolic operators. This would break any users currently using `..^` as a custom operator.
+## FSharp.Core
 
-## Checking
+- An extension `member Item: index: Index -> 'T with get` on `List<'T>`, beside the FS-1351 extension `Item(range: Range)`, for netstandard2.1 and net.
+- Both are extension members, following FS-1351's `Item(Range)` pattern, so existing unannotated `xs[i]` keeps its `int` inference and calls `Item(int)`.
+- `GetReverseIndex` on lists, arrays and strings (all `[<Experimental>]`) gets the new contract and `[<EditorBrowsable(EditorBrowsableState.Never)>]`. The compiler no longer calls it for these types.
 
-Currently in the typechecker, the slicing is handled in two ways (see `typechecker.fs: 6295`):
+## Interactions
 
-- For core collections, depending on the shape of the slicing call and the type of the collection, the appropriate `GetSlice` method implementation is picked and the supplied slicing indices are transformed into arguments to those methods.
-- For third party collections, the compiler builds a generic `GetSlice` call, then does another round of typechecking to find the concrete implementation.
+- **Quotations** show the elaboration: `PropertyGet` for intrinsic indexers, static `Call` for extension getters, and `NewObject(Index, ...)` for a bare `^e`. Quoted slices that show `GetReverseIndex` today change.
+- **SRTP**: `^T` stays a type-parameter prefix in types and in `^T.Member`.
+- **C#** cannot see the extension indexers on lists. `Index` and `Range` values pass between the languages unchanged.
+- **Tooling**: hover on `^` shows `System.Index`; hover on a bare `..` shows `System.Range`.
 
+# Changes to the F# spec
 
-To support from-the-end slicing, logic can be added in these two code paths to check if the `^` symbol was prepended to any of the indices. If it is detected, the call to `GetSlice` with the index `^i` will be desugared to `myCollection.GetReverseIndex(i)`. The desugared indices will be piped to the existing `GetSlice` implementations.
-
-For indexing, currently `.[i]` is desugared to `.Item(i)`. After this change, `.[^i]` would be desugared to `.Item(GetReverseIndex(i))`.
-
-For all the core collections, the provided implementation of `GetReverseIndex(i)` would be `collection.Length - i - 1` (See below for rationale of -1).
-
-For third party collections, a `GetReverseIndex` method would need to exist for the `^` to work correctly. If `GetSlice` is implemented and `GetReverseIndex` is not, regular slicing would function as expected, but when `^` is present in the slice expression there would be an error thrown at compile time that looks like `GetReverseIndex is not defined`.
-
-A `GetReverseIndex` is not implemented by default for third party collections because we do not know if the third party collection has a concept of `collection.Length`. 
+- §6.4.6 Lookup Expressions: add [Indexing](#indexing) and [Range values as indexer arguments](#range-values-as-indexer-arguments).
+- §6.4.7 Slice Expressions: add [Slicing](#slicing).
+- A new §6.4 subsection: add [Range and index expressions](#range-and-index-expressions).
 
 # Drawbacks
-[drawbacks]: #drawbacks
 
-## Differing behavior with current inclusive-inclusive slicing compared to other languages
-
-The current F# slicing behavior is front-inclusive and rear-inclusive, in contrast to front-inclusive and rear-exclusive for C# and Python. This means that if we choose to implement `GetReverseIndex(i)` as `myList.Length - i - 1`, then:
-
-```
-// Python
-list[:-1]    // 1,2,3,4
-list[-1:]    // 5
-
-// F#
-list.[..^1]  // 1,2,3,4 -- Same
-list.[^1..]  // 4,5     -- Different
-list.[^0..]  // 5       -- Different
-```
-
-Because of the difference in inclusivity, we can only match Python/C# behavior for either `list.[^1..]` or `list.[..^1]` but not both, unless the definition of `^i` varies based on the context of where it's placed. 
-
-It is assumed that most users will use this syntax in the form of `list.[..^1]`, or "I want everything in this except for the last i elements."
-
-## Third party collections could implement reverse slicing in an inconsistent way
-
-Because `GetReverseIndex` needs to be implemented by third party collections, they could implement it in a way that is inconsistent with the proposed behavior in Core. For example, if a third party author decides to implement `GetReverseIndex(i)` as `arr.Length - i` without the `-1`, this would result in different behavior compared to core collections.
-
-If a user is using the third party collection alongside core collections, this would be very confusing as `collection.[..^1]` could return different elements even if the two collections contain the same items.
+- Code written for the 2019 preview changes meaning where `^` is an index or a slice start.
+- Integer ends are inclusive and from-end ends are exclusive, because the `Index` value is exclusive.
+- `1..6` as a value is `Range(1, 7)`; C# code and debuggers show the exclusive end.
 
 # Alternatives
-[alternatives]: #alternatives
 
-- Using `-` instead of `^`: not possible since negative indexes can be valid
-- Defining `^i` as `mylist.Length - i` without the `-1`. This would allow `list[-1:] == list.[^1..]` but would cause `list.[..^1]` to be different.
-- Define `^i` to mean `mylist.Length - i` if used as the starting index of a slice and `mylist.Length - i - 1` if used as the end index. This would align the behavior completely with C#, but it would mean that the slicing would change from inclusive-inclusive to inclusive-exclusive if the `^` operator was used.
-- Providing a default `GetReverseIndex` for third party collections.
+- **Keep `^0` as the last element**: then `^7 : Index` must be `Index(8, true)`, and every value passed to .NET is off by one.
+- **Type-directed expressions only** (the form of #1044): `let r = 1..6` needs an annotation.
+- **Exclusive integer ends**: breaks every existing F# slice.
+- **Keep the old `GetReverseIndex` value and add 1 in the compiler**: the member disagrees with the language.
+
+# Prior art
+
+- C# 8 [ranges](https://github.com/dotnet/csharplang/blob/main/proposals/csharp-8.0/ranges.md): `^e`, `Range` values, implicit `Index` and `Range` support for countable types.
+- Python negative indices (#358); range values in Kotlin, Rust and Swift.
 
 # Compatibility
-[compatibility]: #compatibility
 
-Please address all necessary compatibility questions:
-* Is this a breaking change? **Yes**
+- `FromEndSlicing` has shipped only in preview, so no released language version changes.
+- `e[r]` with a `Range` argument and no applicable indexer is an error today, so the `Slice` conversion changes no existing program.
+- Third-party `GetReverseIndex` members that follow the 2019 contract are off by one until updated.
+- An older preview compiler with the new FSharp.Core still calls `GetReverseIndex` for lists, arrays and strings. A from-end slice end is then off by one until the compiler is updated too.
+- Older compilers give FS3303 for `^` outside preview, FS0751 for a bare `1..6` and FS3534 for a bare `^7`, as today. The new FSharp.Core extensions do not change their inference. A new compiler with an older FSharp.Core uses rules 0 and 2 for arrays and lists and does not need `GetReverseIndex`.
 
-This would break any code that defines `..^` as a custom operator.
+# Interop
 
-## Third-party collections
+See [Interactions](#interactions).
 
-We currently require third party collections to implement `<'T>.GetSlice` to support slicing syntax and `<'T>.Item` for indexing. We can additionally require third party collections to implement `<'T>.GetReverseIndex` if they wish to support from-the-end indexing and slicing. If they choose to do implement only `GetSlice`/`Item`, any `^i` indices will fail with a compile time error.
+# Pragmatics
 
-## Old versions of Core
-- New compiler + new core:
-    - Expected behavior
-- New compiler + old core:
-    - Same behavior as above, as the `^i` is desugared into a normal `GetSlice` call.
-- Old compiler + new core:
-    - Error on `^` at compile time.
-- Old compiler + old core:
-    - Error on `^` at compile time.
+## Diagnostics
+
+| Number | Condition |
+|---|---|
+| new error | `xs[^k]` and no rule applies; the message names the rules |
+| FS3350 | range or index expression with the feature off |
+| new error | `System.Range` or `System.Index` is missing from the target framework |
+| FS3303, FS3534 | unchanged |
+
+## Tooling
+
+See [Interactions](#interactions).
+
+## Performance
+
+A `Length` or `Count` read is O(1) for arrays, strings and BCL collections and O(n) for F# lists, as today. `Index` and `Range` are structs.
+
+## Scaling
+
+Not applicable.
+
+## Culture-aware formatting/parsing
+
+Not applicable.
 
 # Unresolved questions
-[unresolved]: #unresolved-questions
 
-* Performance of F# list slicing does two traversals
-* Lack of interop with System.Index/System.Range is a "noted concern"
-* This bug: https://github.com/dotnet/fsharp/issues/12071
-* User SRTP-based extension to implement GetReverseIndex automatically for anything with Length property?
-* This whole set of things related to Index/Range interop https://github.com/fsharp/fslang-design/discussions/472#discussioncomment-235941
-* https://github.com/dotnet/fsharp/issues/9425
+- Promote together with FS-1351, not before it.
+- Whether other expected types, such as `'T list` and `'T[]`, also select the sequence meaning of a range.
+- Whether a known `seq<'T>` expected type also selects the sequence meaning for `a..`, `..b`, or a range with a from-end bound.
+- Whether a from-end set-slice gets the same FS-1077/FS-1351 tolerance as a from-end get-slice.
+- Whether a `Range` value also indexes arrays and strings, and an `Index` value countable types, as in C#.
+- `int64` and `nint` bounds, `NIndex` and `NRange`.
