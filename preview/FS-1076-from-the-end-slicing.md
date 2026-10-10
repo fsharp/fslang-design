@@ -13,7 +13,7 @@ Related: [FS-1351](https://github.com/fsharp/fslang-design/pull/849) (slicing pr
 
 # Summary
 
-`^e` denotes `System.Index(e, fromEnd = true)`, as in C#: `^1` is the last element. From-end positions work with `Index` indexers, countable types and the slicing protocols of FS-1351. Outside indexers, `a..b` and `^e` are values of type `System.Range` and `System.Index`.
+`^e` denotes `System.Index(e, fromEnd = true)`, as in C#: `^1` is the last element. From-end positions work with `Index` indexers, countable types and the slicing protocols of FS-1351. Outside indexers, `a..b` and `^e` are values of type `System.Range` and `System.Index`. A `Range` value indexes a type that has `Slice`, as in C#.
 
 ```fsharp
 let xs = [ 1..5 ]
@@ -22,6 +22,7 @@ xs[..^1]                // [1; 2; 3; 4]
 (ResizeArray xs)[^1]    // 5: Count + Item(int)
 let r = 1..^1           // System.Range
 xs.Take(r)              // [2; 3; 4]: Enumerable.Take(source, Range)
+(ResizeArray xs)[r]     // [2; 3; 4]: Count + Slice
 ```
 
 # Motivation
@@ -93,6 +94,19 @@ let tail = ^5..
 let ys : seq<int> = 1..3         // the sequence 1, 2, 3
 ```
 
+## Range values as indexer arguments
+
+Under `RangeIndexExpressions`, a one-argument access `e[r]` whose argument is not a range expression and has known type `System.Range` uses ordinary indexer resolution first. That finds the `Range` indexers of lists and of FS-1351 protocol 1. If no indexer applies and the receiver satisfies FS-1351 protocol 2, a get elaborates as in C#:
+
+```fsharp
+// e, then r, then len are evaluated once
+let len = e.Length                       // else Count
+let s = r.Start.GetOffset len
+e.Slice(s, r.End.GetOffset len - s)
+```
+
+Nothing is clamped: `Slice` rejects out-of-range values, as in C#. A slice `e[a..b]` stays tolerant under FS-1351: on a `ResizeArray` of six elements `xs[4..10]` has two elements, and `xs[r]` with `r = 4..10` throws.
+
 ## FSharp.Core
 
 - An extension `member Item: index: Index -> 'T with get` on `List<'T>`, beside the FS-1351 extension `Item(range: Range)`, for netstandard2.1 and net.
@@ -108,7 +122,7 @@ let ys : seq<int> = 1..3         // the sequence 1, 2, 3
 
 # Changes to the F# spec
 
-- §6.4.6 Lookup Expressions: add [Indexing](#indexing).
+- §6.4.6 Lookup Expressions: add [Indexing](#indexing) and [Range values as indexer arguments](#range-values-as-indexer-arguments).
 - §6.4.7 Slice Expressions: add [Slicing](#slicing).
 - A new §6.4 subsection: add [Range and index expressions](#range-and-index-expressions).
 
@@ -127,12 +141,13 @@ let ys : seq<int> = 1..3         // the sequence 1, 2, 3
 
 # Prior art
 
-- C# 8 [ranges](https://github.com/dotnet/csharplang/blob/main/proposals/csharp-8.0/ranges.md): `^e`, `Range` values, implicit `Index` support for countable types.
+- C# 8 [ranges](https://github.com/dotnet/csharplang/blob/main/proposals/csharp-8.0/ranges.md): `^e`, `Range` values, implicit `Index` and `Range` support for countable types.
 - Python negative indices (#358); range values in Kotlin, Rust and Swift.
 
 # Compatibility
 
 - `FromEndSlicing` has shipped only in preview, so no released language version changes.
+- `e[r]` with a `Range` argument and no applicable indexer is an error today, so the `Slice` conversion changes no existing program.
 - Third-party `GetReverseIndex` members that follow the 2019 contract are off by one until updated.
 - An older preview compiler with the new FSharp.Core still calls `GetReverseIndex` for lists, arrays and strings. A from-end slice end is then off by one until the compiler is updated too.
 - Older compilers give FS3303 for `^` outside preview, FS0751 for a bare `1..6` and FS3534 for a bare `^7`, as today. The new FSharp.Core extensions do not change their inference. A new compiler with an older FSharp.Core uses rules 0 and 2 for arrays and lists and does not need `GetReverseIndex`.
@@ -174,4 +189,5 @@ Not applicable.
 - Whether other expected types, such as `'T list` and `'T[]`, also select the sequence meaning of a range.
 - Whether a known `seq<'T>` expected type also selects the sequence meaning for `a..`, `..b`, or a range with a from-end bound.
 - Whether a from-end set-slice gets the same FS-1077/FS-1351 tolerance as a from-end get-slice.
+- Whether a `Range` value also indexes arrays and strings, and an `Index` value countable types, as in C#.
 - `int64` and `nint` bounds, `NIndex` and `NRange`.
