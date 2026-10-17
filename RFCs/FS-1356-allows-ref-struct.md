@@ -6,7 +6,7 @@ This RFC covers the detailed proposal for this suggestion.
 - [x] [Suggestion](https://github.com/fsharp/fslang-suggestions/issues/1476)
 - [ ] Approved in principle
 - [ ] Implementation (not started)
-- [ ] Discussion
+- [x] [Discussion](https://github.com/fsharp/fslang-design/pull/861)
 
 Related: [FS-1053 Span and byref-like structs](../FSharp-4.5/FS-1053-span.md); F# 9 consumption of the constraint, [dotnet/fsharp#16800](https://github.com/dotnet/fsharp/issues/16800) and [dotnet/fsharp#17597](https://github.com/dotnet/fsharp/pull/17597).
 
