@@ -6,6 +6,11 @@ This RFC adds [anonymous type-tagged unions](https://github.com/fsharp/fslang-su
 * [ ] [Discussion](https://github.com/fsharp/fslang-design/discussions/519)
 * [ ] Implementation: [Early Prototype](https://github.com/dotnet/fsharp/pull/10566), [Latest Draft]([https://github.com/dotnet/fsharp/pull/10896](https://github.com/dotnet/fsharp/pull/12265))
 
+An implementation prototype and test baseline is being maintained on a fork
+in [VMikulasek/fsharp#1](https://github.com/VMikulasek/fsharp/pull/1). This is
+not the upstream implementation proposal; it is intended to inform a future
+public pull request.
+
 This RFC builds on a separate RFC for [additional implicit conversions guided by type annotations](https://github.com/fsharp/fslang-design/discussions/525).
 
 # Summary
@@ -150,25 +155,58 @@ The parentheses are always required.
 
 * An anonymous type-tagged type is elaborated by elaborating its constituent parts and flattening contained unions.
 
-* Immediately after such a type is elaborated, no possibility of overlap or runtime-type-identity ambiguity (after erasure) is permitted.  For example all of these are disallowed:
+  Directly nested anonymous-union syntax is rejected; an alias is required
+  when a union is used as an alternative. Aliased unions are flattened after
+  type resolution.
 
-  - `(int | int)`  (one type is fully included in another  w.r.t. runtime type tests)
-  - `(System.ValueType | int)`  (one type is fully included in another  w.r.t. runtime type tests)
-  - `(System.IComparable | string)`  (one type is fully included in another  w.r.t. runtime type tests)
-  - `(obj | int)` (one type is fully included in another w.r.t. runtime type tests)
+* Immediately after such a type is elaborated, overlap is checked using runtime representations. Directly duplicated cases are errors. If one case is subsumed by another, the compiler reports an overlap warning and ignores the subsumed case. For example:
+
+  - `(int|int)` is a directly duplicated case and is an error.
+  - `(System.ValueType|int)` reports an overlap warning; the `int` case is ignored.
+  - `(System.IComparable|string)` reports an overlap warning; the `string` case is ignored.
+  - `(obj|int)` reports an overlap warning; the `int` case is ignored.
+
+  A duplicate introduced by expanding an aliased anonymous union is allowed
+  with an overlap warning, rather than being treated as a directly duplicated
+  case:
+
+  ```fsharp
+  type IntOrString = (int|string)
+  type IntOrStringOrBool = (IntOrString|int|bool)
+  ```
+
+  The `int` case written directly in `IntOrStringOrBool` overlaps with the
+  `int` case obtained from `IntOrString`; the aliased case is retained and the
+  direct case is ignored.
+
+  If this leaves one effective case, the compiler also reports a degradation warning
+  and the union degrades to that case.
   
-* Generic type arguments may not be used as naked in erased unions. For these purposes each type variable or wildcard occurring syntactically in the types is considered separately and independently. For example all of these are disallowed:
-  - `('T | int)` 
-  - `(_ | int)`
-  - `(list<'T> | list<'U>)`
-  - `(list<'T> | list<int>)`
-  - `type StringOr<'a> = ('a | string)`
+* Naked generic type parameters are permitted in erased unions. A wildcard is
+  not permitted. Non-naked generic cases are permitted when their use identifies
+  one case; a use for which multiple cases match is rejected at the use site.
+  For example:
+
+  ```fsharp
+  let decide<'T, 'U> (x: ('T|'U)) =
+      match x with
+      | :? 'T -> 0
+      | :? 'U -> 1
+
+  let ambiguous<'T, 'U>(x: (list<'T>|list<'U>)) = x
+
+  ambiguous<int, string> []
+  // Error: both list<int> and list<string> match the argument.
+  ```
+
+  The common ancestor stored in an erased union must be remapped together with
+  its cases during generic instantiation.
 
 * Erased union are commutative and associative and internally are immediately flattened and normalised.
 
     ```fsharp
-    (A | B) =:= (B | A)
-    (A | (B | C)) =:= (( A | B ) | C)
+    (A|B) =:= (B|A)
+    (A|(B|C)) =:= ((A|B)|C)
     ```
 
     *`=:=` implies type equality and interchangeable in all context*
@@ -176,15 +214,33 @@ The parentheses are always required.
 * Erasure takes into account units-of-measure, tuple elimination and `FSharpFunc` elimination. For example all of these are disallowed:
 
   - `(int|int<userid>)`
-  - `((int -> int) | FSharpFunc<int,int>)` (one type is fully included in another w.r.t. runtime type tests)
-  - `((int * int) | System.Tuple<int,int>)`
+  - `((int -> int)|FSharpFunc<int,int>)` (one type is fully included in another w.r.t. runtime type tests)
+  - `((int * int)|System.Tuple<int,int>)`
+
+* `null` may be used only as the final case of the outermost, directly written
+  anonymous union. It belongs to the union as a whole, not to an individual
+  case:
+
+  ```fsharp
+  type TextOrInt = (int|string|null)
+  let x: (float|TextOrInt) = null
+  ```
+
+  The nullable alias is hoisted, so the effective type of `x` is
+  `(float|int|string|null)`. This also applies when aliases are chained.
+  Directly nested forms such as `(int|(string|null))` and
+  `((int|string)|null)` are rejected; write `(int|string|null)`.
+  `(T|null)` with one non-null case normalizes to an ordinary nullable `T`.
+  A nullable anonymous union must have a reference-type common ancestor.
+  Therefore `(int|float|null)` is rejected. `System.Nullable<_>` is not
+  an alternative; use a null case instead.
 
 ## Type relations
 [subtyping]: #subtyping-rules
 
 * Two anonymous type-tagged unions are equivalent if their constituent parts are all equivalent.
 
-* If `A :> C` and `B :> C` then `(A | B) :> C` where `T :> U` implies T is subtype of C;
+* If `A :> C` and `B :> C` then `(A|B) :> C` where `T :> U` implies T is subtype of C;
 
 ## Type inference
 [inference]: #type-inference
@@ -223,6 +279,16 @@ let prettyPrint (x: (int8|int16|int64|string)) =
 
 The match is considered exhaustive if all parts of the erased union are covered. 
 
+For a nullable anonymous union, `null` must also be covered:
+
+```fsharp
+let decide (x: (int|string|null)) =
+    match x with
+    | :? int -> 1
+    | :? string -> 2
+    | null -> 3
+```
+
 Similarly the following would also be considered exhaustive:
 
 ```fsharp
@@ -237,28 +303,23 @@ EDITOR NOTE (Don Syme): I'm not convinced the complexity added by this last case
 ## Erased Type
 [erasedtype]: #erased-type
 
-The compiled representation type for `(A | B)` is the best or first common ancestor of `A` and `B`. For example:
+The compiled representation type for `(A|B)` is the first common
+class ancestor of `A` and `B`. Interfaces are not considered when selecting
+the erased representation. For example:
 
 ```fsharp
 // compiled representation type is System.Object
 type IntOrString = (int|string)
 // compiled representation type is System.ValueType
 type Num = (int8|int16|float)
-type I = interface end
-type A = inherit I
-type B = inherit I
-// I is the compiled representation type
-type AorB = (A|B) 
-
-type I2 = interface end
-type C = inherit I inherit I2
-type D = inherit I inherit I2
-// Both I or I2 could be potential compiled representation type. The compiler would choose I since its the earliest ancestor
-type CorD = (C|D) 
+type Base = class end
+type A = inherit Base
+type B = inherit Base
+// Base is the compiled representation type
+type AorB = (A|B)
 ```
 
-NOTE: we need to be more precise here.  For example `int` and `string` both support many common interfaces like `System.IComparable`.  It is possible that
-for compilation stability we should always only use `obj`.
+Consequently, common interfaces such as `System.IComparable` do not affect the erased representation.
 
 ## Resolved issues
 
@@ -287,19 +348,23 @@ See "Guidance" above.
 # Alternatives
 [alternatives]: #alternatives
 
-# Unresolved questions
-[unresolved]: #unresolved-questions
+# Out of scope
+[outofscope]: #out-of-scope
 
-* Should pattern matching type tests have to match the available type structure explicitly or should subtype-inclusion be permitted?
+The following related features are out of scope for this version:
 
-* There is a slippery slope where an additional typing mechanism may be desired for some APIs for types representing atomic values, e.g. `(int|float|"auto"|"*")` representing specific allowed string values.
+* Extending anonymous unions to combine ordinary types with specific atomic
+  values, such as `(int|float|"auto"|"*")`. This would require additional
+  type-system design beyond anonymous unions.
 
-* See above: "NOTE: we need to be more precise here. For example int and string both support many common interfaces like System.IComparable."
+## C# unions
+C# union is essentially aliased anonymous union. Therefore the interoperability could be implemented for example as follows:
+```csharp
+public union SomeUnion(int, string)
+```
 
-* Are naked generic parameters supported, e.g. see https://github.com/fsharp/fslang-design/discussions/519#discussioncomment-298820. 
-
-  - "this could only be supported if the erased type is always "obj", since the erased type must be stable under instantiation of generic parameters.
-  
-  - "we need to think further about whether this extensibility can be supported"
-
-
+```fsharp
+[<CSharpUnion>]
+type SomeUnion = (int|string)
+```
+Interoperability with C# unions is out of scope for this version.
