@@ -4,10 +4,7 @@ This RFC adds [anonymous type-tagged unions](https://github.com/fsharp/fslang-su
 
 * [x] [Suggestion approved in principle](https://github.com/fsharp/fslang-suggestions/issues/538)
 * [ ] [Discussion](https://github.com/fsharp/fslang-design/discussions/519)
-* [ ] Implementation: [Early Prototype](https://github.com/dotnet/fsharp/pull/10566), [Latest Draft]([https://github.com/dotnet/fsharp/pull/10896](https://github.com/dotnet/fsharp/pull/12265))
-
-An implementation prototype and test baseline is being maintained on a fork
-in [VMikulasek/fsharp#1](https://github.com/VMikulasek/fsharp/pull/1). It is intended to evolve into a future public pull request.
+* [ ] Implementation: [Early Prototype](https://github.com/dotnet/fsharp/pull/10566), [Latest Draft](https://github.com/dotnet/fsharp/pull/20822)
 
 This RFC builds on a separate RFC for [additional implicit conversions guided by type annotations](https://github.com/fsharp/fslang-design/discussions/525).
 
