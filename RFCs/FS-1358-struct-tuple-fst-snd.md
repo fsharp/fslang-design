@@ -1,4 +1,4 @@
-# F# RFC FS-1342 - `fst` and `snd` for struct tuples and larger tuples
+# F# RFC FS-1358 - `fst` and `snd` for struct tuples and larger tuples
 
 The design suggestion [Add List.chooseV, Seq.tryPickV, etc. for ValueOption](https://github.com/fsharp/fslang-suggestions/issues/739) has been marked "approved in principle". This RFC covers the `fst`/`snd` overloads that the F# team sketched in [this comment](https://github.com/fsharp/fslang-suggestions/issues/739#issuecomment-5357571363), with a compiler-controlled open instead of `[<AutoOpen>]` (see [Alternatives](#alternatives)). The `ValueOption` collection functions are out of scope.
 
