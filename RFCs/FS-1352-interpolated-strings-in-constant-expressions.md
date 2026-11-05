@@ -4,12 +4,12 @@ The design suggestion [Support (a subset of) interpolated strings in Attribute p
 
 - [x] [Suggestion](https://github.com/fsharp/fslang-suggestions/issues/1347)
 - [x] Approved in principle
-- [ ] [Implementation](https://github.com/dotnet/fsharp/pull/FILL-ME-IN)
+- [ ] [Implementation](https://github.com/dotnet/fsharp/pull/20753), [amendment](https://github.com/dotnet/fsharp/pull/20754)
 - [x] [Discussion](https://github.com/fsharp/fslang-design/discussions/854)
 
 # Summary
 
-As in C# 10, an interpolated string is a constant expression when each hole is a non-null constant `string` expression without alignment or format specifiers. The compiler evaluates it to the text that the same expression gives at run time. `[<Literal>]` values, attribute arguments and type provider static arguments can then use interpolation, as they already use `+`.
+An interpolated string is a constant expression when each hole is a non-null constant string, integer, decimal, character, Boolean or `float` that prints the same on every .NET runtime, with no alignment and no format specifier other than `%s`. The compiler evaluates it to the text that the same expression gives at run time. `[<Literal>]` values, attribute arguments and type provider static arguments can then use interpolation, as they already use `+`.
 
 # Motivation
 
@@ -36,18 +36,24 @@ The `[<Obsolete>]` message is the use case of the suggestion. `+` is harder to r
 
 An interpolated string is a *constant interpolated string* when each hole obeys all of these rules:
 
-1. The hole has no alignment (`{e,8}`) and no format specifier: no .NET format (`{e:N2}`) and no printf format (`%s{e}`).
-2. The hole expression is a constant expression of type `string`, and its value is not `null`.
+1. The hole has no alignment (`{e,8}`) and no format specifier (`{e:N2}`, `%d{e}`), except `%s` on a `string` hole.
+2. The hole expression is a constant expression of type `string`, `decimal`, `char`, `bool`, `float` or an integer type: `sbyte`, `byte`, `int16`, `uint16`, `int32`, `uint32`, `int64` or `uint64`. A `string` value is not `null`. A `float` value qualifies under the rule in [Float holes](#float-holes).
 
 The rules apply to all interpolated string forms: `$"..."`, `$@"..."`, `$"""..."""` and `$$"""..."""`. A constant interpolated string has type `string` and is a constant expression. So it can be an operand of `+` or a hole of another constant interpolated string. Interpolated strings without holes are constant expressions already and do not change.
 
 ## Value
 
-The value is the concatenation of the text fragments and the hole values, in source order. The text fragments use the run-time escape rules (`{{`, `}}` and `%%`, or their `$$` forms). So the value is the one that the same expression gives at run time:
+The value is the concatenation of the text fragments and the hole texts, in source order. The text fragments use the run-time escape rules (`{{`, `}}` and `%%`, or their `$$` forms). A `string` hole contributes its value. Any other hole contributes the text that `string` returns for it, which does not depend on culture: the digits with a leading `-` if negative (a decimal keeps its scale, `1.50m` gives `1.50`), the character, `True` or `False`, or for a `float` its plain decimal text (`1.5`, `100`). So the value is the one that the same expression gives at run time:
 
 ```fsharp
 [<Literal>]
 let Items = $"{Root}/items"          // "api/v2/items"
+
+[<Literal>]
+let ApiVersion = 2
+
+[<Literal>]
+let Versioned = $"api/v{ApiVersion}{'-'}{true}"   // "api/v2-True"
 
 [<Literal>]
 let ItemById = $"{Items}/{{id}}"     // "api/v2/items/{id}", a route template
@@ -55,6 +61,15 @@ let ItemById = $"{Items}/{{id}}"     // "api/v2/items/{id}", a route template
 [<Literal>]
 let CountFormat = $"{Items}: %%d"    // "api/v2/items: %d", usable as a printf format
 ```
+
+## Float holes
+
+A `float` prints differently on .NET Framework, which gives 15 significant digits, and on .NET Core 3.0 and later, which give the shortest text that reads back, and the two switch to exponent notation at different magnitudes: `0.1 + 0.2` is `0.3` and `0.30000000000000004`, `-0.0` is `0` and `-0`. A `float` hole is constant when both print the same text, that is when:
+
+- the value is positive zero, or its magnitude is from 0.0001 up to but excluding 10^15; and
+- it is the double nearest to a decimal number of at most 15 significant digits.
+
+In that range such a decimal identifies its double uniquely, so both runtimes print it in plain notation, without exponent or trailing zeros: `{1.5}`, `{-0.25}` and `{100.0}` give `1.5`, `-0.25` and `100`. Every other `float` hole is rejected: `0.1 + 0.2`, `-0.0`, `NaN`, the infinities, magnitudes outside the range, and values that need more than 15 digits. `float32` holes are rejected too: its texts differ between the runtimes for more values, and a `float32` constant in a string is rare.
 
 ## Contexts
 
@@ -74,16 +89,15 @@ Outside these contexts, interpolated strings do not change. In particular, quota
 
 ```fsharp
 [<Literal>]
-let Version = 2
-[<Literal>]
 let NoValue: string = null
 let dir = "data"
 
-[<Literal>] let A = $"v{Version}"     // rule 2: type int
-[<Literal>] let B = $"{Root,10}"      // rule 1: alignment
-[<Literal>] let C = $"%s{Root}"       // rule 1: printf format
-[<Literal>] let D = $"{dir}/x"        // rule 2: not a constant
-[<Literal>] let E = $"{NoValue}/x"    // rule 2: null, as for NoValue + "/x" today
+[<Literal>] let A = $"{0.1 + 0.2}"          // rule 2: float whose text differs between runtimes
+[<Literal>] let B = $"{Root,10}"            // rule 1: alignment
+[<Literal>] let C = $"%d{ApiVersion}"       // rule 1: format specifier
+[<Literal>] let D = $"{dir}/x"              // rule 2: not a constant
+[<Literal>] let E = $"{NoValue}/x"          // rule 2: null, as for NoValue + "/x" today
+[<Literal>] let F = $"{DayOfWeek.Monday}"   // rule 2: enum type
 ```
 
 # Changes to the F# spec
@@ -92,32 +106,33 @@ let dir = "data"
 
 > — OR —
 >
-> - An interpolated string whose holes are non-null literal constant expressions of type `string` without alignment or format specifiers. Its value is the concatenation of its text fragments and hole values.
+> - An interpolated string whose holes are literal constant expressions of type `string` (not `null`), `decimal`, `char`, `bool`, an integer type, or `float` whose value is positive zero or has a magnitude from 0.0001 up to but excluding 10^15 and is the double nearest to a decimal of at most 15 significant digits, with no alignment and no format specifier other than `%s` on a `string` hole. Its value is the concatenation of its text fragments and hole texts.
 
 [Custom attribute](https://github.com/fsharp/fslang-spec/blob/main/spec/custom-attributes-and-reflection.md#custom-attributes) arguments and [provided type](https://github.com/fsharp/fslang-spec/blob/main/spec/provided-types.md) static parameters use this definition, so they do not change.
 
 # Drawbacks
 
-- The subset is narrower than general interpolation. Some holes, such as an `int` literal, still fail, and the reason is not obvious.
+- The subset is narrower than general interpolation. Some holes, such as `0.1 + 0.2` or a `float32` literal, still fail, and the reason is not obvious.
 - There are two ways to write the same constant string.
 
 # Alternatives
 
 - Do nothing: `+` stays the only way.
 - Attribute arguments only, as the suggestion title says. Rejected: attribute arguments, `[<Literal>]` values and static arguments share one definition of constant expression.
-- Holes of integral, `char` and `bool` types. F# formats them with the invariant culture (C# uses the current culture), so their text is known at compile time. Rejected for parity with C#.
-- A plain `%s` hole. It inserts the string unchanged, as `{e}` does. Rejected for parity with C#, which allows no format specifiers.
+- Strict parity with C#: `string` holes only, no `%s`. Rejected in [discussion #854](https://github.com/fsharp/fslang-design/discussions/854): F# format specifiers already differ from C#, and F# formats integers, decimals, characters and Booleans with the invariant culture, so their text is known at compile time.
+- Every `float` and `float32` hole, with the text of the runtime that runs the compiler. Rejected: that text depends on the runtime (`-0.0` is `0` on .NET Framework and `-0` on .NET), so one source would give different constants.
+- `float32` holes under a similar rule. Not included: the rule needs more conditions for a case that is rare in constants. It can be added later.
 
 # Prior art
 
-C# 10 [constant interpolated strings](https://github.com/dotnet/csharplang/blob/main/proposals/csharp-10.0/constant_interpolated_strings.md) ([champion issue](https://github.com/dotnet/csharplang/issues/2951)) use the same rules: each hole is a constant `string` expression without alignment or format specifiers, and a `null` constant hole is an error (CS0133). This RFC accepts and rejects the same holes.
+C# 10 [constant interpolated strings](https://github.com/dotnet/csharplang/blob/main/proposals/csharp-10.0/constant_interpolated_strings.md) ([champion issue](https://github.com/dotnet/csharplang/issues/2951)) accept constant `string` holes without alignment or format specifiers, and reject a `null` constant hole (CS0133). F# accepts these holes too, and also integer, `decimal`, `char`, `bool` and `%s` holes, and `float` holes that print the same on every runtime. C# cannot fold numeric holes: it formats them with the current culture.
 
 C# also evaluates such strings at compile time outside constant contexts. This RFC does not require that, as F# does not require it for `+`.
 
 # Compatibility
 
 - Not a breaking change: each new form gave FS0267 before.
-- An older compiler reports FS0267 for the new forms. A newer compiler with an older `--langversion` reports that the feature needs a newer language version.
+- A compiler without the feature, or with an older `--langversion`, reports FS0267 for the new forms, as before. Interpolated strings that are never evaluated, such as the unused branch of `false && (...)`, are not checked as constants.
 - Binaries contain only the evaluated string: a literal field, an attribute blob, or a `Const.String` in F# metadata. Older compilers read them as before. The metadata format does not change.
 - No FSharp.Core change.
 
@@ -129,7 +144,7 @@ Other .NET languages see an ordinary `const string` field or attribute value.
 
 ## Diagnostics
 
-Report the error on the first hole that breaks a rule, not on the whole string, and state the rules. For example: *"This interpolated string must be a constant, so each hole must be a non-null constant expression of type 'string' without alignment or format specifiers."*
+Report the existing error FS0267, "This is not a valid constant expression or custom attribute value", on the first hole that breaks a rule, not on the whole string. A hole that breaks a rule and is never evaluated, such as one in the unused branch of `false && (...)`, is not reported.
 
 ## Tooling
 
@@ -149,7 +164,7 @@ Evaluation is linear in the number of fragments and holes. Existing code is not 
 
 ## Culture-aware formatting/parsing
 
-None. Holes insert strings unchanged, so the value does not depend on culture or on the .NET version.
+None. Integer, `decimal`, `char` and `bool` holes use culture-invariant text, which is the same on every .NET runtime. A `float` hole is accepted only when its culture-invariant text is the same on every runtime too.
 
 # Unresolved questions
 
