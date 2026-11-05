@@ -4,7 +4,7 @@ The design suggestion [More struct tuple inference](https://github.com/fsharp/fs
 
 - [x] [Suggestion](https://github.com/fsharp/fslang-suggestions/issues/988)
 - [x] Approved in principle
-- [ ] [Implementation](https://github.com/dotnet/fsharp/pull/FILL-ME-IN)
+- [ ] Implementation
 - [x] [Discussion](https://github.com/fsharp/fslang-design/pull/857)
 
 # Summary
@@ -146,3 +146,4 @@ Not applicable.
 
 - Should a kind conflict show, as a related location, the code that decided the kind?
 - Should a public member with an inferred tuple parameter kind get an informational diagnostic?
+- When phase 1 succeeds, should it commit undetermined kinds read from rejected candidates, or only those read from the selected candidate?
