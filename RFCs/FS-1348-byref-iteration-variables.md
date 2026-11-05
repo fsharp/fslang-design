@@ -114,7 +114,7 @@ finally
 
 For an `inref` variable over an array, `ldelema` MUST carry the `readonly.` prefix, so that it skips the array type check and does not throw on a covariant array. Today the compiler emits that prefix only when the element type is a type parameter.
 
-Apart from that prefix, the elaborated forms can be written by hand today. The optimizer, however, recognises compiled `for ... in` loops over integer ranges, strings and lists and rebinds their variable to a value. It MUST NOT rewrite a loop whose variable has a byref type.
+Apart from that prefix, the elaborated forms can be written by hand today. Optimizations MUST preserve the variable's binding to the element address and its annotated `byref` or `inref` capabilities.
 
 ## Sequence, list, array and computation expressions
 
@@ -185,7 +185,7 @@ All are errors.
 
 ## Tooling
 
-Hover shows `val item: byref<int>`, as for any byref local. Debug points, navigation, rename, debugger display and error recovery do not change.
+Hover shows the annotated type, for example `val item: byref<int>` or `val item: inref<int>`. Debug points, navigation, rename, debugger display and error recovery do not change.
 
 ## Performance
 
