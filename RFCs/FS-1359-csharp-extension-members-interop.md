@@ -60,9 +60,10 @@ Name resolution treats the container as a classic extension class, with these ad
 
 - For each grouping type it reads each marker type. The marker method gives the receiver type `R` over the type parameters of the marker type.
 - For each skeleton member whose attribute names the marker type, it finds the implementation method with the rules above. A skeleton without an implementation is not visible.
-- An instance member becomes an extension member of `R`. A static member becomes a static extension member of `R`, as an F# static extension member. A property becomes an extension property. Its accessors are the implementation methods `get_P` and `set_P`.
+- The skeleton is the only extension candidate for its member. The compiler MUST NOT register the implementation method of an instance member as a classic extension method too. Roslyn shadows it the same way. An implementation method with `[Extension]` and no visible skeleton stays a classic extension method. A direct static call to an implementation method stays valid.
+- An instance member becomes an extension member of `R`. A static member becomes a static extension member of `R`, as an F# static extension member. The type arguments of `R` at the use site instantiate the type parameters of the block. A property becomes an extension property. Its accessors are the implementation methods `get_P` and `set_P`.
 - Member lookup, overload resolution, accessibility, nullness and attributes use the skeleton signature.
-- Code generation calls the implementation method. The receiver is the first argument.
+- Code generation calls the implementation method. For an instance member, the receiver is the first argument.
 - Completion and `open type` hide grouping and marker types. Name resolution still accepts their names, as C# does.
 - Priority: an intrinsic member wins over an extension member. F# and C# extension members in scope follow the existing `open` order.
 
@@ -74,13 +75,13 @@ For marked members the compiler emits the shape:
 
 - The module is the container.
 - Marked members group by receiver type and constraints into grouping types. The grouping and marker type names are content-based hashes of the signature. They are stable between builds and unspeakable.
-- Each marked member gets a skeleton and an implementation method. The skeleton has the F# name, for example `Tripled`. The implementation has a plain name: `Doubled`, `get_Tripled`, `set_Tripled`, `Create`, `op_Addition`. An explicit `[<CompiledName>]` overrides the plain name.
+- Each marked member gets a skeleton and an implementation method. The skeleton has the F# name, for example `Tripled`. The implementation has a plain name: `Doubled`, `get_Tripled`, `set_Tripled`, `Create`, `op_Addition`. An explicit `[<CompiledName>]` renames the skeleton and the implementation together, and for a property both accessors; C# matches them by name. The F# signature data keeps the source name.
 - The implementation of an instance method also carries `[Extension]`, so F# and C# 13 see a classic extension method. No other implementation carries it.
 - The compiler embeds `ExtensionMarkerAttribute` when the target framework lacks it, as for `IsReadOnlyAttribute`.
 
 With the feature on, the skeleton and the implementation replace the dotted method. Unmarked members compile as today.
 
-Two marked members of one module can have the same plain name and parameter types, for example `Create` on two receiver types. C# reports the same conflict. The compiler MUST report an error.
+Two marked members of one module can compile to the same implementation signature: name, total generic arity (block plus member) and parameter types. `Create(int)` on two receiver types is an example; `Create()` and `Create<T>()` are not. C# reports the same conflict. The compiler MUST report an error.
 
 A marked member in a nested module gets a warning. A nested module compiles to a nested class, and C# reads extension members only from a top-level container.
 
@@ -120,7 +121,8 @@ A marked member in a nested module gets a warning. A nested module compiles to a
 
 # Compatibility
 
-- No source break. `[<Extension>]` on type-extension members is valid today.
+- The attribute syntax is valid today. Emission and its diagnostics are behind the feature, so a project changes only when it turns the feature on. Then two marked members with the same implementation signature are a new error; today their dotted names differ.
+- Consumption is not gated. A C# 14 extension block in a referenced assembly adds candidates to member lookup and SRTP. Existing code can resolve to a new candidate, as it does when a referenced assembly adds a classic extension method. Gating is an open question.
 - The compiled name of a marked member changes when the library recompiles with the feature on. C# could not call the old name. An F# caller compiled against the old binary must recompile.
 - Older F# compilers reading source: they compile as today, with dotted names.
 - Older F# compilers reading new binaries: they use the F# signature data and call the implementation methods by compiled name. They see grouping types as plain nested types, as the current compiler sees C# blocks.
@@ -140,7 +142,7 @@ A marked member in a nested module gets a warning. A nested module compiles to a
 | new | a marked member in a nested module | warning |
 | new | a marked member is `op_Implicit` or `op_Explicit`; C# ignores it | warning |
 | new | a marked operator without an operand of the receiver type, or not public | warning |
-| new | two marked members of one module compile to the same name and parameter types | error |
+| new | two marked members of one module compile to the same name, generic arity and parameter types | error |
 | FS1215 | a marked operator, language version without FS-1043 | warning, unchanged |
 
 ## Tooling
@@ -162,7 +164,6 @@ Not applicable.
 # Unresolved questions
 
 - Whether the compiler adds `[<Extension>]` to the module for a marked type-extension member, as it does for `let` bindings.
-- Whether `[<CompiledName>]` on a marked property is honoured ([dotnet/fsharp#9405](https://github.com/dotnet/fsharp/issues/9405)).
 - Whether to gate consumption. New candidates can change overload resolution in existing code.
 - The hash scheme for the generated names. Roslyn uses XxHash128 of a raw signature string. The same scheme gives the same XML doc IDs from C# and F#.
 - Indexers: extension indexers are preview in C#.
