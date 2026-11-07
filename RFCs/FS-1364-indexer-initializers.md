@@ -80,6 +80,7 @@ let r = T(x) in r["a"] <- f (); r.P <- g (); r
 - Quotations need no new node. They contain the elaborated assignment `r[idx] <- value`, as they contain a `PropertySet` for a named property setter.
 - SRTP: there is no new constraint. As for `r[idx] <- value`, the indexer lookup needs a known result type.
 - Type providers: provided methods and provided indexers work as in `r[idx] <- value`.
+- Immutable dictionaries have no indexer setter, so initializers do not apply to them. Their builders have one: `ImmutableDictionary.CreateBuilder<string, int>(["a"] <- 1).ToImmutable()`.
 - [FS-1342](https://github.com/fsharp/fslang-design/pull/838), if accepted: the value is an argument of the indexer setter, so it gets a contextual type. In `Dictionary<string, byte[]>(["a"] <- [1; 2])`, the value is a `byte[]`.
 
 # Changes to the F# spec
@@ -182,5 +183,4 @@ Not applicable.
 
 # Unresolved questions
 
-1. `<-` or `=`? The approval comment prefers `=` if possible. This RFC uses `<-`, because `=` breaks code (see Alternatives).
-2. The FCS syntax tree: keep the nested `SynExpr.Set` shape without an API change, or add a flat node for tools?
+The FCS syntax tree: keep the nested `SynExpr.Set` shape without an API change, or add a flat node for tools?
