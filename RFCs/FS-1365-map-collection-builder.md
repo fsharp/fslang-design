@@ -1,9 +1,9 @@
 # F# RFC FS-1365 - C# collection expression support for F# maps
 
-The design suggestion [Support for C# collection expressions in F# maps](https://github.com/fsharp/fslang-suggestions/issues/FILL-ME-IN) is not approved yet.
+The design suggestion [Support for C# collection expressions in F# maps](https://github.com/fsharp/fslang-suggestions/issues/1480) is not approved yet.
 This RFC covers the detailed proposal for this suggestion.
 
-- [x] [Suggestion](https://github.com/fsharp/fslang-suggestions/issues/FILL-ME-IN)
+- [x] [Suggestion](https://github.com/fsharp/fslang-suggestions/issues/1480)
 - [ ] Approved in principle
 - [ ] Implementation (not started)
 - [ ] Discussion
