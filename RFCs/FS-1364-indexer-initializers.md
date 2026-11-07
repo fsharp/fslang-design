@@ -6,7 +6,7 @@ This RFC covers the indexer part of the suggestion. The collection, event and su
 - [x] [Suggestion](https://github.com/fsharp/fslang-suggestions/issues/969)
 - [x] [Approved in principle](https://github.com/fsharp/fslang-suggestions/issues/969#issuecomment-764638387)
 - [ ] Implementation (not started)
-- [ ] Discussion
+- [x] [Discussion](https://github.com/fsharp/fslang-design/pull/869)
 
 # Summary
 
