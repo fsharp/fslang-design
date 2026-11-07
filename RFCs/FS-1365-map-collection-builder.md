@@ -6,7 +6,7 @@ This RFC covers the detailed proposal for this suggestion.
 - [x] [Suggestion](https://github.com/fsharp/fslang-suggestions/issues/1480)
 - [ ] Approved in principle
 - [ ] Implementation (not started)
-- [ ] Discussion
+- [x] [Discussion](https://github.com/fsharp/fslang-design/pull/870)
 
 # Summary
 
@@ -99,7 +99,7 @@ Completion does not show the hidden type or its method.
 
 ## Performance
 
-`Create` adds n items in O(n log n) time, with no intermediate collection. Existing code does not change.
+`Create` adds n items in O(n log n) time, with no intermediate collection. Code that compiles today does not change.
 
 ## Scaling
 
