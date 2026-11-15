@@ -246,7 +246,7 @@ Assuming this, a new implicit conversion is added for expressions where, if the 
 and the type of the expression is a nominal type prior to its commitment point, then that type must convert to one of the constituent types of the 
 erased union type.
 
-This means the following is valid because the known type information for expressions `true` and `"Hello"` is in both cases "must convert to `(int|string)`".
+This means the following is valid because the known type information for expressions `1` and `"Hello"` is in both cases "must convert to `(int|string)`".
 
 ```fsharp
 // inferred to 
