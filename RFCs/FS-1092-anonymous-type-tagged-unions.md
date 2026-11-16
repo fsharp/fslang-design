@@ -230,6 +230,14 @@ The parentheses are always required.
   Therefore `(int|float|null)` is rejected. `System.Nullable<_>` is not
   an alternative; use a null case instead.
 
+  Null annotations on aliased anonymous unions are allowed, while null annotations on directly written anonymous unions are forbidden:
+
+  ```fsharp
+  type TextOrInt = (int|string)
+  let x: TextOrInt|null = null // allowed
+  let y: (int|string)|null = null // forbidden, write (int|string|null)
+  ```
+
 ## Type relations
 [subtyping]: #subtyping-rules
 
