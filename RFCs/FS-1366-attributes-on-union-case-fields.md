@@ -51,7 +51,7 @@ The case form `ident ':' uncurried-sig` is for FSharp.Core only and does not cha
 
 ## Target
 
-1. The compiler MUST emit each attribute on the CLI property that represents the field, next to the attributes that it generates there today. It MUST NOT emit two instances of a generated attribute type that does not allow multiple instances, such as `DebuggerNonUserCode`.
+1. The compiler MUST emit each attribute on the CLI property that represents the field, next to the attributes that it generates there today. If the source has an attribute type that the compiler generates there and that does not allow multiple instances, such as `DebuggerNonUserCode`, the compiler MUST emit only the generated instance.
 2. The compiler MUST NOT emit the attribute on a backing field, or on a parameter of a generated member such as `New<Case>`.
 3. The compiler MUST accept the explicit target `property:`, which has no effect, and MUST report an error for any other explicit target.
 4. The compiler MUST report an error for an attribute type whose `AttributeUsage` does not include `AttributeTargets.Property`.
@@ -66,7 +66,7 @@ type U =
 
 exception ParseError of [<Obsolete "Use offset">] position: int * offset: int
 
-let f (e: ParseError) = e.position             // warning FS0044, as for a record field
+let f (e: ParseError) = e.position             // warning FS0044
 ```
 
 ## Struct unions
@@ -74,8 +74,8 @@ let f (e: ParseError) = e.position             // warning FS0044, as for a recor
 A struct union has one CLI type for all cases, so fields of different cases that have the same name share one property. Today, the fields can share only when they have the same type (§8.8). The generated names `Item`, `Item1`, and so on are included. This RFC adds a condition from the [suggestion discussion](https://github.com/fsharp/fslang-suggestions/issues/684#issuecomment-4565114924):
 
 1. The fields can share only when they also have the same attribute list: the same attributes in the same order. The compiler MUST report an error for fields with the same name that cannot share.
-2. Two attributes are the same when they have the same attribute type, constructor arguments with equal values (arrays are compared by element), and the same named arguments with equal values, in any order.
-3. The rule applies separately to the signature file and to the implementation file.
+2. Two attributes are the same when they have the same attribute type and the same constructor arguments and named arguments, in the same order, with identical constant values (arrays are compared by element).
+3. Rule 1 applies separately to the signature file and to the implementation file.
 4. The compiler MUST emit the list once on the shared property.
 
 ```fsharp
@@ -97,13 +97,13 @@ Quotations, SRTP constraints and type providers do not observe these attributes.
 # Changes to the F# spec
 
 - **§8 Type Definitions**, grammar: `union-type-field` gets `attributes?`, as in [Syntax](#syntax).
-- **§8.8 Struct Type Definitions**: next to the rule that fields with the same name have the same type, add the rule of [Struct unions](#struct-unions).
-- **§13.1 Custom Attributes**, mapping to CLI metadata: add the rules of [Target](#target) for a field of a union case or of an exception definition.
+- **§8.8 Struct Type Definitions**: next to the rule that fields with the same name have the same type, add the rules of [Struct unions](#struct-unions).
+- **§13.1 Custom Attributes**, mapping to CLI metadata: add [Target](#target) rules 1 to 4 for a field of a union case or of an exception definition.
 
 # Drawbacks
 
 - The target rule differs from the rule for record fields (see [Alternatives](#alternatives)).
-- In a struct union, each value has the properties of all cases. A consumer that reads all properties of the type, such as the `System.ComponentModel.DataAnnotations` `Validator`, applies the attributes of one case to values of the other cases: `[<Range(1, 10)>] count: int` fails for a value of another case, where `count` is 0. A consumer that reads `UnionCaseInfo.GetFields()`, such as `System.Text.Json`, does not.
+- In a struct union, each value has the properties of all cases. A consumer that reads all properties of the type, such as the `System.ComponentModel.DataAnnotations` `Validator`, applies the attributes of one case to values of the other cases: `[<Required>] name: string` fails for a value of another case, where `name` is null. A consumer that reads `UnionCaseInfo.GetFields()`, such as `System.Text.Json`, does not.
 
 # Alternatives
 
@@ -140,7 +140,7 @@ The errors of [Target](#target) rules 3 and 4 are new, because the existing diag
 * FSharp.Compiler.Service: `SynField` already has an attribute list, and the parser now fills it for these fields. `FSharpField.PropertyAttributes` returns the checked attributes. Formatters need an update to print the attributes.
 * Signature generation prints the attributes, also for unnamed fields.
 * Completion, navigation and colorization in the attribute list work as for attributes on record fields.
-* Debugging: the compiler SHOULD copy the attributes to the debugger proxy type of the case, as it copies the generated attributes today, so that `DebuggerBrowsable` on a field works.
+* Debugging: `DebuggerBrowsable` on a field takes effect in the debugger display of the case.
 
 ## Performance
 
@@ -158,4 +158,4 @@ Not applicable.
 
 - The suggestion names union case fields only. Are exception fields in scope?
 - The suggestion discussion [asked](https://github.com/fsharp/fslang-suggestions/issues/684#issuecomment-4573142687) whether an attribute goes on the field, the property or both. Only the suggester answered: the property. Do maintainers accept the errors of [Target](#target) rules 3 and 4?
-- Should `Obsolete`, `Experimental` and `CompilerMessage` on a field also give a diagnostic where F# code names the field in a pattern or in a constructor call? This RFC specifies a diagnostic only for `e.field` on an exception ([Target](#target) rule 6).
+- Should `Obsolete`, `Experimental` and `CompilerMessage` on a field also give a diagnostic where F# code names the field in a pattern or in a constructor call ([Target](#target) rule 6 covers only `e.field`)?
