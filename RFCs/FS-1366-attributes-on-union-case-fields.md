@@ -21,9 +21,9 @@ type ErrorMessage =
 
 # Motivation
 
-.NET libraries read attributes from properties to control serialization and validation. A record field can have attributes. A union case field cannot, so these libraries cannot be configured for it.
+.NET libraries such as `System.Text.Json` and the `System.ComponentModel.DataAnnotations` validators read attributes from properties to control serialization and validation. A record field can have attributes. A union case field cannot, so these libraries cannot be configured for it.
 
-`System.Text.Json` serializes F# unions since [dotnet/runtime#125610](https://github.com/dotnet/runtime/pull/125610). It reads `JsonPropertyName`, `JsonConverter` and `JsonNumberHandling` from the property of each case field, but that pull request notes that "F# currently has no syntax for applying attributes to individual union case field parameters". Validators that read `System.ComponentModel.DataAnnotations` attributes from properties have the same gap.
+`System.Text.Json` serializes F# unions since [dotnet/runtime#125610](https://github.com/dotnet/runtime/pull/125610). It reads `JsonPropertyName`, `JsonConverter` and `JsonNumberHandling` from the property of each case field, but that pull request notes that "F# currently has no syntax for applying attributes to individual union case field parameters".
 
 # Detailed design
 
@@ -36,7 +36,7 @@ union-type-field :=
 ```
 
 Union cases and exception definitions use this production, in implementation files and in signature files.
-The attributes apply to the one field that follows them. An attribute list can be on the line before its field. An XML documentation comment for the field comes before the attributes.
+An attribute list can be on the line before its field. An XML documentation comment for the field comes before the attributes.
 
 ```fsharp
 type Shape =
@@ -55,31 +55,27 @@ The case form `ident ':' uncurried-sig` is for FSharp.Core only and does not cha
 
 1. The compiler MUST emit each attribute on the CLI property that represents the field.
 2. The compiler MUST NOT emit the attribute on a backing field, or on a parameter of a generated member such as `New<Case>`.
-3. The explicit target `property:` is permitted and has no effect. Any other explicit target is an error.
-4. An attribute type whose `AttributeUsage` does not include `AttributeTargets.Property` is an error.
-5. The attributes do not change how F# code constructs, matches, compares or prints the value.
+3. The compiler MUST accept the explicit target `property:`, which has no effect, and MUST report an error for any other explicit target.
+4. The compiler MUST report an error for an attribute type whose `AttributeUsage` does not include `AttributeTargets.Property`.
+5. The compiler MUST NOT change construction, pattern matching, comparison or printing because of these attributes.
 
 ```fsharp
 type U =
     | A of [<property: Required>] a: string    // same as [<Required>]
-    | B of [<field: NonSerialized>] b: string  // error: target
+    | B of [<field: NonSerialized>] b: string  // error: only the `property` target is permitted
     | C of [<FieldOffset(0)>] c: int           // error: `FieldOffset` is valid on fields only
 ```
 
 ## Struct unions
 
-A struct union has one CLI type for all cases, so fields of different cases that have the same name share one property. Today, the fields can share only when they have the same type (§8.8). With this RFC, they MUST also have equal attributes: each attribute of one field has an exact match (§13.1.1) on the other field, in any order. Fields with the same name that cannot share are an error, because one CLI type cannot have two properties with the same name. The rule includes the generated names `Item`, `Item1`, and so on.
+A struct union has one CLI type for all cases, so fields of different cases that have the same name share one property. Today, the fields can share only when they have the same type (§8.8). With this RFC, they can share only when they also have the same multiset of attributes, where two attributes are the same when they match exactly (§13.1.1). The compiler MUST report an error for fields with the same name that cannot share, and MUST emit the attributes once on a shared property. The rule includes the generated names `Item`, `Item1`, and so on. It comes from the [suggestion discussion](https://github.com/fsharp/fslang-suggestions/issues/684#issuecomment-4565114924).
 
 ```fsharp
 [<Struct>]
 type S =
     | A of [<MaxLength(4)>] code: string
-    | B of [<MaxLength(4)>] code: string * count: int  // one property `code` with one `MaxLength(4)`
-
-[<Struct>]
-type T =
-    | A of [<MaxLength(4)>] code: string
-    | B of code: string                                // error: the attributes of `code` differ
+    | B of [<MaxLength(4)>] code: string * count: int  // shares `code` with A: one property, one `MaxLength(4)`
+    | C of code: string                                // error: the attributes of `code` differ from A and B
 ```
 
 ## Signatures
@@ -98,12 +94,11 @@ Quotations, SRTP constraints and type providers do not observe these attributes.
 
 # Drawbacks
 
-- An attribute that is valid on fields only is accepted on a record field, where it goes to the backing field, but is an error on a union case field.
-- Attribute lists make case declarations long.
+The target rule differs from the rule for record fields (see [Alternatives](#alternatives)).
 
 # Alternatives
 
-- **The rule for record fields.** Emit the attribute on the backing field when its target is `field` or its usage excludes properties. The compiler chooses the storage of a union, so attributes such as `FieldOffset`, `DefaultValue` and `NonSerialized` need more rules. This RFC makes these programs errors, so a later RFC can permit them.
+- **The rule for record fields.** A record field accepts the target `field` and attributes that are valid on fields only, and emits them on the backing field. The compiler chooses the storage of a union, so attributes such as `FieldOffset`, `DefaultValue` and `NonSerialized` need more rules. This RFC makes these programs errors, so a later RFC can permit them.
 - **A `param` target** that emits the attribute on the parameter of `New<Case>`. No consumer is known. A later RFC can add it.
 - **Struct unions: merge the attributes** of fields that share a property. An attribute on one case then applies to the other cases, and attributes with `AllowMultiple = false` still need an error.
 - **Struct unions: a generated property name** for a field that cannot share. Reflection and serializers then see a name that is not in the source.
@@ -113,8 +108,6 @@ Quotations, SRTP constraints and type providers do not observe these attributes.
 
 - C# [positional records](https://github.com/dotnet/csharplang/blob/main/proposals/csharp-9.0/records.md#properties): the `property:` and `field:` targets move an attribute from a positional parameter to the generated property or its backing field.
 - Rust: [fields of enum variants](https://doc.rust-lang.org/reference/items/enumerations.html) take attributes. [serde](https://serde.rs/field-attrs.html) reads them to rename, skip or convert a field.
-- OCaml: [attributes](https://ocaml.org/manual/attributes.html) attach to the argument types of a constructor and to the fields of an inline record. ppx derivers read them.
-- Kotlin: [use-site targets](https://kotlinlang.org/docs/annotations.html#annotation-use-site-targets) select the parameter, property, field or getter of a constructor property.
 
 # Compatibility
 
@@ -135,7 +128,7 @@ The compiler reports the errors of [Target](#target) at the attribute, and the e
 
 ## Tooling
 
-* FSharp.Compiler.Service: `SynField` already has an attribute list, and the parser now fills it for these fields. `FSharpField.PropertyAttributes` returns the checked attributes. Formatters must print the attributes.
+* FSharp.Compiler.Service: `SynField` already has an attribute list, and the parser now fills it for these fields. `FSharpField.PropertyAttributes` returns the checked attributes. Formatters need an update to print the attributes.
 * Completion, navigation and colorization in the attribute list work as for attributes on record fields.
 
 ## Performance
@@ -152,5 +145,6 @@ Not applicable.
 
 # Unresolved questions
 
-- The suggestion names union case fields only. Exception fields use the same grammar production, so this RFC includes them. Is this in scope?
-- Should `Obsolete`, `Experimental` and `CompilerMessage` on a field give a diagnostic where F# code names the field in a pattern or in a constructor call?
+- The suggestion names union case fields only. Are exception fields in scope?
+- The suggestion discussion [asked](https://github.com/fsharp/fslang-suggestions/issues/684#issuecomment-4573142687) whether an attribute goes on the field, the property or both. Only the suggester answered: the property. Do maintainers accept the errors of [Target](#target) rules 3 and 4?
+- Should `Obsolete`, `Experimental` and `CompilerMessage` on a field give a diagnostic where F# code names the field in a pattern or in a constructor call? This RFC specifies no diagnostic.
