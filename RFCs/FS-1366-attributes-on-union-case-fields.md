@@ -51,12 +51,12 @@ The case form `ident ':' uncurried-sig` is for FSharp.Core only and does not cha
 
 ## Target
 
-1. The compiler MUST emit each attribute on the CLI property that represents the field, next to the attributes that it generates there today. When the source has an attribute type that the compiler also generates and that does not allow multiple instances (for example `DebuggerNonUserCode`), the compiler MUST emit one instance.
+1. The compiler MUST emit each attribute on the CLI property that represents the field, next to the attributes that it generates there today. It MUST NOT emit two instances of a generated attribute type that does not allow multiple instances, such as `DebuggerNonUserCode`.
 2. The compiler MUST NOT emit the attribute on a backing field, or on a parameter of a generated member such as `New<Case>`.
 3. The compiler MUST accept the explicit target `property:`, which has no effect, and MUST report an error for any other explicit target.
 4. The compiler MUST report an error for an attribute type whose `AttributeUsage` does not include `AttributeTargets.Property`.
 5. The compiler MUST NOT change construction, pattern matching, comparison or printing because of these attributes.
-6. F# code can read an exception field as `e.field`. The compiler MUST check the attributes of the field at this access as it does for a record field, so `Obsolete`, `Experimental` and `CompilerMessage` give their diagnostics.
+6. For the access `e.field` on an exception, the compiler MUST check the attributes of the field as it does for a record field: `Obsolete`, `Experimental` and `CompilerMessage` give their diagnostics.
 
 ```fsharp
 type U =
@@ -71,7 +71,12 @@ let f (e: ParseError) = e.position             // warning FS0044, as for a recor
 
 ## Struct unions
 
-A struct union has one CLI type for all cases, so fields of different cases that have the same name share one property. Today, the fields can share only when they have the same type (§8.8). With this RFC, they can share only when they also have the same attribute list: the same attributes in the same order. Two attributes are the same when they have the same attribute type, constructor arguments with equal values (the compiler compares arrays by element), and the same named arguments with equal values, in any order. The rule applies separately to the signature file and to the implementation file. The compiler MUST report an error for fields with the same name that cannot share, and MUST emit the list once on a shared property. The rule includes the generated names `Item`, `Item1`, and so on. It comes from the [suggestion discussion](https://github.com/fsharp/fslang-suggestions/issues/684#issuecomment-4565114924).
+A struct union has one CLI type for all cases, so fields of different cases that have the same name share one property. Today, the fields can share only when they have the same type (§8.8). The generated names `Item`, `Item1`, and so on are included. This RFC adds a condition from the [suggestion discussion](https://github.com/fsharp/fslang-suggestions/issues/684#issuecomment-4565114924):
+
+1. The fields can share only when they also have the same attribute list: the same attributes in the same order. The compiler MUST report an error for fields with the same name that cannot share.
+2. Two attributes are the same when they have the same attribute type, constructor arguments with equal values (arrays are compared by element), and the same named arguments with equal values, in any order.
+3. The rule applies separately to the signature file and to the implementation file.
+4. The compiler MUST emit the list once on the shared property.
 
 ```fsharp
 [<Struct>]
@@ -98,7 +103,7 @@ Quotations, SRTP constraints and type providers do not observe these attributes.
 # Drawbacks
 
 - The target rule differs from the rule for record fields (see [Alternatives](#alternatives)).
-- In a struct union, each value has the properties of all cases, and a property of another case returns a default value. A consumer that reads all properties of the type, such as the `System.ComponentModel.DataAnnotations` `Validator`, applies an attribute to the values of other cases: `[<Range(1, 10)>] count: int` on one case fails for a value of another case, where `count` is 0. A consumer that reads `UnionCaseInfo.GetFields()`, such as `System.Text.Json`, does not.
+- In a struct union, each value has the properties of all cases. A consumer that reads all properties of the type, such as the `System.ComponentModel.DataAnnotations` `Validator`, applies the attributes of one case to values of the other cases: `[<Range(1, 10)>] count: int` fails for a value of another case, where `count` is 0. A consumer that reads `UnionCaseInfo.GetFields()`, such as `System.Text.Json`, does not.
 
 # Alternatives
 
@@ -128,14 +133,14 @@ C# and reflection see the attributes on the existing CLI property of the field (
 
 ## Diagnostics
 
-The errors of [Target](#target) rules 3 and 4 are new: the existing diagnostic for an invalid attribute target, FS0842, is a warning. The compiler reports them at the attribute. It reports the error of [Struct unions](#struct-unions) at each field that has the name. There are no new warnings.
+The errors of [Target](#target) rules 3 and 4 are new, because the existing diagnostic for an invalid attribute target, FS0842, is a warning. The compiler reports them at the attribute, and the error of [Struct unions](#struct-unions) at each field that has the name.
 
 ## Tooling
 
 * FSharp.Compiler.Service: `SynField` already has an attribute list, and the parser now fills it for these fields. `FSharpField.PropertyAttributes` returns the checked attributes. Formatters need an update to print the attributes.
 * Signature generation prints the attributes, also for unnamed fields.
 * Completion, navigation and colorization in the attribute list work as for attributes on record fields.
-* Debugging: the compiler SHOULD copy the attributes to the properties of the debugger proxy type of the case, as it copies the generated attributes today, so that `DebuggerBrowsable` on a field works.
+* Debugging: the compiler SHOULD copy the attributes to the debugger proxy type of the case, as it copies the generated attributes today, so that `DebuggerBrowsable` on a field works.
 
 ## Performance
 
